@@ -1,0 +1,1 @@
+ESP32 static website with 1000 project pages. Replace https://yourdomain.com in sitemap.xml and robots.txt with your real domain before final SEO submission. Upload all files to GitHub repository root and enable GitHub Pages.
