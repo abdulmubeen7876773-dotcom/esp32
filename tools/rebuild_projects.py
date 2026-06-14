@@ -60,11 +60,22 @@ def short_label(text: str, limit: int = 14) -> str:
 
 def parse_project(path: Path) -> dict:
     raw = path.read_text(encoding="utf-8")
-    tags = all_matches(r'<span class="tag leaf">([^<]+)</span>', raw)
+    tags = [t for t in all_matches(r'<span class="tag leaf">([^<]+)</span>', raw) if t.lower() not in ("part",)]
     clay_tags = all_matches(r'<span class="tag clay">([^<]+)</span>', raw)
     plain_tags = all_matches(r'<span class="tag">([^<]+)</span>', raw)
     category = tags[0] if tags else "ESP32"
     difficulty = clay_tags[0].replace(" build", "") if clay_tags else "Beginner"
+    meta_m = re.search(r'<p class="article-meta">([^<]+)</p>', raw)
+    if meta_m:
+        parts = [p.strip() for p in meta_m.group(1).split("·")]
+        if parts and parts[0] not in ("ESP32", "Project") and category in ("ESP32", ""):
+            category = parts[0]
+        if len(parts) > 1:
+            difficulty = parts[1].replace(" build", "").strip()
+    if category in ("ESP32", ""):
+        bc = re.search(r'"position": 2, "name": "([^"]+)"', raw)
+        if bc and bc.group(1) not in ("Home",):
+            category = bc.group(1)
     project_tag = plain_tags[0] if plain_tags else "Project"
     title = first_match(r"<h1>([^<]+)</h1>", raw)
     lead = first_match(r'<p class="lead">([^<]+)</p>', raw) or first_match(r'<p class="article-lead">([^<]+)</p>', raw)
@@ -87,15 +98,21 @@ def parse_project(path: Path) -> dict:
             components = all_matches(r"<strong>([^<]+)</strong>", parts_block)
     wiring = []
     wire_block = first_match(r'<section id="wiring"[\s\S]*?</section>', raw)
+    if not wire_block:
+        wire_block = first_match(r'<table class="pin-table">([\s\S]*?)</table>', raw)
     if wire_block:
-        for row in re.finditer(r"<tr><td>([^<]+)</td><td[^>]*>([^<]+)</td></tr>", wire_block):
+        for row in re.finditer(r"<tr><td>([^<]+)</td><td[^>]*>(?:<strong>)?([^<]+)(?:</strong>)?</td></tr>", wire_block):
             wiring.append((row.group(1).strip(), row.group(2).strip()))
     how = first_match(r'<section id="how"[\s\S]*?<div class="box"><p>([^<]+)</p>', raw)
-    code = first_match(r"<section id=\"code\"[\s\S]*?<pre>([\s\S]*?)</pre>", raw)
+    if not how:
+        how = first_match(r'<div class="step"><span class="step-no">04</span>[\s\S]*?<p>([^<]+)</p>', raw)
+    code = first_match(r'<pre id="code-content">([\s\S]*?)</pre>', raw)
+    if not code:
+        code = first_match(r"<section id=\"code\"[\s\S]*?<pre>([\s\S]*?)</pre>", raw)
     code = html.unescape(code.strip())
-    apps_block = first_match(r'<h2>Applications</h2><ul class="list">([\s\S]*?)</ul>', raw)
+    apps_block = first_match(r'<h2>Applications</h2><ul[^>]*>([\s\S]*?)</ul>', raw)
     apps = all_matches(r"<li>([^<]+)</li>", apps_block) if apps_block else []
-    adv_block = first_match(r'<h2>Advantages</h2><ul class="list">([\s\S]*?)</ul>', raw)
+    adv_block = first_match(r'<h2>Advantages</h2><ul[^>]*>([\s\S]*?)</ul>', raw)
     advantages = all_matches(r"<li>([^<]+)</li>", adv_block) if adv_block else []
     future = []
     fut_block = first_match(r'<h2>Future improvements</h2>[\s\S]*?<div class="grid">([\s\S]*?)</div></section>', raw)
@@ -276,8 +293,8 @@ def thumb_label(title: str, cat: str) -> str:
 
 
 def rnt_header():
-    return """<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../index.html#all-projects">Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
-<nav class="cat-bar"><div class="wrap"><a class="cat-pill" href="../index.html">HOME</a><a class="cat-pill" href="../index.html#cat-agriculture">AGRICULTURE</a><a class="cat-pill" href="../index.html#cat-iot-projects">IOT</a><a class="cat-pill" href="../index.html#cat-esp32-cam">ESP32-CAM</a><a class="cat-pill" href="../index.html#cat-home-automation">HOME AUTO</a><a class="cat-pill" href="../index.html#all-projects">ALL</a></div></nav>"""
+    return """<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
+<nav class="cat-bar"><div class="wrap"><a class="cat-pill" href="../index.html">HOME</a><a class="cat-pill" href="../projects.html#cat-agriculture">AGRICULTURE</a><a class="cat-pill" href="../projects.html#cat-iot-projects">IOT</a><a class="cat-pill" href="../projects.html#cat-esp32-cam">ESP32-CAM</a><a class="cat-pill" href="../projects.html#cat-home-automation">HOME AUTO</a><a class="cat-pill" href="../projects.html">ALL PROJECTS</a></div></nav>"""
 
 
 def render_page(d: dict) -> str:
@@ -326,7 +343,7 @@ def render_page(d: dict) -> str:
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <h3 style="margin-top:20px">Category</h3>
-    <ul class="side-list"><li><a href="../index.html#cat-{re.sub(r'[^a-z0-9]+', '-', d['category'].lower()).strip('-')}">{esc(d['category'])}</a></li></ul>
+    <ul class="side-list"><li><a href="../projects.html#cat-{re.sub(r'[^a-z0-9]+', '-', d['category'].lower()).strip('-')}">{esc(d['category'])}</a></li></ul>
   </aside>
   <article class="article-main">
     <h1>{esc(d['title'])}</h1>
@@ -365,7 +382,7 @@ def render_page(d: dict) -> str:
       <h2>Wrapping Up</h2>
       <p>In this tutorial we've shown you how to build {esc(d['title'])}. You can use this pattern in your own ESP32 projects by changing the sensor, threshold, and output device.</p>
       <h2>Recommended Reading</h2>
-      <ul>{''.join(related_main) if related_main else '<li><a href="../index.html">Browse all ESP32 projects</a></li>'}</ul>
+      <ul>{''.join(related_main) if related_main else '<li><a href="../projects.html">Browse all ESP32 projects</a></li>'}</ul>
       <h2 id="faq">FAQ</h2>
       <div class="faq-list">
         <div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">{esc(d['faq_q'])}<span class="plus">+</span></button><div class="faq-a"><p>{esc(d['faq_a'])}</p></div></div>
@@ -375,12 +392,12 @@ def render_page(d: dict) -> str:
     </div>
   </article>
   <aside class="sidebar-right">
-    <div class="promo-box"><strong>ESP32 Project Library</strong><p style="font-size:.88rem;color:#666;margin:.5em 0 0">1000 tutorials with wiring diagrams, code, and step-by-step guides.</p><p style="margin-top:10px"><a href="../index.html">Browse all projects »</a></p></div>
+    <div class="promo-box"><strong>ESP32 Project Library</strong><p style="font-size:.88rem;color:#666;margin:.5em 0 0">1000 tutorials with wiring diagrams, code, and step-by-step guides.</p><p style="margin-top:10px"><a href="../projects.html">Browse all projects »</a></p></div>
     <h3>Related Projects</h3>
-    <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../index.html">All projects</a></li>'}</ul>
+    <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../projects.html">All projects</a></li>'}</ul>
   </aside>
 </div>
-<footer class="site-footer"><div class="wrap"><div>ESP32 Project Library · {esc(d['slug'])}</div><div class="foot-links"><a href="../index.html">Home</a><a href="../sitemap.xml">Sitemap</a></div></div></footer>
+<footer class="site-footer"><div class="wrap"><div>ESP32 Project Library · {esc(d['slug'])}</div><div class="foot-links"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></div></div></footer>
 <script src="../project.js"></script>
 </body>
 </html>
