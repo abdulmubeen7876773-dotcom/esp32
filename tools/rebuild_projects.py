@@ -64,19 +64,27 @@ def parse_project(path: Path) -> dict:
     clay_tags = all_matches(r'<span class="tag clay">([^<]+)</span>', raw)
     plain_tags = all_matches(r'<span class="tag">([^<]+)</span>', raw)
     category = tags[0] if tags else "ESP32"
-    difficulty = clay_tags[0] if clay_tags else "Beginner"
+    difficulty = clay_tags[0].replace(" build", "") if clay_tags else "Beginner"
     project_tag = plain_tags[0] if plain_tags else "Project"
     title = first_match(r"<h1>([^<]+)</h1>", raw)
-    lead = first_match(r'<p class="lead">([^<]+)</p>', raw)
+    lead = first_match(r'<p class="lead">([^<]+)</p>', raw) or first_match(r'<p class="article-lead">([^<]+)</p>', raw)
     overview = first_match(r'<section id="overview"[^>]*>.*?<p class="lead">([^<]+)</p>', raw)
     blog_section_match = first_match(r'<section id="blog"[\s\S]*?</section>', raw)
-    blog_paras = all_matches(r"<p>([^<]+)</p>", blog_section_match) if blog_section_match else []
+    if blog_section_match:
+        blog_paras = all_matches(r"<p>([^<]+)</p>", blog_section_match)
+    else:
+        article = first_match(r'<div class="article-content">([\s\S]*?)</div>\s*</article>', raw)
+        blog_paras = all_matches(r"<p>([^<]+)</p>", article) if article else []
     components = []
     comp_block = first_match(r'<section id="components"[\s\S]*?</section>', raw)
     if comp_block:
         for name in all_matches(r'<h3>([^<]+)</h3>', comp_block):
             if name.lower() not in ("applications", "advantages"):
                 components.append(name)
+    if not components:
+        parts_block = first_match(r'<ul class="parts-list">([\s\S]*?)</ul>', raw)
+        if parts_block:
+            components = all_matches(r"<strong>([^<]+)</strong>", parts_block)
     wiring = []
     wire_block = first_match(r'<section id="wiring"[\s\S]*?</section>', raw)
     if wire_block:
@@ -95,17 +103,23 @@ def parse_project(path: Path) -> dict:
         future = all_matches(r"<h3>([^<]+)</h3>", fut_block)
     related = []
     rel_block = first_match(r'<h2>Related ESP32 projects</h2>[\s\S]*?<div class="grid">([\s\S]*?)</div></section>', raw)
+    if not rel_block:
+        rel_block = first_match(r'<h3>Related Projects</h3>[\s\S]*?<ul class="side-list">([\s\S]*?)</ul>', raw)
     if rel_block:
         for m in re.finditer(
             r'<a class="card" href="([^"]+)"><span class="tag leaf">([^<]+)</span><h3>([^<]+)</h3><p>([^<]+)</p></a>',
             rel_block,
         ):
             related.append({"href": m.group(1), "cat": m.group(2), "title": m.group(3), "desc": m.group(4)})
+        for m in re.finditer(r'<a href="([^"]+)">([^<]+)</a>', rel_block):
+            if not any(r["href"] == m.group(1) for r in related):
+                related.append({"href": m.group(1), "cat": category, "title": m.group(2).strip(), "desc": ""})
     faq_q = first_match(r'<section id="faq"[\s\S]*?<h3>([^<]+)</h3>', raw)
     faq_a = first_match(r'<section id="faq"[\s\S]*?<h3>[^<]+</h3><p>([^<]+)</p>', raw)
     slug = first_match(r'<div class="meta">([^<]+)</div>', raw) or path.stem
     head = first_match(r"<head>([\s\S]*?)</head>", raw)
     head = re.sub(r'<link rel="stylesheet"[^>]*>', "", head)
+    head = re.sub(r'<link rel="preconnect"[^>]*>', "", head)
     head = re.sub(r'<meta charset="utf-8">', "", head, flags=re.I)
     head = re.sub(r'<meta name="viewport"[^>]*>', "", head, flags=re.I)
     head = re.sub(r"\s+", " ", head).strip()
@@ -232,172 +246,141 @@ def item_list(items: list[str], default_desc: str) -> str:
     return "\n".join(rows)
 
 
+THUMB = {
+    "Agriculture": "t-agriculture",
+    "Home Automation": "t-home",
+    "Security Projects": "t-security",
+    "IoT Projects": "t-iot",
+    "Sensor Projects": "t-iot",
+    "Robotics": "t-default",
+    "Industrial Automation": "t-default",
+    "LED Projects": "t-led",
+    "ESP32-CAM": "t-cam",
+    "AI Projects": "t-ai",
+    "Energy Monitoring": "t-default",
+    "Healthcare": "t-default",
+    "Environmental": "t-agriculture",
+    "Smart City": "t-iot",
+    "Education": "t-default",
+}
+
+
+def thumb_class(cat: str) -> str:
+    return THUMB.get(cat, "t-default")
+
+
+def thumb_label(title: str, cat: str) -> str:
+    words = re.sub(r"[^A-Za-z0-9 ]", " ", title).split()
+    short = " ".join(words[:3]).upper()
+    return short[:20] or cat.upper()[:12]
+
+
+def rnt_header():
+    return """<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../index.html#all-projects">Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
+<nav class="cat-bar"><div class="wrap"><a class="cat-pill" href="../index.html">HOME</a><a class="cat-pill" href="../index.html#cat-agriculture">AGRICULTURE</a><a class="cat-pill" href="../index.html#cat-iot-projects">IOT</a><a class="cat-pill" href="../index.html#cat-esp32-cam">ESP32-CAM</a><a class="cat-pill" href="../index.html#cat-home-automation">HOME AUTO</a><a class="cat-pill" href="../index.html#all-projects">ALL</a></div></nav>"""
+
+
 def render_page(d: dict) -> str:
-    parts_html = []
+    tc = thumb_class(d["category"])
+    parts_li = []
     for comp in d["components"]:
-        if comp.lower() in ("jumper wires", "breadboard"):
-            continue
-        desc = f"Connected according to the wiring map — part of the {esc(d['category'])} build."
-        parts_html.append(
-            f'<div class="part-row"><div class="part-icon">{part_icon(comp)}</div><div class="part-name">{esc(comp)}</div><div class="part-desc">{desc}</div></div>'
-        )
+        if comp.lower() not in ("jumper wires", "breadboard"):
+            parts_li.append(f"<li><strong>{esc(comp)}</strong></li>")
     wiring_rows = []
     for name, pin in d["wiring"]:
-        pin_class = "pin" if "gpio" in pin.lower() else ""
-        wiring_rows.append(f"<tr><td>{esc(name)}</td><td class=\"{pin_class}\">{esc(pin)}</td><td>Signal / power</td></tr>")
-    related_html = []
+        wiring_rows.append(f"<tr><td>{esc(name)}</td><td><strong>{esc(pin)}</strong></td></tr>")
+    related_side = []
     for r in d["related"]:
-        related_html.append(
-            f'<a class="card" href="{esc(r["href"])}"><span class="tag leaf">{esc(r["cat"])}</span><h3>{esc(r["title"])}</h3><p>{esc(r["desc"])}</p></a>'
+        related_side.append(f'<li><a href="{esc(r["href"])}">{esc(r["title"])}</a></li>')
+    related_main = []
+    for r in d["related"]:
+        related_main.append(
+            f'<li><a href="{esc(r["href"])}">{esc(r["title"])}</a> — {esc(r["desc"][:100])}…</li>'
         )
-    future_html = []
-    for f in d["future"]:
-        future_html.append(
-            f'<div class="chip-card"><div class="chip-label">Next step</div><h3>{esc(f)}</h3><p>This can be added as a future enhancement to extend the project.</p></div>'
-        )
-    overview_p2 = d["blog_paras"][0] if d["blog_paras"] else d["overview"]
+    blog_bits = "".join(f"<p>{esc(p)}</p>" for p in d["blog_paras"][:4])
+    apps_li = "".join(f"<li>{esc(a)}</li>" for a in d["apps"])
+    adv_li = "".join(f"<li>{esc(a)}</li>" for a in d["advantages"])
+    future_li = "".join(f"<li>{esc(f)}</li>" for f in d["future"])
     code_fname = re.sub(r"[^a-z0-9]+", "_", d["slug"].lower()).strip("_")[:40] + ".ino"
     code_esc = esc(d["code"])
-    blog_section = ""
-    if len(d["blog_paras"]) > 1:
-        blog_bits = "".join(f"<p>{esc(p)}</p>" for p in d["blog_paras"][1:])
-        blog_section = f"""
-  <section id="guide" class="wrap blog">
-    <div class="section-head"><h2>Complete project blog guide</h2><p>300–600 word SEO article included for this project page.</p></div>
-    {blog_bits}
-  </section>"""
+    how = d["how"] or "The ESP32 reads the sensor and drives the output when the threshold is met."
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {d['head']}
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-
-<nav>
-  <div class="nav-inner wrap">
-    <a class="brand" href="../index.html">{LEAF_SVG}ESP32 Project Library</a>
-    <div class="nav-links">
-      <a href="#overview">Overview</a>
-      <a href="#components">Components</a>
-      <a href="#wiring">Wiring</a>
-      <a href="#how-it-works">How it works</a>
-      <a href="#code">Code</a>
-      <a href="#applications">Applications</a>
-      <a href="#future">Future</a>
-      <a href="#faq">FAQ</a>
-    </div>
-  </div>
-</nav>
-
-<header class="hero wrap">
-  <div class="hero-tags">
-    <span class="tag leaf">{esc(d['category'])}</span>
-    <span class="tag clay">{esc(d['difficulty'])} build</span>
-    <span class="tag">{esc(d['project_tag'])}</span>
-  </div>
-  <h1>{esc(d['title'])}</h1>
-  <p class="lead">{esc(d['lead'])}</p>
-  <p style="margin-top:24px"><a class="btn light" href="../index.html">← Back to library</a></p>
-  {hero_diagram(d)}
-</header>
-
-<main>
-
-  <section id="overview" class="wrap">
-    <div class="section-head"><h2>Overview</h2></div>
-    <div class="overview-grid">
-      <div>
-        <p>{esc(d['overview'])}</p>
-        <p>{esc(overview_p2)}</p>
-      </div>
-      <div class="stat-row">
-        <div class="stat"><div class="v">{esc(d['category'])}</div><div class="k">Category</div></div>
-        <div class="stat"><div class="v">{esc(d['difficulty'])}</div><div class="k">Difficulty</div></div>
-        <div class="stat"><div class="v">{d['core_parts']}</div><div class="k">Core parts</div></div>
-        <div class="stat"><div class="v">{d['gpio_count']}</div><div class="k">GPIO pins used</div></div>
-      </div>
-    </div>
-  </section>
-{blog_section}
-  <section id="components" class="wrap">
-    <div class="section-head"><h2>Components required</h2><p>Core hardware needed for this ESP32 build.</p></div>
-    <div class="parts-list">{''.join(parts_html)}</div>
-  </section>
-
-  <section id="wiring" class="wrap">
-    <div class="section-head"><h2>Wiring connections</h2><p>Follow these signal and power connections carefully.</p></div>
-    <div class="wiring-grid">
-      <table class="pin-table">
-        <thead><tr><th>Component</th><th>ESP32 pin</th><th>Signal type</th></tr></thead>
-        <tbody>{''.join(wiring_rows)}</tbody>
-      </table>
-      {wiring_diagram(d)}
-    </div>
-  </section>
-
-  <section id="how-it-works" class="wrap">
-    <div class="section-head"><h2>How it works</h2><p>One loop, repeated continuously while the board is powered.</p></div>
-    {build_steps(d)}
-  </section>
-
-  <section id="code" class="wrap">
-    <div class="section-head"><h2>Source code</h2><p>Starting code from the dataset — adjust pins and threshold for your exact hardware.</p></div>
-    <div class="code-block">
-      <div class="code-bar"><span class="fname">{esc(code_fname)}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-      <pre id="code-content">{code_esc}</pre>
-    </div>
-  </section>
-
-  <section id="applications" class="wrap">
-    <div class="section-head"><h2>Where it fits — and why it helps</h2></div>
-    <div class="two-col">
-      <div class="col-card"><h3>Applications</h3><ul class="item-list">{item_list(d['apps'], 'Practical use case for this ESP32 build.')}</ul></div>
-      <div class="col-card"><h3>Advantages</h3><ul class="item-list">{item_list(d['advantages'], 'Key benefit of this project approach.')}</ul></div>
-    </div>
-  </section>
-
-  <section id="future" class="wrap">
-    <div class="section-head"><h2>Future improvements</h2><p>Natural next layers to add on top of the core build.</p></div>
-    <div class="chip-grid">{''.join(future_html)}</div>
-  </section>
-
-  <section id="related" class="wrap">
-    <div class="section-head"><h2>Related ESP32 projects</h2><p>Similar tutorials in this library.</p></div>
-    <div class="grid">{''.join(related_html)}</div>
-  </section>
-
-  <section id="faq" class="wrap">
-    <div class="section-head"><h2>FAQ</h2></div>
-    <div class="faq-list">
-      <div class="faq-item open">
-        <button class="faq-q" onclick="toggleFaq(this)">{esc(d['faq_q'])}<span class="plus">+</span></button>
-        <div class="faq-a"><p>{esc(d['faq_a'])}</p></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">How do I choose the threshold?<span class="plus">+</span></button>
-        <div class="faq-a"><p>Log raw sensor readings under normal and trigger conditions, then pick a value between them. Adjust the threshold constant in the sketch until the output activates at the level you want.</p></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Can this project scale to more sensors or outputs?<span class="plus">+</span></button>
-        <div class="faq-a"><p>Yes. Add extra GPIO pins for additional sensors or relay channels, then run the same read-compare-act loop for each zone in the firmware.</p></div>
+{rnt_header()}
+<div class="wrap article-shell">
+  <aside class="sidebar-left">
+    <h3>Learn ESP32</h3>
+    <ul class="side-list">
+      <li><a href="#overview">Project Overview</a></li>
+      <li><a href="#parts">Parts Required</a></li>
+      <li><a href="#wiring">Schematics</a></li>
+      <li><a href="#code">Code</a></li>
+      <li><a href="#demo">Demonstration</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <h3 style="margin-top:20px">Category</h3>
+    <ul class="side-list"><li><a href="../index.html#cat-{re.sub(r'[^a-z0-9]+', '-', d['category'].lower()).strip('-')}">{esc(d['category'])}</a></li></ul>
+  </aside>
+  <article class="article-main">
+    <h1>{esc(d['title'])}</h1>
+    <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(d['project_tag'])}</p>
+    <p class="article-lead">{esc(d['lead'])}</p>
+    <div class="article-feature"><div class="article-thumb {tc}">{esc(thumb_label(d['title'], d['category']))}</div></div>
+    <div class="article-content">
+      {blog_bits}
+      <h2 id="overview">Project Overview</h2>
+      <p>{esc(d['overview'])}</p>
+      <ul>
+        <li>The ESP32 connects to your circuit and reads the input sensor;</li>
+        <li>Sensor values are compared against a threshold in the sketch;</li>
+        <li>When the condition is met, the output device is activated on {esc(d['output_pin'])};</li>
+        <li>The loop repeats while the board is powered.</li>
+      </ul>
+      <h2 id="parts">Parts Required</h2>
+      <p>Here's a list of parts needed to build this project:</p>
+      <ul class="parts-list">{''.join(parts_li)}</ul>
+      <h2 id="wiring">Schematics</h2>
+      <p>Follow the wiring connections below. Double-check GPIO pins before uploading the code.</p>
+      <table class="pin-table"><thead><tr><th>Connection</th><th>Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table>
+      <h2>How It Works</h2>
+      {build_steps(d)}
+      <h2 id="code">Code</h2>
+      <p>Upload the following sketch to your ESP32 board using the Arduino IDE. Adjust pins and threshold for your hardware.</p>
+      <div class="code-block"><div class="code-bar"><span>{esc(code_fname)}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre id="code-content">{code_esc}</pre></div>
+      <h2>Applications</h2>
+      <ul>{apps_li}</ul>
+      <h2>Advantages</h2>
+      <ul>{adv_li}</ul>
+      <h2>Future Improvements</h2>
+      <ul>{future_li}</ul>
+      <h2 id="demo">Demonstration</h2>
+      <p>After uploading the code, open the Serial Monitor at 115200 baud. Verify that sensor readings change when you trigger the input condition. When the threshold is crossed, the output on {esc(d['output_pin'])} should activate — {esc(how)}</p>
+      <h2>Wrapping Up</h2>
+      <p>In this tutorial we've shown you how to build {esc(d['title'])}. You can use this pattern in your own ESP32 projects by changing the sensor, threshold, and output device.</p>
+      <h2>Recommended Reading</h2>
+      <ul>{''.join(related_main) if related_main else '<li><a href="../index.html">Browse all ESP32 projects</a></li>'}</ul>
+      <h2 id="faq">FAQ</h2>
+      <div class="faq-list">
+        <div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">{esc(d['faq_q'])}<span class="plus">+</span></button><div class="faq-a"><p>{esc(d['faq_a'])}</p></div></div>
+        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How do I choose the threshold?<span class="plus">+</span></button><div class="faq-a"><p>Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.</p></div></div>
+        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Can this work without Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Yes. The core read-compare-act loop runs locally on the ESP32 without internet.</p></div></div>
       </div>
     </div>
-  </section>
-
-</main>
-
-<footer>
-  <div class="wrap">
-    <a class="brand" href="../index.html">{LEAF_SVG}ESP32 Project Library</a>
-    <div class="meta">{esc(d['category'])} · {esc(d['difficulty'])} · {esc(d['slug'])}</div>
-  </div>
-</footer>
-
+  </article>
+  <aside class="sidebar-right">
+    <div class="promo-box"><strong>ESP32 Project Library</strong><p style="font-size:.88rem;color:#666;margin:.5em 0 0">1000 tutorials with wiring diagrams, code, and step-by-step guides.</p><p style="margin-top:10px"><a href="../index.html">Browse all projects »</a></p></div>
+    <h3>Related Projects</h3>
+    <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../index.html">All projects</a></li>'}</ul>
+  </aside>
+</div>
+<footer class="site-footer"><div class="wrap"><div>ESP32 Project Library · {esc(d['slug'])}</div><div class="foot-links"><a href="../index.html">Home</a><a href="../sitemap.xml">Sitemap</a></div></div></footer>
 <script src="../project.js"></script>
 </body>
 </html>
