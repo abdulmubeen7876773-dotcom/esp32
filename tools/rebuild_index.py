@@ -197,7 +197,7 @@ def home_html(projects, sections, latest):
 {header_html("home")}
 <section class="hero-split">
   <div class="featured-box hero-hook">
-    <div style="padding:28px">
+    <div class="hero-inner">
       <h1>Build, Connect, Automate — All with ESP32</h1>
       <p>Step into the world of smart technology with ESP32 projects that combine innovation, connectivity, and automation. Learn how to create powerful IoT applications, intelligent monitoring systems, and real-world solutions while mastering one of the most versatile microcontrollers available today.</p>
     </div>
