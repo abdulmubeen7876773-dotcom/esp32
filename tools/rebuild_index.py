@@ -183,24 +183,23 @@ const params=new URLSearchParams(location.search);if(params.get('q')){{q.value=p
 """
 
 
-def home_html(projects, sections, featured, latest):
+def home_html(projects, sections, latest):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ESP32 Project Library | Learn ESP32 with 1000 Tutorials</title>
-<meta name="description" content="ESP32 project library home — latest tutorials, categories, and links to 1000 ESP32 builds with code and wiring guides.">
+<meta name="description" content="Build, connect, and automate with ESP32 — 1000 IoT tutorials with wiring, code, and step-by-step guides.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 {header_html("home")}
 <section class="hero-split">
-  <div class="featured-box">
+  <div class="featured-box hero-hook">
     <div style="padding:28px">
-      <h2>{esc(featured['title'][:70])}</h2>
-      <p>{esc(featured['desc'][:160])}</p>
-      <a class="featured-btn" href="{esc(featured['href'])}">Read More »</a>
+      <h1>Build, Connect, Automate — All with ESP32</h1>
+      <p>Step into the world of smart technology with ESP32 projects that combine innovation, connectivity, and automation. Learn how to create powerful IoT applications, intelligent monitoring systems, and real-world solutions while mastering one of the most versatile microcontrollers available today.</p>
     </div>
   </div>
   <div class="latest-box" id="latest">
@@ -231,7 +230,6 @@ def main():
     by_cat = defaultdict(list)
     for p in projects:
         by_cat[p["category"]].append(p)
-    featured = projects[0]
     latest = projects[:4]
     sections = []
     for cat in CATEGORIES:
@@ -243,7 +241,7 @@ def main():
             f"""<section class="section-block wrap" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(cat)} Projects</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
         )
     cat_opts = "".join(f'<option>{esc(c)}</option>' for c in CATEGORIES)
-    INDEX_OUT.write_text(home_html(projects, sections, featured, latest), encoding="utf-8")
+    INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
     PROJECTS_OUT.write_text(projects_listing_html(projects, cat_opts), encoding="utf-8")
     print(f"Wrote index.html (home) + projects.html ({len(projects)} projects, {len(sections)} category sections)")
 
