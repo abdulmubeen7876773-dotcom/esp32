@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
+CSS_VERSION = "20260615-dark"
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -327,7 +328,8 @@ def render_page(d: dict) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 {d['head']}
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
+<style>html,body{{background:#0f172a;color:#e2e8f0}}</style>
 </head>
 <body>
 {rnt_header()}

@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 INDEX_OUT = ROOT / "index.html"
 PROJECTS_OUT = ROOT / "projects.html"
+CSS_VERSION = "20260615-dark"
 
 CATEGORIES = [
     "Agriculture",
@@ -184,7 +185,8 @@ def projects_listing_html(projects, cat_opts):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>All ESP32 Projects | ESP32 Project Library</title>
 <meta name="description" content="Browse and search 1000 ESP32 project tutorials with filters for category and difficulty.">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v={CSS_VERSION}">
+<style>html,body{{background:#0f172a;color:#e2e8f0}}</style>
 </head>
 <body>
 {header_html("projects")}
@@ -217,7 +219,8 @@ def home_html(projects, sections, latest):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ESP32 Project Library | Learn ESP32 with 1000 Tutorials</title>
 <meta name="description" content="Build, connect, and automate with ESP32 — 1000 IoT tutorials with wiring, code, and step-by-step guides.">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v={CSS_VERSION}">
+<style>html,body{{background:#0f172a;color:#e2e8f0}}</style>
 </head>
 <body>
 {header_html("home")}
