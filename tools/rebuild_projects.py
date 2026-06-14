@@ -397,7 +397,7 @@ def render_page(d: dict) -> str:
     <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../projects.html">All projects</a></li>'}</ul>
   </aside>
 </div>
-<footer class="site-footer"><div class="wrap"><div>ESP32 Project Library · {esc(d['slug'])}</div><div class="foot-links"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></div></div></footer>
+<footer class="site-footer"><div class="wrap footer-grid"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1000 ESP32 tutorials with wiring diagrams, source code, and step-by-step build guides.</p></div><div class="footer-col"><h4>Explore</h4><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="../about.html">About Us</a><a href="../contact.html">Contact</a><a href="../privacy.html">Privacy Policy</a><a href="../disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>
 <script src="../project.js"></script>
 </body>
 </html>

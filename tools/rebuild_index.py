@@ -116,7 +116,37 @@ def thumb_label(title, cat):
 
 def latest_item(p):
     tc = thumb_class(p["category"])
-    return f"""<a class="latest-item" href="{esc(p['href'])}"><div class="thumb {tc}">{esc(thumb_label(p['title'], p['category']))}</div><h3>{esc(p['title'])}</h3></a>"""
+    return f"""<a class="latest-item" href="{esc(p['href'])}"><div class="thumb {tc}">{esc(thumb_label(p['title'], p['category']))}</div><div class="latest-body"><span class="latest-cat">{esc(p['category'])}</span><h3>{esc(p['title'])}</h3></div></a>"""
+
+
+def pick_diverse_latest(by_cat, projects, count=4):
+    picked = []
+    seen = set()
+    for cat in CATEGORIES:
+        items = by_cat.get(cat, [])
+        if not items:
+            continue
+        p = items[0]
+        key = re.sub(r"\s+project\s+\d+$", "", p["title"].lower())
+        if key in seen:
+            continue
+        picked.append(p)
+        seen.add(key)
+        if len(picked) >= count:
+            return picked
+    for p in projects:
+        key = re.sub(r"\s+project\s+\d+$", "", p["title"].lower())
+        if key in seen:
+            continue
+        picked.append(p)
+        seen.add(key)
+        if len(picked) >= count:
+            break
+    return picked
+
+
+def footer_html():
+    return """<footer class="site-footer"><div class="wrap footer-grid"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1000 ESP32 tutorials with wiring diagrams, source code, and step-by-step build guides.</p></div><div class="footer-col"><h4>Explore</h4><a href="index.html">Home</a><a href="projects.html">All Projects</a><a href="sitemap.xml">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="about.html">About Us</a><a href="contact.html">Contact</a><a href="privacy.html">Privacy Policy</a><a href="disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
 
 
 def post_card(p):
@@ -143,10 +173,6 @@ def header_html(active="home"):
     )
     return f"""<header class="site-header"><div class="wrap"><a class="site-logo" href="index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="index.html"{nav_home}>Home</a><a href="projects.html"{nav_proj}>All Projects</a><a href="sitemap.xml">Sitemap</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search…" aria-label="Search"><button type="submit">Search</button></form></div></header>
 <nav class="cat-bar"><div class="wrap"><a class="cat-pill{pill_home}" href="index.html">HOME</a>{cats}<a class="cat-pill{pill_proj}" href="projects.html">ALL PROJECTS</a></div></nav>"""
-
-
-def footer_html():
-    return """<footer class="site-footer"><div class="wrap"><div><strong>ESP32 Project Library</strong><br>1000 ESP32 tutorials with wiring, code, and guides.</div><div class="foot-links"><a href="index.html">Home</a><a href="projects.html">All Projects</a><a href="sitemap.xml">Sitemap</a></div></div></footer>"""
 
 
 def projects_listing_html(projects, cat_opts):
@@ -230,7 +256,7 @@ def main():
     by_cat = defaultdict(list)
     for p in projects:
         by_cat[p["category"]].append(p)
-    latest = projects[:4]
+    latest = pick_diverse_latest(by_cat, projects, 4)
     sections = []
     for cat in CATEGORIES:
         items = by_cat.get(cat, [])[:4]
