@@ -5,11 +5,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class
+from title_generator import generate_title
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
-CSS_VERSION = "20260615-icons"
+CSS_VERSION = "20260615-titles"
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -296,6 +297,57 @@ def thumb_label(title: str, cat: str) -> str:
     return short[:20] or cat.upper()[:12]
 
 
+def build_head(d: dict) -> str:
+    url = f"{DOMAIN}/projects/{d['path'].name}"
+    t = esc(d["title"])
+    desc = esc(d["lead"])
+    cat = esc(d["category"])
+    return f"""<title>{t} | ESP32 Project Guide</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{url}">
+<script type="application/ld+json">{{"@context": "https://schema.org", "@type": "Article", "headline": "{t}", "description": "{desc}", "datePublished": "2026-06-14", "dateModified": "2026-06-14", "author": {{"@type": "Organization", "name": "ESP32 Project Library"}}, "mainEntityOfPage": {{"@type": "WebPage", "@id": "{url}"}}}}</script>
+<script type="application/ld+json">{{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{{"@type": "Question", "name": "{esc(d['faq_q'])}", "acceptedAnswer": {{"@type": "Answer", "text": "{esc(d['faq_a'])}"}}}}]}}</script>
+<script type="application/ld+json">{{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{{"@type": "ListItem", "position": 1, "name": "Home", "item": "{DOMAIN}/index.html"}}, {{"@type": "ListItem", "position": 2, "name": "{cat}", "item": "{DOMAIN}/projects.html"}}, {{"@type": "ListItem", "position": 3, "name": "{t}", "item": "{url}"}}]}}</script>"""
+
+
+def build_blog_paras(d: dict) -> list:
+    t = d["title"]
+    return [
+        f"This tutorial explains how to build {t} from wiring to working firmware.",
+        f"In this project, the ESP32 reads {d['sensor_name']} on {d['sensor_pin']} and drives {d['output_name']} on {d['output_pin']} when the threshold is crossed.",
+        f"{t} is designed as a practical {d['category'].lower()} build you can test on a breadboard and later expand with Wi-Fi or cloud features.",
+    ]
+
+
+def assign_titles(all_data: list) -> None:
+    from collections import defaultdict
+
+    groups = defaultdict(list)
+    for d in all_data:
+        base = re.sub(r"-project-\d+$", "", d["slug"], flags=re.I)
+        groups[base].append(d)
+    used_global = set()
+    for items in groups.values():
+        items.sort(key=lambda x: int(re.search(r"project-(\d+)$", x["slug"], re.I).group(1)))
+        for i, d in enumerate(items):
+            d["title"] = generate_title(d, i, used_global)
+            d["blog_paras"] = build_blog_paras(d)
+            d["head"] = build_head(d)
+            if d.get("code"):
+                lines = d["code"].splitlines()
+                if lines and lines[0].startswith("//"):
+                    lines[0] = f"// {d['title']}"
+                else:
+                    lines.insert(0, f"// {d['title']}")
+                d["code"] = "\n".join(lines)
+    title_map = {d["slug"]: d["title"] for d in all_data}
+    for d in all_data:
+        for r in d.get("related", []):
+            href_slug = Path(r["href"]).stem
+            if href_slug in title_map:
+                r["title"] = title_map[href_slug]
+
+
 def rnt_header():
     return """<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
 <nav class="cat-bar"><div class="wrap"><a class="cat-pill" href="../index.html">HOME</a><a class="cat-pill" href="../projects.html#cat-agriculture">AGRICULTURE</a><a class="cat-pill" href="../projects.html#cat-iot-projects">IOT</a><a class="cat-pill" href="../projects.html#cat-esp32-cam">ESP32-CAM</a><a class="cat-pill" href="../projects.html#cat-home-automation">HOME AUTO</a><a class="cat-pill" href="../projects.html">ALL PROJECTS</a></div></nav>"""
@@ -415,12 +467,13 @@ def main():
     if not files:
         print("No project files found", file=sys.stderr)
         sys.exit(1)
-    for i, path in enumerate(files, 1):
-        data = parse_project(path)
-        path.write_text(render_page(data), encoding="utf-8")
+    all_data = [parse_project(path) for path in files]
+    assign_titles(all_data)
+    for i, data in enumerate(all_data, 1):
+        data["path"].write_text(render_page(data), encoding="utf-8")
         if i % 100 == 0:
-            print(f"Rebuilt {i}/{len(files)}")
-    print(f"Done — rebuilt {len(files)} project pages")
+            print(f"Rebuilt {i}/{len(all_data)}")
+    print(f"Done — rebuilt {len(all_data)} project pages with unique titles")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 INDEX_OUT = ROOT / "index.html"
 PROJECTS_OUT = ROOT / "projects.html"
-CSS_VERSION = "20260615-icons"
+CSS_VERSION = "20260615-titles"
 
 CATEGORIES = [
     "Agriculture",
