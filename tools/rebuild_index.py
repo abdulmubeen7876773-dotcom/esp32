@@ -31,15 +31,6 @@ CATEGORIES = [
     "Education",
 ]
 
-FILTER_SCRIPT = """
-const q=document.getElementById('q'),cat=document.getElementById('cat'),diff=document.getElementById('diff'),cards=[...document.querySelectorAll('.project-card')],count=document.getElementById('count');
-function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
-function f(){let s=q.value.toLowerCase(),c=cat.value,d=diff.value,n=0;cards.forEach(x=>{let ok=(!s||x.dataset.title.includes(s))&&(!c||x.dataset.category===c)&&(!d||x.dataset.difficulty===d);x.classList.toggle('hidden',!ok);if(ok)n++;});count.textContent=n+' projects found';}
-[q,cat,diff].forEach(e=>e.addEventListener('input',f));
-if(location.hash.startsWith('#cat-')){const h=location.hash.slice(5);for(const o of cat.options){if(slug(o.text)===h){cat.value=o.text;break;}}}
-f();
-"""
-
 
 def esc(t):
     return html.escape(t or "", quote=True)
@@ -139,7 +130,7 @@ def header_html(active="home"):
     search_action = (
         "event.preventDefault();location.href='projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
         if active == "home"
-        else "event.preventDefault();document.getElementById('q').value=this.querySelector('input').value;document.getElementById('q').dispatchEvent(new Event('input'));"
+        else "event.preventDefault();var el=document.getElementById('q');if(el){el.value=this.querySelector('input').value;if(window.filterProjects){window.filterProjects();}else{el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));}}"
     )
     return f"""<div class="site-nav-sticky">
 <header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="index.html"{nav_home}>Home</a><a href="projects.html"{nav_proj}>Projects</a><a href="about.html">About</a><a href="sitemap.xml">Sitemap</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
@@ -148,7 +139,7 @@ def header_html(active="home"):
 
 
 def projects_listing_html(projects, cat_opts):
-    all_cards = "".join(grid_card(p) for p in projects)
+    all_cards = "\n".join(grid_card(p) for p in projects)
     desc = "Browse 1,000+ ESP32 projects with wiring diagrams, source code, and step-by-step tutorials for IoT, automation, robotics, and embedded systems."
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -165,7 +156,7 @@ def projects_listing_html(projects, cat_opts):
   <div class="search-panel">
     <input id="q" placeholder="Search ESP32 projects…" aria-label="Search projects">
     <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
-    <select id="diff" aria-label="Filter by difficulty"><option value="">All difficulty levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+    <select id="diff" aria-label="Filter by difficulty"><option value="">All difficulty levels</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
   </div>
   <p class="meta" id="count" style="margin-top:12px"></p>
   <div class="grid" id="grid">{all_cards}</div>
@@ -173,10 +164,7 @@ def projects_listing_html(projects, cat_opts):
 </main>
 {footer_html()}
 <script src="ui.js" defer></script>
-<script>
-{FILTER_SCRIPT}
-const params=new URLSearchParams(location.search);if(params.get('q')){{q.value=params.get('q');f();}}
-</script>
+<script src="projects.js" defer></script>
 </body>
 </html>
 """
@@ -231,7 +219,7 @@ def main():
         sections.append(
             f"""<section class="section-block wrap reveal" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(category_section_title(cat))}</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
         )
-    cat_opts = "".join(f'<option>{esc(c)}</option>' for c in CATEGORIES)
+    cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
     INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
     PROJECTS_OUT.write_text(projects_listing_html(projects, cat_opts), encoding="utf-8")
     print(f"Wrote index.html (home) + projects.html ({len(projects)} projects, {len(sections)} category sections)")
