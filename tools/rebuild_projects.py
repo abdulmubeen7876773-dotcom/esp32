@@ -6,11 +6,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
 from title_generator import generate_title
-from site_layout import footer_html, related_cards_html, read_time_label, short_category, normalize_terms, CSS_VERSION
+from site_layout import (
+    footer_html,
+    related_cards_html,
+    read_time_label,
+    short_category,
+    normalize_terms,
+    CSS_VERSION,
+    SITE_DOMAIN,
+    OG_IMAGE,
+    ORG_NAME,
+    json_ld_script,
+    social_meta,
+    analytics_config_script,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
-DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
+DOMAIN = SITE_DOMAIN
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -297,17 +310,92 @@ def thumb_label(title: str, cat: str) -> str:
     return short[:20] or cat.upper()[:12]
 
 
+def ensure_content_blocks(d: dict) -> None:
+    cat = short_category(d["category"])
+    title = d.get("title") or "this project"
+    if not d.get("apps"):
+        d["apps"] = [
+            f"Prototype {title.lower()} for home or lab testing",
+            f"Practice {cat.lower()} builds with a reproducible ESP32 circuit",
+            "Extend the firmware with MQTT, HTTP, or mobile alerts later",
+        ]
+    if not d.get("advantages"):
+        d["advantages"] = [
+            "Low-cost ESP32 board with widely available components",
+            "Clear wiring table and copy-paste Arduino sketch",
+            "Runs locally without cloud dependency",
+        ]
+    if not d.get("future"):
+        d["future"] = [
+            "Add Wi-Fi telemetry and remote monitoring",
+            "Log sensor data to SD card or a cloud dashboard",
+            "Tune thresholds from a web configuration page",
+        ]
+
+
+def faq_items(d: dict) -> list:
+    return [
+        (d["faq_q"], d["faq_a"]),
+        (
+            "How do I choose the threshold?",
+            "Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.",
+        ),
+        (
+            "Can this work without Wi-Fi?",
+            "Yes. The core read-compare-act loop runs locally on the ESP32 without internet.",
+        ),
+    ]
+
+
 def build_head(d: dict) -> str:
     url = f"{DOMAIN}/projects/{d['path'].name}"
     t = esc(d["title"])
     desc = esc(d["lead"])
     cat = esc(d["category"])
+    faq_schema = []
+    for q, a in faq_items(d):
+        faq_schema.append(
+            {
+                "@type": "Question",
+                "name": q,
+                "acceptedAnswer": {"@type": "Answer", "text": a},
+            }
+        )
+    article = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": d["title"],
+        "description": d["lead"],
+        "datePublished": "2026-06-14",
+        "dateModified": "2026-06-15",
+        "image": OG_IMAGE,
+        "author": {"@type": "Organization", "name": ORG_NAME, "url": DOMAIN + "/"},
+        "publisher": {
+            "@type": "Organization",
+            "name": ORG_NAME,
+            "logo": {"@type": "ImageObject", "url": OG_IMAGE},
+        },
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+    }
+    faq = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faq_schema}
+    crumbs = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{DOMAIN}/index.html"},
+            {"@type": "ListItem", "position": 2, "name": cat, "item": f"{DOMAIN}/projects.html"},
+            {"@type": "ListItem", "position": 3, "name": d["title"], "item": url},
+        ],
+    }
+    social = social_meta(f"{d['title']} | ESP32 Project Guide", d["lead"], url, "article")
     return f"""<title>{t} | ESP32 Project Guide</title>
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{url}">
-<script type="application/ld+json">{{"@context": "https://schema.org", "@type": "Article", "headline": "{t}", "description": "{desc}", "datePublished": "2026-06-14", "dateModified": "2026-06-14", "author": {{"@type": "Organization", "name": "ESP32 Project Library"}}, "mainEntityOfPage": {{"@type": "WebPage", "@id": "{url}"}}}}</script>
-<script type="application/ld+json">{{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{{"@type": "Question", "name": "{esc(d['faq_q'])}", "acceptedAnswer": {{"@type": "Answer", "text": "{esc(d['faq_a'])}"}}}}]}}</script>
-<script type="application/ld+json">{{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{{"@type": "ListItem", "position": 1, "name": "Home", "item": "{DOMAIN}/index.html"}}, {{"@type": "ListItem", "position": 2, "name": "{cat}", "item": "{DOMAIN}/projects.html"}}, {{"@type": "ListItem", "position": 3, "name": "{t}", "item": "{url}"}}]}}</script>"""
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+{social}
+{json_ld_script(article)}
+{json_ld_script(faq)}
+{json_ld_script(crumbs)}"""
 
 
 def build_blog_paras(d: dict) -> list:
@@ -398,6 +486,7 @@ def rnt_header():
 
 
 def render_page(d: dict) -> str:
+    ensure_content_blocks(d)
     tc = thumb_class(d["category"])
     icon = pick_icon(d["category"])
     parts_li = []
@@ -419,13 +508,20 @@ def render_page(d: dict) -> str:
     code_fname = re.sub(r"[^a-z0-9]+", "_", d["slug"].lower()).strip("_")[:40] + ".ino"
     code_esc = esc(d["code"])
     how = d["how"] or "The ESP32 reads the sensor and drives the output when the threshold is met."
+    cat_slug = re.sub(r"[^a-z0-9]+", "-", d["category"].lower()).strip("-")
+    health_note = ""
+    if d["category"] == "Healthcare":
+        health_note = '<p class="notice notice-health">This tutorial is for educational purposes only and is not medical advice. Do not use it for diagnosis, treatment, or patient monitoring without proper validation.</p>'
+    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(d['category'])}</a></li><li aria-current="page">{esc(d['title'][:60])}</li></ol></nav>"""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#020617">
+<meta name="robots" content="index,follow,max-image-preview:large">
 <script>document.documentElement.classList.add("js")</script>
+{analytics_config_script()}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -450,9 +546,12 @@ def render_page(d: dict) -> str:
     <ul class="side-list"><li><a href="../projects.html#cat-{re.sub(r'[^a-z0-9]+', '-', d['category'].lower()).strip('-')}">{esc(d['category'])}</a></li></ul>
   </aside>
   <article class="article-main">
+    {breadcrumb}
     <h1>{esc(d['title'])}</h1>
     <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(rt)} · {esc(d['project_tag'])}</p>
     <p class="article-lead">{esc(d['lead'])}</p>
+    {health_note}
+    <div class="ad-slot ad-slot-top" data-ad-slot="article-top" aria-hidden="true"></div>
     <div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>
     <div class="article-content">
       {blog_bits}
@@ -487,6 +586,7 @@ def render_page(d: dict) -> str:
       <p>In this tutorial we've shown you how to build {esc(d['title'])}. You can use this pattern in your own ESP32 projects by changing the sensor, threshold, and output device.</p>
       <h2 id="related">Related Projects</h2>
       {related_section}
+      <div class="ad-slot ad-slot-mid" data-ad-slot="article-mid" aria-hidden="true"></div>
       <h2 id="faq">FAQ</h2>
       <div class="faq-list">
         <div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">{esc(d['faq_q'])}<span class="plus">+</span></button><div class="faq-a"><p>{esc(d['faq_a'])}</p></div></div>
@@ -496,6 +596,7 @@ def render_page(d: dict) -> str:
     </div>
   </article>
   <aside class="sidebar-right">
+    <div class="ad-slot ad-slot-sidebar" data-ad-slot="sidebar" aria-hidden="true"></div>
     <div class="promo-box"><strong>ESP32 Project Library</strong><p style="font-size:.88rem;color:#666;margin:.5em 0 0">1000 tutorials with wiring diagrams, code, and step-by-step guides.</p><p style="margin-top:10px"><a href="../projects.html">Browse all projects »</a></p></div>
     <h3>Related Projects</h3>
     <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../projects.html">All projects</a></li>'}</ul>

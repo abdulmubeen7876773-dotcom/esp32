@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
-from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, CSS_VERSION
+from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, header_html, organization_schema, website_schema, CSS_VERSION
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -162,12 +162,13 @@ def write_project_icons_js(projects: list) -> None:
     PROJECT_ICONS_JS_OUT.write_text(body, encoding="utf-8")
 
 
-def projects_listing_html(cat_opts):
+def projects_listing_html(cat_opts, crawl_links=""):
     desc = "Browse 1,000+ ESP32 projects with wiring diagrams, source code, and step-by-step tutorials for IoT, automation, robotics, and embedded systems."
+    schema = organization_schema() + website_schema()
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Projects — Browse 1,000+ Tutorials | ESP32 Library", desc)}
+{head_html("", "ESP32 Projects — Browse 1,000+ Tutorials | ESP32 Library", desc, canonical_path="projects.html", extra_schema=schema)}
 </head>
 <body>
 <main>
@@ -184,6 +185,7 @@ def projects_listing_html(cat_opts):
   <p class="meta" id="count" style="margin-top:12px">Loading projects…</p>
   <div class="grid" id="grid"><p class="meta grid-loading">Loading project library…</p></div>
   <noscript><p class="meta">Enable JavaScript to browse the project library, or open individual tutorials from the <a href="sitemap.xml">sitemap</a>.</p></noscript>
+  <nav class="crawl-index" aria-label="Project index">{crawl_links}</nav>
 </section>
 </main>
 {footer_html()}
@@ -195,27 +197,14 @@ def projects_listing_html(cat_opts):
 """
 
 
-def header_html(active="home"):
-    nav_home = ' class="active"' if active == "home" else ""
-    nav_proj = ' class="active"' if active == "projects" else ""
-    search_action = (
-        "event.preventDefault();location.href='projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
-        if active == "home"
-        else "event.preventDefault();var el=document.getElementById('q');if(el){el.value=this.querySelector('input').value;if(window.filterProjects){window.filterProjects();}else{el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));}}"
-    )
-    return f"""<div class="site-nav-sticky">
-<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="index.html"{nav_home}>Home</a><a href="projects.html"{nav_proj}>Projects</a><a href="about.html">About</a><a href="sitemap.xml">Sitemap</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
-{featured_cat_bar("", active == "home", active == "projects")}
-</div>"""
-
-
 def home_html(projects, sections, latest):
     desc = "Build, connect, and automate with ESP32. 1,000+ IoT projects, tutorials, and open-source examples for makers, students, and engineers."
     latest_html = "".join(latest_item(p) for p in latest)
+    schema = organization_schema() + website_schema()
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc)}
+{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="index.html", extra_schema=schema)}
 </head>
 <body>
 <main>
@@ -259,10 +248,11 @@ def main():
             f"""<section class="section-block wrap reveal" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(category_section_title(cat))}</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
         )
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
+    crawl_links = "".join(f'<a href="{esc(p["href"])}">{esc(p["title"])}</a>' for p in projects[:80])
     INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
     write_projects_json(projects)
     write_project_icons_js(projects)
-    PROJECTS_OUT.write_text(projects_listing_html(cat_opts), encoding="utf-8")
+    PROJECTS_OUT.write_text(projects_listing_html(cat_opts, crawl_links), encoding="utf-8")
     print(f"Wrote index.html + projects.html shell + projects.json ({len(projects)} projects, {len(sections)} category sections)")
 
 

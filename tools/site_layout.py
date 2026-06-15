@@ -1,9 +1,18 @@
 import html
+import json
 import re
 
-from project_icons import pick_icon, thumb_class
+from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260615-saas4"
+CSS_VERSION = "20260615-saas5"
+SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
+SITE_NAME = "ESP32 Project Library"
+ORG_NAME = "ESP32 Project Library"
+GITHUB_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32"
+CONTACT_ISSUES_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32/issues"
+GA4_MEASUREMENT_ID = ""
+GSC_VERIFICATION = ""
+OG_IMAGE = f"{SITE_DOMAIN}/og-image.svg"
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 200 200" fill="none" aria-hidden="true"><rect x="30" y="55" width="140" height="90" rx="12" stroke="url(#heroGrad)" stroke-width="2.5"/><rect x="48" y="72" width="104" height="56" rx="6" fill="rgba(56,189,248,.12)" stroke="rgba(56,189,248,.35)" stroke-width="1.5"/><path d="M30 75h-12M30 100h-12M30 125h-12M170 75h12M170 100h12M170 125h12M70 55V38M100 55V38M130 55V38M70 145V162M100 145V162M130 145V162" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity=".7"/><circle cx="100" cy="100" r="6" fill="#22d3ee" opacity=".9"/><text x="100" y="105" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text><defs><linearGradient id="heroGrad" x1="30" y1="55" x2="170" y2="145"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg>"""
 
@@ -80,19 +89,145 @@ def modern_card(
     return f"""<a class="{card_class} modern-card" href="{esc(link)}"{extra_attrs}>{card_thumb_html(cat, thumb_cls)}<div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
-def head_html(base: str, title: str, description: str) -> str:
+def canonical_url(base: str, path: str) -> str:
+    p = (path or "index.html").lstrip("/")
+    if base.startswith("http"):
+        root = base.rstrip("/")
+    else:
+        root = SITE_DOMAIN.rstrip("/") + ("/" + base.strip("/") if base.strip("/") else "")
+    return f"{root}/{p}" if p else root + "/"
+
+
+def json_ld_script(data) -> str:
+    return f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False, separators=(",", ":"))}</script>'
+
+
+def organization_schema() -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": ORG_NAME,
+        "url": SITE_DOMAIN + "/",
+        "logo": OG_IMAGE,
+        "sameAs": [GITHUB_URL],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "url": CONTACT_ISSUES_URL,
+        },
+    }
+    return json_ld_script(data)
+
+
+def website_schema() -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": SITE_NAME,
+        "url": SITE_DOMAIN + "/",
+        "publisher": {"@type": "Organization", "name": ORG_NAME},
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": f"{SITE_DOMAIN}/projects.html?q={{search_term_string}}",
+            "query-input": "required name=search_term_string",
+        },
+    }
+    return json_ld_script(data)
+
+
+def social_meta(title: str, description: str, url: str, og_type: str = "website") -> str:
     t = esc(title)
     d = esc(description)
+    u = esc(url)
+    img = esc(OG_IMAGE)
+    return f"""<meta property="og:type" content="{esc(og_type)}">
+<meta property="og:site_name" content="{esc(SITE_NAME)}">
+<meta property="og:title" content="{t}">
+<meta property="og:description" content="{d}">
+<meta property="og:url" content="{u}">
+<meta property="og:image" content="{img}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{t}">
+<meta name="twitter:description" content="{d}">
+<meta name="twitter:image" content="{img}">"""
+
+
+def analytics_config_script() -> str:
+    ga = esc(GA4_MEASUREMENT_ID)
+    return f'<script>window.SITE_GA4="{ga}";</script>'
+
+
+def gsc_verification_meta() -> str:
+    if not GSC_VERIFICATION:
+        return ""
+    return f'<meta name="google-site-verification" content="{esc(GSC_VERIFICATION)}">'
+
+
+def head_html(
+    base: str,
+    title: str,
+    description: str,
+    canonical_path: str = "",
+    og_type: str = "website",
+    extra_schema: str = "",
+) -> str:
+    t = esc(title)
+    d = esc(description)
+    canon = canonical_url(base, canonical_path or "index.html")
+    favicon = f"{base}favicon.svg"
     return f"""<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
 <meta name="theme-color" content="#020617">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="{esc(canon)}">
+<link rel="icon" href="{favicon}" type="image/svg+xml">
+{social_meta(title, description, canon, og_type)}
+{gsc_verification_meta()}
 <script>document.documentElement.classList.add("js")</script>
+{analytics_config_script()}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{base}style.css?v={CSS_VERSION}">"""
+<link rel="stylesheet" href="{base}style.css?v={CSS_VERSION}">
+{extra_schema}"""
+
+
+def header_html(active: str = "home", base: str = ""):
+    nav_home = ' class="active"' if active == "home" else ""
+    nav_proj = ' class="active"' if active == "projects" else ""
+    nav_about = ' class="active"' if active == "about" else ""
+    nav_contact = ' class="active"' if active == "contact" else ""
+    search_action = (
+        "event.preventDefault();location.href='projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
+        if active == "home"
+        else "event.preventDefault();var el=document.getElementById('q');if(el){el.value=this.querySelector('input').value;if(window.filterProjects){window.filterProjects();}else{el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));}}"
+    )
+    return f"""<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="{base}index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="{base}index.html"{nav_home}>Home</a><a href="{base}projects.html"{nav_proj}>Projects</a><a href="{base}about.html"{nav_about}>About</a><a href="{base}contact.html"{nav_contact}>Contact</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
+{featured_cat_bar(base, active == "home", active == "projects")}
+</div>"""
+
+
+def static_page_shell(active: str, title: str, description: str, body: str, canonical_path: str, schema: str = "") -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{head_html("", title, description, canonical_path=canonical_path, extra_schema=schema)}
+</head>
+<body>
+<main>
+{header_html(active)}
+<section class="section-block wrap page-head static-page">
+{body}
+</section>
+</main>
+{footer_html()}
+<script src="ui.js" defer></script>
+</body>
+</html>
+"""
 
 
 def hero_html(latest_items: str = "") -> str:
