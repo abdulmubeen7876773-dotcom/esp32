@@ -4,12 +4,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from project_images import pick_image
+from project_icons import pick_icon, thumb_class as icon_thumb_class
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
-CSS_VERSION = "20260615-imgs"
+CSS_VERSION = "20260615-icons"
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -287,7 +287,7 @@ THUMB = {
 
 
 def thumb_class(cat: str) -> str:
-    return THUMB.get(cat, "t-default")
+    return icon_thumb_class(cat)
 
 
 def thumb_label(title: str, cat: str) -> str:
@@ -303,6 +303,7 @@ def rnt_header():
 
 def render_page(d: dict) -> str:
     tc = thumb_class(d["category"])
+    icon = pick_icon(d["category"])
     parts_li = []
     for comp in d["components"]:
         if comp.lower() not in ("jumper wires", "breadboard"):
@@ -325,7 +326,6 @@ def render_page(d: dict) -> str:
     code_fname = re.sub(r"[^a-z0-9]+", "_", d["slug"].lower()).strip("_")[:40] + ".ino"
     code_esc = esc(d["code"])
     how = d["how"] or "The ESP32 reads the sensor and drives the output when the threshold is met."
-    img_url = pick_image(d["slug"])
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -355,7 +355,7 @@ def render_page(d: dict) -> str:
     <h1>{esc(d['title'])}</h1>
     <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(d['project_tag'])}</p>
     <p class="article-lead">{esc(d['lead'])}</p>
-    <div class="article-feature"><div class="article-thumb"><img src="{esc(img_url)}" alt="{esc(d['title'])}" loading="lazy"></div></div>
+    <div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>
     <div class="article-content">
       {blog_bits}
       <h2 id="overview">Project Overview</h2>

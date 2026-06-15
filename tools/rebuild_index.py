@@ -5,13 +5,13 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from project_images import pick_image
+from project_icons import pick_icon, thumb_class as icon_thumb_class
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 INDEX_OUT = ROOT / "index.html"
 PROJECTS_OUT = ROOT / "projects.html"
-CSS_VERSION = "20260615-imgs"
+CSS_VERSION = "20260615-icons"
 
 CATEGORIES = [
     "Agriculture",
@@ -109,22 +109,16 @@ def parse_card(path: Path) -> dict:
 
 
 def thumb_class(cat):
-    return THUMB.get(cat, "t-default")
+    return icon_thumb_class(cat)
 
 
-def thumb_label(title, cat):
-    words = re.sub(r"[^A-Za-z0-9 ]", " ", title).split()
-    short = " ".join(words[:3]).upper()
-    return short[:18] or cat.upper()[:12]
-
-
-def thumb_img(slug, title, cls="thumb"):
-    url = pick_image(slug)
-    return f'<div class="{cls}"><img src="{esc(url)}" alt="{esc(title)}" loading="lazy"></div>'
+def thumb_icon(category, cls="thumb"):
+    tc = thumb_class(category)
+    return f'<div class="{cls} {tc}">{pick_icon(category)}</div>'
 
 
 def latest_item(p):
-    return f"""<a class="latest-item" href="{esc(p['href'])}">{thumb_img(p['slug'], p['title'], 'thumb thumb-sm')}<div class="latest-body"><span class="latest-cat">{esc(p['category'])}</span><h3>{esc(p['title'])}</h3></div></a>"""
+    return f"""<a class="latest-item" href="{esc(p['href'])}">{thumb_icon(p['category'], 'thumb thumb-sm')}<div class="latest-body"><span class="latest-cat">{esc(p['category'])}</span><h3>{esc(p['title'])}</h3></div></a>"""
 
 
 def pick_diverse_latest(by_cat, projects, count=4):
@@ -158,11 +152,11 @@ def footer_html():
 
 
 def post_card(p):
-    return f"""<a class="post-card" href="{esc(p['href'])}">{thumb_img(p['slug'], p['title'], 'post-thumb')}<h3>{esc(p['title'])}</h3></a>"""
+    return f"""<a class="post-card" href="{esc(p['href'])}">{thumb_icon(p['category'], 'post-thumb')}<h3>{esc(p['title'])}</h3></a>"""
 
 
 def grid_card(p):
-    return f"""<a class="card project-card" data-title="{esc(p['title'].lower())}" data-category="{esc(p['category'])}" data-difficulty="{esc(p['difficulty'])}" href="{esc(p['href'])}">{thumb_img(p['slug'], p['title'], 'card-thumb')}<div class="card-body"><span class="tag leaf">{esc(p['category'])}</span><span class="tag clay">{esc(p['difficulty'])}</span><h3>{esc(p['title'])}</h3><p>{esc(p['desc'])}</p></div></a>"""
+    return f"""<a class="card project-card" data-title="{esc(p['title'].lower())}" data-category="{esc(p['category'])}" data-difficulty="{esc(p['difficulty'])}" href="{esc(p['href'])}">{thumb_icon(p['category'], 'card-thumb')}<div class="card-body"><span class="tag leaf">{esc(p['category'])}</span><span class="tag clay">{esc(p['difficulty'])}</span><h3>{esc(p['title'])}</h3><p>{esc(p['desc'])}</p></div></a>"""
 
 
 def header_html(active="home"):
