@@ -4,13 +4,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from project_icons import pick_icon, thumb_class as icon_thumb_class
+from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
 from title_generator import generate_title
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
-CSS_VERSION = "20260615-titles"
+CSS_VERSION = "20260615-hero"
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -349,8 +349,8 @@ def assign_titles(all_data: list) -> None:
 
 
 def rnt_header():
-    return """<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
-<nav class="cat-bar"><div class="wrap"><a class="cat-pill" href="../index.html">HOME</a><a class="cat-pill" href="../projects.html#cat-agriculture">AGRICULTURE</a><a class="cat-pill" href="../projects.html#cat-iot-projects">IOT</a><a class="cat-pill" href="../projects.html#cat-esp32-cam">ESP32-CAM</a><a class="cat-pill" href="../projects.html#cat-home-automation">HOME AUTO</a><a class="cat-pill" href="../projects.html">ALL PROJECTS</a></div></nav>"""
+    return f"""<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
+{featured_cat_bar("../")}"""
 
 
 def render_page(d: dict) -> str:

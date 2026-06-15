@@ -39,8 +39,8 @@ THUMB_CLASS = {
     "Home Automation": "t-home",
     "Security Projects": "t-security",
     "IoT Projects": "t-iot",
-    "Sensor Projects": "t-iot",
-    "Robotics": "t-default",
+    "Sensor Projects": "t-sensor",
+    "Robotics": "t-robot",
     "Industrial Automation": "t-default",
     "LED Projects": "t-led",
     "ESP32-CAM": "t-cam",
@@ -60,3 +60,53 @@ def pick_icon(category: str) -> str:
 
 def thumb_class(category: str) -> str:
     return THUMB_CLASS.get(category, "t-default")
+
+
+FEATURED_CATEGORIES = [
+    ("IoT", "IoT Projects"),
+    ("Robotics", "Robotics"),
+    ("ESP32-CAM", "ESP32-CAM"),
+    ("Smart Home", "Home Automation"),
+    ("Sensors", "Sensor Projects"),
+    ("AI Projects", "AI Projects"),
+]
+
+
+def slug_cat(cat: str) -> str:
+    import re
+    return re.sub(r"[^a-z0-9]+", "-", cat.lower()).strip("-")
+
+
+def cat_icon_box(category: str, box_class: str) -> str:
+    tc = thumb_class(category)
+    return f'<div class="{box_class} {tc}">{pick_icon(category)}</div>'
+
+
+def featured_cat_bar(base: str = "", home_active: bool = False, projects_active: bool = False) -> str:
+    home_cls = " active" if home_active else ""
+    proj_cls = " active" if projects_active else ""
+    pills = [
+        f'<a class="cat-pill{home_cls}" href="{base}index.html"><span class="cat-pill-icon t-default">{ICONS["esp32"]}</span>Home</a>'
+    ]
+    for label, cat in FEATURED_CATEGORIES:
+        tc = thumb_class(cat)
+        pills.append(
+            f'<a class="cat-pill" href="{base}projects.html#cat-{slug_cat(cat)}">'
+            f'<span class="cat-pill-icon {tc}">{pick_icon(cat)}</span>{label}</a>'
+        )
+    pills.append(f'<a class="cat-pill{proj_cls}" href="{base}projects.html">All Projects</a>')
+    return f'<nav class="cat-bar"><div class="wrap cat-nav">{"".join(pills)}</div></nav>'
+
+
+def category_cards_html(base: str = "") -> str:
+    cards = []
+    for label, cat in FEATURED_CATEGORIES:
+        cards.append(
+            f'<a class="cat-card" href="{base}projects.html#cat-{slug_cat(cat)}">'
+            f'{cat_icon_box(cat, "cat-card-icon")}<span>{label}</span></a>'
+        )
+    return (
+        f'<section class="category-strip wrap">'
+        f'<h2 class="category-strip-title">Browse by Category</h2>'
+        f'<div class="category-grid">{"".join(cards)}</div></section>'
+    )
