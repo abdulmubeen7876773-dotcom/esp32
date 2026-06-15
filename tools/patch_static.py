@@ -8,12 +8,20 @@ from site_layout import footer_html, CSS_VERSION, head_html
 root = Path(__file__).resolve().parent.parent
 pat = re.compile(r"<footer class=\"site-footer\">.*?</footer>", re.S)
 css_pat = re.compile(r"style\.css\?v=[^\"']+")
+js_pat = re.compile(r'<script>document\.documentElement\.classList\.add\("js"\)</script>\n?', re.I)
 for name in ["about.html", "contact.html", "privacy.html", "disclaimer.html", "404.html"]:
     f = root / name
     if not f.exists():
         continue
     t = f.read_text(encoding="utf-8")
     t2 = css_pat.sub(f"style.css?v={CSS_VERSION}", t)
+    if 'classList.add("js")' not in t2:
+        t2 = re.sub(
+            r"(<meta name=\"viewport\"[^>]*>)",
+            r'\1\n<script>document.documentElement.classList.add("js")</script>',
+            t2,
+            count=1,
+        )
     if "fonts.googleapis.com" not in t2:
         t2 = re.sub(
             r"(<meta name=\"viewport\"[^>]*>)",

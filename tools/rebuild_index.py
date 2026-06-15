@@ -158,7 +158,7 @@ def projects_listing_html(projects, cat_opts):
 <body>
 <main>
 {header_html("projects")}
-<section class="section-block wrap page-head reveal">
+<section class="section-block wrap page-head">
   <p class="hero-eyebrow">Project Directory</p>
   <h1>Browse ESP32 Projects</h1>
   <p class="hero-sub">Explore 1,000+ ESP32 projects — IoT tutorials, automation systems, robotics builds, and real-world engineering solutions.</p>

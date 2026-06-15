@@ -3,7 +3,7 @@ import re
 
 from project_icons import pick_icon, thumb_class
 
-CSS_VERSION = "20260615-saas"
+CSS_VERSION = "20260615-saas2"
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 200 200" fill="none" aria-hidden="true"><rect x="30" y="55" width="140" height="90" rx="12" stroke="url(#heroGrad)" stroke-width="2.5"/><rect x="48" y="72" width="104" height="56" rx="6" fill="rgba(56,189,248,.12)" stroke="rgba(56,189,248,.35)" stroke-width="1.5"/><path d="M30 75h-12M30 100h-12M30 125h-12M170 75h12M170 100h12M170 125h12M70 55V38M100 55V38M130 55V38M70 145V162M100 145V162M130 145V162" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity=".7"/><circle cx="100" cy="100" r="6" fill="#22d3ee" opacity=".9"/><text x="100" y="105" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text><defs><linearGradient id="heroGrad" x1="30" y1="55" x2="170" y2="145"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg>"""
 
@@ -88,6 +88,7 @@ def head_html(base: str, title: str, description: str) -> str:
 <title>{t}</title>
 <meta name="description" content="{d}">
 <meta name="theme-color" content="#020617">
+<script>document.documentElement.classList.add("js")</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -97,12 +98,12 @@ def head_html(base: str, title: str, description: str) -> str:
 def hero_html(latest_items: str = "") -> str:
     latest_block = ""
     if latest_items:
-        latest_block = f"""<aside class="hero-latest reveal" aria-label="Latest projects"><h2>Latest Projects</h2>{latest_items}</aside>"""
+        latest_block = f"""<aside class="hero-latest" aria-label="Latest projects"><h2>Latest Projects</h2>{latest_items}</aside>"""
     return f"""<section class="hero-premium" aria-labelledby="hero-heading">
   <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
   <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
   <div class="wrap hero-premium-grid">
-    <div class="hero-content reveal">
+    <div class="hero-content">
       <p class="hero-eyebrow">ESP32 Project Library</p>
       <h1 id="hero-heading">Build, Connect &amp; Automate with ESP32</h1>
       <p class="hero-sub">Explore 1,000+ hands-on ESP32 projects — IoT systems, smart home automation, robotics, sensors, and AI at the edge. Built for makers, students, engineers, and developers.</p>
@@ -111,7 +112,7 @@ def hero_html(latest_items: str = "") -> str:
         <a class="btn btn-secondary" href="#categories">Explore Categories</a>
       </div>
     </div>
-    <div class="hero-visual reveal" aria-hidden="true">
+    <div class="hero-visual" aria-hidden="true">
       <div class="hero-board-float">{HERO_BOARD_SVG}</div>
     </div>
     {latest_block}
