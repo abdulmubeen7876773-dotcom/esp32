@@ -160,41 +160,41 @@ CONN = [
 ]
 
 TEMPLATES = [
-    "{use} {core} with {sensor}",
-    "{core} for {use} using {output}",
-    "{sensor}-Driven {core} ({conn})",
-    "{use} {output} Control via {sensor}",
-    "{core} - {use} Edition ({conn})",
-    "{conn} {core} with {sensor}",
-    "{use} Monitoring {core}",
-    "Smart {core} for {use}",
-    "{output} Automation with {sensor} ({use})",
-    "{core} Node for {use}",
-    "{use} {sensor} Alert System",
-    "Wireless {core} ({conn})",
-    "{core} with {output} Trigger",
-    "{use} Field {core}",
-    "Compact {core} ({sensor} + {output})",
-    "{core} - {conn} Build",
-    "{use} {core} Monitor",
-    "Automated {output} using {sensor}",
-    "{core} Starter ({use})",
-    "{sensor} to {output} {core}",
-    "{use} IoT {core}",
-    "{conn}-Enabled {core}",
-    "{core} for {use} Monitoring",
-    "Low-Cost {core} ({use})",
-    "{use} {core} with {conn}",
-    "Portable {core} using {sensor}",
-    "{core} ({use} / {conn})",
-    "{output} Controller — {use}",
-    "{use} {sensor} {core}",
-    "Mini {core} with {output}",
-    "{core} Alert via {sensor}",
-    "{use} Smart {output} System",
-    "{conn} {sensor} {core}",
-    "Benchtop {core} for {use}",
-    "Real-Time {core} ({sensor})",
+    "Build a Smart ESP32 {core} That Runs for Weeks on Battery Power",
+    "How to Build an ESP32 {core} with {sensor} and {output}",
+    "Build an ESP32 {core} for {use} — Complete Tutorial",
+    "Create a {use} ESP32 {core} with {conn}",
+    "Build a {conn}-Enabled ESP32 {core} for {use}",
+    "Make an ESP32 {core} That Monitors {sensor} in Real Time",
+    "Build a Professional ESP32 {core} for {use}",
+    "Step-by-Step: ESP32 {core} with {sensor}",
+    "Build a Low-Power ESP32 {core} for {use}",
+    "How to Make an ESP32 {core} with {output} Control",
+    "Build an ESP32 {core} That Sends Live Data via {conn}",
+    "Create a Smart {core} for {use} with ESP32",
+    "Build a {use} ESP32 {core} — Wiring, Code & Demo",
+    "Make a {sensor}-Powered ESP32 {core} for {use}",
+    "Build an ESP32 {core} with {conn} in Under an Hour",
+    "How to Build a {use} {core} Using ESP32",
+    "Build a Reliable ESP32 {core} with {sensor}",
+    "Create an ESP32 {core} for {use} Monitoring",
+    "Build a {output}-Controlled ESP32 {core} for {use}",
+    "Make a Smart ESP32 {core} with {conn} Alerts",
+    "Build an ESP32 {core} That Works with {sensor}",
+    "How to Create a {use} ESP32 {core} from Scratch",
+    "Build a Field-Ready ESP32 {core} for {use}",
+    "Make an ESP32 {core} with {sensor} and {output}",
+    "Build a {use} ESP32 {core} — Beginner to Pro",
+    "Create an ESP32 {core} with Live {conn} Updates",
+    "Build a Compact ESP32 {core} for {use}",
+    "How to Build a {conn} ESP32 {core} with {sensor}",
+    "Make a {use} ESP32 {core} That Actually Works",
+    "Build an ESP32 {core} with Step-by-Step Wiring",
+    "Create a Smart {use} System with ESP32 {core}",
+    "Build an ESP32 {core} for {use} Automation",
+    "How to Make a {sensor}-Based ESP32 {core}",
+    "Build a Production-Ready ESP32 {core} for {use}",
+    "Create an ESP32 {core} with {output} and {sensor}",
 ]
 
 
@@ -246,8 +246,9 @@ def generate_title(d: dict, variant: int, used: set) -> str:
     tpl = TEMPLATES[variant % len(TEMPLATES)]
     title = tpl.format(use=use, core=core, sensor=sensor, output=output, conn=conn)
     title = re.sub(r"\s+", " ", title).strip()
-    title = f"ESP32 {title}" if not title.upper().startswith("ESP32") else title
-    title = title[:78].rstrip(" ,-(")
+    if not title.upper().startswith("ESP32") and not title.lower().startswith(("build ", "how ", "create ", "make ", "step-by-step")):
+        title = f"ESP32 {title}"
+    title = title[:92].rstrip(" ,-(")
     key = title.lower()
     n = 2
     base = title

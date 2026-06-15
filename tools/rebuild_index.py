@@ -6,12 +6,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
+from site_layout import modern_card, stats_html, footer_html, read_time_label
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 INDEX_OUT = ROOT / "index.html"
 PROJECTS_OUT = ROOT / "projects.html"
-CSS_VERSION = "20260615-hero"
+CSS_VERSION = "20260615-premium"
 
 CATEGORIES = [
     "Agriculture",
@@ -143,16 +144,13 @@ def pick_diverse_latest(by_cat, projects, count=4):
     return picked
 
 
-def footer_html():
-    return """<footer class="site-footer"><div class="wrap footer-grid"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1000 ESP32 tutorials with wiring diagrams, source code, and step-by-step build guides.</p></div><div class="footer-col"><h4>Explore</h4><a href="index.html">Home</a><a href="projects.html">All Projects</a><a href="sitemap.xml">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="about.html">About Us</a><a href="contact.html">Contact</a><a href="privacy.html">Privacy Policy</a><a href="disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
-
-
 def post_card(p):
-    return f"""<a class="post-card" href="{esc(p['href'])}">{thumb_icon(p['category'], 'post-thumb')}<h3>{esc(p['title'])}</h3></a>"""
+    return modern_card(p, "post-card", "post-thumb")
 
 
 def grid_card(p):
-    return f"""<a class="card project-card" data-title="{esc(p['title'].lower())}" data-category="{esc(p['category'])}" data-difficulty="{esc(p['difficulty'])}" href="{esc(p['href'])}">{thumb_icon(p['category'], 'card-thumb')}<div class="card-body"><span class="tag leaf">{esc(p['category'])}</span><span class="tag clay">{esc(p['difficulty'])}</span><h3>{esc(p['title'])}</h3><p>{esc(p['desc'])}</p></div></a>"""
+    attrs = f' data-title="{esc(p["title"].lower())}" data-category="{esc(p["category"])}" data-difficulty="{esc(p["difficulty"])}"'
+    return modern_card(p, "card project-card", "card-thumb", extra_attrs=attrs, show_desc=True)
 
 
 def header_html(active="home"):
@@ -174,16 +172,16 @@ def projects_listing_html(projects, cat_opts):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Build, Connect &amp; Automate with ESP32 Projects | ESP32 Project Library</title>
-<meta name="description" content="Explore 1000+ practical ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step guides.">
+<title>One ESP32. Unlimited Possibilities. | ESP32 Project Library</title>
+<meta name="description" content="Explore 1,000+ ESP32 projects, IoT tutorials, automation systems, robotics builds, and real-world engineering solutions.">
 <link rel="stylesheet" href="style.css?v={CSS_VERSION}">
 <style>html,body{{background:#0f172a;color:#e2e8f0}}</style>
 </head>
 <body>
 {header_html("projects")}
 <section class="section-block wrap page-head">
-  <h1>Build, Connect &amp; Automate with ESP32 Projects</h1>
-  <p class="hero-sub meta">Explore 1000+ practical ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step guides for real-world IoT, automation, sensor, and robotics projects.</p>
+  <h1>One ESP32. Unlimited Possibilities.</h1>
+  <p class="hero-sub meta">Explore 1,000+ ESP32 projects, IoT tutorials, automation systems, robotics builds, and real-world engineering solutions designed for makers, students, and professionals.</p>
   <div class="search-panel">
     <input id="q" placeholder="Search ESP32 projects…">
     <select id="cat"><option value="">All categories</option>{cat_opts}</select>
@@ -208,8 +206,8 @@ def home_html(projects, sections, latest):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ESP32 Project Library | Build, Connect &amp; Automate</title>
-<meta name="description" content="Explore 1000+ practical ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step guides for IoT, automation, sensor, and robotics projects.">
+<title>ESP32 Project Library | One ESP32. Unlimited Possibilities.</title>
+<meta name="description" content="Explore 1,000+ ESP32 projects, IoT tutorials, automation systems, robotics builds, and real-world engineering solutions.">
 <link rel="stylesheet" href="style.css?v={CSS_VERSION}">
 <style>html,body{{background:#0f172a;color:#e2e8f0}}</style>
 </head>
@@ -218,8 +216,8 @@ def home_html(projects, sections, latest):
 <section class="hero-split">
   <div class="featured-box hero-hook">
     <div class="hero-inner">
-      <h1>Build, Connect &amp; Automate with ESP32 Projects</h1>
-      <p class="hero-sub">Explore 1000+ practical ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step guides for real-world IoT, automation, sensor, and robotics projects.</p>
+      <h1>One ESP32. Unlimited Possibilities.</h1>
+      <p class="hero-sub">Explore 1,000+ ESP32 projects, IoT tutorials, automation systems, robotics builds, and real-world engineering solutions designed for makers, students, and professionals.</p>
     </div>
   </div>
   <div class="latest-box" id="latest">
@@ -227,6 +225,7 @@ def home_html(projects, sections, latest):
     {"".join(latest_item(p) for p in latest)}
   </div>
 </section>
+{stats_html()}
 {category_cards_html()}
 {"".join(sections)}
 <section class="section-block wrap browse-cta">

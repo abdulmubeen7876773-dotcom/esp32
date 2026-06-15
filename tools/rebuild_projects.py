@@ -6,11 +6,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
 from title_generator import generate_title
+from site_layout import footer_html, related_cards_html, read_time_label
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
-CSS_VERSION = "20260615-hero"
+CSS_VERSION = "20260615-premium"
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -168,7 +169,7 @@ def parse_project(path: Path) -> dict:
         "apps": apps[:5],
         "advantages": advantages[:5],
         "future": future[:4],
-        "related": related[:3],
+        "related": related[:4],
         "faq_q": faq_q or "Can this project work offline?",
         "faq_a": faq_a or "Yes. The core logic runs locally on the ESP32, so the project keeps working without Wi-Fi.",
         "slug": slug,
@@ -319,6 +320,37 @@ def build_blog_paras(d: dict) -> list:
     ]
 
 
+def fill_related(all_data: list) -> None:
+    from collections import defaultdict
+
+    by_cat = defaultdict(list)
+    for d in all_data:
+        by_cat[d["category"]].append(d)
+    for d in all_data:
+        seen = {d["slug"]}
+        filled = []
+        for r in d.get("related", []):
+            href_slug = Path(r["href"]).name.replace(".html", "") if r.get("href") else ""
+            if href_slug:
+                seen.add(href_slug)
+            filled.append(r)
+        for peer in by_cat.get(d["category"], []):
+            if len(filled) >= 4:
+                break
+            if peer["slug"] in seen:
+                continue
+            seen.add(peer["slug"])
+            filled.append(
+                {
+                    "href": peer["path"].name,
+                    "cat": peer["category"],
+                    "title": peer.get("title") or peer["slug"],
+                    "desc": (peer.get("lead") or "")[:120],
+                }
+            )
+        d["related"] = filled[:4]
+
+
 def assign_titles(all_data: list) -> None:
     from collections import defaultdict
 
@@ -366,11 +398,8 @@ def render_page(d: dict) -> str:
     related_side = []
     for r in d["related"]:
         related_side.append(f'<li><a href="{esc(r["href"])}">{esc(r["title"])}</a></li>')
-    related_main = []
-    for r in d["related"]:
-        related_main.append(
-            f'<li><a href="{esc(r["href"])}">{esc(r["title"])}</a> — {esc(r["desc"][:100])}…</li>'
-        )
+    related_section = related_cards_html(d["related"])
+    rt = read_time_label(d["difficulty"], d["slug"])
     blog_bits = "".join(f"<p>{esc(p)}</p>" for p in d["blog_paras"][:4])
     apps_li = "".join(f"<li>{esc(a)}</li>" for a in d["apps"])
     adv_li = "".join(f"<li>{esc(a)}</li>" for a in d["advantages"])
@@ -405,7 +434,7 @@ def render_page(d: dict) -> str:
   </aside>
   <article class="article-main">
     <h1>{esc(d['title'])}</h1>
-    <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(d['project_tag'])}</p>
+    <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(rt)} · {esc(d['project_tag'])}</p>
     <p class="article-lead">{esc(d['lead'])}</p>
     <div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>
     <div class="article-content">
@@ -439,8 +468,8 @@ def render_page(d: dict) -> str:
       <p>After uploading the code, open the Serial Monitor at 115200 baud. Verify that sensor readings change when you trigger the input condition. When the threshold is crossed, the output on {esc(d['output_pin'])} should activate — {esc(how)}</p>
       <h2>Wrapping Up</h2>
       <p>In this tutorial we've shown you how to build {esc(d['title'])}. You can use this pattern in your own ESP32 projects by changing the sensor, threshold, and output device.</p>
-      <h2>Recommended Reading</h2>
-      <ul>{''.join(related_main) if related_main else '<li><a href="../projects.html">Browse all ESP32 projects</a></li>'}</ul>
+      <h2 id="related">Related Projects</h2>
+      {related_section}
       <h2 id="faq">FAQ</h2>
       <div class="faq-list">
         <div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">{esc(d['faq_q'])}<span class="plus">+</span></button><div class="faq-a"><p>{esc(d['faq_a'])}</p></div></div>
@@ -455,7 +484,7 @@ def render_page(d: dict) -> str:
     <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../projects.html">All projects</a></li>'}</ul>
   </aside>
 </div>
-<footer class="site-footer"><div class="wrap footer-grid"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1000 ESP32 tutorials with wiring diagrams, source code, and step-by-step build guides.</p></div><div class="footer-col"><h4>Explore</h4><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="../about.html">About Us</a><a href="../contact.html">Contact</a><a href="../privacy.html">Privacy Policy</a><a href="../disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>
+{footer_html("../")}
 <script src="../project.js"></script>
 </body>
 </html>
@@ -469,6 +498,7 @@ def main():
         sys.exit(1)
     all_data = [parse_project(path) for path in files]
     assign_titles(all_data)
+    fill_related(all_data)
     for i, data in enumerate(all_data, 1):
         data["path"].write_text(render_page(data), encoding="utf-8")
         if i % 100 == 0:
