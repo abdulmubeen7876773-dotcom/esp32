@@ -1,10 +1,25 @@
 import html
+import re
 
 from project_icons import pick_icon, thumb_class
 
 
 def esc(t):
     return html.escape(t or "", quote=True)
+
+
+def normalize_terms(text: str) -> str:
+    if not text:
+        return text
+    text = re.sub(r"\bIot\b", "IoT", text)
+    text = re.sub(r"\biot\b", "IoT", text)
+    return text
+
+
+def category_section_title(cat: str) -> str:
+    if cat.endswith(" Projects"):
+        return cat
+    return f"{cat} Projects"
 
 
 def read_time_minutes(difficulty: str, slug: str = "") -> int:
@@ -61,7 +76,7 @@ def modern_card(
 
 
 def stats_html() -> str:
-    return """<section class="stats-bar wrap"><div class="stats-grid"><div class="stat-item"><strong>1000+</strong><span>Projects</span></div><div class="stat-item"><strong>50+</strong><span>Categories</span></div><div class="stat-item"><strong>100K+</strong><span>Monthly Readers</span></div><div class="stat-item"><strong>Beginner → Advanced</strong><span>Skill Levels</span></div></div></section>"""
+    return """<section class="stats-bar wrap"><div class="stats-grid"><div class="stat-item"><strong>1000+ Projects</strong></div><div class="stat-item"><strong>50+</strong><span>Categories</span></div><div class="stat-item"><strong>100K+</strong><span>Monthly Readers</span></div><div class="stat-item"><strong>Beginner → Advanced</strong><span>Skill Levels</span></div></div></section>"""
 
 
 def footer_html(base: str = "") -> str:

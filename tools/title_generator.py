@@ -1,5 +1,33 @@
 import re
 
+from site_layout import normalize_terms
+
+WORD_CASE = {
+    "iot": "IoT",
+    "esp32": "ESP32",
+    "wifi": "WiFi",
+    "mqtt": "MQTT",
+    "ota": "OTA",
+    "gpio": "GPIO",
+    "adc": "ADC",
+    "i2c": "I2C",
+    "spi": "SPI",
+    "uart": "UART",
+    "nfc": "NFC",
+    "rfid": "RFID",
+    "lcd": "LCD",
+    "oled": "OLED",
+    "bme280": "BME280",
+    "dht11": "DHT11",
+    "dht22": "DHT22",
+    "mq135": "MQ135",
+}
+
+
+def title_word(w: str) -> str:
+    return WORD_CASE.get(w.lower(), w.capitalize())
+
+
 GENERIC_USE = [
     "Home Lab", "Prototype", "Workshop", "Maker Bench", "Starter Kit", "Weekend Build",
     "Classroom Demo", "Field Test", "Bench Setup", "Compact Node", "Portable Unit",
@@ -208,7 +236,7 @@ def clean_part(name: str) -> str:
         n = n[:-7].strip()
     if not n:
         return "Sensor"
-    return n.title()
+    return " ".join(title_word(w) for w in n.split())
 
 
 def words_overlap(a: str, b: str) -> bool:
@@ -226,9 +254,9 @@ def slug_core(slug: str) -> str:
         "alerts", "server", "dashboard", "status", "local", "web", "mobile", "ota",
         "bluetooth", "cloud", "wifi", "oled",
     }
-    core_words = [w.capitalize() for w in words if w not in skip]
+    core_words = [title_word(w) for w in words if w not in skip]
     if not core_words:
-        core_words = [w.capitalize() for w in words[:4]]
+        core_words = [title_word(w) for w in words[:4]]
     phrase = " ".join(core_words[:5])
     return phrase or "IoT Project"
 
@@ -257,4 +285,4 @@ def generate_title(d: dict, variant: int, used: set) -> str:
         key = title.lower()
         n += 1
     used.add(key)
-    return title
+    return normalize_terms(title)

@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
 from title_generator import generate_title
-from site_layout import footer_html, related_cards_html, read_time_label
+from site_layout import footer_html, related_cards_html, read_time_label, short_category, normalize_terms
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -313,11 +313,19 @@ def build_head(d: dict) -> str:
 
 def build_blog_paras(d: dict) -> list:
     t = d["title"]
+    cat = short_category(d["category"])
     return [
         f"This tutorial explains how to build {t} from wiring to working firmware.",
         f"In this project, the ESP32 reads {d['sensor_name']} on {d['sensor_pin']} and drives {d['output_name']} on {d['output_pin']} when the threshold is crossed.",
-        f"{t} is designed as a practical {d['category'].lower()} build you can test on a breadboard and later expand with Wi-Fi or cloud features.",
+        f"{t} is designed as a practical {cat} build you can test on a breadboard and later expand with Wi-Fi or cloud features.",
     ]
+
+
+def normalize_text_fields(d: dict) -> None:
+    for key in ("title", "lead", "overview", "sensor_name", "output_name"):
+        if d.get(key):
+            d[key] = normalize_terms(d[key])
+    d["blog_paras"] = [normalize_terms(p) for p in d.get("blog_paras", [])]
 
 
 def fill_related(all_data: list) -> None:
@@ -364,6 +372,7 @@ def assign_titles(all_data: list) -> None:
         for i, d in enumerate(items):
             d["title"] = generate_title(d, i, used_global)
             d["blog_paras"] = build_blog_paras(d)
+            normalize_text_fields(d)
             d["head"] = build_head(d)
             if d.get("code"):
                 lines = d["code"].splitlines()
@@ -378,6 +387,8 @@ def assign_titles(all_data: list) -> None:
             href_slug = Path(r["href"]).stem
             if href_slug in title_map:
                 r["title"] = title_map[href_slug]
+            if r.get("title"):
+                r["title"] = normalize_terms(r["title"])
 
 
 def rnt_header():

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
-from site_layout import modern_card, stats_html, footer_html, read_time_label
+from site_layout import modern_card, stats_html, footer_html, read_time_label, category_section_title
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -258,7 +258,7 @@ def main():
             continue
         cards = "".join(post_card(p) for p in items)
         sections.append(
-            f"""<section class="section-block wrap" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(cat)} Projects</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
+            f"""<section class="section-block wrap" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(category_section_title(cat))}</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
         )
     cat_opts = "".join(f'<option>{esc(c)}</option>' for c in CATEGORIES)
     INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
