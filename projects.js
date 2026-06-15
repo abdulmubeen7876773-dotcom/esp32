@@ -1,4 +1,70 @@
 (function () {
+  function esc(text) {
+    var d = document.createElement('div');
+    d.textContent = text || '';
+    return d.innerHTML;
+  }
+
+  function shortCategory(cat) {
+    var c = (cat || 'ESP32').replace(' Projects', '');
+    if (c === 'Home Automation') return 'Smart Home';
+    return c;
+  }
+
+  function badgeClass(difficulty) {
+    var d = (difficulty || '').replace(' build', '').trim().toLowerCase();
+    if (d === 'advanced') return 'badge-advanced';
+    if (d === 'intermediate') return 'badge-intermediate';
+    return 'badge-beginner';
+  }
+
+  function thumbHtml(category) {
+    var icons = window.PROJECT_ICONS || {};
+    var thumbs = window.PROJECT_THUMBS || {};
+    var svg = icons[category] || icons.__default__ || '';
+    var cls = thumbs[category] || 'thumb-esp32';
+    return '<div class="card-thumb ' + cls + '">' + svg + '</div>';
+  }
+
+  function cardHtml(p) {
+    var diff = (p.difficulty || 'Beginner').replace(' build', '');
+    var desc = p.desc || '';
+    var descHtml = desc ? '<p class="card-desc">' + esc(desc) + '</p>' : '';
+    var readMin = p.readMin || 6;
+    return (
+      '<a class="card project-card modern-card" href="' +
+      esc(p.href) +
+      '" data-title="' +
+      esc((p.title || '').toLowerCase()) +
+      '" data-category="' +
+      esc(p.category || '') +
+      '" data-difficulty="' +
+      esc(diff) +
+      '">' +
+      thumbHtml(p.category) +
+      '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
+      esc(shortCategory(p.category)) +
+      '</span><span class="badge ' +
+      badgeClass(diff) +
+      '">' +
+      esc(diff) +
+      '</span><span class="badge badge-time">' +
+      readMin +
+      ' min read</span></div><h3>' +
+      esc(p.title) +
+      '</h3>' +
+      descHtml +
+      '<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>'
+    );
+  }
+
+  function renderProjects(projects) {
+    var grid = document.getElementById('grid');
+    if (!grid) return;
+    var html = projects.map(cardHtml).join('');
+    grid.innerHTML = html;
+  }
+
   function initProjectFilters() {
     var q = document.getElementById('q');
     var cat = document.getElementById('cat');
@@ -68,9 +134,29 @@
     window.filterProjects = filterProjects;
   }
 
+  function loadProjects() {
+    var grid = document.getElementById('grid');
+    var count = document.getElementById('count');
+    if (!grid) return;
+
+    fetch('projects.json')
+      .then(function (res) {
+        if (!res.ok) throw new Error('Failed to load projects');
+        return res.json();
+      })
+      .then(function (projects) {
+        renderProjects(projects);
+        initProjectFilters();
+      })
+      .catch(function () {
+        grid.innerHTML = '<p class="meta">Could not load the project library. Please refresh the page.</p>';
+        if (count) count.textContent = '';
+      });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initProjectFilters);
+    document.addEventListener('DOMContentLoaded', loadProjects);
   } else {
-    initProjectFilters();
+    loadProjects();
   }
 })();

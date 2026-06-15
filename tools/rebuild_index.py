@@ -1,4 +1,5 @@
 import html
+import json
 import re
 import sys
 from collections import defaultdict
@@ -6,12 +7,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
-from site_layout import modern_card, stats_html, footer_html, read_time_label, category_section_title, head_html, hero_html, CSS_VERSION
+from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, CSS_VERSION
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 INDEX_OUT = ROOT / "index.html"
 PROJECTS_OUT = ROOT / "projects.html"
+PROJECTS_JSON_OUT = ROOT / "projects.json"
+PROJECT_ICONS_JS_OUT = ROOT / "project-icons.js"
 
 CATEGORIES = [
     "Agriculture",
@@ -124,22 +127,42 @@ def grid_card(p):
     return modern_card(p, "card project-card", "card-thumb", extra_attrs=attrs, show_desc=True)
 
 
-def header_html(active="home"):
-    nav_home = ' class="active"' if active == "home" else ""
-    nav_proj = ' class="active"' if active == "projects" else ""
-    search_action = (
-        "event.preventDefault();location.href='projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
-        if active == "home"
-        else "event.preventDefault();var el=document.getElementById('q');if(el){el.value=this.querySelector('input').value;if(window.filterProjects){window.filterProjects();}else{el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));}}"
-    )
-    return f"""<div class="site-nav-sticky">
-<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="index.html"{nav_home}>Home</a><a href="projects.html"{nav_proj}>Projects</a><a href="about.html">About</a><a href="sitemap.xml">Sitemap</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
-{featured_cat_bar("", active == "home", active == "projects")}
-</div>"""
+def project_json_record(p: dict) -> dict:
+    desc = p.get("desc", "")
+    if len(desc) > 100:
+        desc = desc[:97].rstrip() + "…"
+    diff = p.get("difficulty", "Beginner").replace(" build", "")
+    return {
+        "href": p["href"],
+        "title": p["title"],
+        "desc": desc,
+        "category": p["category"],
+        "difficulty": diff,
+        "slug": p["slug"],
+        "readMin": read_time_minutes(diff, p.get("slug", "")),
+    }
 
 
-def projects_listing_html(projects, cat_opts):
-    all_cards = "\n".join(grid_card(p) for p in projects)
+def write_projects_json(projects: list) -> None:
+    records = [project_json_record(p) for p in projects]
+    PROJECTS_JSON_OUT.write_text(json.dumps(records, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
+def write_project_icons_js(projects: list) -> None:
+    cats = set(CATEGORIES)
+    for p in projects:
+        cats.add(p["category"])
+    icons = {"__default__": pick_icon("ESP32")}
+    thumbs = {}
+    for cat in cats:
+        icons[cat] = pick_icon(cat)
+        thumbs[cat] = icon_thumb_class(cat)
+    body = "window.PROJECT_ICONS=" + json.dumps(icons, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    body += "window.PROJECT_THUMBS=" + json.dumps(thumbs, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    PROJECT_ICONS_JS_OUT.write_text(body, encoding="utf-8")
+
+
+def projects_listing_html(cat_opts):
     desc = "Browse 1,000+ ESP32 projects with wiring diagrams, source code, and step-by-step tutorials for IoT, automation, robotics, and embedded systems."
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -158,16 +181,32 @@ def projects_listing_html(projects, cat_opts):
     <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
     <select id="diff" aria-label="Filter by difficulty"><option value="">All difficulty levels</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
   </div>
-  <p class="meta" id="count" style="margin-top:12px"></p>
-  <div class="grid" id="grid">{all_cards}</div>
+  <p class="meta" id="count" style="margin-top:12px">Loading projects…</p>
+  <div class="grid" id="grid"><p class="meta grid-loading">Loading project library…</p></div>
+  <noscript><p class="meta">Enable JavaScript to browse the project library, or open individual tutorials from the <a href="sitemap.xml">sitemap</a>.</p></noscript>
 </section>
 </main>
 {footer_html()}
+<script src="project-icons.js" defer></script>
 <script src="ui.js" defer></script>
 <script src="projects.js" defer></script>
 </body>
 </html>
 """
+
+
+def header_html(active="home"):
+    nav_home = ' class="active"' if active == "home" else ""
+    nav_proj = ' class="active"' if active == "projects" else ""
+    search_action = (
+        "event.preventDefault();location.href='projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
+        if active == "home"
+        else "event.preventDefault();var el=document.getElementById('q');if(el){el.value=this.querySelector('input').value;if(window.filterProjects){window.filterProjects();}else{el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));}}"
+    )
+    return f"""<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="index.html"{nav_home}>Home</a><a href="projects.html"{nav_proj}>Projects</a><a href="about.html">About</a><a href="sitemap.xml">Sitemap</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
+{featured_cat_bar("", active == "home", active == "projects")}
+</div>"""
 
 
 def home_html(projects, sections, latest):
@@ -221,8 +260,10 @@ def main():
         )
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
     INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
-    PROJECTS_OUT.write_text(projects_listing_html(projects, cat_opts), encoding="utf-8")
-    print(f"Wrote index.html (home) + projects.html ({len(projects)} projects, {len(sections)} category sections)")
+    write_projects_json(projects)
+    write_project_icons_js(projects)
+    PROJECTS_OUT.write_text(projects_listing_html(cat_opts), encoding="utf-8")
+    print(f"Wrote index.html + projects.html shell + projects.json ({len(projects)} projects, {len(sections)} category sections)")
 
 
 if __name__ == "__main__":
