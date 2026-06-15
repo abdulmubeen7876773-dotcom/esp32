@@ -106,7 +106,7 @@ def category_cards_html(base: str = "") -> str:
             f'{cat_icon_box(cat, "cat-card-icon")}<span>{label}</span></a>'
         )
     return (
-        f'<section class="category-strip wrap">'
+        f'<section class="category-strip wrap reveal" id="categories">'
         f'<h2 class="category-strip-title">Browse by Category</h2>'
         f'<div class="category-grid">{"".join(cards)}</div></section>'
     )

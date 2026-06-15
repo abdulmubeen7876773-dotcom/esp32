@@ -6,12 +6,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
 from title_generator import generate_title
-from site_layout import footer_html, related_cards_html, read_time_label, short_category, normalize_terms
+from site_layout import footer_html, related_cards_html, read_time_label, short_category, normalize_terms, CSS_VERSION
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
 DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
-CSS_VERSION = "20260615-premium"
 
 LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
 
@@ -392,8 +391,10 @@ def assign_titles(all_data: list) -> None:
 
 
 def rnt_header():
-    return f"""<header class="site-header"><div class="wrap"><a class="site-logo" href="../index.html">ESP32 PROJECT LIBRARY</a><nav class="top-nav"><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
-{featured_cat_bar("../")}"""
+    return f"""<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
+{featured_cat_bar("../")}
+</div>"""
 
 
 def render_page(d: dict) -> str:
@@ -423,12 +424,16 @@ def render_page(d: dict) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#020617">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {d['head']}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
-<style>html,body{{background:#0f172a;color:#e2e8f0}}</style>
 </head>
 <body>
 {rnt_header()}
+<main>
 <div class="wrap article-shell">
   <aside class="sidebar-left">
     <h3>Learn ESP32</h3>
@@ -495,7 +500,9 @@ def render_page(d: dict) -> str:
     <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../projects.html">All projects</a></li>'}</ul>
   </aside>
 </div>
+</main>
 {footer_html("../")}
+<script src="../ui.js" defer></script>
 <script src="../project.js"></script>
 </body>
 </html>
