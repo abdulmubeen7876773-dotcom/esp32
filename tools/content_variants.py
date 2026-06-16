@@ -173,12 +173,14 @@ def generate_blog_paras(d: dict, variant: int) -> list:
 
 def generate_apps(d: dict, variant: int) -> list:
     c = ctx(d, variant)
-    return [normalize_terms(fmt(pick(APP_POOL, variant, i * 4), c)) for i in range(4)]
+    items = [normalize_terms(fmt(pick(APP_POOL, variant, i * 4), c)) for i in range(4)]
+    return list(dict.fromkeys(items))
 
 
 def generate_advantages(d: dict, variant: int) -> list:
     c = ctx(d, variant)
-    return [normalize_terms(fmt(pick(ADV_POOL, variant, i * 3 + 1), c)) for i in range(4)]
+    items = [normalize_terms(fmt(pick(ADV_POOL, variant, i * 3 + 1), c)) for i in range(4)]
+    return list(dict.fromkeys(items))
 
 
 def generate_future(d: dict, variant: int) -> list:

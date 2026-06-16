@@ -350,8 +350,24 @@ def faq_items(d: dict) -> list:
                 "Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.",
             )
         )
+    deduped = []
+    seen = set()
+    offline_keys = {"offline", "internet", "wi-fi", "wifi", "cloud"}
+    has_offline = False
+    for q, a in items:
+        q_norm = re.sub(r"\s+", " ", (q or "").strip().lower())
+        if not q_norm:
+            continue
+        if any(k in q_norm for k in offline_keys):
+            if has_offline:
+                continue
+            has_offline = True
+        if q_norm in seen:
+            continue
+        seen.add(q_norm)
+        deduped.append((q.strip(), a.strip()))
     limit = 5 if d.get("featured") else 3
-    return items[:limit]
+    return deduped[:limit]
 
 
 def build_head(d: dict) -> str:
@@ -497,9 +513,6 @@ def render_page(d: dict) -> str:
     wiring_rows = []
     for name, pin in d["wiring"]:
         wiring_rows.append(f"<tr><td>{esc(name)}</td><td><strong>{esc(pin)}</strong></td></tr>")
-    related_side = []
-    for r in d["related"]:
-        related_side.append(f'<li><a href="{esc(r["href"])}">{esc(r["title"])}</a></li>')
     related_section = related_cards_html(d["related"])
     rt = read_time_label(d["difficulty"], d["slug"])
     blog_bits = "".join(f"<p>{esc(p)}</p>" for p in d["blog_paras"][:4])
@@ -516,7 +529,7 @@ def render_page(d: dict) -> str:
         )
     faq_block = "".join(faq_html)
     how = d["how"] or "The ESP32 reads the sensor and drives the output when the threshold is met."
-    wrap = d.get("wrap_up") or f"In this tutorial we've shown you how to build {d['title']}."
+    wrap = d.get("wrap_up") or f"You now have a working {prose_subject(d['title'])} setup ready to test and extend."
     ob_ul = d.get("overview_bullets") or [
         "The ESP32 connects to your circuit and reads the input sensor;",
         "Sensor values are compared against a threshold in the sketch;",
@@ -588,7 +601,7 @@ def render_page(d: dict) -> str:
       <h2 id="wiring">Schematics &amp; Wiring Diagram</h2>
       <p>Follow the wiring connections below. Double-check GPIO pins before uploading the code.</p>
       {wiring_viz}
-      <table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table>
+      <div class="pin-table-wrap"><table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table></div>
       {wiring_tips}
       <h2>How It Works</h2>
       {build_steps(d)}
@@ -617,8 +630,6 @@ def render_page(d: dict) -> str:
   <aside class="sidebar-right">
     <div class="ad-slot ad-slot-sidebar" data-ad-slot="sidebar" aria-hidden="true"></div>
     <div class="promo-box"><strong>ESP32 Project Library</strong><p style="font-size:.88rem;color:#666;margin:.5em 0 0">1000 tutorials with wiring diagrams, code, and step-by-step guides.</p><p style="margin-top:10px"><a href="../projects.html">Browse all projects »</a></p></div>
-    <h3>Related Projects</h3>
-    <ul class="side-list">{''.join(related_side) if related_side else '<li><a href="../projects.html">All projects</a></li>'}</ul>
   </aside>
 </div>
 </main>

@@ -229,7 +229,20 @@ def dedupe_title_phrases(title: str) -> str:
     title = re.sub(r"(\bfor\s+[^—()]+?)\s+\1", r"\1", title, flags=re.I)
     title = re.sub(r"(\bwith\s+[^—()]+?)\s+\1", r"\1", title, flags=re.I)
     title = re.sub(r"(\s+—\s+[^—()]+?)\s+\1", r"\1", title, flags=re.I)
+    title = re.sub(
+        r"\s+—\s+Beginner\s+([^—|]+?)\s+Build\s+for\s+\1\s*$",
+        r" — Beginner \1 Build",
+        title,
+        flags=re.I,
+    )
+    title = re.sub(r"\bBuild\s+for\s+([^—|]+?)\s+for\s+\1\b", r"for \1", title, flags=re.I)
     return re.sub(r"\s+", " ", title).strip()
+
+
+def strip_redundant_smart(text: str) -> str:
+    text = re.sub(r"\bSmart\s+Smart\b", "Smart", text, flags=re.I)
+    text = re.sub(r"\bESP32\s+Smart\s+Smart\b", "ESP32 Smart", text, flags=re.I)
+    return text
 
 
 def polish_title(title: str) -> str:
@@ -240,10 +253,14 @@ def polish_title(title: str) -> str:
     title = re.sub(r"^Build a Smart ESP32 Smart ", "ESP32 Smart ", title, flags=re.I)
     title = re.sub(r"^Build a Smart ESP32 ", "ESP32 ", title, flags=re.I)
     title = re.sub(r"^Build an ESP32 ESP32 ", "ESP32 ", title, flags=re.I)
+    title = re.sub(r"^Build an ESP32 ", "ESP32 ", title, flags=re.I)
+    title = re.sub(r"^Build a Smart ", "ESP32 ", title, flags=re.I)
+    title = re.sub(r"^Build a ", "ESP32 ", title, flags=re.I)
     if not re.match(r"^ESP32\b", title, re.I) and not re.match(
         r"^(How to|Build |Create |Make |Step-by-Step)", title, re.I
     ):
         title = f"ESP32 {title}"
+    title = strip_redundant_smart(title)
     title = dedupe_title_phrases(title)
     return normalize_terms(title[:92].rstrip(" ,-("))
 
@@ -274,7 +291,7 @@ def slug_core(slug: str) -> str:
     skip = {
         "low", "power", "use", "beginners", "setup", "update", "logging", "control",
         "alerts", "server", "dashboard", "status", "local", "web", "mobile", "ota",
-        "bluetooth", "cloud", "wifi", "oled",
+        "bluetooth", "cloud", "wifi", "oled", "smart",
     }
     core_words = [title_word(w) for w in words if w not in skip]
     if not core_words:
@@ -314,7 +331,11 @@ def generate_title(d: dict, variant: int, used: set) -> str:
     while key in used:
         suffix = suffixes[attempt % len(suffixes)]
         fragment = suffix.strip(" —()").lower()
-        if fragment and fragment in base.lower():
+        if fragment and (fragment in base.lower() or base.lower().endswith(fragment)):
+            attempt += 1
+            continue
+        use_tail = re.sub(r"^for\s+", "", fragment, flags=re.I)
+        if use_tail and use_tail in base.lower():
             attempt += 1
             continue
         title = polish_title(f"{base}{suffix}")

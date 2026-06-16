@@ -82,10 +82,12 @@ def apply_flagship_polish(d: dict, variant: int) -> None:
     d["apps"] = (d.get("apps") or [])[:4] + [
         normalize_terms(fmt(pick(EXTRA_APPS, variant, i), c)) for i in range(2)
     ]
+    d["apps"] = list(dict.fromkeys(d["apps"]))
     d["advantages"] = (d.get("advantages") or [])[:4] + [
         "Visual wiring diagram plus pin table for fast assembly",
         "Flagship tutorial with extended FAQ and calibration notes",
     ]
+    d["advantages"] = list(dict.fromkeys(d["advantages"]))
     d["future"] = (d.get("future") or [])[:3] + [
         "Add Blynk or ESPHome integration for phone control",
     ]
