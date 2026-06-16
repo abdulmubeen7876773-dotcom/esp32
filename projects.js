@@ -58,11 +58,30 @@
     );
   }
 
-  function renderProjects(projects) {
+  function renderProjects(projects, done) {
     var grid = document.getElementById('grid');
-    if (!grid) return;
-    var html = projects.map(cardHtml).join('');
-    grid.innerHTML = html;
+    if (!grid) {
+      if (done) done();
+      return;
+    }
+    var i = 0;
+    var chunk = 40;
+    grid.innerHTML = '';
+
+    function step() {
+      var slice = projects.slice(i, i + chunk);
+      if (!slice.length) {
+        var textIndex = document.getElementById('project-text-index');
+        if (textIndex) textIndex.classList.add('hidden');
+        if (done) done();
+        return;
+      }
+      grid.insertAdjacentHTML('beforeend', slice.map(cardHtml).join(''));
+      i += chunk;
+      window.requestAnimationFrame(step);
+    }
+
+    step();
   }
 
   function initProjectFilters() {
@@ -134,6 +153,11 @@
     window.filterProjects = filterProjects;
   }
 
+  function showTextFallback() {
+    var textIndex = document.getElementById('project-text-index');
+    if (textIndex) textIndex.classList.remove('hidden');
+  }
+
   function loadProjects() {
     var grid = document.getElementById('grid');
     var count = document.getElementById('count');
@@ -145,13 +169,21 @@
         return res.json();
       })
       .then(function (projects) {
-        renderProjects(projects);
-        initProjectFilters();
+        renderProjects(projects, function () {
+          initProjectFilters();
+        });
       })
       .catch(function () {
-        grid.innerHTML = '<p class="meta">Could not load the project library. Please refresh the page.</p>';
-        if (count) count.textContent = '';
+        showTextFallback();
+        if (!document.querySelectorAll('.project-card').length) {
+          grid.innerHTML = '<p class="meta">Could not load the project library. Use the plain-text index below or the <a href="sitemap.html">sitemap</a>.</p>';
+        }
+        initProjectFilters();
       });
+
+    if (document.querySelectorAll('.project-card').length) {
+      initProjectFilters();
+    }
   }
 
   if (document.readyState === 'loading') {

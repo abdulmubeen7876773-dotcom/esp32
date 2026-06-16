@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260615-saas5"
+CSS_VERSION = "20260615-saas6"
 SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
 SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
@@ -30,9 +30,12 @@ def normalize_terms(text: str) -> str:
 
 
 def category_section_title(cat: str) -> str:
-    if cat.endswith(" Projects"):
-        return cat
-    return f"{cat} Projects"
+    c = re.sub(r"\s+", " ", (cat or "ESP32").strip())
+    while re.search(r"\bProjects\s+Projects\b", c, re.I):
+        c = re.sub(r"\bProjects\s+Projects\b", "Projects", c, flags=re.I)
+    if c.lower().endswith(" projects"):
+        return c
+    return f"{c} Projects"
 
 
 def read_time_minutes(difficulty: str, slug: str = "") -> int:
@@ -262,7 +265,7 @@ def stats_html() -> str:
 
 
 def footer_html(base: str = "") -> str:
-    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1,000+ ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step build guides for makers, students, and engineers.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}sitemap.xml">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
+    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1,000+ ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step build guides for makers, students, and engineers.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
 
 
 def related_cards_html(related: list, base: str = "") -> str:

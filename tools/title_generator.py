@@ -188,42 +188,55 @@ CONN = [
 ]
 
 TEMPLATES = [
-    "Build a Smart ESP32 {core} That Runs for Weeks on Battery Power",
-    "How to Build an ESP32 {core} with {sensor} and {output}",
-    "Build an ESP32 {core} for {use} — Complete Tutorial",
-    "Create a {use} ESP32 {core} with {conn}",
-    "Build a {conn}-Enabled ESP32 {core} for {use}",
-    "Make an ESP32 {core} That Monitors {sensor} in Real Time",
-    "Build a Professional ESP32 {core} for {use}",
-    "Step-by-Step: ESP32 {core} with {sensor}",
-    "Build a Low-Power ESP32 {core} for {use}",
-    "How to Make an ESP32 {core} with {output} Control",
-    "Build an ESP32 {core} That Sends Live Data via {conn}",
-    "Create a Smart {core} for {use} with ESP32",
-    "Build a {use} ESP32 {core} — Wiring, Code & Demo",
-    "Make a {sensor}-Powered ESP32 {core} for {use}",
-    "Build an ESP32 {core} with {conn} in Under an Hour",
-    "How to Build a {use} {core} Using ESP32",
-    "Build a Reliable ESP32 {core} with {sensor}",
-    "Create an ESP32 {core} for {use} Monitoring",
-    "Build a {output}-Controlled ESP32 {core} for {use}",
-    "Make a Smart ESP32 {core} with {conn} Alerts",
-    "Build an ESP32 {core} That Works with {sensor}",
-    "How to Create a {use} ESP32 {core} from Scratch",
-    "Build a Field-Ready ESP32 {core} for {use}",
-    "Make an ESP32 {core} with {sensor} and {output}",
-    "Build a {use} ESP32 {core} — Beginner to Pro",
-    "Create an ESP32 {core} with Live {conn} Updates",
-    "Build a Compact ESP32 {core} for {use}",
-    "How to Build a {conn} ESP32 {core} with {sensor}",
-    "Make a {use} ESP32 {core} That Actually Works",
-    "Build an ESP32 {core} with Step-by-Step Wiring",
-    "Create a Smart {use} System with ESP32 {core}",
-    "Build an ESP32 {core} for {use} Automation",
-    "How to Make a {sensor}-Based ESP32 {core}",
-    "Build a Production-Ready ESP32 {core} for {use}",
-    "Create an ESP32 {core} with {output} and {sensor}",
+    "ESP32 {core} with {sensor}",
+    "ESP32 {core} — {sensor} & {output}",
+    "ESP32 {core} for {use}",
+    "{sensor}-Based ESP32 {core}",
+    "ESP32 {core} with {output} Control",
+    "ESP32 {core} using {conn}",
+    "How to Build an ESP32 {core} with {sensor}",
+    "Build an ESP32 {core} with {sensor}",
+    "ESP32 {core} — Wiring, Code & Demo",
+    "ESP32 {core} with {sensor} for {use}",
+    "ESP32 {core} and {output} for {use}",
+    "ESP32 {core} with {conn} Integration",
+    "ESP32 {core} — {use} Tutorial",
+    "ESP32 {core} with Live {conn} Updates",
+    "ESP32 {core} — {sensor} Monitor",
+    "ESP32 {core} for {use} Automation",
+    "ESP32 {core} with {sensor} and {output}",
+    "ESP32 {core} — Beginner {use} Build",
+    "ESP32 {core} with {output} for {use}",
+    "ESP32 {core} — Step-by-Step Guide",
 ]
+
+
+def dedupe_core(core: str) -> str:
+    words = core.split()
+    out = []
+    seen = set()
+    for w in words:
+        lw = w.lower()
+        if lw in seen:
+            continue
+        seen.add(lw)
+        out.append(w)
+    return " ".join(out) or "IoT Project"
+
+
+def polish_title(title: str) -> str:
+    title = re.sub(r"\s+", " ", title).strip()
+    title = re.sub(r"\bESP32(?:\s+ESP32)+\b", "ESP32", title, flags=re.I)
+    title = re.sub(r"\bSmart(?:\s+Smart)+\b", "Smart", title, flags=re.I)
+    title = re.sub(r"\bBuild(?:\s+a\s+Build)\b", "Build", title, flags=re.I)
+    title = re.sub(r"^Build a Smart ESP32 Smart ", "ESP32 Smart ", title, flags=re.I)
+    title = re.sub(r"^Build a Smart ESP32 ", "ESP32 ", title, flags=re.I)
+    title = re.sub(r"^Build an ESP32 ESP32 ", "ESP32 ", title, flags=re.I)
+    if not re.match(r"^ESP32\b", title, re.I) and not re.match(
+        r"^(How to|Build |Create |Make |Step-by-Step)", title, re.I
+    ):
+        title = f"ESP32 {title}"
+    return normalize_terms(title[:92].rstrip(" ,-("))
 
 
 def clean_part(name: str) -> str:
@@ -258,6 +271,8 @@ def slug_core(slug: str) -> str:
     if not core_words:
         core_words = [title_word(w) for w in words[:4]]
     phrase = " ".join(core_words[:5])
+    phrase = re.sub(r"^(Smart|ESP32|Esp32)\s+", "", phrase, flags=re.I)
+    phrase = dedupe_core(phrase)
     return phrase or "IoT Project"
 
 
@@ -273,10 +288,7 @@ def generate_title(d: dict, variant: int, used: set) -> str:
     output = clean_part(d.get("output_name", "Output"))
     tpl = TEMPLATES[variant % len(TEMPLATES)]
     title = tpl.format(use=use, core=core, sensor=sensor, output=output, conn=conn)
-    title = re.sub(r"\s+", " ", title).strip()
-    if not title.upper().startswith("ESP32") and not title.lower().startswith(("build ", "how ", "create ", "make ", "step-by-step")):
-        title = f"ESP32 {title}"
-    title = title[:92].rstrip(" ,-(")
+    title = polish_title(title)
     key = title.lower()
     n = 2
     base = title
@@ -285,4 +297,4 @@ def generate_title(d: dict, variant: int, used: set) -> str:
         key = title.lower()
         n += 1
     used.add(key)
-    return normalize_terms(title)
+    return title

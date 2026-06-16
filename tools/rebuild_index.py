@@ -162,9 +162,18 @@ def write_project_icons_js(projects: list) -> None:
     PROJECT_ICONS_JS_OUT.write_text(body, encoding="utf-8")
 
 
-def projects_listing_html(cat_opts, crawl_links=""):
+def projects_text_index(projects: list) -> str:
+    items = "".join(
+        f'<li><a href="{esc(p["href"])}">{esc(p["title"])}</a> <span class="meta">({esc(p["category"])})</span></li>'
+        for p in projects
+    )
+    return f'<div id="project-text-index" class="project-text-index" aria-label="Plain text project index"><ul>{items}</ul></div>'
+
+
+def projects_listing_html(cat_opts, preview_cards="", text_index=""):
     desc = "Browse 1,000+ ESP32 projects with wiring diagrams, source code, and step-by-step tutorials for IoT, automation, robotics, and embedded systems."
     schema = organization_schema() + website_schema()
+    initial = preview_cards or '<p class="meta grid-loading">Loading project library…</p>'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,9 +192,9 @@ def projects_listing_html(cat_opts, crawl_links=""):
     <select id="diff" aria-label="Filter by difficulty"><option value="">All difficulty levels</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
   </div>
   <p class="meta" id="count" style="margin-top:12px">Loading projects…</p>
-  <div class="grid" id="grid"><p class="meta grid-loading">Loading project library…</p></div>
-  <noscript><p class="meta">Enable JavaScript to browse the project library, or open individual tutorials from the <a href="sitemap.xml">sitemap</a>.</p></noscript>
-  <nav class="crawl-index" aria-label="Project index">{crawl_links}</nav>
+  <div class="grid" id="grid">{initial}</div>
+  {text_index}
+  <noscript><p class="meta">JavaScript is required for card view and filters. Use the plain-text project index above or the <a href="sitemap.html">sitemap</a>.</p></noscript>
 </section>
 </main>
 {footer_html()}
@@ -248,12 +257,16 @@ def main():
             f"""<section class="section-block wrap reveal" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(category_section_title(cat))}</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
         )
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
-    crawl_links = "".join(f'<a href="{esc(p["href"])}">{esc(p["title"])}</a>' for p in projects[:80])
+    preview = "\n".join(grid_card(p) for p in projects[:48])
+    text_index = projects_text_index(projects)
     INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
     write_projects_json(projects)
     write_project_icons_js(projects)
-    PROJECTS_OUT.write_text(projects_listing_html(cat_opts, crawl_links), encoding="utf-8")
+    PROJECTS_OUT.write_text(projects_listing_html(cat_opts, preview, text_index), encoding="utf-8")
     print(f"Wrote index.html + projects.html shell + projects.json ({len(projects)} projects, {len(sections)} category sections)")
+    import build_sitemap
+
+    build_sitemap.main()
 
 
 if __name__ == "__main__":

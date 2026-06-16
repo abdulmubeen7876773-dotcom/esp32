@@ -398,13 +398,25 @@ def build_head(d: dict) -> str:
 {json_ld_script(crumbs)}"""
 
 
+def prose_subject(title: str) -> str:
+    t = title.strip()
+    t = re.sub(
+        r"^(Build a Smart |Build an |Build a |How to Build an |How to Build a |Create a |Make an |Make a |Step-by-Step: )",
+        "",
+        t,
+        flags=re.I,
+    )
+    t = re.sub(r"^ESP32\s+", "", t, flags=re.I)
+    return t.strip().lower() or "this esp32 project"
+
+
 def build_blog_paras(d: dict) -> list:
-    t = d["title"]
+    subj = prose_subject(d["title"])
     cat = short_category(d["category"])
     return [
-        f"This tutorial explains how to build {t} from wiring to working firmware.",
-        f"In this project, the ESP32 reads {d['sensor_name']} on {d['sensor_pin']} and drives {d['output_name']} on {d['output_pin']} when the threshold is crossed.",
-        f"{t} is designed as a practical {cat} build you can test on a breadboard and later expand with Wi-Fi or cloud features.",
+        f"This tutorial covers {subj} — from wiring to working firmware.",
+        f"The ESP32 reads {d['sensor_name']} on {d['sensor_pin']} and drives {d['output_name']} on {d['output_pin']} when the threshold is crossed.",
+        f"This {cat.lower()} build is designed for breadboard testing and can later be extended with Wi-Fi or cloud features.",
     ]
 
 
@@ -480,7 +492,7 @@ def assign_titles(all_data: list) -> None:
 
 def rnt_header():
     return f"""<div class="site-nav-sticky">
-<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.xml">Sitemap</a></nav></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.html">Sitemap</a></nav></div></header>
 {featured_cat_bar("../")}
 </div>"""
 
@@ -568,7 +580,7 @@ def render_page(d: dict) -> str:
       <ul class="parts-list">{''.join(parts_li)}</ul>
       <h2 id="wiring">Schematics</h2>
       <p>Follow the wiring connections below. Double-check GPIO pins before uploading the code.</p>
-      <table class="pin-table"><thead><tr><th>Connection</th><th>Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table>
+      <table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table>
       <h2>How It Works</h2>
       {build_steps(d)}
       <h2 id="code">Code</h2>
