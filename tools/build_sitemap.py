@@ -46,6 +46,8 @@ def write_sitemap_xml(project_files: list[Path]) -> None:
             f"<changefreq>{freq}</changefreq><priority>{priority}</priority></url>"
         )
     for path in project_files:
+        if "_archive" in path.parts or "-project-" in path.name:
+            continue
         loc = f"{SITE_DOMAIN}/projects/{path.name}"
         lines.append(
             f"<url><loc>{html.escape(loc)}</loc><lastmod>{TODAY}</lastmod>"
@@ -56,6 +58,7 @@ def write_sitemap_xml(project_files: list[Path]) -> None:
 
 
 def write_sitemap_html(project_files: list[Path]) -> None:
+    valid = [p for p in project_files if "_archive" not in p.parts and "-project-" not in p.name]
     static_links = "".join(
         f'<li><a href="{esc(p)}">{esc(p.replace(".html", "").replace("-", " ").title())}</a></li>'
         for p, _, _ in STATIC_PAGES
@@ -63,12 +66,12 @@ def write_sitemap_html(project_files: list[Path]) -> None:
     )
     project_links = "".join(
         f'<li><a href="projects/{esc(path.name)}">{esc(parse_title(path))}</a></li>'
-        for path in project_files
+        for path in valid
     )
     body = f"""  <h1>Sitemap</h1>
-  <p>Browse every page on ESP32 Project Library — main pages and all project tutorials.</p>
+  <p>Browse every page on ESP32 Project Library — main pages and {len(valid)} parent project tutorials.</p>
   <section class="sitemap-static"><h2>Main Pages</h2><ul>{static_links}</ul></section>
-  <section class="sitemap-projects"><h2>All Projects ({len(project_files)})</h2>
+  <section class="sitemap-projects"><h2>Parent Projects ({len(valid)})</h2>
   <p class="meta">Search engines: <a href="sitemap.xml">sitemap.xml</a></p>
   <ul class="sitemap-project-list">{project_links}</ul></section>"""
     page = f"""<!DOCTYPE html>
@@ -92,7 +95,9 @@ def write_sitemap_html(project_files: list[Path]) -> None:
 
 def main():
     project_files = sorted(
-        p for p in PROJECTS.glob("*.html") if "-project-" not in p.name and p.is_file()
+        p
+        for p in PROJECTS.glob("*.html")
+        if p.is_file() and "-project-" not in p.name and "_archive" not in p.parts
     )
     write_sitemap_xml(project_files)
     write_sitemap_html(project_files)

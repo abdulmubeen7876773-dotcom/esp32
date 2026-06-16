@@ -14,6 +14,9 @@ function openAccordionItem(item) {
   var body = item.querySelector('.acc-body');
   if (btn) btn.setAttribute('aria-expanded', 'true');
   if (body) body.style.maxHeight = body.scrollHeight + 'px';
+  window.requestAnimationFrame(function () {
+    if (body) body.style.maxHeight = body.scrollHeight + 'px';
+  });
 }
 
 function toggleAccordion(btn) {
@@ -41,22 +44,84 @@ function resetPanelAccordions(level) {
   if (overview) openAccordionItem(overview);
 }
 
+function getActiveLevel() {
+  var panel = document.querySelector('.level-panel.is-active');
+  return panel ? panel.dataset.level : 'beginner';
+}
+
 function updateSectionToc(level) {
   document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
-    link.href = '#sec-' + level + '-' + link.dataset.section;
+    var sec = link.dataset.section;
+    if (sec === 'faq') {
+      link.href = '#faq';
+    } else {
+      link.href = '#sec-' + level + '-' + sec;
+    }
   });
+  var mobile = document.getElementById('mobile-nav-select');
+  if (!mobile) return;
+  var val = mobile.value;
+  var labels = {
+    overview: 'Overview',
+    components: 'Components',
+    wiring: 'Wiring',
+    code: 'Code',
+    how: 'How It Works',
+    apps: 'Applications',
+    troubleshooting: 'Troubleshooting',
+    upgrades: 'Upgrades'
+  };
+  mobile.innerHTML = '<option value="">Jump to section…</option>';
+  Object.keys(labels).forEach(function (sec) {
+    var opt = document.createElement('option');
+    opt.value = 'sec-' + level + '-' + sec;
+    opt.textContent = labels[sec];
+    mobile.appendChild(opt);
+  });
+  ['faq', 'related'].forEach(function (sec) {
+    var opt = document.createElement('option');
+    opt.value = sec;
+    opt.textContent = sec === 'faq' ? 'FAQ' : 'Related Projects';
+    mobile.appendChild(opt);
+  });
+  if (val) mobile.value = val;
+}
+
+function jumpToSection(targetId) {
+  if (!targetId) return;
+  var target = document.getElementById(targetId);
+  if (!target) return;
+  if (targetId.indexOf('sec-') === 0) {
+    var parts = targetId.split('-');
+    var level = parts[1];
+    if (level === 'beginner' || level === 'intermediate' || level === 'advanced') {
+      setDifficultyLevel(level);
+    }
+    target = document.getElementById(targetId);
+    if (!target) return;
+    var panel = target.closest('.level-panel');
+    if (panel) {
+      panel.querySelectorAll('.acc-item.open').forEach(closeAccordionItem);
+      openAccordionItem(target);
+    }
+  } else {
+    openAccordionItem(target);
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function toggleFaq(btn) {
   var item = btn.closest('.faq-item');
   var ans = item.querySelector('.faq-a');
   var willOpen = !item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(function (el) {
-    if (el !== item) {
-      el.classList.remove('open');
-      el.querySelector('.faq-a').style.maxHeight = null;
-    }
-  });
+  item.closest('.faq-list')
+    .querySelectorAll('.faq-item.open')
+    .forEach(function (el) {
+      if (el !== item) {
+        el.classList.remove('open');
+        el.querySelector('.faq-a').style.maxHeight = null;
+      }
+    });
   if (willOpen) {
     item.classList.add('open');
     ans.style.maxHeight = ans.scrollHeight + 'px';
@@ -90,7 +155,10 @@ function setDifficultyLevel(level) {
     tab.setAttribute('aria-selected', on ? 'true' : 'false');
   });
   document.querySelectorAll('.level-panel').forEach(function (panel) {
-    panel.hidden = panel.dataset.level !== level;
+    var on = panel.dataset.level === level;
+    panel.classList.toggle('is-active', on);
+    panel.hidden = !on;
+    panel.setAttribute('aria-hidden', on ? 'false' : 'true');
   });
   document.querySelectorAll('[data-level-link]').forEach(function (link) {
     link.classList.toggle('is-active', link.dataset.levelLink === level);
@@ -102,7 +170,37 @@ function setDifficultyLevel(level) {
   }
 }
 
-window.addEventListener('load', function () {
+function initScrollSpy() {
+  var tocLinks = document.querySelectorAll('#section-toc a[data-section]');
+  if (!tocLinks.length) return;
+  var targets = [];
+  tocLinks.forEach(function (link) {
+    var id = (link.getAttribute('href') || '').replace('#', '');
+    var el = document.getElementById(id);
+    if (el) targets.push({ el: el, link: link, section: link.dataset.section });
+  });
+  if (!targets.length || !('IntersectionObserver' in window)) return;
+  var observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var match = targets.find(function (t) {
+          return t.el === entry.target;
+        });
+        if (!match) return;
+        tocLinks.forEach(function (l) {
+          l.classList.toggle('is-active', l === match.link);
+        });
+      });
+    },
+    { rootMargin: '-20% 0px -65% 0px', threshold: 0 }
+  );
+  targets.forEach(function (t) {
+    observer.observe(t.el);
+  });
+}
+
+function initProjectPage() {
   document.querySelectorAll('.acc-item.open .acc-body').forEach(function (body) {
     body.style.maxHeight = body.scrollHeight + 'px';
   });
@@ -110,20 +208,18 @@ window.addEventListener('load', function () {
   document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
     link.addEventListener('click', function (e) {
       e.preventDefault();
-      var activePanel = document.querySelector('.level-panel:not([hidden])');
-      var level = activePanel ? activePanel.dataset.level : 'beginner';
-      var sec = link.dataset.section;
-      var target = document.getElementById('sec-' + level + '-' + sec);
-      if (!target) return;
-      var panel = target.closest('.level-panel');
-      if (panel && panel.hidden) {
-        setDifficultyLevel(panel.dataset.level);
-      }
-      panel.querySelectorAll('.acc-item.open').forEach(closeAccordionItem);
-      openAccordionItem(target);
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var href = link.getAttribute('href') || '';
+      jumpToSection(href.replace('#', ''));
     });
   });
+
+  var mobile = document.getElementById('mobile-nav-select');
+  if (mobile) {
+    mobile.addEventListener('change', function () {
+      jumpToSection(mobile.value);
+      mobile.value = '';
+    });
+  }
 
   var tabs = document.querySelectorAll('.difficulty-tab');
   if (tabs.length) {
@@ -146,5 +242,12 @@ window.addEventListener('load', function () {
     } else {
       setDifficultyLevel('beginner');
     }
+    initScrollSpy();
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initProjectPage);
+} else {
+  initProjectPage();
+}
