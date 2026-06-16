@@ -31,6 +31,9 @@
     var desc = p.desc || '';
     var descHtml = desc ? '<p class="card-desc">' + esc(desc) + '</p>' : '';
     var readMin = p.readMin || 6;
+    var featBadge = p.featured
+      ? '<span class="badge badge-featured">Featured</span>'
+      : '';
     return (
       '<a class="card project-card modern-card" href="' +
       esc(p.href) +
@@ -40,9 +43,13 @@
       esc(p.category || '') +
       '" data-difficulty="' +
       esc(diff) +
-      '">' +
+      '"' +
+      (p.featured ? ' data-featured="1"' : '') +
+      '>' +
       thumbHtml(p.category) +
-      '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
+      '<div class="card-body"><div class="card-badges">' +
+      featBadge +
+      '<span class="badge badge-cat">' +
       esc(shortCategory(p.category)) +
       '</span><span class="badge ' +
       badgeClass(diff) +
@@ -169,6 +176,9 @@
         return res.json();
       })
       .then(function (projects) {
+        projects.sort(function (a, b) {
+          return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+        });
         renderProjects(projects, function () {
           initProjectFilters();
         });

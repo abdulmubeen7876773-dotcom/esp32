@@ -6,6 +6,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
 from content_variants import assign_varied_content
+from flagship_polish import (
+    apply_flagship_polish,
+    hero_diagram_dark,
+    is_flagship,
+    wiring_diagram_enhanced,
+    wiring_tips_html,
+)
 from site_layout import (
     footer_html,
     related_cards_html,
@@ -343,7 +350,8 @@ def faq_items(d: dict) -> list:
                 "Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.",
             )
         )
-    return items[:3]
+    limit = 5 if d.get("featured") else 3
+    return items[:limit]
 
 
 def build_head(d: dict) -> str:
@@ -457,6 +465,9 @@ def assign_titles(all_data: list) -> None:
         items.sort(key=lambda x: int(re.search(r"project-(\d+)$", x["slug"], re.I).group(1)))
         for i, d in enumerate(items):
             assign_varied_content(d, i, used_global)
+            d["featured"] = is_flagship(d["slug"])
+            if d["featured"]:
+                apply_flagship_polish(d, i)
             normalize_text_fields(d)
             d["head"] = build_head(d)
     title_map = {d["slug"]: d["title"] for d in all_data}
@@ -518,6 +529,10 @@ def render_page(d: dict) -> str:
     if d["category"] == "Healthcare":
         health_note = '<p class="notice notice-health">This tutorial is for educational purposes only and is not medical advice. Do not use it for diagnosis, treatment, or patient monitoring without proper validation.</p>'
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(d['category'])}</a></li><li aria-current="page">{esc(d['title'][:60])}</li></ol></nav>"""
+    featured_badge = '<span class="featured-pill">Featured tutorial</span>' if d.get("featured") else ""
+    hero_block = hero_diagram_dark(d) if d.get("featured") else ""
+    wiring_viz = wiring_diagram_enhanced(d) if d.get("featured") else ""
+    wiring_tips = wiring_tips_html(d) if d.get("featured") else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -554,8 +569,10 @@ def render_page(d: dict) -> str:
     {breadcrumb}
     <h1>{esc(d['title'])}</h1>
     <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(rt)} · {esc(d['project_tag'])}</p>
+    {featured_badge}
     <p class="article-lead">{esc(d['lead'])}</p>
     {health_note}
+    {hero_block}
     <div class="ad-slot ad-slot-top" data-ad-slot="article-top" aria-hidden="true"></div>
     <div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>
     <div class="article-content">
@@ -568,9 +585,11 @@ def render_page(d: dict) -> str:
       <h2 id="parts">Parts Required</h2>
       <p>Here's a list of parts needed to build this project:</p>
       <ul class="parts-list">{''.join(parts_li)}</ul>
-      <h2 id="wiring">Schematics</h2>
+      <h2 id="wiring">Schematics &amp; Wiring Diagram</h2>
       <p>Follow the wiring connections below. Double-check GPIO pins before uploading the code.</p>
+      {wiring_viz}
       <table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table>
+      {wiring_tips}
       <h2>How It Works</h2>
       {build_steps(d)}
       <h2 id="code">Code</h2>

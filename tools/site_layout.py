@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260615-saas7"
+CSS_VERSION = "20260615-saas8"
 SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
 SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
@@ -89,7 +89,8 @@ def modern_card(
         short = desc if len(desc) <= 100 else desc[:97].rstrip() + "…"
         desc_html = f'<p class="card-desc">{esc(short)}</p>'
     rt = read_time_label(diff, slug)
-    return f"""<a class="{card_class} modern-card" href="{esc(link)}"{extra_attrs}>{card_thumb_html(cat, thumb_cls)}<div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
+    feat_badge = '<span class="badge badge-featured">Featured</span>' if p.get("featured") else ""
+    return f"""<a class="{card_class} modern-card" href="{esc(link)}"{extra_attrs}>{card_thumb_html(cat, thumb_cls)}<div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
 def canonical_url(base: str, path: str) -> str:

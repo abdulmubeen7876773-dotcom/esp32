@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
+from flagship_polish import is_flagship
 from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, header_html, organization_schema, website_schema, CSS_VERSION
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -37,6 +38,10 @@ CATEGORIES = [
 
 def esc(t):
     return html.escape(t or "", quote=True)
+
+
+def sort_projects(projects: list) -> list:
+    return sorted(projects, key=lambda p: (not p.get("featured"), p.get("slug", "")))
 
 
 def parse_card(path: Path) -> dict:
@@ -76,6 +81,7 @@ def parse_card(path: Path) -> dict:
         "category": category,
         "difficulty": difficulty,
         "slug": path.stem,
+        "featured": is_flagship(path.stem),
     }
 
 
@@ -123,7 +129,8 @@ def post_card(p):
 
 
 def grid_card(p):
-    attrs = f' data-title="{esc(p["title"].lower())}" data-category="{esc(p["category"])}" data-difficulty="{esc(p["difficulty"])}"'
+    feat = ' data-featured="1"' if p.get("featured") else ""
+    attrs = f' data-title="{esc(p["title"].lower())}" data-category="{esc(p["category"])}" data-difficulty="{esc(p["difficulty"])}"{feat}'
     return modern_card(p, "card project-card", "card-thumb", extra_attrs=attrs, show_desc=True)
 
 
@@ -140,6 +147,7 @@ def project_json_record(p: dict) -> dict:
         "difficulty": diff,
         "slug": p["slug"],
         "readMin": read_time_minutes(diff, p.get("slug", "")),
+        "featured": bool(p.get("featured")),
     }
 
 
@@ -242,10 +250,12 @@ def main():
     if not files:
         print("No projects found", file=sys.stderr)
         sys.exit(1)
-    projects = [parse_card(f) for f in files]
+    projects = sort_projects([parse_card(f) for f in files])
     by_cat = defaultdict(list)
     for p in projects:
         by_cat[p["category"]].append(p)
+    for cat in by_cat:
+        by_cat[cat] = sort_projects(by_cat[cat])
     latest = pick_diverse_latest(by_cat, projects, 4)
     sections = []
     for cat in CATEGORIES:
