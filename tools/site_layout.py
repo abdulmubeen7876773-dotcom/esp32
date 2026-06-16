@@ -10,7 +10,7 @@ SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
 GITHUB_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32"
 CONTACT_ISSUES_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32/issues"
-GA4_MEASUREMENT_ID = ""
+GA4_MEASUREMENT_ID = "G-WLHZKSEFP3"
 GSC_VERIFICATION = "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI"
 OG_IMAGE = f"{SITE_DOMAIN}/og-image.svg"
 
