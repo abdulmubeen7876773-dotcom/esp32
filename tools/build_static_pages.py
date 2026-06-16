@@ -38,7 +38,7 @@ def about_page() -> str:
     return static_page_shell(
         "about",
         f"About Us | {SITE_NAME}",
-        f"Learn about {SITE_NAME} — editorial standards, mission, and the team behind 1,000+ ESP32 tutorials.",
+        f"Learn about {SITE_NAME} — editorial standards, mission, and our 15 parent ESP32 project guides with three skill levels.",
         body,
         "about.html",
         schema,
