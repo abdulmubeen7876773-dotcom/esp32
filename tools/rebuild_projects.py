@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
-from title_generator import generate_title
+from content_variants import assign_varied_content
 from site_layout import (
     footer_html,
     related_cards_html,
@@ -268,7 +268,7 @@ def build_steps(d: dict) -> str:
       <div class="step"><span class="step-no">01</span><h3>Read</h3><p>The ESP32 samples the input sensor on {esc(d['sensor_pin'])}, producing a raw reading.</p></div>
       <div class="step"><span class="step-no">02</span><h3>Compare</h3><p>That reading is checked against a threshold configured in the sketch.</p></div>
       <div class="step"><span class="step-no">03</span><h3>Decide</h3><p>When the condition is met, the ESP32 sets {esc(d['output_pin'])} high; otherwise it stays low.</p></div>
-      <div class="step"><span class="step-no">04</span><h3>Act</h3><p>{esc(how)}</p></div>
+      <div class="step"><span class="step-no">04</span><h3>Act</h3><p>{esc(d.get('step_act') or how)}</p></div>
     </div>"""
 
 
@@ -334,17 +334,16 @@ def ensure_content_blocks(d: dict) -> None:
 
 
 def faq_items(d: dict) -> list:
-    return [
-        (d["faq_q"], d["faq_a"]),
-        (
-            "How do I choose the threshold?",
-            "Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.",
-        ),
-        (
-            "Can this work without Wi-Fi?",
-            "Yes. The core read-compare-act loop runs locally on the ESP32 without internet.",
-        ),
-    ]
+    items = [(d["faq_q"], d["faq_a"])]
+    items.extend(d.get("faq_extra") or [])
+    if len(items) < 3:
+        items.append(
+            (
+                "How do I choose the threshold?",
+                "Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.",
+            )
+        )
+    return items[:3]
 
 
 def build_head(d: dict) -> str:
@@ -399,25 +398,13 @@ def build_head(d: dict) -> str:
 
 
 def prose_subject(title: str) -> str:
-    t = title.strip()
-    t = re.sub(
-        r"^(Build a Smart |Build an |Build a |How to Build an |How to Build a |Create a |Make an |Make a |Step-by-Step: )",
-        "",
-        t,
-        flags=re.I,
-    )
-    t = re.sub(r"^ESP32\s+", "", t, flags=re.I)
-    return t.strip().lower() or "this esp32 project"
+    from content_variants import prose_subject as _ps
+
+    return _ps(title)
 
 
 def build_blog_paras(d: dict) -> list:
-    subj = prose_subject(d["title"])
-    cat = short_category(d["category"])
-    return [
-        f"This tutorial covers {subj} — from wiring to working firmware.",
-        f"The ESP32 reads {d['sensor_name']} on {d['sensor_pin']} and drives {d['output_name']} on {d['output_pin']} when the threshold is crossed.",
-        f"This {cat.lower()} build is designed for breadboard testing and can later be extended with Wi-Fi or cloud features.",
-    ]
+    return d.get("blog_paras") or []
 
 
 def normalize_text_fields(d: dict) -> None:
@@ -469,17 +456,9 @@ def assign_titles(all_data: list) -> None:
     for items in groups.values():
         items.sort(key=lambda x: int(re.search(r"project-(\d+)$", x["slug"], re.I).group(1)))
         for i, d in enumerate(items):
-            d["title"] = generate_title(d, i, used_global)
-            d["blog_paras"] = build_blog_paras(d)
+            assign_varied_content(d, i, used_global)
             normalize_text_fields(d)
             d["head"] = build_head(d)
-            if d.get("code"):
-                lines = d["code"].splitlines()
-                if lines and lines[0].startswith("//"):
-                    lines[0] = f"// {d['title']}"
-                else:
-                    lines.insert(0, f"// {d['title']}")
-                d["code"] = "\n".join(lines)
     title_map = {d["slug"]: d["title"] for d in all_data}
     for d in all_data:
         for r in d.get("related", []):
@@ -498,7 +477,6 @@ def rnt_header():
 
 
 def render_page(d: dict) -> str:
-    ensure_content_blocks(d)
     tc = thumb_class(d["category"])
     icon = pick_icon(d["category"])
     parts_li = []
@@ -519,7 +497,22 @@ def render_page(d: dict) -> str:
     future_li = "".join(f"<li>{esc(f)}</li>" for f in d["future"])
     code_fname = re.sub(r"[^a-z0-9]+", "_", d["slug"].lower()).strip("_")[:40] + ".ino"
     code_esc = esc(d["code"])
+    faq_html = []
+    for i, (fq, fa) in enumerate(faq_items(d)):
+        open_cls = " open" if i == 0 else ""
+        faq_html.append(
+            f'<div class="faq-item{open_cls}"><button class="faq-q" onclick="toggleFaq(this)">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
+        )
+    faq_block = "".join(faq_html)
     how = d["how"] or "The ESP32 reads the sensor and drives the output when the threshold is met."
+    wrap = d.get("wrap_up") or f"In this tutorial we've shown you how to build {d['title']}."
+    ob_ul = d.get("overview_bullets") or [
+        "The ESP32 connects to your circuit and reads the input sensor;",
+        "Sensor values are compared against a threshold in the sketch;",
+        f"When the condition is met, the output device is activated on {d['output_pin']};",
+        "The loop repeats while the board is powered.",
+    ]
+    ob_li = "".join(f"<li>{esc(b)}</li>" for b in ob_ul)
     cat_slug = re.sub(r"[^a-z0-9]+", "-", d["category"].lower()).strip("-")
     health_note = ""
     if d["category"] == "Healthcare":
@@ -570,10 +563,7 @@ def render_page(d: dict) -> str:
       <h2 id="overview">Project Overview</h2>
       <p>{esc(d['overview'])}</p>
       <ul>
-        <li>The ESP32 connects to your circuit and reads the input sensor;</li>
-        <li>Sensor values are compared against a threshold in the sketch;</li>
-        <li>When the condition is met, the output device is activated on {esc(d['output_pin'])};</li>
-        <li>The loop repeats while the board is powered.</li>
+        {ob_li}
       </ul>
       <h2 id="parts">Parts Required</h2>
       <p>Here's a list of parts needed to build this project:</p>
@@ -595,15 +585,13 @@ def render_page(d: dict) -> str:
       <h2 id="demo">Demonstration</h2>
       <p>After uploading the code, open the Serial Monitor at 115200 baud. Verify that sensor readings change when you trigger the input condition. When the threshold is crossed, the output on {esc(d['output_pin'])} should activate — {esc(how)}</p>
       <h2>Wrapping Up</h2>
-      <p>In this tutorial we've shown you how to build {esc(d['title'])}. You can use this pattern in your own ESP32 projects by changing the sensor, threshold, and output device.</p>
+      <p>{esc(wrap)}</p>
       <h2 id="related">Related Projects</h2>
       {related_section}
       <div class="ad-slot ad-slot-mid" data-ad-slot="article-mid" aria-hidden="true"></div>
       <h2 id="faq">FAQ</h2>
       <div class="faq-list">
-        <div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">{esc(d['faq_q'])}<span class="plus">+</span></button><div class="faq-a"><p>{esc(d['faq_a'])}</p></div></div>
-        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How do I choose the threshold?<span class="plus">+</span></button><div class="faq-a"><p>Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.</p></div></div>
-        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Can this work without Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Yes. The core read-compare-act loop runs locally on the ESP32 without internet.</p></div></div>
+        {faq_block}
       </div>
     </div>
   </article>

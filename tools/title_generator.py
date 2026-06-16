@@ -224,6 +224,14 @@ def dedupe_core(core: str) -> str:
     return " ".join(out) or "IoT Project"
 
 
+def dedupe_title_phrases(title: str) -> str:
+    title = re.sub(r"\s+", " ", title).strip()
+    title = re.sub(r"(\bfor\s+[^—()]+?)\s+\1", r"\1", title, flags=re.I)
+    title = re.sub(r"(\bwith\s+[^—()]+?)\s+\1", r"\1", title, flags=re.I)
+    title = re.sub(r"(\s+—\s+[^—()]+?)\s+\1", r"\1", title, flags=re.I)
+    return re.sub(r"\s+", " ", title).strip()
+
+
 def polish_title(title: str) -> str:
     title = re.sub(r"\s+", " ", title).strip()
     title = re.sub(r"\bESP32(?:\s+ESP32)+\b", "ESP32", title, flags=re.I)
@@ -236,6 +244,7 @@ def polish_title(title: str) -> str:
         r"^(How to|Build |Create |Make |Step-by-Step)", title, re.I
     ):
         title = f"ESP32 {title}"
+    title = dedupe_title_phrases(title)
     return normalize_terms(title[:92].rstrip(" ,-("))
 
 
@@ -280,21 +289,40 @@ def generate_title(d: dict, variant: int, used: set) -> str:
     cat = d.get("category") or "ESP32"
     pool = USE_CASES.get(cat, GENERIC_USE)
     core = slug_core(d.get("slug", ""))
-    use = pool[variant % len(pool)]
-    if words_overlap(use, core):
-        use = pool[(variant + 11) % len(pool)]
-    conn = CONN[variant % len(CONN)]
     sensor = clean_part(d.get("sensor_name", "Sensor"))
     output = clean_part(d.get("output_name", "Output"))
-    tpl = TEMPLATES[variant % len(TEMPLATES)]
+    tpl = TEMPLATES[(variant * 11 + 2) % len(TEMPLATES)]
+    use = pool[(variant * 3 + 5) % len(pool)]
+    if words_overlap(use, core):
+        use = pool[(variant * 3 + 16) % len(pool)]
+    conn = CONN[(variant * 7 + 3) % len(CONN)]
     title = tpl.format(use=use, core=core, sensor=sensor, output=output, conn=conn)
     title = polish_title(title)
-    key = title.lower()
-    n = 2
     base = title
+    key = title.lower()
+    attempt = 0
+    suffixes = [
+        f" for {use}",
+        f" with {conn}",
+        f" — {use}",
+        f" ({conn})",
+        f" — {sensor} Monitor",
+        f" for {use} Labs",
+        f" with {output}",
+        f" — {conn} Ready",
+    ]
     while key in used:
-        title = f"{base} v{n}"
+        suffix = suffixes[attempt % len(suffixes)]
+        fragment = suffix.strip(" —()").lower()
+        if fragment and fragment in base.lower():
+            attempt += 1
+            continue
+        title = polish_title(f"{base}{suffix}")
         key = title.lower()
-        n += 1
+        attempt += 1
+        if attempt > 12:
+            title = polish_title(f"{base} — Build {variant + 1}")
+            key = title.lower()
+            break
     used.add(key)
     return title
