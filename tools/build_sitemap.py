@@ -91,7 +91,9 @@ def write_sitemap_html(project_files: list[Path]) -> None:
 
 
 def main():
-    project_files = sorted(PROJECTS.glob("*.html"))
+    project_files = sorted(
+        p for p in PROJECTS.glob("*.html") if "-project-" not in p.name and p.is_file()
+    )
     write_sitemap_xml(project_files)
     write_sitemap_html(project_files)
     print(f"Wrote sitemap.xml ({len(project_files) + len(STATIC_PAGES) - 1} URLs) + sitemap.html")

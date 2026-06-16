@@ -17,49 +17,9 @@ function toggleFaq(btn) {
   }
 }
 
-window.addEventListener('load', function () {
-  document.querySelectorAll('.faq-item.open .faq-a').forEach(function (a) {
-    a.style.maxHeight = a.scrollHeight + 'px';
-  });
-
-  var tocLinks = document.querySelectorAll('.side-toc a[href^="#"]');
-  var sections = [];
-  tocLinks.forEach(function (link) {
-    var id = link.getAttribute('href').slice(1);
-    var el = document.getElementById(id);
-    if (el) sections.push({ id: id, el: el, link: link });
-  });
-
-  if (sections.length) {
-    var ticking = false;
-    function updateToc() {
-      var scrollY = window.scrollY + 120;
-      var current = sections[0];
-      sections.forEach(function (s) {
-        if (s.el.offsetTop <= scrollY) current = s;
-      });
-      tocLinks.forEach(function (l) {
-        l.classList.remove('is-active');
-      });
-      if (current) current.link.classList.add('is-active');
-      ticking = false;
-    }
-    window.addEventListener(
-      'scroll',
-      function () {
-        if (!ticking) {
-          window.requestAnimationFrame(updateToc);
-          ticking = true;
-        }
-      },
-      { passive: true }
-    );
-    updateToc();
-  }
-});
-
 function copyCode(btn) {
-  var pre = document.getElementById('code-content');
+  var block = btn.closest('.code-block');
+  var pre = block ? block.querySelector('pre') : document.getElementById('code-content');
   if (!pre) return;
   var code = pre.innerText;
   navigator.clipboard.writeText(code).then(function () {
@@ -72,3 +32,50 @@ function copyCode(btn) {
     }, 1600);
   });
 }
+
+function setDifficultyLevel(level) {
+  if (!level) return;
+  document.querySelectorAll('.difficulty-tab').forEach(function (tab) {
+    var on = tab.dataset.level === level;
+    tab.classList.toggle('active', on);
+    tab.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  document.querySelectorAll('.level-panel').forEach(function (panel) {
+    panel.hidden = panel.dataset.level !== level;
+  });
+  document.querySelectorAll('[data-level-link]').forEach(function (link) {
+    link.classList.toggle('is-active', link.dataset.levelLink === level);
+  });
+  if (history.replaceState) {
+    history.replaceState(null, '', '#' + level);
+  }
+}
+
+window.addEventListener('load', function () {
+  document.querySelectorAll('.faq-item.open .faq-a').forEach(function (a) {
+    a.style.maxHeight = a.scrollHeight + 'px';
+  });
+
+  var tabs = document.querySelectorAll('.difficulty-tab');
+  if (tabs.length) {
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        setDifficultyLevel(tab.dataset.level);
+      });
+    });
+    document.querySelectorAll('[data-level-link]').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        setDifficultyLevel(link.dataset.levelLink);
+        var panels = document.querySelector('.level-panels');
+        if (panels) panels.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    var hash = (location.hash || '').replace('#', '').toLowerCase();
+    if (hash === 'beginner' || hash === 'intermediate' || hash === 'advanced') {
+      setDifficultyLevel(hash);
+    } else {
+      setDifficultyLevel('beginner');
+    }
+  }
+});

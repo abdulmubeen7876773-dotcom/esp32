@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260617-saas10"
+CSS_VERSION = "20260617-parent1"
 SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
 SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
@@ -247,7 +247,7 @@ def hero_html(latest_items: str = "") -> str:
     <div class="hero-content">
       <p class="hero-eyebrow">ESP32 Project Library</p>
       <h1 id="hero-heading">Build, Connect &amp; Automate with ESP32</h1>
-      <p class="hero-sub">Explore 1,000+ hands-on ESP32 projects — IoT systems, smart home automation, robotics, sensors, and AI at the edge. Built for makers, students, engineers, and developers.</p>
+      <p class="hero-sub">Explore 15 ESP32 parent projects — each with Beginner, Intermediate, and Advanced build paths for IoT, automation, robotics, sensors, and edge AI.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="projects.html">Browse Projects</a>
         <a class="btn btn-secondary" href="#categories">Explore Categories</a>
@@ -262,11 +262,11 @@ def hero_html(latest_items: str = "") -> str:
 
 
 def stats_html() -> str:
-    return """<section class="stats-bar wrap reveal" aria-label="Site statistics"><div class="stats-grid"><div class="stat-item"><strong>1000+</strong><span>Projects</span></div><div class="stat-item"><strong>50+</strong><span>Categories</span></div><div class="stat-item"><strong>Beginner → Advanced</strong><span>Skill Levels</span></div><div class="stat-item"><strong>Open Source</strong><span>Examples</span></div></div></section>"""
+    return """<section class="stats-bar wrap reveal" aria-label="Site statistics"><div class="stats-grid"><div class="stat-item"><strong>15</strong><span>Parent Projects</span></div><div class="stat-item"><strong>45</strong><span>Build Stages</span></div><div class="stat-item"><strong>15</strong><span>Categories</span></div><div class="stat-item"><strong>Open Source</strong><span>Examples</span></div></div></section>"""
 
 
 def footer_html(base: str = "") -> str:
-    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1,000+ ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step build guides for makers, students, and engineers.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
+    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>15 parent ESP32 tutorials with Beginner, Intermediate, and Advanced stages — wiring tables, Arduino code, and troubleshooting for makers and students.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
 
 
 def related_cards_html(related: list, base: str = "") -> str:

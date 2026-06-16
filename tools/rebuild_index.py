@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
-from flagship_polish import is_flagship
-from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, header_html, organization_schema, website_schema, CSS_VERSION
+from parent_registry import PARENTS
+from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, header_html, organization_schema, website_schema, CSS_VERSION, short_category
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -128,26 +128,56 @@ def post_card(p):
     return modern_card(p, "post-card", "post-thumb")
 
 
-def grid_card(p):
-    feat = ' data-featured="1"' if p.get("featured") else ""
-    attrs = f' data-title="{esc(p["title"].lower())}" data-category="{esc(p["category"])}" data-difficulty="{esc(p["difficulty"])}"{feat}'
-    return modern_card(p, "card project-card", "card-thumb", extra_attrs=attrs, show_desc=True)
+LEVELS = ["Beginner", "Intermediate", "Advanced"]
+
+
+def parent_listing_record(parent: dict) -> dict:
+    desc = parent["description"]
+    if len(desc) > 120:
+        desc = desc[:117].rstrip() + "…"
+    return {
+        "href": f"projects/{parent['slug']}.html",
+        "title": parent["title"],
+        "desc": desc,
+        "category": parent["category"],
+        "slug": parent["slug"],
+        "levels": LEVELS,
+        "readMin": 12,
+    }
+
+
+def parent_grid_card(p: dict) -> str:
+    levels_html = "".join(
+        f'<span class="badge badge-{lv.lower()}">{esc(lv)}</span>' for lv in p.get("levels", LEVELS)
+    )
+    attrs = (
+        f' data-title="{esc(p["title"].lower())}"'
+        f' data-category="{esc(p["category"])}"'
+        f' data-levels="{esc(",".join(p.get("levels", LEVELS)))}"'
+    )
+    tc = icon_thumb_class(p["category"])
+    icon = pick_icon(p["category"])
+    desc = esc(p.get("desc", ""))
+    return f"""<a class="card project-card modern-card parent-card" href="{esc(p['href'])}"{attrs}>
+<div class="card-thumb {tc}">{icon}</div>
+<div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}</div>
+<h3>{esc(p['title'])}</h3>
+<p class="card-desc">{desc}</p>
+<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
 def project_json_record(p: dict) -> dict:
     desc = p.get("desc", "")
-    if len(desc) > 100:
-        desc = desc[:97].rstrip() + "…"
-    diff = p.get("difficulty", "Beginner").replace(" build", "")
+    if len(desc) > 120:
+        desc = desc[:117].rstrip() + "…"
     return {
         "href": p["href"],
         "title": p["title"],
         "desc": desc,
         "category": p["category"],
-        "difficulty": diff,
         "slug": p["slug"],
-        "readMin": read_time_minutes(diff, p.get("slug", "")),
-        "featured": bool(p.get("featured")),
+        "levels": p.get("levels", LEVELS),
+        "readMin": p.get("readMin", 12),
     }
 
 
@@ -179,13 +209,13 @@ def projects_text_index(projects: list) -> str:
 
 
 def projects_listing_html(cat_opts, preview_cards="", text_index=""):
-    desc = "Browse 1,000+ ESP32 projects with wiring diagrams, source code, and step-by-step tutorials for IoT, automation, robotics, and embedded systems."
+    desc = "Browse 15 ESP32 parent projects — each with Beginner, Intermediate, and Advanced build stages, wiring tables, and Arduino code."
     schema = organization_schema() + website_schema()
     initial = preview_cards or '<p class="meta grid-loading">Loading project library…</p>'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Projects — Browse 1,000+ Tutorials | ESP32 Library", desc, canonical_path="projects.html", extra_schema=schema)}
+{head_html("", "ESP32 Projects — 15 Parent Tutorials with 3 Skill Levels | ESP32 Library", desc, canonical_path="projects.html", extra_schema=schema)}
 </head>
 <body>
 <main>
@@ -193,11 +223,11 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 <section class="section-block wrap page-head">
   <p class="hero-eyebrow">Project Directory</p>
   <h1>Browse ESP32 Projects</h1>
-  <p class="hero-sub">Explore 1,000+ ESP32 projects — IoT tutorials, automation systems, robotics builds, and real-world engineering solutions.</p>
+  <p class="hero-sub">15 parent project guides — each includes Beginner, Intermediate, and Advanced stages with unique wiring, code, and troubleshooting.</p>
   <div class="search-panel">
     <input id="q" placeholder="Search ESP32 projects…" aria-label="Search projects">
     <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
-    <select id="diff" aria-label="Filter by difficulty"><option value="">All difficulty levels</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
+    <select id="diff" aria-label="Filter by difficulty stage"><option value="">All difficulty stages</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
   </div>
   <p class="meta" id="count" style="margin-top:12px">Loading projects…</p>
   <div class="grid" id="grid">{initial}</div>
@@ -215,7 +245,7 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 
 
 def home_html(projects, sections, latest):
-    desc = "Build, connect, and automate with ESP32. 1,000+ IoT projects, tutorials, and open-source examples for makers, students, and engineers."
+    desc = "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers."
     latest_html = "".join(latest_item(p) for p in latest)
     schema = organization_schema() + website_schema()
     return f"""<!DOCTYPE html>
@@ -246,34 +276,28 @@ def home_html(projects, sections, latest):
 
 
 def main():
-    files = sorted(PROJECTS.glob("*.html"))
-    if not files:
-        print("No projects found", file=sys.stderr)
-        sys.exit(1)
-    projects = sort_projects([parse_card(f) for f in files])
+    projects = [parent_listing_record(p) for p in PARENTS]
     by_cat = defaultdict(list)
     for p in projects:
         by_cat[p["category"]].append(p)
-    for cat in by_cat:
-        by_cat[cat] = sort_projects(by_cat[cat])
-    latest = pick_diverse_latest(by_cat, projects, 4)
+    latest = projects[:4]
     sections = []
     for cat in CATEGORIES:
-        items = by_cat.get(cat, [])[:4]
+        items = by_cat.get(cat, [])
         if not items:
             continue
-        cards = "".join(post_card(p) for p in items)
+        cards = "".join(parent_grid_card(p) for p in items)
         sections.append(
             f"""<section class="section-block wrap reveal" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(category_section_title(cat))}</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
         )
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
-    preview = "\n".join(grid_card(p) for p in projects[:48])
+    preview = "\n".join(parent_grid_card(p) for p in projects)
     text_index = projects_text_index(projects)
     INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
     write_projects_json(projects)
     write_project_icons_js(projects)
     PROJECTS_OUT.write_text(projects_listing_html(cat_opts, preview, text_index), encoding="utf-8")
-    print(f"Wrote index.html + projects.html shell + projects.json ({len(projects)} projects, {len(sections)} category sections)")
+    print(f"Wrote index.html + projects.html + projects.json ({len(projects)} parent projects, {len(sections)} category sections)")
     import build_sitemap
 
     build_sitemap.main()

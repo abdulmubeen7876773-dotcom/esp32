@@ -11,8 +11,8 @@
     return c;
   }
 
-  function badgeClass(difficulty) {
-    var d = (difficulty || '').replace(' build', '').trim().toLowerCase();
+  function badgeClass(level) {
+    var d = (level || '').toLowerCase();
     if (d === 'advanced') return 'badge-advanced';
     if (d === 'intermediate') return 'badge-intermediate';
     return 'badge-beginner';
@@ -26,38 +26,38 @@
     return '<div class="card-thumb ' + cls + '">' + svg + '</div>';
   }
 
+  function levelBadges(levels) {
+    var list = levels || ['Beginner', 'Intermediate', 'Advanced'];
+    return list
+      .map(function (lv) {
+        return (
+          '<span class="badge ' + badgeClass(lv) + '">' + esc(lv) + '</span>'
+        );
+      })
+      .join('');
+  }
+
   function cardHtml(p) {
-    var diff = (p.difficulty || 'Beginner').replace(' build', '');
     var desc = p.desc || '';
     var descHtml = desc ? '<p class="card-desc">' + esc(desc) + '</p>' : '';
-    var readMin = p.readMin || 6;
-    var featBadge = p.featured
-      ? '<span class="badge badge-featured">Featured</span>'
-      : '';
+    var levels = p.levels || ['Beginner', 'Intermediate', 'Advanced'];
+    var levelsStr = levels.join(',');
     return (
-      '<a class="card project-card modern-card" href="' +
+      '<a class="card project-card modern-card parent-card" href="' +
       esc(p.href) +
       '" data-title="' +
       esc((p.title || '').toLowerCase()) +
       '" data-category="' +
       esc(p.category || '') +
-      '" data-difficulty="' +
-      esc(diff) +
-      '"' +
-      (p.featured ? ' data-featured="1"' : '') +
-      '>' +
-      thumbHtml(p.category) +
-      '<div class="card-body"><div class="card-badges">' +
-      featBadge +
-      '<span class="badge badge-cat">' +
-      esc(shortCategory(p.category)) +
-      '</span><span class="badge ' +
-      badgeClass(diff) +
+      '" data-levels="' +
+      esc(levelsStr) +
       '">' +
-      esc(diff) +
-      '</span><span class="badge badge-time">' +
-      readMin +
-      ' min read</span></div><h3>' +
+      thumbHtml(p.category) +
+      '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
+      esc(shortCategory(p.category)) +
+      '</span>' +
+      levelBadges(levels) +
+      '</div><h3>' +
       esc(p.title) +
       '</h3>' +
       descHtml +
@@ -71,24 +71,10 @@
       if (done) done();
       return;
     }
-    var i = 0;
-    var chunk = 40;
-    grid.innerHTML = '';
-
-    function step() {
-      var slice = projects.slice(i, i + chunk);
-      if (!slice.length) {
-        var textIndex = document.getElementById('project-text-index');
-        if (textIndex) textIndex.classList.add('hidden');
-        if (done) done();
-        return;
-      }
-      grid.insertAdjacentHTML('beforeend', slice.map(cardHtml).join(''));
-      i += chunk;
-      window.requestAnimationFrame(step);
-    }
-
-    step();
+    grid.innerHTML = projects.map(cardHtml).join('');
+    var textIndex = document.getElementById('project-text-index');
+    if (textIndex) textIndex.classList.add('hidden');
+    if (done) done();
   }
 
   function initProjectFilters() {
@@ -127,11 +113,11 @@
       getCards().forEach(function (card) {
         var title = card.dataset.title || '';
         var cardCat = card.dataset.category || '';
-        var cardDiff = card.dataset.difficulty || '';
+        var levels = (card.dataset.levels || '').split(',');
         var ok =
           (!search || title.indexOf(search) !== -1) &&
           (!category || cardCat === category) &&
-          (!difficulty || cardDiff === difficulty);
+          (!difficulty || levels.indexOf(difficulty) !== -1);
         card.classList.toggle('hidden', !ok);
         if (ok) visible++;
       });
@@ -167,7 +153,6 @@
 
   function loadProjects() {
     var grid = document.getElementById('grid');
-    var count = document.getElementById('count');
     if (!grid) return;
 
     fetch('projects.json')
@@ -176,9 +161,6 @@
         return res.json();
       })
       .then(function (projects) {
-        projects.sort(function (a, b) {
-          return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
-        });
         renderProjects(projects, function () {
           initProjectFilters();
         });
@@ -186,7 +168,8 @@
       .catch(function () {
         showTextFallback();
         if (!document.querySelectorAll('.project-card').length) {
-          grid.innerHTML = '<p class="meta">Could not load the project library. Use the plain-text index below or the <a href="sitemap.html">sitemap</a>.</p>';
+          grid.innerHTML =
+            '<p class="meta">Could not load the project library. Use the plain-text index below or the <a href="sitemap.html">sitemap</a>.</p>';
         }
         initProjectFilters();
       });
