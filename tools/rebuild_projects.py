@@ -18,6 +18,7 @@ from site_layout import (
     related_cards_html,
     read_time_label,
     short_category,
+    badge_class,
     normalize_terms,
     CSS_VERSION,
     SITE_DOMAIN,
@@ -506,19 +507,21 @@ def rnt_header():
 def render_page(d: dict) -> str:
     tc = thumb_class(d["category"])
     icon = pick_icon(d["category"])
-    parts_li = []
-    for comp in d["components"]:
-        if comp.lower() not in ("jumper wires", "breadboard"):
-            parts_li.append(f"<li><strong>{esc(comp)}</strong></li>")
     wiring_rows = []
     for name, pin in d["wiring"]:
         wiring_rows.append(f"<tr><td>{esc(name)}</td><td><strong>{esc(pin)}</strong></td></tr>")
     related_section = related_cards_html(d["related"])
     rt = read_time_label(d["difficulty"], d["slug"])
     blog_bits = "".join(f"<p>{esc(p)}</p>" for p in d["blog_paras"][:4])
+    intro_block = f'<div class="article-intro">{blog_bits}</div>' if blog_bits else ""
     apps_li = "".join(f"<li>{esc(a)}</li>" for a in d["apps"])
     adv_li = "".join(f"<li>{esc(a)}</li>" for a in d["advantages"])
     future_li = "".join(f"<li>{esc(f)}</li>" for f in d["future"])
+    parts_items = []
+    for comp in d["components"]:
+        if comp.lower() not in ("jumper wires", "breadboard"):
+            parts_items.append(f"<li><span>{esc(comp)}</span></li>")
+    parts_html = "".join(parts_items)
     code_fname = re.sub(r"[^a-z0-9]+", "_", d["slug"].lower()).strip("_")[:40] + ".ino"
     code_esc = esc(d["code"])
     faq_html = []
@@ -542,10 +545,17 @@ def render_page(d: dict) -> str:
     if d["category"] == "Healthcare":
         health_note = '<p class="notice notice-health">This tutorial is for educational purposes only and is not medical advice. Do not use it for diagnosis, treatment, or patient monitoring without proper validation.</p>'
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(d['category'])}</a></li><li aria-current="page">{esc(d['title'][:60])}</li></ol></nav>"""
-    featured_badge = '<span class="featured-pill">Featured tutorial</span>' if d.get("featured") else ""
+    featured_badge = '<span class="badge badge-featured">Featured</span>' if d.get("featured") else ""
     hero_block = hero_diagram_dark(d) if d.get("featured") else ""
     wiring_viz = wiring_diagram_enhanced(d) if d.get("featured") else ""
     wiring_tips = wiring_tips_html(d) if d.get("featured") else ""
+    diff_clean = d["difficulty"].replace(" build", "")
+    cat_short = short_category(d["category"])
+    badge_row = f"""<div class="article-badges">{featured_badge}<span class="badge badge-cat">{esc(cat_short)}</span><span class="badge {badge_class(diff_clean)}">{esc(diff_clean)}</span><span class="badge badge-time">{esc(rt)}</span></div>"""
+    feature_block = ""
+    if not d.get("featured"):
+        feature_block = f'<div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>'
+    cat_slug_nav = re.sub(r"[^a-z0-9]+", "-", d["category"].lower()).strip("-")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -566,70 +576,95 @@ def render_page(d: dict) -> str:
 <main>
 <div class="wrap article-shell">
   <aside class="sidebar-left">
-    <h3>Learn ESP32</h3>
-    <ul class="side-list">
-      <li><a href="#overview">Project Overview</a></li>
-      <li><a href="#parts">Parts Required</a></li>
-      <li><a href="#wiring">Schematics</a></li>
+    <div class="sidebar-sticky">
+    <h3>On this page</h3>
+    <ul class="side-list side-toc">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#parts">Parts</a></li>
+      <li><a href="#wiring">Wiring</a></li>
+      <li><a href="#how">How it works</a></li>
       <li><a href="#code">Code</a></li>
-      <li><a href="#demo">Demonstration</a></li>
+      <li><a href="#demo">Demo</a></li>
       <li><a href="#faq">FAQ</a></li>
+      <li><a href="#related">Related</a></li>
     </ul>
-    <h3 style="margin-top:20px">Category</h3>
-    <ul class="side-list"><li><a href="../projects.html#cat-{re.sub(r'[^a-z0-9]+', '-', d['category'].lower()).strip('-')}">{esc(d['category'])}</a></li></ul>
+    <h3 class="sidebar-divider">Category</h3>
+    <ul class="side-list"><li><a href="../projects.html#cat-{cat_slug_nav}">{esc(d['category'])}</a></li></ul>
+    </div>
   </aside>
   <article class="article-main">
+    <header class="article-header">
     {breadcrumb}
     <h1>{esc(d['title'])}</h1>
-    <p class="article-meta">{esc(d['category'])} · {esc(d['difficulty'].replace(' build',''))} · {esc(rt)} · {esc(d['project_tag'])}</p>
-    {featured_badge}
+    {badge_row}
     <p class="article-lead">{esc(d['lead'])}</p>
     {health_note}
+    </header>
     {hero_block}
-    <div class="ad-slot ad-slot-top" data-ad-slot="article-top" aria-hidden="true"></div>
-    <div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>
+    {feature_block}
     <div class="article-content">
-      {blog_bits}
-      <h2 id="overview">Project Overview</h2>
+      {intro_block}
+      <section class="content-section" id="overview">
+      <h2>Project Overview</h2>
       <p>{esc(d['overview'])}</p>
-      <ul>
+      <ul class="overview-list">
         {ob_li}
       </ul>
-      <h2 id="parts">Parts Required</h2>
-      <p>Here's a list of parts needed to build this project:</p>
-      <ul class="parts-list">{''.join(parts_li)}</ul>
-      <h2 id="wiring">Schematics &amp; Wiring Diagram</h2>
-      <p>Follow the wiring connections below. Double-check GPIO pins before uploading the code.</p>
+      </section>
+      <section class="content-section" id="parts">
+      <h2>Parts Required</h2>
+      <p>Components needed for this build:</p>
+      <ul class="parts-grid">{parts_html}</ul>
+      </section>
+      <section class="content-section schematics-section" id="wiring">
+      <h2>Schematics &amp; Wiring</h2>
+      <p>Match each component to the GPIO pin below before uploading firmware.</p>
+      <div class="schematics-panel">
       {wiring_viz}
       <div class="pin-table-wrap"><table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table></div>
       {wiring_tips}
+      </div>
+      </section>
+      <section class="content-section" id="how">
       <h2>How It Works</h2>
       {build_steps(d)}
-      <h2 id="code">Code</h2>
-      <p>Upload the following sketch to your ESP32 board using the Arduino IDE. Adjust pins and threshold for your hardware.</p>
+      </section>
+      <section class="content-section" id="code">
+      <h2>Arduino Code</h2>
+      <p>Upload this sketch in the Arduino IDE. Adjust pins and threshold for your hardware.</p>
       <div class="code-block"><div class="code-bar"><span>{esc(code_fname)}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre id="code-content">{code_esc}</pre></div>
-      <h2>Applications</h2>
-      <ul>{apps_li}</ul>
-      <h2>Advantages</h2>
-      <ul>{adv_li}</ul>
-      <h2>Future Improvements</h2>
-      <ul>{future_li}</ul>
-      <h2 id="demo">Demonstration</h2>
-      <p>After uploading the code, open the Serial Monitor at 115200 baud. Verify that sensor readings change when you trigger the input condition. When the threshold is crossed, the output on {esc(d['output_pin'])} should activate — {esc(how)}</p>
+      </section>
+      <div class="detail-columns">
+      <section class="detail-panel"><h2>Applications</h2><ul class="detail-list">{apps_li}</ul></section>
+      <section class="detail-panel"><h2>Advantages</h2><ul class="detail-list">{adv_li}</ul></section>
+      <section class="detail-panel"><h2>Future Ideas</h2><ul class="detail-list">{future_li}</ul></section>
+      </div>
+      <section class="content-section" id="demo">
+      <h2>Demonstration</h2>
+      <p class="demo-note">Open Serial Monitor at <strong>115200 baud</strong>. Trigger the sensor and confirm the output on <strong>{esc(d['output_pin'])}</strong> responds when readings cross the threshold.</p>
+      <p class="demo-detail">{esc(how)}</p>
+      </section>
+      <section class="content-section wrap-up-section">
       <h2>Wrapping Up</h2>
       <p>{esc(wrap)}</p>
-      <h2 id="related">Related Projects</h2>
-      {related_section}
-      <div class="ad-slot ad-slot-mid" data-ad-slot="article-mid" aria-hidden="true"></div>
-      <h2 id="faq">FAQ</h2>
+      </section>
+      <section class="content-section" id="faq">
+      <h2>FAQ</h2>
       <div class="faq-list">
         {faq_block}
       </div>
+      </section>
+      <section class="content-section" id="related">
+      <h2>Related Projects</h2>
+      {related_section}
+      </section>
     </div>
   </article>
   <aside class="sidebar-right">
+    <div class="sidebar-sticky">
     <div class="ad-slot ad-slot-sidebar" data-ad-slot="sidebar" aria-hidden="true"></div>
-    <div class="promo-box"><strong>ESP32 Project Library</strong><p style="font-size:.88rem;color:#666;margin:.5em 0 0">1000 tutorials with wiring diagrams, code, and step-by-step guides.</p><p style="margin-top:10px"><a href="../projects.html">Browse all projects »</a></p></div>
+    <div class="promo-box"><strong>ESP32 Project Library</strong><p class="promo-text">1,000+ tutorials with wiring diagrams, code, and step-by-step guides.</p><p class="promo-link"><a href="../projects.html">Browse all projects »</a></p></div>
+    </div>
   </aside>
 </div>
 </main>
