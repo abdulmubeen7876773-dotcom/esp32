@@ -204,7 +204,7 @@ def home_html(projects, sections, latest):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="index.html", extra_schema=schema)}
+{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="index.html", extra_schema=schema, include_gsc=True)}
 </head>
 <body>
 <main>

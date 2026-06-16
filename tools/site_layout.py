@@ -170,11 +170,13 @@ def head_html(
     canonical_path: str = "",
     og_type: str = "website",
     extra_schema: str = "",
+    include_gsc: bool = False,
 ) -> str:
     t = esc(title)
     d = esc(description)
     canon = canonical_url(base, canonical_path or "index.html")
     favicon = f"{base}favicon.svg"
+    gsc = gsc_verification_meta() if include_gsc else ""
     return f"""<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
@@ -184,7 +186,7 @@ def head_html(
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="{favicon}" type="image/svg+xml">
 {social_meta(title, description, canon, og_type)}
-{gsc_verification_meta()}
+{gsc}
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 <link rel="preconnect" href="https://fonts.googleapis.com">

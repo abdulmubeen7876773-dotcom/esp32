@@ -19,7 +19,6 @@ from site_layout import (
     json_ld_script,
     social_meta,
     analytics_config_script,
-    gsc_verification_meta,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -393,7 +392,6 @@ def build_head(d: dict) -> str:
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{url}">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-{gsc_verification_meta()}
 {social}
 {json_ld_script(article)}
 {json_ld_script(faq)}
