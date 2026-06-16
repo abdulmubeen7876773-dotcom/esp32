@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260617-parent1"
+CSS_VERSION = "20260617-compact1"
 SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
 SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
@@ -239,22 +239,17 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 def hero_html(latest_items: str = "") -> str:
     latest_block = ""
     if latest_items:
-        latest_block = f"""<aside class="hero-latest" aria-label="Latest projects"><h2>Latest Projects</h2>{latest_items}</aside>"""
-    return f"""<section class="hero-premium" aria-labelledby="hero-heading">
-  <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
-  <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
-  <div class="wrap hero-premium-grid">
+        latest_block = f"""<aside class="hero-latest hero-latest-compact" aria-label="Latest projects"><h2>Latest</h2><div class="hero-latest-row">{latest_items}</div></aside>"""
+    return f"""<section class="hero-premium hero-compact" aria-labelledby="hero-heading">
+  <div class="wrap hero-premium-grid hero-compact-grid">
     <div class="hero-content">
       <p class="hero-eyebrow">ESP32 Project Library</p>
       <h1 id="hero-heading">Build, Connect &amp; Automate with ESP32</h1>
-      <p class="hero-sub">Explore 15 ESP32 parent projects — each with Beginner, Intermediate, and Advanced build paths for IoT, automation, robotics, sensors, and edge AI.</p>
+      <p class="hero-sub">15 parent projects with Beginner, Intermediate, and Advanced stages — wiring, code, and troubleshooting in one place.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="projects.html">Browse Projects</a>
-        <a class="btn btn-secondary" href="#categories">Explore Categories</a>
+        <a class="btn btn-primary btn-sm" href="projects.html">Browse Projects</a>
+        <a class="btn btn-secondary btn-sm" href="#featured">Featured Projects</a>
       </div>
-    </div>
-    <div class="hero-visual" aria-hidden="true">
-      <div class="hero-board-float">{HERO_BOARD_SVG}</div>
     </div>
     {latest_block}
   </div>
@@ -262,7 +257,7 @@ def hero_html(latest_items: str = "") -> str:
 
 
 def stats_html() -> str:
-    return """<section class="stats-bar wrap reveal" aria-label="Site statistics"><div class="stats-grid"><div class="stat-item"><strong>15</strong><span>Parent Projects</span></div><div class="stat-item"><strong>45</strong><span>Build Stages</span></div><div class="stat-item"><strong>15</strong><span>Categories</span></div><div class="stat-item"><strong>Open Source</strong><span>Examples</span></div></div></section>"""
+    return """<section class="stats-bar stats-compact wrap reveal" aria-label="Site statistics"><div class="stats-grid"><div class="stat-item"><strong>15</strong><span>Projects</span></div><div class="stat-item"><strong>45</strong><span>Stages</span></div><div class="stat-item"><strong>15</strong><span>Categories</span></div><div class="stat-item"><strong>Free</strong><span>Open Source</span></div></div></section>"""
 
 
 def footer_html(base: str = "") -> str:

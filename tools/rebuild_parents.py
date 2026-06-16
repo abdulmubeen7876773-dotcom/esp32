@@ -139,8 +139,41 @@ def build_head(parent: dict, hardware: dict) -> str:
 {json_ld_script(crumbs)}"""
 
 
+def accordion_item(level_id: str, section_id: str, title: str, body_html: str, open_default: bool = False) -> str:
+    open_cls = " open" if open_default else ""
+    expanded = "true" if open_default else "false"
+    return (
+        f'<div class="acc-item{open_cls}" id="sec-{level_id}-{section_id}" data-section="{section_id}">'
+        f'<button class="acc-btn" type="button" aria-expanded="{expanded}" onclick="toggleAccordion(this)">{esc(title)}'
+        f'<span class="acc-icon" aria-hidden="true"></span></button>'
+        f'<div class="acc-body"><div class="acc-inner">{body_html}</div></div></div>'
+    )
+
+
+SECTION_NAV = [
+    ("overview", "Overview"),
+    ("components", "Components"),
+    ("wiring", "Wiring"),
+    ("code", "Arduino Code"),
+    ("how", "How It Works"),
+    ("apps", "Applications"),
+    ("troubleshooting", "Troubleshooting"),
+    ("upgrades", "Upgrades"),
+]
+
+
+def section_toc_html(active_level: str = "beginner") -> str:
+    items = []
+    for sec_id, label in SECTION_NAV:
+        items.append(
+            f'<li><a href="#sec-{active_level}-{sec_id}" data-section="{sec_id}">{esc(label)}</a></li>'
+        )
+    return f'<ul class="side-list side-toc side-sections" id="section-toc">{"".join(items)}</ul>'
+
+
 def render_level_panel(level: dict, parent: dict, active: bool) -> str:
     hidden_attr = "" if active else " hidden"
+    lv = level["level"]
     comps = "".join(f"<li><span>{esc(c)}</span></li>" for c in level["components"])
     apps = "".join(f"<li>{esc(a)}</li>" for a in level["apps"])
     upgrades = "".join(f"<li>{esc(u)}</li>" for u in level["upgrades"])
@@ -150,25 +183,20 @@ def render_level_panel(level: dict, parent: dict, active: bool) -> str:
     )
     code_esc = esc(level["code"])
     fname = parent["slug"] + f"_{level['level']}.ino"
+    sections = [
+        accordion_item(lv, "overview", "Overview", f"<p>{esc(level['overview'])}</p>", True),
+        accordion_item(lv, "components", "Components Required", f'<ul class="parts-grid parts-grid-compact">{comps}</ul>'),
+        accordion_item(lv, "wiring", "Wiring", wiring_table(level["wiring"])),
+        accordion_item(lv, "code", "Arduino Code", f'<div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy</button></div><pre class="level-code">{code_esc}</pre></div>'),
+        accordion_item(lv, "how", "How It Works", steps_html(level["how"])),
+        accordion_item(lv, "apps", "Applications", f'<ul class="detail-list">{apps}</ul>'),
+        accordion_item(lv, "troubleshooting", "Troubleshooting", f'<div class="trouble-list">{trouble}</div>'),
+        accordion_item(lv, "upgrades", "Possible Upgrades", f'<ul class="detail-list">{upgrades}</ul>'),
+    ]
     return f"""
-    <div class="level-panel" id="level-{level['level']}" data-level="{level['level']}" role="tabpanel" aria-labelledby="tab-{level['level']}"{hidden_attr}>
+    <div class="level-panel" id="level-{lv}" data-level="{lv}" role="tabpanel" aria-labelledby="tab-{lv}"{hidden_attr}>
       <h2 class="level-heading">{esc(level['label'])} build</h2>
-      <h3>Overview</h3>
-      <p>{esc(level['overview'])}</p>
-      <h3>Components Required</h3>
-      <ul class="parts-grid">{comps}</ul>
-      <h3>Wiring</h3>
-      {wiring_table(level['wiring'])}
-      <h3>How It Works</h3>
-      {steps_html(level['how'])}
-      <h3>Arduino Code</h3>
-      <div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy</button></div><pre class="level-code">{code_esc}</pre></div>
-      <h3>Applications</h3>
-      <ul class="detail-list">{apps}</ul>
-      <h3>Troubleshooting</h3>
-      <div class="trouble-list">{trouble}</div>
-      <h3>Possible Upgrades</h3>
-      <ul class="detail-list">{upgrades}</ul>
+      <div class="section-accordions">{''.join(sections)}</div>
     </div>"""
 
 
@@ -186,10 +214,9 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
         )
     panels = "".join(render_level_panel(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
     faq_html = []
-    for i, (fq, fa) in enumerate(faq_for_parent(parent)):
-        open_cls = " open" if i == 0 else ""
+    for fq, fa in faq_for_parent(parent):
         faq_html.append(
-            f'<div class="faq-item{open_cls}"><button class="faq-q" type="button" onclick="toggleFaq(this)">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
+            f'<div class="faq-item"><button class="faq-q" type="button" onclick="toggleFaq(this)">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
         )
     related_section = related_cards_html(related)
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
@@ -226,7 +253,9 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
         <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
         <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
       </ul>
-      <h3 class="sidebar-divider">On this page</h3>
+      <h3 class="sidebar-divider">Sections</h3>
+      {section_toc_html("beginner")}
+      <h3 class="sidebar-divider">More</h3>
       <ul class="side-list side-toc">
         <li><a href="#faq">FAQ</a></li>
         <li><a href="#related">Related</a></li>

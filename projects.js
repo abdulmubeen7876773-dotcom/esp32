@@ -1,4 +1,6 @@
 (function () {
+  var PAGE_SIZE = 9;
+
   function esc(text) {
     var d = document.createElement('div');
     d.textContent = text || '';
@@ -43,7 +45,7 @@
     var levels = p.levels || ['Beginner', 'Intermediate', 'Advanced'];
     var levelsStr = levels.join(',');
     return (
-      '<a class="card project-card modern-card parent-card" href="' +
+      '<a class="card project-card modern-card parent-card compact-card" href="' +
       esc(p.href) +
       '" data-title="' +
       esc((p.title || '').toLowerCase()) +
@@ -77,12 +79,43 @@
     if (done) done();
   }
 
+  function getVisibleCards() {
+    return Array.prototype.slice
+      .call(document.querySelectorAll('.project-card'))
+      .filter(function (card) {
+        return !card.classList.contains('filter-hidden');
+      });
+  }
+
+  function applyPagination() {
+    var g = document.getElementById('grid');
+    var wrap = document.getElementById('projects-more-wrap');
+    var btn = document.getElementById('projects-load-more');
+    var cards = getVisibleCards();
+    var expanded = g && g.dataset.expanded === '1';
+    var shown = 0;
+    cards.forEach(function (card, i) {
+      var hide = i >= PAGE_SIZE && !expanded;
+      card.classList.toggle('page-hidden', hide);
+      if (!hide) shown++;
+    });
+    if (wrap && btn) {
+      var needMore = cards.length > PAGE_SIZE && !expanded;
+      wrap.style.display = needMore ? '' : 'none';
+      if (needMore) {
+        btn.textContent = 'Load More (' + (cards.length - PAGE_SIZE) + ')';
+      }
+    }
+    return shown;
+  }
+
   function initProjectFilters() {
     var q = document.getElementById('q');
     var cat = document.getElementById('cat');
     var diff = document.getElementById('diff');
     var count = document.getElementById('count');
-    if (!q || !cat || !diff || !count) return;
+    grid = document.getElementById('grid');
+    if (!q || !cat || !diff || !count || !grid) return;
 
     function slug(text) {
       return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -106,10 +139,11 @@
     }
 
     function filterProjects() {
+      var g = document.getElementById('grid');
+      if (g) g.dataset.expanded = '';
       var search = q.value.toLowerCase().trim();
       var category = cat.value;
       var difficulty = diff.value;
-      var visible = 0;
       getCards().forEach(function (card) {
         var title = card.dataset.title || '';
         var cardCat = card.dataset.category || '';
@@ -118,16 +152,30 @@
           (!search || title.indexOf(search) !== -1) &&
           (!category || cardCat === category) &&
           (!difficulty || levels.indexOf(difficulty) !== -1);
-        card.classList.toggle('hidden', !ok);
-        if (ok) visible++;
+        card.classList.toggle('filter-hidden', !ok);
       });
-      count.textContent = visible + ' projects found';
+      var visible = applyPagination();
+      count.textContent = getVisibleCards().length + ' projects found · showing ' + visible;
     }
 
     [q, cat, diff].forEach(function (el) {
       el.addEventListener('input', filterProjects);
       el.addEventListener('change', filterProjects);
     });
+
+    var loadBtn = document.getElementById('projects-load-more');
+    if (loadBtn) {
+      loadBtn.addEventListener('click', function () {
+        var g = document.getElementById('grid');
+        if (g) g.dataset.expanded = '1';
+        getVisibleCards().forEach(function (card) {
+          card.classList.remove('page-hidden');
+        });
+        var wrap = document.getElementById('projects-more-wrap');
+        if (wrap) wrap.style.display = 'none';
+        count.textContent = getVisibleCards().length + ' projects found';
+      });
+    }
 
     applyHashCategory();
     filterProjects();
@@ -152,7 +200,7 @@
   }
 
   function loadProjects() {
-    var grid = document.getElementById('grid');
+    grid = document.getElementById('grid');
     if (!grid) return;
 
     fetch('projects.json')

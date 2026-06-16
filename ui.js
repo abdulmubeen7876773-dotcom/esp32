@@ -115,4 +115,43 @@
   }
 
   initCookieConsent();
+
+  var btt = document.createElement('button');
+  btt.type = 'button';
+  btt.className = 'back-to-top';
+  btt.setAttribute('aria-label', 'Back to top');
+  btt.textContent = '↑';
+  document.body.appendChild(btt);
+  window.addEventListener(
+    'scroll',
+    function () {
+      btt.classList.toggle('visible', window.scrollY > 320);
+    },
+    { passive: true }
+  );
+  btt.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  var homeGrid = document.getElementById('home-grid');
+  var homeMore = document.getElementById('home-load-more');
+  var homeWrap = document.getElementById('home-more-wrap');
+  if (homeGrid && homeMore) {
+    var initial = parseInt(homeGrid.dataset.initial || '6', 10);
+    var cards = homeGrid.querySelectorAll('.project-card');
+    function updateHomeVisible() {
+      var expanded = homeGrid.classList.contains('is-expanded');
+      cards.forEach(function (card, i) {
+        card.classList.toggle('home-hidden', !expanded && i >= initial);
+      });
+      if (homeWrap) {
+        homeWrap.style.display = expanded || cards.length <= initial ? 'none' : '';
+      }
+    }
+    updateHomeVisible();
+    homeMore.addEventListener('click', function () {
+      homeGrid.classList.add('is-expanded');
+      updateHomeVisible();
+    });
+  }
 })();

@@ -1,3 +1,52 @@
+function closeAccordionItem(item) {
+  if (!item) return;
+  item.classList.remove('open');
+  var btn = item.querySelector('.acc-btn');
+  var body = item.querySelector('.acc-body');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+  if (body) body.style.maxHeight = null;
+}
+
+function openAccordionItem(item) {
+  if (!item) return;
+  item.classList.add('open');
+  var btn = item.querySelector('.acc-btn');
+  var body = item.querySelector('.acc-body');
+  if (btn) btn.setAttribute('aria-expanded', 'true');
+  if (body) body.style.maxHeight = body.scrollHeight + 'px';
+}
+
+function toggleAccordion(btn) {
+  var item = btn.closest('.acc-item');
+  if (!item) return;
+  var willOpen = !item.classList.contains('open');
+  var panel = item.closest('.level-panel');
+  if (panel && willOpen) {
+    panel.querySelectorAll('.acc-item.open').forEach(function (el) {
+      if (el !== item) closeAccordionItem(el);
+    });
+  }
+  if (willOpen) {
+    openAccordionItem(item);
+  } else {
+    closeAccordionItem(item);
+  }
+}
+
+function resetPanelAccordions(level) {
+  var panel = document.querySelector('.level-panel[data-level="' + level + '"]');
+  if (!panel) return;
+  panel.querySelectorAll('.acc-item').forEach(closeAccordionItem);
+  var overview = panel.querySelector('.acc-item[data-section="overview"]');
+  if (overview) openAccordionItem(overview);
+}
+
+function updateSectionToc(level) {
+  document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
+    link.href = '#sec-' + level + '-' + link.dataset.section;
+  });
+}
+
 function toggleFaq(btn) {
   var item = btn.closest('.faq-item');
   var ans = item.querySelector('.faq-a');
@@ -46,14 +95,34 @@ function setDifficultyLevel(level) {
   document.querySelectorAll('[data-level-link]').forEach(function (link) {
     link.classList.toggle('is-active', link.dataset.levelLink === level);
   });
+  updateSectionToc(level);
+  resetPanelAccordions(level);
   if (history.replaceState) {
     history.replaceState(null, '', '#' + level);
   }
 }
 
 window.addEventListener('load', function () {
-  document.querySelectorAll('.faq-item.open .faq-a').forEach(function (a) {
-    a.style.maxHeight = a.scrollHeight + 'px';
+  document.querySelectorAll('.acc-item.open .acc-body').forEach(function (body) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+  });
+
+  document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      var activePanel = document.querySelector('.level-panel:not([hidden])');
+      var level = activePanel ? activePanel.dataset.level : 'beginner';
+      var sec = link.dataset.section;
+      var target = document.getElementById('sec-' + level + '-' + sec);
+      if (!target) return;
+      var panel = target.closest('.level-panel');
+      if (panel && panel.hidden) {
+        setDifficultyLevel(panel.dataset.level);
+      }
+      panel.querySelectorAll('.acc-item.open').forEach(closeAccordionItem);
+      openAccordionItem(target);
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
 
   var tabs = document.querySelectorAll('.difficulty-tab');

@@ -158,7 +158,7 @@ def parent_grid_card(p: dict) -> str:
     tc = icon_thumb_class(p["category"])
     icon = pick_icon(p["category"])
     desc = esc(p.get("desc", ""))
-    return f"""<a class="card project-card modern-card parent-card" href="{esc(p['href'])}"{attrs}>
+    return f"""<a class="card project-card modern-card parent-card compact-card" href="{esc(p['href'])}"{attrs}>
 <div class="card-thumb {tc}">{icon}</div>
 <div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}</div>
 <h3>{esc(p['title'])}</h3>
@@ -205,7 +205,16 @@ def projects_text_index(projects: list) -> str:
         f'<li><a href="{esc(p["href"])}">{esc(p["title"])}</a> <span class="meta">({esc(p["category"])})</span></li>'
         for p in projects
     )
-    return f'<div id="project-text-index" class="project-text-index" aria-label="Plain text project index"><ul>{items}</ul></div>'
+    return f'<div id="project-text-index" class="project-text-index hidden" aria-label="Plain text project index"><ul>{items}</ul></div>'
+
+
+def home_featured_section(projects: list) -> str:
+    cards = "".join(parent_grid_card(p) for p in projects)
+    return f"""<section class="section-block wrap reveal compact-section" id="featured">
+  <div class="section-title"><h2>ESP32 Projects</h2><a class="view-all" href="projects.html">View All »</a></div>
+  <div class="post-grid-4 grid-compact home-project-grid" id="home-grid" data-initial="6">{cards}</div>
+  <div class="section-actions" id="home-more-wrap"><button type="button" class="btn btn-secondary btn-sm" id="home-load-more">Load More Projects</button></div>
+</section>"""
 
 
 def projects_listing_html(cat_opts, preview_cards="", text_index=""):
@@ -220,17 +229,24 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 <body>
 <main>
 {header_html("projects")}
-<section class="section-block wrap page-head">
+<section class="section-block wrap page-head page-head-compact">
   <p class="hero-eyebrow">Project Directory</p>
   <h1>Browse ESP32 Projects</h1>
-  <p class="hero-sub">15 parent project guides — each includes Beginner, Intermediate, and Advanced stages with unique wiring, code, and troubleshooting.</p>
-  <div class="search-panel">
-    <input id="q" placeholder="Search ESP32 projects…" aria-label="Search projects">
-    <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
-    <select id="diff" aria-label="Filter by difficulty stage"><option value="">All difficulty stages</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
+  <p class="hero-sub">15 guides with Beginner, Intermediate, and Advanced stages.</p>
+</section>
+<div class="filters-sticky">
+  <div class="wrap">
+    <div class="search-panel search-panel-compact">
+      <input id="q" placeholder="Search ESP32 projects…" aria-label="Search projects">
+      <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
+      <select id="diff" aria-label="Filter by difficulty stage"><option value="">All difficulty stages</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
+    </div>
+    <p class="meta filter-meta" id="count">Loading projects…</p>
   </div>
-  <p class="meta" id="count" style="margin-top:12px">Loading projects…</p>
-  <div class="grid" id="grid">{initial}</div>
+</div>
+<section class="section-block wrap section-block-compact">
+  <div class="grid grid-compact" id="grid">{initial}</div>
+  <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary btn-sm" id="projects-load-more">Load More</button></div>
   {text_index}
   <noscript><p class="meta">JavaScript is required for card view and filters. Use the plain-text project index above or the <a href="sitemap.html">sitemap</a>.</p></noscript>
 </section>
@@ -244,10 +260,11 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 """
 
 
-def home_html(projects, sections, latest):
+def home_html(projects, latest):
     desc = "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers."
-    latest_html = "".join(latest_item(p) for p in latest)
+    latest_html = "".join(latest_item(p) for p in latest[:3])
     schema = organization_schema() + website_schema()
+    featured = home_featured_section(projects)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -259,12 +276,12 @@ def home_html(projects, sections, latest):
 {hero_html(latest_html)}
 {stats_html()}
 {category_cards_html()}
-{"".join(sections)}
+{featured}
 <section class="section-block wrap browse-cta reveal">
-  <div class="cta-box">
+  <div class="cta-box cta-box-compact">
     <h2>Browse all {len(projects)} ESP32 projects</h2>
-    <p>Use search and category filters to find the exact tutorial you need — wiring, code, and step-by-step guides included.</p>
-    <a class="btn btn-primary" href="projects.html">View all projects</a>
+    <p>Search by category or difficulty — wiring tables and Arduino code included.</p>
+    <a class="btn btn-primary btn-sm" href="projects.html">View all projects</a>
   </div>
 </section>
 </main>
@@ -280,24 +297,15 @@ def main():
     by_cat = defaultdict(list)
     for p in projects:
         by_cat[p["category"]].append(p)
-    latest = projects[:4]
-    sections = []
-    for cat in CATEGORIES:
-        items = by_cat.get(cat, [])
-        if not items:
-            continue
-        cards = "".join(parent_grid_card(p) for p in items)
-        sections.append(
-            f"""<section class="section-block wrap reveal" id="cat-{slug_cat(cat)}"><div class="section-title"><h2>{esc(category_section_title(cat))}</h2><a class="view-all" href="projects.html#cat-{slug_cat(cat)}">View All »</a></div><div class="post-grid-4">{cards}</div></section>"""
-        )
+    latest = projects[:3]
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
     preview = "\n".join(parent_grid_card(p) for p in projects)
     text_index = projects_text_index(projects)
-    INDEX_OUT.write_text(home_html(projects, sections, latest), encoding="utf-8")
+    INDEX_OUT.write_text(home_html(projects, latest), encoding="utf-8")
     write_projects_json(projects)
     write_project_icons_js(projects)
     PROJECTS_OUT.write_text(projects_listing_html(cat_opts, preview, text_index), encoding="utf-8")
-    print(f"Wrote index.html + projects.html + projects.json ({len(projects)} parent projects, {len(sections)} category sections)")
+    print(f"Wrote index.html + projects.html + projects.json ({len(projects)} parent projects)")
     import build_sitemap
 
     build_sitemap.main()
