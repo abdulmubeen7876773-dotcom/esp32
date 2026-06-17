@@ -111,6 +111,15 @@ def faq_for_parent(parent: dict) -> list[tuple[str, str]]:
     ]
 
 
+def faq_accordion_html(parent: dict) -> str:
+    faq_html = []
+    for fq, fa in faq_for_parent(parent):
+        faq_html.append(
+            f'<div class="faq-item"><button type="button" class="faq-q">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
+        )
+    return f'<div class="faq-list">{"".join(faq_html)}</div>'
+
+
 def build_head(parent: dict, hardware: dict) -> str:
     url = f"{DOMAIN}/projects/{parent['slug']}.html"
     title = parent["title"]
@@ -162,18 +171,19 @@ SECTION_NAV = [
     ("overview", "Overview"),
     ("components", "Components"),
     ("wiring", "Wiring"),
-    ("code", "Code"),
+    ("code", "Arduino Code"),
     ("how", "How It Works"),
     ("apps", "Applications"),
     ("troubleshooting", "Troubleshooting"),
     ("upgrades", "Upgrades"),
+    ("faq", "FAQ"),
 ]
 
 SIDEBAR_NAV = [
     ("overview", "Overview"),
     ("components", "Components"),
     ("wiring", "Wiring"),
-    ("code", "Code"),
+    ("code", "Arduino Code"),
     ("apps", "Applications"),
     ("faq", "FAQ"),
 ]
@@ -182,12 +192,9 @@ SIDEBAR_NAV = [
 def section_toc_html(active_level: str = "beginner") -> str:
     items = []
     for sec_id, label in SIDEBAR_NAV:
-        if sec_id == "faq":
-            items.append(f'<li><a href="#faq" data-section="faq">{esc(label)}</a></li>')
-        else:
-            items.append(
-                f'<li><a href="#sec-{active_level}-{sec_id}" data-section="{sec_id}">{esc(label)}</a></li>'
-            )
+        items.append(
+            f'<li><a href="#sec-{active_level}-{sec_id}" data-section="{sec_id}">{esc(label)}</a></li>'
+        )
     return f'<ul class="side-list side-toc side-sections" id="section-toc">{"".join(items)}</ul>'
 
 
@@ -195,7 +202,6 @@ def mobile_nav_select(active_level: str = "beginner") -> str:
     opts = ['<option value="">Jump to section…</option>']
     for sec_id, label in SECTION_NAV:
         opts.append(f'<option value="sec-{active_level}-{sec_id}">{esc(label)}</option>')
-    opts.append('<option value="faq">FAQ</option>')
     opts.append('<option value="related">Related Projects</option>')
     return (
         f'<div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label>'
@@ -221,13 +227,14 @@ def render_difficulty_content(level: dict, parent: dict, active: bool) -> str:
 
     sections = [
         acc("overview", "Overview", f"<p>{esc(level['overview'])}</p>"),
-        acc("components", "Components Required", f'<ul class="parts-grid parts-grid-compact">{comps}</ul>'),
-        acc("wiring", "Wiring Diagram", wiring_table(level["wiring"])),
+        acc("components", "Components", f'<ul class="parts-grid parts-grid-compact">{comps}</ul>'),
+        acc("wiring", "Wiring", wiring_table(level["wiring"])),
         acc("code", "Arduino Code", f'<div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">{code_esc}</pre></div>'),
         acc("how", "How It Works", steps_html(level["how"])),
         acc("apps", "Applications", f'<ul class="detail-list">{apps}</ul>'),
         acc("troubleshooting", "Troubleshooting", f'<div class="trouble-list">{trouble}</div>'),
-        acc("upgrades", "Possible Upgrades", f'<ul class="detail-list">{upgrades}</ul>'),
+        acc("upgrades", "Upgrades", f'<ul class="detail-list">{upgrades}</ul>'),
+        acc("faq", "FAQ", faq_accordion_html(parent)),
     ]
     return (
         f'<div class="difficulty-content{active_cls}" data-level="{lv}" id="level-{lv}" role="tabpanel" aria-labelledby="tab-{lv}">'
@@ -249,17 +256,11 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
             f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}">{LEVEL_LABELS[lv]}</button>'
         )
     content_html = "".join(render_difficulty_content(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
-    faq_html = []
-    for fq, fa in faq_for_parent(parent):
-        faq_html.append(
-            f'<div class="faq-item"><button type="button" class="faq-q">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
-        )
     related_section = related_cards_html(related)
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
     level_badges = "".join(
         f'<span class="badge badge-{lv}">{LEVEL_LABELS[lv]}</span>' for lv in LEVELS
     )
-    faq_inner = "".join(faq_html)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -274,7 +275,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {build_head(parent, hardware)}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
-<style>.difficulty-content{{display:none}}.difficulty-content.active{{display:block}}.accordion-content{{display:none}}.accordion-content.open{{display:block}}</style>
+<style>.difficulty-content{{display:none!important}}.difficulty-content.active{{display:block!important}}.accordion-content{{display:none!important}}.accordion-content.open{{display:block!important}}</style>
 </head>
 <body>
 <div class="site-nav-sticky">
@@ -318,7 +319,6 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     </div>
     <div class="article-content parent-footer-sections">
       <div class="footer-accordions">
-        {footer_accordion("faq", "FAQ", f'<div class="faq-list">{faq_inner}</div>')}
         {footer_accordion("related", "Related Projects", related_section)}
       </div>
     </div>
@@ -332,7 +332,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 </main>
 {footer_html("../")}
 <script src="../ui.js" defer></script>
-<script src="../project.js" defer></script>
+<script src="../project.js?v={CSS_VERSION}" defer></script>
 </body>
 </html>"""
 

@@ -70,19 +70,20 @@
   function updateSectionToc(level) {
     document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
       var sec = link.dataset.section;
-      link.href = sec === 'faq' ? '#faq' : '#sec-' + level + '-' + sec;
+      link.href = '#sec-' + level + '-' + sec;
     });
     var mobile = document.getElementById('mobile-nav-select');
     if (!mobile) return;
     var labels = {
       overview: 'Overview',
-      components: 'Components Required',
-      wiring: 'Wiring Diagram',
+      components: 'Components',
+      wiring: 'Wiring',
       code: 'Arduino Code',
       how: 'How It Works',
       apps: 'Applications',
       troubleshooting: 'Troubleshooting',
-      upgrades: 'Possible Upgrades'
+      upgrades: 'Upgrades',
+      faq: 'FAQ'
     };
     mobile.innerHTML = '<option value="">Jump to section…</option>';
     Object.keys(labels).forEach(function (sec) {
@@ -91,7 +92,7 @@
       opt.textContent = labels[sec];
       mobile.appendChild(opt);
     });
-    mobile.innerHTML += '<option value="faq">FAQ</option><option value="related">Related Projects</option>';
+    mobile.innerHTML += '<option value="related">Related Projects</option>';
   }
 
   function jumpToSection(targetId) {
@@ -151,12 +152,6 @@
   function initProjectPage() {
     var tabs = document.querySelectorAll('.difficulty-tab');
     var sections = document.querySelectorAll('.difficulty-content');
-    var accItems = document.querySelectorAll('.accordion-item');
-
-    console.log('Project page loaded');
-    console.log('Difficulty buttons found:', tabs.length);
-    console.log('Difficulty sections found:', sections.length);
-    console.log('Accordion items found:', accItems.length);
 
     document.querySelectorAll('.accordion-header').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
