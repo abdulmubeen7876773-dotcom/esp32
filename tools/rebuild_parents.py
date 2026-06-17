@@ -56,13 +56,32 @@ def load_hardware(parent: dict) -> dict:
 def wiring_table(rows: list[tuple[str, str, str]]) -> str:
     body = []
     for comp, pin, note in rows:
-        body.append(
-            f"<tr><td>{esc(comp)}</td><td><strong>{esc(pin)}</strong></td><td>{esc(note)}</td></tr>"
-        )
+        body.append(f"<tr><td>{esc(comp)}</td><td>{esc(pin)}</td><td>{esc(note)}</td></tr>")
     return (
-        '<div class="pin-table-wrap wiring-table-wrap"><table class="pin-table pin-table-3 wiring-table">'
+        '<div class="wiring-table-wrap">'
+        '<table class="wiring-table">'
         "<thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead>"
         f"<tbody>{''.join(body)}</tbody></table></div>"
+    )
+
+
+def accordion_item(level_id: str, section_id: str, title: str, body_html: str, open_default: bool = False) -> str:
+    open_cls = " open" if open_default else ""
+    expanded = "true" if open_default else "false"
+    return (
+        f'<div class="accordion-item" id="sec-{level_id}-{section_id}" data-section="{section_id}">'
+        f'<button type="button" class="accordion-header" aria-expanded="{expanded}">{esc(title)}</button>'
+        f'<div class="accordion-content{open_cls}">{body_html}</div>'
+        f"</div>"
+    )
+
+
+def footer_accordion(section_id: str, title: str, body_html: str) -> str:
+    return (
+        f'<div class="accordion-item" id="{section_id}" data-section="{section_id}">'
+        f'<button type="button" class="accordion-header" aria-expanded="false">{esc(title)}</button>'
+        f'<div class="accordion-content">{body_html}</div>'
+        f"</div>"
     )
 
 
@@ -139,17 +158,6 @@ def build_head(parent: dict, hardware: dict) -> str:
 {json_ld_script(crumbs)}"""
 
 
-def accordion_item(level_id: str, section_id: str, title: str, body_html: str, open_default: bool = False) -> str:
-    open_cls = " open" if open_default else ""
-    expanded = "true" if open_default else "false"
-    return (
-        f'<div class="acc-item{open_cls}" id="sec-{level_id}-{section_id}" data-section="{section_id}">'
-        f'<button class="acc-btn" type="button" aria-expanded="{expanded}" onclick="toggleAccordion(this)">{esc(title)}'
-        f'<span class="acc-icon" aria-hidden="true"></span></button>'
-        f'<div class="acc-body"><div class="acc-inner">{body_html}</div></div></div>'
-    )
-
-
 SECTION_NAV = [
     ("overview", "Overview"),
     ("components", "Components"),
@@ -195,10 +203,8 @@ def mobile_nav_select(active_level: str = "beginner") -> str:
     )
 
 
-def render_level_panel(level: dict, parent: dict, active: bool) -> str:
-    active_cls = " is-active active" if active else ""
-    aria_hidden = "false" if active else "true"
-    hidden_attr = "" if active else " hidden"
+def render_difficulty_content(level: dict, parent: dict, active: bool) -> str:
+    active_cls = " active" if active else ""
     lv = level["level"]
     comps = "".join(f"<li><span>{esc(c)}</span></li>" for c in level["components"])
     apps = "".join(f"<li>{esc(a)}</li>" for a in level["apps"])
@@ -217,17 +223,17 @@ def render_level_panel(level: dict, parent: dict, active: bool) -> str:
         acc("overview", "Overview", f"<p>{esc(level['overview'])}</p>"),
         acc("components", "Components Required", f'<ul class="parts-grid parts-grid-compact">{comps}</ul>'),
         acc("wiring", "Wiring Diagram", wiring_table(level["wiring"])),
-        acc("code", "Arduino Code", f'<div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button class="copy-btn" type="button" onclick="copyCode(this)">Copy</button></div><pre class="level-code">{code_esc}</pre></div>'),
+        acc("code", "Arduino Code", f'<div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">{code_esc}</pre></div>'),
         acc("how", "How It Works", steps_html(level["how"])),
         acc("apps", "Applications", f'<ul class="detail-list">{apps}</ul>'),
         acc("troubleshooting", "Troubleshooting", f'<div class="trouble-list">{trouble}</div>'),
         acc("upgrades", "Possible Upgrades", f'<ul class="detail-list">{upgrades}</ul>'),
     ]
-    return f"""
-    <div class="level-panel difficulty-content{active_cls}" id="level-{lv}" data-level="{lv}" role="tabpanel" aria-labelledby="tab-{lv}" aria-hidden="{aria_hidden}"{hidden_attr}>
-      <h2 class="level-heading">{esc(level['label'])} build</h2>
-      <div class="section-accordions">{''.join(sections)}</div>
-    </div>"""
+    return (
+        f'<div class="difficulty-content{active_cls}" data-level="{lv}" id="level-{lv}" role="tabpanel" aria-labelledby="tab-{lv}">'
+        f'{"".join(sections)}'
+        f"</div>"
+    )
 
 
 def render_page(parent: dict, hardware: dict, related: list) -> str:
@@ -240,13 +246,13 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     for i, lv in enumerate(LEVELS):
         active = " active" if i == 0 else ""
         tabs.append(
-            f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}" tabindex="{"0" if i == 0 else "-1"}">{LEVEL_LABELS[lv]}</button>'
+            f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}">{LEVEL_LABELS[lv]}</button>'
         )
-    panels_html = "".join(render_level_panel(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
+    content_html = "".join(render_difficulty_content(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
     faq_html = []
     for fq, fa in faq_for_parent(parent):
         faq_html.append(
-            f'<div class="faq-item"><button class="faq-q" type="button" onclick="toggleFaq(this)">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
+            f'<div class="faq-item"><button type="button" class="faq-q">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
         )
     related_section = related_cards_html(related)
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
@@ -268,7 +274,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {build_head(parent, hardware)}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
-<style>.level-panel.difficulty-content:not(.active){{display:none!important;visibility:hidden;height:0;overflow:hidden;pointer-events:none}}.level-panel.difficulty-content.active{{display:block!important;visibility:visible;height:auto}}.acc-item:not(.open)>.acc-body{{max-height:0!important;overflow:hidden}}</style>
+<style>.difficulty-content{{display:none}}.difficulty-content.active{{display:block}}.accordion-content{{display:none}}.accordion-content.open{{display:block}}</style>
 </head>
 <body>
 <div class="site-nav-sticky">
@@ -307,19 +313,13 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
       {''.join(tabs)}
     </div>
     {mobile_nav_select("beginner")}
-    <div class="level-panels">
-      {panels_html}
+    <div class="difficulty-sections">
+      {content_html}
     </div>
     <div class="article-content parent-footer-sections">
-      <div class="section-accordions footer-accordions">
-        <div class="acc-item" id="faq" data-section="faq">
-          <button class="acc-btn" type="button" aria-expanded="false" onclick="toggleAccordion(this)">FAQ<span class="acc-icon" aria-hidden="true"></span></button>
-          <div class="acc-body"><div class="acc-inner"><div class="faq-list">{faq_inner}</div></div></div>
-        </div>
-        <div class="acc-item" id="related" data-section="related">
-          <button class="acc-btn" type="button" aria-expanded="false" onclick="toggleAccordion(this)">Related Projects<span class="acc-icon" aria-hidden="true"></span></button>
-          <div class="acc-body"><div class="acc-inner">{related_section}</div></div>
-        </div>
+      <div class="footer-accordions">
+        {footer_accordion("faq", "FAQ", f'<div class="faq-list">{faq_inner}</div>')}
+        {footer_accordion("related", "Related Projects", related_section)}
       </div>
     </div>
   </article>
