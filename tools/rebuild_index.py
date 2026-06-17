@@ -244,7 +244,7 @@ def home_html(projects):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="index.html", extra_schema=schema, include_gsc=True)}
+{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="/", extra_schema=schema, include_gsc=True)}
 </head>
 <body class="portal-home">
 <main>
