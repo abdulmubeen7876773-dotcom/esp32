@@ -86,9 +86,28 @@
     return document.querySelectorAll('.difficulty-content, .level-panel[data-level]');
   }
 
+  function normalizeDifficultyPanels() {
+    var container = document.querySelector('.level-panels');
+    if (!container) return;
+    var slot = document.getElementById('level-slot');
+    var archive = document.getElementById('level-archive');
+    if (slot) {
+      slot.querySelectorAll('.level-panel[data-level], .difficulty-content').forEach(function (panel) {
+        container.appendChild(panel);
+      });
+    }
+    if (archive) {
+      archive.querySelectorAll('.level-panel[data-level], .difficulty-content').forEach(function (panel) {
+        container.appendChild(panel);
+      });
+    }
+  }
+
   function setDifficultyLevel(level, animate) {
     if (!level) return;
     if (animate === undefined) animate = true;
+
+    normalizeDifficultyPanels();
 
     var sections = getDifficultySections();
     var target = document.getElementById('level-' + level);
@@ -370,6 +389,8 @@
     });
 
     if (tabs.length && sections.length) {
+      normalizeDifficultyPanels();
+      sections = getDifficultySections();
       var hash = (location.hash || '').replace('#', '').toLowerCase();
       if (hash === 'beginner' || hash === 'intermediate' || hash === 'advanced') {
         setDifficultyLevel(hash, false);
