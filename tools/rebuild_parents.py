@@ -66,22 +66,21 @@ def wiring_table(rows: list[tuple[str, str, str]]) -> str:
 
 
 def accordion_item(level_id: str, section_id: str, title: str, body_html: str, open_default: bool = False) -> str:
-    open_cls = " open" if open_default else ""
-    expanded = "true" if open_default else "false"
+    open_attr = " open" if open_default else ""
     return (
-        f'<div class="accordion-item" id="sec-{level_id}-{section_id}" data-section="{section_id}">'
-        f'<button type="button" class="accordion-header" aria-expanded="{expanded}">{esc(title)}</button>'
-        f'<div class="accordion-content{open_cls}">{body_html}</div>'
-        f"</div>"
+        f'<details class="accordion-item" id="sec-{level_id}-{section_id}" data-section="{section_id}"{open_attr}>'
+        f'<summary class="accordion-header">{esc(title)}</summary>'
+        f'<div class="accordion-content">{body_html}</div>'
+        f"</details>"
     )
 
 
 def footer_accordion(section_id: str, title: str, body_html: str) -> str:
     return (
-        f'<div class="accordion-item" id="{section_id}" data-section="{section_id}">'
-        f'<button type="button" class="accordion-header" aria-expanded="false">{esc(title)}</button>'
+        f'<details class="accordion-item" id="{section_id}" data-section="{section_id}">'
+        f'<summary class="accordion-header">{esc(title)}</summary>'
         f'<div class="accordion-content">{body_html}</div>'
-        f"</div>"
+        f"</details>"
     )
 
 
@@ -209,8 +208,7 @@ def mobile_nav_select(active_level: str = "beginner") -> str:
     )
 
 
-def render_difficulty_content(level: dict, parent: dict, active: bool) -> str:
-    active_cls = " active" if active else ""
+def render_difficulty_content(level: dict, parent: dict) -> str:
     lv = level["level"]
     comps = "".join(f"<li><span>{esc(c)}</span></li>" for c in level["components"])
     apps = "".join(f"<li>{esc(a)}</li>" for a in level["apps"])
@@ -223,7 +221,7 @@ def render_difficulty_content(level: dict, parent: dict, active: bool) -> str:
     fname = parent["slug"] + f"_{level['level']}.ino"
 
     def acc(section_id: str, title: str, body_html: str) -> str:
-        return accordion_item(lv, section_id, title, body_html, active and section_id == "overview")
+        return accordion_item(lv, section_id, title, body_html, section_id == "overview")
 
     sections = [
         acc("overview", "Overview", f"<p>{esc(level['overview'])}</p>"),
@@ -237,7 +235,7 @@ def render_difficulty_content(level: dict, parent: dict, active: bool) -> str:
         acc("faq", "FAQ", faq_accordion_html(parent)),
     ]
     return (
-        f'<div class="difficulty-content{active_cls}" data-level="{lv}" id="level-{lv}" role="tabpanel" aria-labelledby="tab-{lv}">'
+        f'<div class="difficulty-content level-{lv}-panel" data-level="{lv}" id="level-{lv}" role="tabpanel" aria-labelledby="tab-{lv}">'
         f'{"".join(sections)}'
         f"</div>"
     )
@@ -249,13 +247,17 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     cat_slug = re.sub(r"[^a-z0-9]+", "-", cat.lower()).strip("-")
     tc = icon_thumb_class(cat)
     icon = pick_icon(cat)
-    tabs = []
+    radios = []
+    labels = []
     for i, lv in enumerate(LEVELS):
-        active = " active" if i == 0 else ""
-        tabs.append(
-            f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}">{LEVEL_LABELS[lv]}</button>'
+        checked = " checked" if i == 0 else ""
+        radios.append(
+            f'<input type="radio" name="difficulty-level" id="level-radio-{lv}" class="level-radio"{checked} aria-hidden="true" tabindex="-1">'
         )
-    content_html = "".join(render_difficulty_content(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
+        labels.append(
+            f'<label for="level-radio-{lv}" class="difficulty-tab" id="tab-{lv}" data-level="{lv}" role="tab">{LEVEL_LABELS[lv]}</label>'
+        )
+    content_html = "".join(render_difficulty_content(levels[lv], parent) for lv in LEVELS)
     related_section = related_cards_html(related)
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
     level_badges = "".join(
@@ -275,7 +277,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {build_head(parent, hardware)}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
-<style>.difficulty-content{{display:none!important}}.difficulty-content.active{{display:block!important}}.accordion-content{{display:none!important}}.accordion-content.open{{display:block!important}}</style>
+<style>.level-radio{{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}}.difficulty-switcher .difficulty-content{{display:none!important}}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{{display:block!important}}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{{display:block!important}}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{{display:block!important}}details.accordion-item>summary{{list-style:none;cursor:pointer}}details.accordion-item>summary::-webkit-details-marker{{display:none}}</style>
 </head>
 <body>
 <div class="site-nav-sticky">
@@ -310,12 +312,15 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
         <div class="article-thumb {tc} parent-thumb">{icon}</div>
       </div>
     </header>
-    <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
-      {''.join(tabs)}
-    </div>
-    {mobile_nav_select("beginner")}
-    <div class="difficulty-sections">
-      {content_html}
+    <div class="difficulty-switcher">
+      {''.join(radios)}
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        {''.join(labels)}
+      </div>
+      {mobile_nav_select("beginner")}
+      <div class="difficulty-sections">
+        {content_html}
+      </div>
     </div>
     <div class="article-content parent-footer-sections">
       <div class="footer-accordions">

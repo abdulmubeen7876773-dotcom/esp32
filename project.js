@@ -1,59 +1,24 @@
 (function () {
   'use strict';
 
-  function closeAccordionContent(content) {
-    if (!content) return;
-    content.classList.remove('open');
-    var item = content.closest('.accordion-item');
-    var btn = item ? item.querySelector('.accordion-header') : null;
-    if (btn) btn.setAttribute('aria-expanded', 'false');
-  }
-
-  function openAccordionContent(content) {
-    if (!content) return;
-    content.classList.add('open');
-    var item = content.closest('.accordion-item');
-    var btn = item ? item.querySelector('.accordion-header') : null;
-    if (btn) btn.setAttribute('aria-expanded', 'true');
-  }
-
-  function toggleAccordionHeader(btn) {
-    var item = btn.closest('.accordion-item');
-    if (!item) return;
-    var content = item.querySelector('.accordion-content');
-    if (!content) return;
-    var willOpen = !content.classList.contains('open');
-    var group = item.closest('.difficulty-content') || item.closest('.footer-accordions');
-    if (group && willOpen) {
-      group.querySelectorAll('.accordion-content.open').forEach(function (el) {
-        if (el !== content) closeAccordionContent(el);
-      });
-    }
-    if (willOpen) {
-      openAccordionContent(content);
-    } else {
-      closeAccordionContent(content);
-    }
+  function getLevelRadio(level) {
+    return document.getElementById('level-radio-' + level);
   }
 
   function resetDifficultyAccordions(level) {
     var panel = document.querySelector('.difficulty-content[data-level="' + level + '"]');
     if (!panel) return;
-    panel.querySelectorAll('.accordion-content.open').forEach(closeAccordionContent);
-    var overview = panel.querySelector('.accordion-item[data-section="overview"] .accordion-content');
-    if (overview) openAccordionContent(overview);
+    panel.querySelectorAll('details.accordion-item[open]').forEach(function (el) {
+      el.open = false;
+    });
+    var overview = panel.querySelector('details.accordion-item[data-section="overview"]');
+    if (overview) overview.open = true;
   }
 
   function setDifficultyLevel(level) {
     if (!level) return;
-
-    document.querySelectorAll('.difficulty-tab').forEach(function (tab) {
-      tab.classList.toggle('active', tab.dataset.level === level);
-    });
-
-    document.querySelectorAll('.difficulty-content').forEach(function (section) {
-      section.classList.toggle('active', section.dataset.level === level);
-    });
+    var radio = getLevelRadio(level);
+    if (radio) radio.checked = true;
 
     document.querySelectorAll('[data-level-link]').forEach(function (link) {
       link.classList.toggle('is-active', link.dataset.levelLink === level);
@@ -95,6 +60,17 @@
     mobile.innerHTML += '<option value="related">Related Projects</option>';
   }
 
+  function openDetailsSection(detailsEl) {
+    if (!detailsEl || detailsEl.tagName !== 'DETAILS') return;
+    var group = detailsEl.closest('.difficulty-content') || detailsEl.closest('.footer-accordions');
+    if (group) {
+      group.querySelectorAll('details.accordion-item[open]').forEach(function (el) {
+        if (el !== detailsEl) el.open = false;
+      });
+    }
+    detailsEl.open = true;
+  }
+
   function jumpToSection(targetId) {
     if (!targetId) return;
     if (targetId.indexOf('sec-') === 0) {
@@ -105,17 +81,9 @@
     }
     var target = document.getElementById(targetId);
     if (!target) return;
-    var content = target.classList.contains('accordion-item')
-      ? target.querySelector('.accordion-content')
-      : target.closest('.accordion-content');
-    if (content) {
-      var group = content.closest('.difficulty-content') || content.closest('.footer-accordions');
-      if (group) {
-        group.querySelectorAll('.accordion-content.open').forEach(closeAccordionContent);
-        openAccordionContent(content);
-      }
-    }
-    (target.closest('.accordion-item') || target).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var details = target.tagName === 'DETAILS' ? target : target.closest('details.accordion-item');
+    if (details) openDetailsSection(details);
+    (details || target).scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function toggleFaq(btn) {
@@ -149,16 +117,39 @@
     });
   }
 
-  function initProjectPage() {
-    var tabs = document.querySelectorAll('.difficulty-tab');
-    var sections = document.querySelectorAll('.difficulty-content');
-
-    document.querySelectorAll('.accordion-header').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        toggleAccordionHeader(btn);
+  function initExclusiveAccordions() {
+    document.querySelectorAll('details.accordion-item').forEach(function (details) {
+      details.addEventListener('toggle', function () {
+        if (!details.open) return;
+        var group = details.closest('.difficulty-content') || details.closest('.footer-accordions');
+        if (!group) return;
+        group.querySelectorAll('details.accordion-item[open]').forEach(function (el) {
+          if (el !== details) el.open = false;
+        });
       });
     });
+  }
+
+  function syncActiveTabStyles() {
+    document.querySelectorAll('.level-radio').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        if (!radio.checked) return;
+        var level = radio.id.replace('level-radio-', '');
+        document.querySelectorAll('[data-level-link]').forEach(function (link) {
+          link.classList.toggle('is-active', link.dataset.levelLink === level);
+        });
+        updateSectionToc(level);
+        resetDifficultyAccordions(level);
+        if (history.replaceState) {
+          history.replaceState(null, '', '#' + level);
+        }
+      });
+    });
+  }
+
+  function initProjectPage() {
+    initExclusiveAccordions();
+    syncActiveTabStyles();
 
     document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
       link.addEventListener('click', function (e) {
@@ -174,12 +165,6 @@
         mobile.value = '';
       });
     }
-
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        setDifficultyLevel(tab.dataset.level);
-      });
-    });
 
     document.querySelectorAll('[data-level-link]').forEach(function (link) {
       link.addEventListener('click', function (e) {
@@ -200,7 +185,8 @@
       });
     });
 
-    if (tabs.length && sections.length) {
+    var radios = document.querySelectorAll('.level-radio');
+    if (radios.length) {
       var hash = (location.hash || '').replace('#', '').toLowerCase();
       if (hash === 'beginner' || hash === 'intermediate' || hash === 'advanced') {
         setDifficultyLevel(hash);
@@ -210,12 +196,9 @@
     }
   }
 
-  window.toggleAccordion = function (btn) {
-    toggleAccordionHeader(btn);
-  };
-  window.toggleFaq = toggleFaq;
-  window.copyCode = copyCode;
   window.setDifficultyLevel = setDifficultyLevel;
+  window.copyCode = copyCode;
+  window.toggleFaq = toggleFaq;
 
   document.addEventListener('DOMContentLoaded', initProjectPage);
 })();
