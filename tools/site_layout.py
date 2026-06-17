@@ -12,6 +12,7 @@ GITHUB_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32"
 CONTACT_ISSUES_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32/issues"
 GA4_MEASUREMENT_ID = "G-WLHZKSEFP3"
 GSC_VERIFICATION = "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI"
+PINTEREST_VERIFICATION = "f71bc8cce0ff2c76eeea8b5cf86dc70b"
 OG_IMAGE = f"{SITE_DOMAIN}/og-image.svg"
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 220 220" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="40" y1="60" x2="180" y2="160"><stop stop-color="#00D4FF"/><stop offset="1" stop-color="#00FFB3"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="35" y="58" width="150" height="96" rx="14" stroke="url(#heroGrad)" stroke-width="2.5" filter="url(#heroGlow)"/><rect x="54" y="76" width="112" height="60" rx="8" fill="rgba(0,212,255,.1)" stroke="rgba(0,212,255,.35)" stroke-width="1.5"/><path d="M35 78h-14M35 106h-14M35 134h-14M185 78h14M185 106h14M185 134h14M78 58V38M110 58V38M142 58V38M78 154V174M110 154V174M142 154V174" stroke="#00D4FF" stroke-width="2" stroke-linecap="round" opacity=".65"/><circle cx="110" cy="106" r="7" fill="#00FFB3" opacity=".95"/><circle cx="110" cy="106" r="14" stroke="#00FFB3" stroke-width="1" opacity=".25"/><text x="110" y="111" text-anchor="middle" fill="#F8FAFC" font-size="15" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text></svg>"""
@@ -173,6 +174,12 @@ def gsc_verification_meta() -> str:
     return f'<meta name="google-site-verification" content="{esc(GSC_VERIFICATION)}">'
 
 
+def pinterest_verification_meta() -> str:
+    if not PINTEREST_VERIFICATION:
+        return ""
+    return f'<meta name="p:domain_verify" content="{esc(PINTEREST_VERIFICATION)}">'
+
+
 def head_html(
     base: str,
     title: str,
@@ -187,6 +194,7 @@ def head_html(
     canon = canonical_url(base, canonical_path or "index.html")
     favicon = f"{base}favicon.svg"
     gsc = gsc_verification_meta() if include_gsc else ""
+    pinterest = pinterest_verification_meta()
     return f"""<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
@@ -196,6 +204,7 @@ def head_html(
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="{favicon}" type="image/svg+xml">
 {social_meta(title, description, canon, og_type)}
+{pinterest}
 {gsc}
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}

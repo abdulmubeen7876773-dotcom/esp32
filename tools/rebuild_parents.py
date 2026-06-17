@@ -19,6 +19,7 @@ from site_layout import (
     json_ld_script,
     social_meta,
     analytics_config_script,
+    pinterest_verification_meta,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -270,6 +271,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0B1020">
 <meta name="robots" content="index,follow,max-image-preview:large">
+{pinterest_verification_meta()}
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 <link rel="preconnect" href="https://fonts.googleapis.com">
