@@ -21,6 +21,7 @@ from site_layout import (
     home_featured_carousel,
     home_latest_categories_section,
     home_roadmap_stats_section,
+    home_why_section,
     home_community_section,
     home_cta_banner,
 )
@@ -164,10 +165,11 @@ def parent_listing_record(parent: dict) -> dict:
 def portal_carousel_card(p: dict) -> str:
     tc = icon_thumb_class(p["category"])
     icon = pick_icon(p["category"])
-    return f"""<a class="carousel-card" href="{esc(p['href'])}">
+    return f"""<a class="carousel-card product-card" href="{esc(p['href'])}">
+<span class="product-card-glow" aria-hidden="true"></span>
 <span class="carousel-card-thumb {tc}">{icon}</span>
 <span class="carousel-card-body">
-<span class="badge badge-cat">{esc(short_category(p['category']))}</span>
+<span class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span><span class="badge badge-beginner">3 Levels</span></span>
 <strong>{esc(p['title'])}</strong>
 <span class="carousel-card-meta">Beginner · Intermediate · Advanced</span>
 </span></a>"""
@@ -185,12 +187,13 @@ def parent_grid_card(p: dict) -> str:
     tc = icon_thumb_class(p["category"])
     icon = pick_icon(p["category"])
     desc = esc(p.get("desc", ""))
-    return f"""<a class="card project-card modern-card parent-card compact-card premium-card" href="{esc(p['href'])}"{attrs}>
+    return f"""<a class="card project-card modern-card parent-card compact-card premium-card product-card" href="{esc(p['href'])}"{attrs}>
+<span class="product-card-glow" aria-hidden="true"></span>
 <div class="card-thumb {tc}">{icon}</div>
 <div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}</div>
 <h3>{esc(p['title'])}</h3>
 <p class="card-desc">{desc}</p>
-<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
+<div class="card-footer"><span class="card-read-more">View Project<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
 def project_json_record(p: dict) -> dict:
@@ -250,6 +253,7 @@ def home_html(projects):
 {home_featured_carousel(projects, portal_carousel_card)}
 {home_latest_categories_section(projects)}
 {home_roadmap_stats_section(len(projects))}
+{home_why_section()}
 {home_community_section()}
 {home_cta_banner(len(projects))}
 </main>

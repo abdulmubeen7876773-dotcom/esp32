@@ -45,7 +45,7 @@
     var levels = p.levels || ['Beginner', 'Intermediate', 'Advanced'];
     var levelsStr = levels.join(',');
     return (
-      '<a class="card project-card modern-card parent-card compact-card" href="' +
+      '<a class="card project-card modern-card parent-card compact-card premium-card product-card" href="' +
       esc(p.href) +
       '" data-title="' +
       esc((p.title || '').toLowerCase()) +
@@ -54,6 +54,7 @@
       '" data-levels="' +
       esc(levelsStr) +
       '">' +
+      '<span class="product-card-glow" aria-hidden="true"></span>' +
       thumbHtml(p.category) +
       '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
       esc(shortCategory(p.category)) +
@@ -63,7 +64,7 @@
       esc(p.title) +
       '</h3>' +
       descHtml +
-      '<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>'
+      '<div class="card-footer"><span class="card-read-more">View Project<span aria-hidden="true">→</span></span></div></div></a>'
     );
   }
 

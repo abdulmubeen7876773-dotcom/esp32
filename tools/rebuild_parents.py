@@ -266,13 +266,13 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#020617">
+<meta name="theme-color" content="#0B1020">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {build_head(parent, hardware)}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
 <style>.difficulty-content{{display:none!important}}.difficulty-content.active{{display:block!important}}.accordion-content{{display:none!important}}.accordion-content.open{{display:block!important}}</style>

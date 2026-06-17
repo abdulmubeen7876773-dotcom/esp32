@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260617-markup2"
+CSS_VERSION = "20260617-premium1"
 SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
 SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
@@ -14,7 +14,13 @@ GA4_MEASUREMENT_ID = "G-WLHZKSEFP3"
 GSC_VERIFICATION = "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI"
 OG_IMAGE = f"{SITE_DOMAIN}/og-image.svg"
 
-HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 200 200" fill="none" aria-hidden="true"><rect x="30" y="55" width="140" height="90" rx="12" stroke="url(#heroGrad)" stroke-width="2.5"/><rect x="48" y="72" width="104" height="56" rx="6" fill="rgba(56,189,248,.12)" stroke="rgba(56,189,248,.35)" stroke-width="1.5"/><path d="M30 75h-12M30 100h-12M30 125h-12M170 75h12M170 100h12M170 125h12M70 55V38M100 55V38M130 55V38M70 145V162M100 145V162M130 145V162" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity=".7"/><circle cx="100" cy="100" r="6" fill="#22d3ee" opacity=".9"/><text x="100" y="105" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text><defs><linearGradient id="heroGrad" x1="30" y1="55" x2="170" y2="145"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg>"""
+HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 220 220" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="40" y1="60" x2="180" y2="160"><stop stop-color="#00D4FF"/><stop offset="1" stop-color="#00FFB3"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="35" y="58" width="150" height="96" rx="14" stroke="url(#heroGrad)" stroke-width="2.5" filter="url(#heroGlow)"/><rect x="54" y="76" width="112" height="60" rx="8" fill="rgba(0,212,255,.1)" stroke="rgba(0,212,255,.35)" stroke-width="1.5"/><path d="M35 78h-14M35 106h-14M35 134h-14M185 78h14M185 106h14M185 134h14M78 58V38M110 58V38M142 58V38M78 154V174M110 154V174M142 154V174" stroke="#00D4FF" stroke-width="2" stroke-linecap="round" opacity=".65"/><circle cx="110" cy="106" r="7" fill="#00FFB3" opacity=".95"/><circle cx="110" cy="106" r="14" stroke="#00FFB3" stroke-width="1" opacity=".25"/><text x="110" y="111" text-anchor="middle" fill="#F8FAFC" font-size="15" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text></svg>"""
+
+HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
+<div class="hero-float-card hero-float-card-a"><span class="hero-float-label">GPIO Monitor</span><strong>34</strong><span class="hero-float-sub">Analog Input</span></div>
+<div class="hero-float-card hero-float-card-b"><span class="hero-float-label">Wi-Fi Status</span><strong>Online</strong><span class="hero-float-sub">2.4 GHz Connected</span></div>
+<div class="hero-float-card hero-float-card-c"><span class="hero-float-label">Relay Output</span><strong>ACTIVE</strong><span class="hero-float-sub">GPIO26 · Pump ON</span></div>
+</div>"""
 
 
 def esc(t):
@@ -185,7 +191,7 @@ def head_html(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
-<meta name="theme-color" content="#020617">
+<meta name="theme-color" content="#0B1020">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="{favicon}" type="image/svg+xml">
@@ -195,7 +201,7 @@ def head_html(
 {analytics_config_script()}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{base}style.css?v={CSS_VERSION}">
 {extra_schema}"""
 
@@ -237,21 +243,36 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 
 
 def hero_html(latest_items: str = "") -> str:
-    return f"""<section class="hero-portal" aria-labelledby="hero-heading">
+    stats = [
+        ("15+", "Parent Projects"),
+        ("45+", "Difficulty Levels"),
+        ("10+", "Categories"),
+        ("100%", "Free Learning"),
+    ]
+    stat_items = "".join(
+        f'<div class="hero-stat-pill"><strong>{esc(val)}</strong><span>{esc(label)}</span></div>'
+        for val, label in stats
+    )
+    return f"""<section class="hero-portal hero-premium-v3" aria-labelledby="hero-heading">
+  <div class="hero-pcb-bg" aria-hidden="true"></div>
   <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
   <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
   <div class="wrap hero-portal-inner">
     <div class="hero-portal-content">
-      <p class="hero-eyebrow">ESP32 Technology Portal</p>
+      <p class="hero-eyebrow">ESP32 &amp; IoT Technology Portal</p>
       <h1 id="hero-heading">One ESP32. Unlimited Possibilities.</h1>
-      <p class="hero-sub hero-sub-compact">Beginner to advanced tutorials, IoT builds, and real-world ESP32 implementations.</p>
+      <p class="hero-sub hero-sub-compact">Build IoT systems, smart automation, robotics, wireless devices, monitoring solutions, and real-world embedded projects.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="projects.html">Explore Projects</a>
-        <a class="btn btn-secondary" href="#roadmap">Learning Roadmap</a>
+        <a class="btn btn-secondary" href="#roadmap">View Learning Path</a>
       </div>
+      <div class="hero-stat-row">{stat_items}</div>
     </div>
     <div class="hero-portal-visual" aria-hidden="true">
-      <div class="hero-board-float hero-board-compact">{HERO_BOARD_SVG}</div>
+      <div class="hero-visual-frame">
+        <div class="hero-board-float hero-board-compact">{HERO_BOARD_SVG}</div>
+        {HERO_FLOAT_CARDS}
+      </div>
     </div>
   </div>
 </section>"""
@@ -302,10 +323,12 @@ def home_latest_categories_section(projects: list) -> str:
         ("Automation", "Home Automation"),
         ("Sensors", "Sensor Projects"),
         ("Robotics", "Robotics"),
-        ("Security", "Security Projects"),
         ("Smart Home", "Home Automation"),
+        ("Security", "Security Projects"),
+        ("Industrial", "Industrial Automation"),
+        ("Communication", "IoT Projects"),
         ("Monitoring", "Energy Monitoring"),
-        ("AI Edge", "AI Projects"),
+        ("Energy", "Energy Monitoring"),
     ]
     cat_cards = []
     for label, cat in cats:
@@ -313,7 +336,7 @@ def home_latest_categories_section(projects: list) -> str:
         tc = thumb_class(cat)
         icon = pick_icon(cat)
         cat_cards.append(
-            f'<a class="pop-cat" href="projects.html#cat-{slug}">'
+            f'<a class="pop-cat tech-cat-card" href="projects.html#cat-{slug}">'
             f'<span class="pop-cat-icon {tc}">{icon}</span><span>{label}</span></a>'
         )
     return f"""<section class="portal-section wrap reveal portal-duo" id="latest">
@@ -337,9 +360,9 @@ def home_latest_categories_section(projects: list) -> str:
 def home_roadmap_stats_section(project_count: int) -> str:
     stats = [
         ("15+", "Parent Projects"),
-        ("45+", "Build Variations"),
-        ("3", "Skill Levels"),
-        ("100%", "Free Access"),
+        ("45+", "Difficulty Levels"),
+        ("10+", "Categories"),
+        ("100%", "Free Learning"),
     ]
     stat_cards = "".join(
         f'<div class="portal-stat"><strong>{esc(val)}</strong><span>{esc(label)}</span></div>'
@@ -351,12 +374,12 @@ def home_roadmap_stats_section(project_count: int) -> str:
       <p class="section-eyebrow">Structured learning</p>
       <h2>ESP32 Learning Roadmap</h2>
     </div>
-    <div class="roadmap-track">
-      <div class="roadmap-node"><span class="roadmap-num">1</span><div><strong class="badge badge-beginner">Beginner</strong><span>Sensors, serial output, threshold logic</span></div></div>
-      <div class="roadmap-connector" aria-hidden="true"></div>
-      <div class="roadmap-node"><span class="roadmap-num">2</span><div><strong class="badge badge-intermediate">Intermediate</strong><span>OLED, calibration, manual/auto modes</span></div></div>
-      <div class="roadmap-connector" aria-hidden="true"></div>
-      <div class="roadmap-node"><span class="roadmap-num">3</span><div><strong class="badge badge-advanced">Advanced</strong><span>Wi-Fi dashboards, alerts, logging</span></div></div>
+    <div class="roadmap-track roadmap-track-premium">
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">01</span><div><strong class="badge badge-beginner">Beginner</strong><span>Sensors, serial output, threshold logic</span></div></div>
+      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">02</span><div><strong class="badge badge-intermediate">Intermediate</strong><span>OLED, calibration, manual/auto modes</span></div></div>
+      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">03</span><div><strong class="badge badge-advanced">Advanced</strong><span>Wi-Fi dashboards, alerts, logging</span></div></div>
     </div>
     <a class="roadmap-link" href="projects.html">Browse all {project_count} projects →</a>
   </div>
@@ -372,6 +395,30 @@ def home_roadmap_stats_section(project_count: int) -> str:
       <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">📱</span><span>Mobile-friendly layouts</span></div>
     </div>
   </div>
+</section>"""
+
+
+def home_why_section() -> str:
+    items = [
+        ("🎯", "Beginner Friendly", "Start with breadboard builds and clear wiring tables."),
+        ("🔧", "Real Hardware Projects", "Every guide maps to sensors, relays, and ESP32 pins."),
+        ("📊", "Multiple Difficulty Levels", "Beginner, Intermediate, and Advanced on every project."),
+        ("⚡", "Practical Learning", "Copy-paste Arduino code with troubleshooting steps."),
+        ("📡", "Modern ESP32 Techniques", "Wi-Fi, OLED, MQTT, and IoT dashboards."),
+        ("🚀", "Production Ready Concepts", "Patterns you can ship beyond the prototype stage."),
+    ]
+    cards = "".join(
+        f'<div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">{icon}</span><strong>{esc(title)}</strong><p>{esc(desc)}</p></div>'
+        for icon, title, desc in items
+    )
+    return f"""<section class="portal-section wrap reveal" id="why">
+  <div class="section-head-portal">
+    <div class="section-head-portal-text">
+      <p class="section-eyebrow">Built for makers</p>
+      <h2>Why This Platform</h2>
+    </div>
+  </div>
+  <div class="why-grid-premium">{cards}</div>
 </section>"""
 
 
