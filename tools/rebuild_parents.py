@@ -196,8 +196,9 @@ def mobile_nav_select(active_level: str = "beginner") -> str:
 
 
 def render_level_panel(level: dict, parent: dict, active: bool) -> str:
+    active_cls = " is-active active" if active else ""
+    aria_hidden = "false" if active else "true"
     hidden_attr = "" if active else " hidden"
-    active_cls = " is-active" if active else ""
     lv = level["level"]
     comps = "".join(f"<li><span>{esc(c)}</span></li>" for c in level["components"])
     apps = "".join(f"<li>{esc(a)}</li>" for a in level["apps"])
@@ -223,7 +224,7 @@ def render_level_panel(level: dict, parent: dict, active: bool) -> str:
         acc("upgrades", "Possible Upgrades", f'<ul class="detail-list">{upgrades}</ul>'),
     ]
     return f"""
-    <div class="level-panel{active_cls}" id="level-{lv}" data-level="{lv}" role="tabpanel" aria-labelledby="tab-{lv}"{hidden_attr}>
+    <div class="level-panel difficulty-content{active_cls}" id="level-{lv}" data-level="{lv}" role="tabpanel" aria-labelledby="tab-{lv}" aria-hidden="{aria_hidden}"{hidden_attr}>
       <h2 class="level-heading">{esc(level['label'])} build</h2>
       <div class="section-accordions">{''.join(sections)}</div>
     </div>"""
@@ -241,9 +242,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
         tabs.append(
             f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}" tabindex="{"0" if i == 0 else "-1"}">{LEVEL_LABELS[lv]}</button>'
         )
-    panels_html = [render_level_panel(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS)]
-    active_panel = panels_html[0]
-    archive_panels = "".join(panels_html[1:])
+    panels_html = "".join(render_level_panel(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
     faq_html = []
     for fq, fa in faq_for_parent(parent):
         faq_html.append(
@@ -269,7 +268,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {build_head(parent, hardware)}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
-<style>#level-archive,.level-panel-archive{{display:none!important;visibility:hidden;height:0;overflow:hidden;position:absolute;pointer-events:none}}</style>
+<style>.level-panel.difficulty-content:not(.active){{display:none!important;visibility:hidden;height:0;overflow:hidden;pointer-events:none}}.level-panel.difficulty-content.active{{display:block!important;visibility:visible;height:auto}}.acc-item:not(.open)>.acc-body{{max-height:0!important;overflow:hidden}}</style>
 </head>
 <body>
 <div class="site-nav-sticky">
@@ -309,12 +308,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     </div>
     {mobile_nav_select("beginner")}
     <div class="level-panels">
-      <div class="level-panel-slot" id="level-slot" aria-live="polite">
-        {active_panel}
-      </div>
-      <div class="level-panel-archive" id="level-archive" hidden aria-hidden="true">
-        {archive_panels}
-      </div>
+      {panels_html}
     </div>
     <div class="article-content parent-footer-sections">
       <div class="section-accordions footer-accordions">
