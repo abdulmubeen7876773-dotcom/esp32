@@ -154,4 +154,15 @@
       updateHomeVisible();
     });
   }
+
+  document.querySelectorAll('.carousel-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = 'carousel-' + btn.dataset.carousel;
+      var track = document.getElementById(id);
+      if (!track) return;
+      var dir = parseInt(btn.dataset.dir || '1', 10);
+      var amount = Math.max(track.clientWidth * 0.75, 240);
+      track.scrollBy({ left: dir * amount, behavior: 'smooth' });
+    });
+  });
 })();

@@ -60,7 +60,7 @@ def wiring_table(rows: list[tuple[str, str, str]]) -> str:
             f"<tr><td>{esc(comp)}</td><td><strong>{esc(pin)}</strong></td><td>{esc(note)}</td></tr>"
         )
     return (
-        '<div class="pin-table-wrap"><table class="pin-table pin-table-3">'
+        '<div class="pin-table-wrap wiring-table-wrap"><table class="pin-table pin-table-3 wiring-table">'
         "<thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead>"
         f"<tbody>{''.join(body)}</tbody></table></div>"
     )
@@ -239,9 +239,11 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     for i, lv in enumerate(LEVELS):
         active = " active" if i == 0 else ""
         tabs.append(
-            f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}">{LEVEL_LABELS[lv]}</button>'
+            f'<button type="button" class="difficulty-tab{active}" id="tab-{lv}" data-level="{lv}" role="tab" aria-selected="{"true" if i == 0 else "false"}" aria-controls="level-{lv}" tabindex="{"0" if i == 0 else "-1"}">{LEVEL_LABELS[lv]}</button>'
         )
-    panels = "".join(render_level_panel(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS))
+    panels_html = [render_level_panel(levels[lv], parent, i == 0) for i, lv in enumerate(LEVELS)]
+    active_panel = panels_html[0]
+    archive_panels = "".join(panels_html[1:])
     faq_html = []
     for fq, fa in faq_for_parent(parent):
         faq_html.append(
@@ -267,7 +269,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 {build_head(parent, hardware)}
 <link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
-<style>.level-panels>.level-panel{{display:none!important}}.level-panels>.level-panel.is-active{{display:block!important}}</style>
+<style>#level-archive,.level-panel-archive{{display:none!important;visibility:hidden;height:0;overflow:hidden;position:absolute;pointer-events:none}}</style>
 </head>
 <body>
 <div class="site-nav-sticky">
@@ -307,7 +309,12 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     </div>
     {mobile_nav_select("beginner")}
     <div class="level-panels">
-      {panels}
+      <div class="level-panel-slot" id="level-slot" aria-live="polite">
+        {active_panel}
+      </div>
+      <div class="level-panel-archive" id="level-archive" hidden aria-hidden="true">
+        {archive_panels}
+      </div>
     </div>
     <div class="article-content parent-footer-sections">
       <div class="section-accordions footer-accordions">

@@ -4,7 +4,7 @@ function closeAccordionItem(item) {
   var btn = item.querySelector('.acc-btn');
   var body = item.querySelector('.acc-body');
   if (btn) btn.setAttribute('aria-expanded', 'false');
-  if (body) body.style.maxHeight = null;
+  if (body) body.style.maxHeight = '0px';
 }
 
 function openAccordionItem(item) {
@@ -13,19 +13,21 @@ function openAccordionItem(item) {
   var btn = item.querySelector('.acc-btn');
   var body = item.querySelector('.acc-body');
   if (btn) btn.setAttribute('aria-expanded', 'true');
-  if (body) body.style.maxHeight = body.scrollHeight + 'px';
-  window.requestAnimationFrame(function () {
-    if (body) body.style.maxHeight = body.scrollHeight + 'px';
-  });
+  if (body) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    window.requestAnimationFrame(function () {
+      body.style.maxHeight = body.scrollHeight + 'px';
+    });
+  }
 }
 
 function toggleAccordion(btn) {
   var item = btn.closest('.acc-item');
   if (!item) return;
   var willOpen = !item.classList.contains('open');
-  var panel = item.closest('.level-panel');
-  if (panel && willOpen) {
-    panel.querySelectorAll('.acc-item.open').forEach(function (el) {
+  var group = item.closest('.level-panel') || item.closest('.section-accordions');
+  if (group && willOpen) {
+    group.querySelectorAll('.acc-item.open').forEach(function (el) {
       if (el !== item) closeAccordionItem(el);
     });
   }
@@ -37,39 +39,29 @@ function toggleAccordion(btn) {
 }
 
 function resetPanelAccordions(level) {
-  var panel = document.querySelector('.level-panel[data-level="' + level + '"]');
+  var panel = document.getElementById('level-' + level);
   if (!panel) return;
   panel.querySelectorAll('.acc-item').forEach(closeAccordionItem);
   var overview = panel.querySelector('.acc-item[data-section="overview"]');
   if (overview) openAccordionItem(overview);
 }
 
-function getActiveLevel() {
-  var panel = document.querySelector('.level-panel.is-active');
-  return panel ? panel.dataset.level : 'beginner';
-}
-
 function updateSectionToc(level) {
   document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
     var sec = link.dataset.section;
-    if (sec === 'faq') {
-      link.href = '#faq';
-    } else {
-      link.href = '#sec-' + level + '-' + sec;
-    }
+    link.href = sec === 'faq' ? '#faq' : '#sec-' + level + '-' + sec;
   });
   var mobile = document.getElementById('mobile-nav-select');
   if (!mobile) return;
-  var val = mobile.value;
   var labels = {
     overview: 'Overview',
-    components: 'Components',
-    wiring: 'Wiring',
-    code: 'Code',
+    components: 'Components Required',
+    wiring: 'Wiring Diagram',
+    code: 'Arduino Code',
     how: 'How It Works',
     apps: 'Applications',
     troubleshooting: 'Troubleshooting',
-    upgrades: 'Upgrades'
+    upgrades: 'Possible Upgrades'
   };
   mobile.innerHTML = '<option value="">Jump to section…</option>';
   Object.keys(labels).forEach(function (sec) {
@@ -84,28 +76,25 @@ function updateSectionToc(level) {
     opt.textContent = sec === 'faq' ? 'FAQ' : 'Related Projects';
     mobile.appendChild(opt);
   });
-  if (val) mobile.value = val;
 }
 
 function jumpToSection(targetId) {
   if (!targetId) return;
-  var target = document.getElementById(targetId);
-  if (!target) return;
   if (targetId.indexOf('sec-') === 0) {
     var parts = targetId.split('-');
     var level = parts[1];
     if (level === 'beginner' || level === 'intermediate' || level === 'advanced') {
-      setDifficultyLevel(level);
+      setDifficultyLevel(level, false);
     }
-    target = document.getElementById(targetId);
-    if (!target) return;
-    var panel = target.closest('.level-panel');
-    if (panel) {
-      panel.querySelectorAll('.acc-item.open').forEach(closeAccordionItem);
+  }
+  var target = document.getElementById(targetId);
+  if (!target) return;
+  if (target.classList.contains('acc-item')) {
+    var group = target.closest('.level-panel') || target.closest('.section-accordions');
+    if (group) {
+      group.querySelectorAll('.acc-item.open').forEach(closeAccordionItem);
       openAccordionItem(target);
     }
-  } else {
-    openAccordionItem(target);
   }
   target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -135,8 +124,7 @@ function copyCode(btn) {
   var block = btn.closest('.code-block');
   var pre = block ? block.querySelector('pre') : document.getElementById('code-content');
   if (!pre) return;
-  var code = pre.innerText;
-  navigator.clipboard.writeText(code).then(function () {
+  navigator.clipboard.writeText(pre.innerText).then(function () {
     var orig = btn.textContent;
     btn.textContent = 'Copied';
     btn.classList.add('copied');
@@ -147,24 +135,49 @@ function copyCode(btn) {
   });
 }
 
-function setDifficultyLevel(level) {
+function setDifficultyLevel(level, animate) {
   if (!level) return;
+  if (animate === undefined) animate = true;
+  var slot = document.getElementById('level-slot');
+  var archive = document.getElementById('level-archive');
+  var target = document.getElementById('level-' + level);
+  if (!slot || !archive || !target) return;
+
   document.querySelectorAll('.difficulty-tab').forEach(function (tab) {
     var on = tab.dataset.level === level;
     tab.classList.toggle('active', on);
     tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    tab.setAttribute('tabindex', on ? '0' : '-1');
   });
-  document.querySelectorAll('.level-panel').forEach(function (panel) {
-    var on = panel.dataset.level === level;
-    panel.classList.toggle('is-active', on);
-    panel.hidden = !on;
-    panel.setAttribute('aria-hidden', on ? 'false' : 'true');
-  });
+
   document.querySelectorAll('[data-level-link]').forEach(function (link) {
     link.classList.toggle('is-active', link.dataset.levelLink === level);
   });
+
+  var current = slot.querySelector('.level-panel');
+  if (current && current !== target) {
+    current.classList.remove('is-active');
+    current.setAttribute('aria-hidden', 'true');
+    archive.appendChild(current);
+  }
+
+  if (target.parentElement !== slot) {
+    slot.appendChild(target);
+  }
+
+  target.classList.add('is-active');
+  target.removeAttribute('hidden');
+  target.setAttribute('aria-hidden', 'false');
+
+  if (animate) {
+    slot.classList.remove('is-switching');
+    void slot.offsetWidth;
+    slot.classList.add('is-switching');
+  }
+
   updateSectionToc(level);
   resetPanelAccordions(level);
+
   if (history.replaceState) {
     history.replaceState(null, '', '#' + level);
   }
@@ -172,14 +185,13 @@ function setDifficultyLevel(level) {
 
 function initScrollSpy() {
   var tocLinks = document.querySelectorAll('#section-toc a[data-section]');
-  if (!tocLinks.length) return;
+  if (!tocLinks.length || !('IntersectionObserver' in window)) return;
   var targets = [];
   tocLinks.forEach(function (link) {
     var id = (link.getAttribute('href') || '').replace('#', '');
     var el = document.getElementById(id);
-    if (el) targets.push({ el: el, link: link, section: link.dataset.section });
+    if (el) targets.push({ el: el, link: link });
   });
-  if (!targets.length || !('IntersectionObserver' in window)) return;
   var observer = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {
@@ -193,7 +205,7 @@ function initScrollSpy() {
         });
       });
     },
-    { rootMargin: '-20% 0px -65% 0px', threshold: 0 }
+    { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
   );
   targets.forEach(function (t) {
     observer.observe(t.el);
@@ -208,42 +220,55 @@ function initProjectPage() {
   document.querySelectorAll('#section-toc a[data-section]').forEach(function (link) {
     link.addEventListener('click', function (e) {
       e.preventDefault();
-      var href = link.getAttribute('href') || '';
-      jumpToSection(href.replace('#', ''));
+      jumpToSection((link.getAttribute('href') || '').replace('#', ''));
     });
   });
 
   var mobile = document.getElementById('mobile-nav-select');
   if (mobile) {
     mobile.addEventListener('change', function () {
-      jumpToSection(mobile.value);
+      if (mobile.value) jumpToSection(mobile.value);
       mobile.value = '';
     });
   }
 
   var tabs = document.querySelectorAll('.difficulty-tab');
-  if (tabs.length) {
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        setDifficultyLevel(tab.dataset.level);
-      });
+  if (!tabs.length) return;
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      setDifficultyLevel(tab.dataset.level);
     });
-    document.querySelectorAll('[data-level-link]').forEach(function (link) {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        setDifficultyLevel(link.dataset.levelLink);
-        var panels = document.querySelector('.level-panels');
-        if (panels) panels.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+    tab.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      var list = Array.prototype.slice.call(tabs);
+      var idx = list.indexOf(tab);
+      var next = e.key === 'ArrowRight' ? list[idx + 1] : list[idx - 1];
+      if (next) {
+        next.focus();
+        setDifficultyLevel(next.dataset.level);
+      }
     });
-    var hash = (location.hash || '').replace('#', '').toLowerCase();
-    if (hash === 'beginner' || hash === 'intermediate' || hash === 'advanced') {
-      setDifficultyLevel(hash);
-    } else {
-      setDifficultyLevel('beginner');
-    }
-    initScrollSpy();
+  });
+
+  document.querySelectorAll('[data-level-link]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      setDifficultyLevel(link.dataset.levelLink);
+      var slot = document.getElementById('level-slot');
+      if (slot) slot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  var hash = (location.hash || '').replace('#', '').toLowerCase();
+  if (hash === 'beginner' || hash === 'intermediate' || hash === 'advanced') {
+    setDifficultyLevel(hash, false);
+  } else {
+    setDifficultyLevel('beginner', false);
   }
+
+  initScrollSpy();
 }
 
 if (document.readyState === 'loading') {

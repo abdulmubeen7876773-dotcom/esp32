@@ -6,9 +6,24 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, category_cards_html, slug_cat
+from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from parent_registry import PARENTS
-from site_layout import modern_card, stats_html, footer_html, read_time_label, read_time_minutes, category_section_title, head_html, hero_html, header_html, organization_schema, website_schema, CSS_VERSION, short_category
+from site_layout import (
+    modern_card,
+    footer_html,
+    head_html,
+    hero_html,
+    header_html,
+    organization_schema,
+    website_schema,
+    CSS_VERSION,
+    short_category,
+    home_featured_carousel,
+    home_latest_categories_section,
+    home_roadmap_stats_section,
+    home_community_section,
+    home_cta_banner,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -146,6 +161,18 @@ def parent_listing_record(parent: dict) -> dict:
     }
 
 
+def portal_carousel_card(p: dict) -> str:
+    tc = icon_thumb_class(p["category"])
+    icon = pick_icon(p["category"])
+    return f"""<a class="carousel-card" href="{esc(p['href'])}">
+<span class="carousel-card-thumb {tc}">{icon}</span>
+<span class="carousel-card-body">
+<span class="badge badge-cat">{esc(short_category(p['category']))}</span>
+<strong>{esc(p['title'])}</strong>
+<span class="carousel-card-meta">Beginner · Intermediate · Advanced</span>
+</span></a>"""
+
+
 def parent_grid_card(p: dict) -> str:
     levels_html = "".join(
         f'<span class="badge badge-{lv.lower()}">{esc(lv)}</span>' for lv in p.get("levels", LEVELS)
@@ -158,7 +185,7 @@ def parent_grid_card(p: dict) -> str:
     tc = icon_thumb_class(p["category"])
     icon = pick_icon(p["category"])
     desc = esc(p.get("desc", ""))
-    return f"""<a class="card project-card modern-card parent-card compact-card" href="{esc(p['href'])}"{attrs}>
+    return f"""<a class="card project-card modern-card parent-card compact-card premium-card" href="{esc(p['href'])}"{attrs}>
 <div class="card-thumb {tc}">{icon}</div>
 <div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}</div>
 <h3>{esc(p['title'])}</h3>
@@ -208,13 +235,29 @@ def projects_text_index(projects: list) -> str:
     return f'<div id="project-text-index" class="project-text-index hidden" aria-label="Plain text project index"><ul>{items}</ul></div>'
 
 
-def home_featured_section(projects: list) -> str:
-    cards = "".join(parent_grid_card(p) for p in projects)
-    return f"""<section class="section-block wrap reveal compact-section" id="featured">
-  <div class="section-title"><h2>ESP32 Projects</h2><a class="view-all" href="projects.html">View All »</a></div>
-  <div class="post-grid-4 grid-compact home-project-grid" id="home-grid" data-initial="6">{cards}</div>
-  <div class="section-actions" id="home-more-wrap"><button type="button" class="btn btn-secondary btn-sm" id="home-load-more">Load More Projects</button></div>
-</section>"""
+def home_html(projects):
+    desc = "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers."
+    schema = organization_schema() + website_schema()
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="index.html", extra_schema=schema, include_gsc=True)}
+</head>
+<body class="portal-home">
+<main>
+{header_html("home")}
+{hero_html()}
+{home_featured_carousel(projects, portal_carousel_card)}
+{home_latest_categories_section(projects)}
+{home_roadmap_stats_section(len(projects))}
+{home_community_section()}
+{home_cta_banner(len(projects))}
+</main>
+{footer_html()}
+<script src="ui.js" defer></script>
+</body>
+</html>
+"""
 
 
 def projects_listing_html(cat_opts, preview_cards="", text_index=""):
@@ -260,48 +303,12 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 """
 
 
-def home_html(projects, latest):
-    desc = "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers."
-    latest_html = "".join(latest_item(p) for p in latest[:3])
-    schema = organization_schema() + website_schema()
-    featured = home_featured_section(projects)
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="index.html", extra_schema=schema, include_gsc=True)}
-</head>
-<body>
-<main>
-{header_html("home")}
-{hero_html(latest_html)}
-{stats_html()}
-{category_cards_html()}
-{featured}
-<section class="section-block wrap browse-cta reveal">
-  <div class="cta-box cta-box-compact">
-    <h2>Browse all {len(projects)} ESP32 projects</h2>
-    <p>Search by category or difficulty — wiring tables and Arduino code included.</p>
-    <a class="btn btn-primary btn-sm" href="projects.html">View all projects</a>
-  </div>
-</section>
-</main>
-{footer_html()}
-<script src="ui.js" defer></script>
-</body>
-</html>
-"""
-
-
 def main():
     projects = [parent_listing_record(p) for p in PARENTS]
-    by_cat = defaultdict(list)
-    for p in projects:
-        by_cat[p["category"]].append(p)
-    latest = projects[:3]
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
     preview = "\n".join(parent_grid_card(p) for p in projects)
     text_index = projects_text_index(projects)
-    INDEX_OUT.write_text(home_html(projects, latest), encoding="utf-8")
+    INDEX_OUT.write_text(home_html(projects), encoding="utf-8")
     write_projects_json(projects)
     write_project_icons_js(projects)
     PROJECTS_OUT.write_text(projects_listing_html(cat_opts, preview, text_index), encoding="utf-8")

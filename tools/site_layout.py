@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260617-compact2"
+CSS_VERSION = "20260617-portal1"
 SITE_DOMAIN = "https://abdulmubeen7876773-dotcom.github.io/esp32"
 SITE_NAME = "ESP32 Project Library"
 ORG_NAME = "ESP32 Project Library"
@@ -237,27 +237,176 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 
 
 def hero_html(latest_items: str = "") -> str:
-    latest_block = ""
-    if latest_items:
-        latest_block = f"""<aside class="hero-latest hero-latest-compact" aria-label="Latest projects"><h2>Latest</h2><div class="hero-latest-row">{latest_items}</div></aside>"""
-    return f"""<section class="hero-premium hero-compact" aria-labelledby="hero-heading">
-  <div class="wrap hero-premium-grid hero-compact-grid">
-    <div class="hero-content">
-      <p class="hero-eyebrow">ESP32 Project Library</p>
-      <h1 id="hero-heading">Build, Connect &amp; Automate with ESP32</h1>
-      <p class="hero-sub">15 parent projects with Beginner, Intermediate, and Advanced stages — wiring, code, and troubleshooting in one place.</p>
+    return f"""<section class="hero-portal" aria-labelledby="hero-heading">
+  <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
+  <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
+  <div class="wrap hero-portal-inner">
+    <div class="hero-portal-content">
+      <p class="hero-eyebrow">ESP32 Technology Portal</p>
+      <h1 id="hero-heading">One ESP32. Unlimited Possibilities.</h1>
+      <p class="hero-sub hero-sub-compact">Beginner to advanced tutorials, IoT builds, and real-world ESP32 implementations.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary btn-sm" href="projects.html">Browse Projects</a>
-        <a class="btn btn-secondary btn-sm" href="#featured">Featured Projects</a>
+        <a class="btn btn-primary" href="projects.html">Explore Projects</a>
+        <a class="btn btn-secondary" href="#roadmap">Learning Roadmap</a>
       </div>
     </div>
-    {latest_block}
+    <div class="hero-portal-visual" aria-hidden="true">
+      <div class="hero-board-float hero-board-compact">{HERO_BOARD_SVG}</div>
+    </div>
   </div>
 </section>"""
 
 
 def stats_html() -> str:
-    return """<section class="stats-bar stats-compact wrap reveal" aria-label="Site statistics"><div class="stats-grid"><div class="stat-item"><strong>15</strong><span>Projects</span></div><div class="stat-item"><strong>45</strong><span>Stages</span></div><div class="stat-item"><strong>15</strong><span>Categories</span></div><div class="stat-item"><strong>Free</strong><span>Open Source</span></div></div></section>"""
+    return ""
+
+
+def home_featured_carousel(projects: list, card_fn) -> str:
+    featured = projects[:8]
+    cards = "".join(card_fn(p) for p in featured)
+    return f"""<section class="portal-section wrap reveal" id="featured">
+  <div class="section-head-portal">
+    <div class="section-head-portal-text">
+      <p class="section-eyebrow">Editor's pick</p>
+      <h2>Featured Projects</h2>
+    </div>
+    <div class="carousel-controls">
+      <a class="view-all view-all-sm" href="projects.html">View all</a>
+      <button type="button" class="carousel-btn" data-carousel="featured" data-dir="-1" aria-label="Scroll featured projects left">‹</button>
+      <button type="button" class="carousel-btn" data-carousel="featured" data-dir="1" aria-label="Scroll featured projects right">›</button>
+    </div>
+  </div>
+  <div class="carousel-shell">
+    <div class="carousel-track" id="carousel-featured" tabindex="0" role="region" aria-label="Featured ESP32 projects">{cards}</div>
+  </div>
+</section>"""
+
+
+def home_latest_categories_section(projects: list) -> str:
+    from project_icons import pick_icon, thumb_class, slug_cat
+
+    latest = list(reversed(projects[-6:]))
+    tutorial_rows = []
+    for p in latest:
+        tc = thumb_class(p["category"])
+        icon = pick_icon(p["category"])
+        tutorial_rows.append(
+            f'<a class="tutorial-row" href="{esc(p["href"])}">'
+            f'<span class="tutorial-icon {tc}">{icon}</span>'
+            f'<span class="tutorial-meta"><strong>{esc(p["title"])}</strong>'
+            f'<span class="tutorial-cat">{esc(short_category(p["category"]))} · 3 levels</span></span>'
+            f'<span class="tutorial-arrow" aria-hidden="true">→</span></a>'
+        )
+    cats = [
+        ("IoT", "IoT Projects"),
+        ("Automation", "Home Automation"),
+        ("Sensors", "Sensor Projects"),
+        ("Robotics", "Robotics"),
+        ("Security", "Security Projects"),
+        ("Smart Home", "Home Automation"),
+        ("Monitoring", "Energy Monitoring"),
+        ("AI Edge", "AI Projects"),
+    ]
+    cat_cards = []
+    for label, cat in cats:
+        slug = slug_cat(cat)
+        tc = thumb_class(cat)
+        icon = pick_icon(cat)
+        cat_cards.append(
+            f'<a class="pop-cat" href="projects.html#cat-{slug}">'
+            f'<span class="pop-cat-icon {tc}">{icon}</span><span>{label}</span></a>'
+        )
+    return f"""<section class="portal-section wrap reveal portal-duo" id="latest">
+  <div class="portal-duo-col portal-latest">
+    <div class="section-head-portal section-head-portal-inline">
+      <p class="section-eyebrow">Fresh guides</p>
+      <h2>Latest Tutorials</h2>
+    </div>
+    <div class="tutorial-list">{"".join(tutorial_rows)}</div>
+  </div>
+  <div class="portal-duo-col portal-categories" id="categories">
+    <div class="section-head-portal section-head-portal-inline">
+      <p class="section-eyebrow">Top domains</p>
+      <h2>Popular Categories</h2>
+    </div>
+    <div class="pop-cat-grid">{"".join(cat_cards)}</div>
+  </div>
+</section>"""
+
+
+def home_roadmap_stats_section(project_count: int) -> str:
+    stats = [
+        ("15+", "Parent Projects"),
+        ("45+", "Build Variations"),
+        ("3", "Skill Levels"),
+        ("100%", "Free Access"),
+    ]
+    stat_cards = "".join(
+        f'<div class="portal-stat"><strong>{esc(val)}</strong><span>{esc(label)}</span></div>'
+        for val, label in stats
+    )
+    return f"""<section class="portal-section wrap reveal portal-duo portal-roadmap-stats" id="roadmap">
+  <div class="portal-duo-col roadmap-panel">
+    <div class="section-head-portal section-head-portal-inline">
+      <p class="section-eyebrow">Structured learning</p>
+      <h2>ESP32 Learning Roadmap</h2>
+    </div>
+    <div class="roadmap-track">
+      <div class="roadmap-node"><span class="roadmap-num">1</span><div><strong class="badge badge-beginner">Beginner</strong><span>Sensors, serial output, threshold logic</span></div></div>
+      <div class="roadmap-connector" aria-hidden="true"></div>
+      <div class="roadmap-node"><span class="roadmap-num">2</span><div><strong class="badge badge-intermediate">Intermediate</strong><span>OLED, calibration, manual/auto modes</span></div></div>
+      <div class="roadmap-connector" aria-hidden="true"></div>
+      <div class="roadmap-node"><span class="roadmap-num">3</span><div><strong class="badge badge-advanced">Advanced</strong><span>Wi-Fi dashboards, alerts, logging</span></div></div>
+    </div>
+    <a class="roadmap-link" href="projects.html">Browse all {project_count} projects →</a>
+  </div>
+  <div class="portal-duo-col stats-panel">
+    <div class="section-head-portal section-head-portal-inline">
+      <p class="section-eyebrow">Library at a glance</p>
+      <h2>Project Statistics</h2>
+    </div>
+    <div class="portal-stats-grid">{stat_cards}</div>
+    <div class="stats-highlights">
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⚡</span><span>Wiring tables on every guide</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⌨</span><span>Copy-paste Arduino sketches</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">📱</span><span>Mobile-friendly layouts</span></div>
+    </div>
+  </div>
+</section>"""
+
+
+def home_community_section() -> str:
+    return f"""<section class="portal-section wrap reveal" id="community">
+  <div class="community-panel">
+    <div class="community-panel-icon" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none" width="40" height="40"><circle cx="32" cy="22" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 52c0-11 9-18 20-18s20 7 20 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="48" cy="24" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M52 44c0-6-4-10-9-10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="24" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M12 44c0-6 4-10 9-10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <div class="community-panel-body">
+      <p class="section-eyebrow">Stay connected</p>
+      <h2>Newsletter &amp; Community</h2>
+      <p class="community-lead">Get project updates, share builds, and connect with makers learning ESP32.</p>
+    </div>
+    <div class="community-panel-actions">
+      <a class="btn btn-primary" href="{esc(GITHUB_URL)}" rel="noopener noreferrer" target="_blank">Star on GitHub</a>
+      <a class="btn btn-secondary" href="contact.html">Join Discussion</a>
+    </div>
+  </div>
+</section>"""
+
+
+def home_cta_banner(project_count: int) -> str:
+    return f"""<section class="portal-cta wrap reveal">
+  <div class="portal-cta-inner">
+    <div class="portal-cta-text">
+      <h2>Start Building with ESP32 Today</h2>
+      <p>{project_count} parent projects · 3 difficulty levels · wiring &amp; code included</p>
+    </div>
+    <div class="portal-cta-actions">
+      <a class="btn btn-primary" href="projects.html">Explore Projects</a>
+      <a class="btn btn-secondary" href="projects.html#cat-iot-projects">Browse IoT</a>
+    </div>
+  </div>
+</section>"""
 
 
 def footer_html(base: str = "") -> str:
