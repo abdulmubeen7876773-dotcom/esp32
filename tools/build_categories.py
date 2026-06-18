@@ -9,6 +9,7 @@ from project_icons import pick_icon, slug_cat, thumb_class
 from site_layout import (
     SITE_DOMAIN,
     SITE_NAME,
+    breadcrumb_schema,
     category_section_title,
     esc,
     footer_html,
@@ -18,6 +19,8 @@ from site_layout import (
     modern_card,
     organization_schema,
     short_category,
+    site_href,
+    webpage_schema,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -85,8 +88,19 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
         {"name": p["title"], "url": f"{SITE_DOMAIN}/projects/{p['slug']}.html"}
         for p in projects
     ]
-    schema = organization_schema() + itemlist_schema(category_section_title(cat), list_items)
-    body = f"""  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li aria-current="page">{esc(short_category(cat))}</li></ol></nav>
+    schema = (
+        organization_schema()
+        + webpage_schema(title, desc, canon)
+        + breadcrumb_schema(
+            [
+                ("Home", "/"),
+                ("Projects", "projects.html"),
+                (short_category(cat), canon),
+            ]
+        )
+        + itemlist_schema(category_section_title(cat), list_items)
+    )
+    body = f"""  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('projects.html')}">Projects</a></li><li aria-current="page">{esc(short_category(cat))}</li></ol></nav>
   <div class="category-hero">
     <div class="category-hero-icon {tc}" aria-hidden="true">{icon}</div>
     <div>
@@ -97,21 +111,21 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
     </div>
   </div>
   <div class="post-grid category-project-grid">{cards or "<p>No projects in this category yet.</p>"}</div>
-  <p class="meta category-back"><a href="../projects.html">← Browse all ESP32 projects</a></p>"""
+  <p class="meta category-back"><a href="{site_href('projects.html')}">← Browse all ESP32 projects</a></p>"""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("..", title, desc, canonical_path=canon, extra_schema=schema)}
+{head_html("", title, desc, canonical_path=canon, extra_schema=schema)}
 </head>
 <body>
 <main>
-{header_html("projects", "../")}
+{header_html("projects")}
 <section class="section-block wrap page-head static-page category-page">
 {body}
 </section>
 </main>
-{footer_html("../")}
-<script src="../ui.js" defer></script>
+{footer_html()}
+<script src="/ui.js" defer></script>
 </body>
 </html>"""
 

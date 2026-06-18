@@ -11,8 +11,10 @@ from rebuild_projects import parse_project, esc
 from staged_content import build_all_levels
 from site_layout import (
     footer_html,
+    header_html,
     related_cards_html,
     short_category,
+    SITE_NAME,
     CSS_VERSION,
     SITE_DOMAIN,
     OG_IMAGE,
@@ -21,8 +23,10 @@ from site_layout import (
     social_meta,
     analytics_config_script,
     pinterest_verification_meta,
+    gsc_verification_meta,
     font_links_html,
     head_extras_html,
+    site_href,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -168,7 +172,7 @@ def build_head(parent: dict, hardware: dict) -> str:
             {
                 "@type": "HowToStep",
                 "position": i + 1,
-                "name": f"Step {i + 1}",
+                "name": (step[:100] + "…") if len(step) > 100 else step,
                 "text": step,
             }
             for i, step in enumerate(beginner_how)
@@ -184,11 +188,11 @@ def build_head(parent: dict, hardware: dict) -> str:
             {"@type": "ListItem", "position": 3, "name": title, "item": url},
         ],
     }
-    social = social_meta(f"{title} | ESP32 Project Guide", desc, url, "article")
-    return f"""<title>{esc(title)} | ESP32 Project Guide</title>
+    social = social_meta(f"{title} | {SITE_NAME}", desc, url, "article")
+    return f"""<title>{esc(title)} | {esc(SITE_NAME)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{url}">
-<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 {social}
 {json_ld_script(article)}
 {json_ld_script(howto)}
@@ -289,7 +293,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
         )
     content_html = "".join(render_difficulty_content(levels[lv], parent) for lv in LEVELS)
     related_section = related_cards_html(related)
-    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../category/{cat_slug}.html">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
+    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href(f'category/{cat_slug}.html')}">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
     level_badges = "".join(
         f'<span class="badge badge-{lv}">{LEVEL_LABELS[lv]}</span>' for lv in LEVELS
     )
@@ -301,18 +305,19 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <meta name="theme-color" content="#0B1020">
 <meta name="robots" content="index,follow,max-image-preview:large">
 {pinterest_verification_meta()}
+{gsc_verification_meta()}
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 {font_links_html()}
-{head_extras_html("../")}
+{head_extras_html()}
 {build_head(parent, hardware)}
-<link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
+<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style">
+<link rel="stylesheet" href="/style.css?v={CSS_VERSION}">
 <style>.level-radio{{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}}.difficulty-switcher .difficulty-content{{display:none!important}}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{{display:block!important}}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{{display:block!important}}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{{display:block!important}}details.accordion-item>summary{{list-style:none;cursor:pointer}}details.accordion-item>summary::-webkit-details-marker{{display:none}}</style>
 </head>
 <body>
 <div class="site-nav-sticky">
-<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.html">Sitemap</a></nav></div></header>
-{featured_cat_bar("../")}
+{header_html("projects")}
 </div>
 <main>
 <div class="wrap article-shell parent-project-shell">
@@ -327,7 +332,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
       <h3 class="sidebar-divider">Sections</h3>
       {section_toc_html("beginner")}
       <h3 class="sidebar-divider">Category</h3>
-      <ul class="side-list"><li><a href="../category/{cat_slug}.html">{esc(cat)}</a></li></ul>
+      <ul class="side-list"><li><a href="{site_href(f'category/{cat_slug}.html')}">{esc(cat)}</a></li></ul>
     </div>
   </aside>
   <article class="article-main parent-article">
@@ -360,14 +365,14 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
   </article>
   <aside class="sidebar-right">
     <div class="sidebar-sticky">
-      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="../projects.html">Browse all projects »</a></p></div>
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects »</a></p></div>
     </div>
   </aside>
 </div>
 </main>
-{footer_html("../")}
-<script src="../ui.js" defer></script>
-<script src="../project.js?v={CSS_VERSION}" defer></script>
+{footer_html()}
+<script src="/ui.js" defer></script>
+<script src="/project.js?v={CSS_VERSION}" defer></script>
 </body>
 </html>"""
 

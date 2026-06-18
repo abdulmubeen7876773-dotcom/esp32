@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
+from cms_loader import load_guides
 from site_layout import PROJECTS_PAGE_SIZE, SITE_DOMAIN, esc, header_html, footer_html, head_html, projects_page_path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -16,10 +17,11 @@ SITEMAP_HTML = ROOT / "sitemap.html"
 
 STATIC_PAGES = [
     ("", "weekly", "1.0"),
-    ("feed.xml", "daily", "0.6"),
+    ("guides.html", "weekly", "0.92"),
     ("about.html", "monthly", "0.5"),
     ("contact.html", "monthly", "0.5"),
     ("privacy.html", "monthly", "0.4"),
+    ("terms.html", "monthly", "0.4"),
     ("disclaimer.html", "monthly", "0.4"),
     ("sitemap.html", "monthly", "0.3"),
 ]
@@ -62,12 +64,16 @@ def parse_title(path: Path) -> str:
     return m.group(1).strip() if m else path.stem.replace("-", " ").title()
 
 
+def guide_pages() -> list[tuple[str, str, str]]:
+    return [(f"guides/{g['slug']}.html", "monthly", "0.88") for g in sorted(load_guides(), key=lambda g: (g.get("phase", 99), g.get("sort_order", 99), g.get("slug", "")))]
+
+
 def write_sitemap_xml(project_files: list[Path]) -> None:
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
-    for page, freq, priority in STATIC_PAGES + category_pages() + project_listing_pages():
+    for page, freq, priority in STATIC_PAGES + guide_pages() + category_pages() + project_listing_pages():
         if page == "sitemap.html":
             continue
         loc = page_loc(page)
@@ -90,7 +96,7 @@ def write_sitemap_xml(project_files: list[Path]) -> None:
 def write_sitemap_html(project_files: list[Path]) -> None:
     valid = [p for p in project_files if "_archive" not in p.parts and "-project-" not in p.name]
     static_links = "".join(
-        f'<li><a href="{esc(p or "index.html")}">{esc((p or "index.html").replace(".html", "").replace("-", " ").title() or "Home")}</a></li>'
+        f'<li><a href="{esc("/" if not p else "/" + p)}">{esc(("Home" if not p else p.replace(".html", "").replace("-", " ").title()))}</a></li>'
         for p, _, _ in STATIC_PAGES
         if p != "sitemap.html"
     )
@@ -122,7 +128,7 @@ def write_sitemap_html(project_files: list[Path]) -> None:
 </section>
 </main>
 {footer_html()}
-<script src="ui.js" defer></script>
+<script src="/ui.js" defer></script>
 </body>
 </html>"""
     SITEMAP_HTML.write_text(page, encoding="utf-8")
@@ -139,6 +145,7 @@ def main():
     url_count = (
         len(project_files)
         + len(STATIC_PAGES)
+        + len(guide_pages())
         + len(category_pages())
         + len(project_listing_pages())
         - 1

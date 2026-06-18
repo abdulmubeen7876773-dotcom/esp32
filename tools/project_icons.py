@@ -86,15 +86,15 @@ def featured_cat_bar(base: str = "", home_active: bool = False, projects_active:
     home_cls = " active" if home_active else ""
     proj_cls = " active" if projects_active else ""
     pills = [
-        f'<a class="cat-pill{home_cls}" href="{base}index.html"><span class="cat-pill-icon t-default">{ICONS["esp32"]}</span>Home</a>'
+        f'<a class="cat-pill{home_cls}" href="/"><span class="cat-pill-icon t-default">{ICONS["esp32"]}</span>Home</a>'
     ]
     for label, cat in FEATURED_CATEGORIES:
         tc = thumb_class(cat)
         pills.append(
-            f'<a class="cat-pill" href="{base}category/{slug_cat(cat)}.html">'
+            f'<a class="cat-pill" href="/category/{slug_cat(cat)}.html">'
             f'<span class="cat-pill-icon {tc}">{pick_icon(cat)}</span>{label}</a>'
         )
-    pills.append(f'<a class="cat-pill{proj_cls}" href="{base}projects.html">All Projects</a>')
+    pills.append(f'<a class="cat-pill{proj_cls}" href="/projects.html">All Projects</a>')
     return f'<nav class="cat-bar"><div class="wrap cat-nav">{"".join(pills)}</div></nav>'
 
 

@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
 PROJECTS_DIR = CONTENT / "projects"
 PAGES_DIR = CONTENT / "pages"
+GUIDES_DIR = CONTENT / "guides"
 
 DEFAULT_SITE = {
     "site_name": "ESP32 Engine",
@@ -89,3 +90,16 @@ def load_pages() -> dict[str, dict]:
 def load_home() -> dict:
     data = load_yaml(CONTENT / "home.yaml")
     return data if isinstance(data, dict) else {}
+
+
+def load_guides() -> list[dict]:
+    if not GUIDES_DIR.exists():
+        return []
+    guides = []
+    for path in sorted(GUIDES_DIR.glob("*.yaml")):
+        data = load_yaml(path)
+        if not isinstance(data, dict):
+            continue
+        data.setdefault("slug", path.stem)
+        guides.append(data)
+    return guides

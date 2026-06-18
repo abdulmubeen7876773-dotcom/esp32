@@ -9,6 +9,7 @@ STEPS = [
     "migrate_to_cms.py",
     "rebuild_parents.py",
     "build_static_pages.py",
+    "build_guides.py",
     "rebuild_index.py",
 ]
 

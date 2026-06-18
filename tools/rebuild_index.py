@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from parent_registry import PARENTS
-from cms_loader import load_home
+from cms_loader import load_guides, load_home
 from site_layout import (
     modern_card,
     footer_html,
@@ -23,6 +23,7 @@ from site_layout import (
     home_latest_categories_section,
     home_roadmap_stats_section,
     home_why_section,
+    home_guides_section,
     home_community_section,
     home_cta_banner,
     PROJECTS_PAGE_SIZE,
@@ -256,12 +257,13 @@ def home_html(projects):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", title, desc, canonical_path="/", extra_schema=schema, include_gsc=True)}
+{head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True)}
 </head>
 <body class="portal-home">
 <main>
 {header_html("home")}
 {hero_html()}
+{home_guides_section(load_guides())}
 {home_featured_carousel(projects, portal_carousel_card)}
 {home_latest_categories_section(projects)}
 {home_roadmap_stats_section(len(projects))}
@@ -270,7 +272,7 @@ def home_html(projects):
 {home_cta_banner(len(projects))}
 </main>
 {footer_html()}
-<script src="ui.js" defer></script>
+<script src="/ui.js" defer></script>
 </body>
 </html>
 """
@@ -328,9 +330,9 @@ def projects_listing_html(
 </section>
 </main>
 {footer_html()}
-<script src="project-icons.js" defer></script>
-<script src="ui.js" defer></script>
-<script src="projects.js" defer></script>
+<script src="/project-icons.js" defer></script>
+<script src="/ui.js" defer></script>
+<script src="/projects.js" defer></script>
 </body>
 </html>
 """

@@ -106,17 +106,58 @@ def modern_card(
     return f"""<a class="{card_class} modern-card" href="{esc(link)}"{extra_attrs}>{card_thumb_html(cat, thumb_cls)}<div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="card-read-more">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
-def canonical_url(base: str, path: str) -> str:
-    p = (path or "index.html").lstrip("/")
-    if base.startswith("http"):
-        root = base.rstrip("/")
-    else:
-        root = SITE_DOMAIN.rstrip("/") + ("/" + base.strip("/") if base.strip("/") else "")
-    return f"{root}/{p}" if p else root + "/"
+def site_href(path: str = "") -> str:
+    p = (path or "").strip().lstrip("/")
+    if not p or p == "index.html":
+        return "/"
+    return f"/{p}"
+
+
+def canonical_url(path: str = "") -> str:
+    p = (path or "").strip().lstrip("/")
+    if not p or p == "index.html":
+        return SITE_DOMAIN.rstrip("/") + "/"
+    return f"{SITE_DOMAIN.rstrip('/')}/{p}"
+
+
+def index_redirect_script() -> str:
+    return '<script>if(/\\/index\\.html$/i.test(location.pathname))location.replace(location.pathname.replace(/index\\.html$/i,"")+(location.search||"")+(location.hash||"")||"/");</script>'
 
 
 def json_ld_script(data) -> str:
     return f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False, separators=(",", ":"))}</script>'
+
+
+def breadcrumb_schema(items: list[tuple[str, str]]) -> str:
+    elements = []
+    for i, (name, url) in enumerate(items, 1):
+        elements.append(
+            {
+                "@type": "ListItem",
+                "position": i,
+                "name": name,
+                "item": url if url.startswith("http") else f"{SITE_DOMAIN.rstrip('/')}{site_href(url)}",
+            }
+        )
+    data = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": elements,
+    }
+    return json_ld_script(data)
+
+
+def webpage_schema(title: str, description: str, path: str, page_type: str = "WebPage") -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": page_type,
+        "name": title,
+        "description": description,
+        "url": canonical_url(path),
+        "isPartOf": {"@type": "WebSite", "name": SITE_NAME, "url": SITE_DOMAIN + "/"},
+        "publisher": {"@type": "Organization", "name": ORG_NAME, "url": SITE_DOMAIN + "/"},
+    }
+    return json_ld_script(data)
 
 
 def organization_schema() -> str:
@@ -204,9 +245,8 @@ def font_links_html() -> str:
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"></noscript>"""
 
 
-def head_extras_html(base: str) -> str:
-    feed = f"{base}feed.xml" if base else "feed.xml"
-    return f'<link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="{esc(feed)}">'
+def head_extras_html() -> str:
+    return f'<link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="/feed.xml">'
 
 
 def pagination_head_links(page: int, total_pages: int, page_path_fn) -> str:
@@ -269,46 +309,51 @@ def head_html(
     canonical_path: str = "",
     og_type: str = "website",
     extra_schema: str = "",
-    include_gsc: bool = False,
+    include_gsc: bool = True,
+    robots: str = "index,follow,max-image-preview:large",
+    include_index_redirect: bool = False,
 ) -> str:
     t = esc(title)
     d = esc(description)
-    canon = canonical_url(base, canonical_path or "index.html")
-    favicon = f"{base}favicon.svg"
+    canon = canonical_url(canonical_path)
     gsc = gsc_verification_meta() if include_gsc else ""
     pinterest = pinterest_verification_meta()
-    extras = head_extras_html(base)
+    extras = head_extras_html()
+    redirect = index_redirect_script() if include_index_redirect else ""
     return f"""<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
 <meta name="theme-color" content="#0B1020">
-<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="robots" content="{esc(robots)}">
 <link rel="canonical" href="{esc(canon)}">
-<link rel="icon" href="{favicon}" type="image/svg+xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 {extras}
 {social_meta(title, description, canon, og_type)}
 {pinterest}
 {gsc}
+{redirect}
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 {font_links_html()}
-<link rel="stylesheet" href="{base}style.css?v={CSS_VERSION}">
+<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style">
+<link rel="stylesheet" href="/style.css?v={CSS_VERSION}">
 {extra_schema}"""
 
 
 def header_html(active: str = "home", base: str = ""):
     nav_home = ' class="active"' if active == "home" else ""
+    nav_guides = ' class="active"' if active == "guides" else ""
     nav_proj = ' class="active"' if active == "projects" else ""
     nav_about = ' class="active"' if active == "about" else ""
     nav_contact = ' class="active"' if active == "contact" else ""
     search_action = (
-        "event.preventDefault();location.href='projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
-        if active == "home"
+        "event.preventDefault();location.href='/projects.html?q='+encodeURIComponent(this.querySelector('input').value);"
+        if active in ("home", "guides")
         else "event.preventDefault();var el=document.getElementById('q');if(el){el.value=this.querySelector('input').value;if(window.filterProjects){window.filterProjects();}else{el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));}}"
     )
     return f"""<div class="site-nav-sticky">
-<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="{base}index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="{base}index.html"{nav_home}>Home</a><a href="{base}projects.html"{nav_proj}>Projects</a><a href="{base}about.html"{nav_about}>About</a><a href="{base}contact.html"{nav_contact}>Contact</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="{site_href()}"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Engine</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="{site_href()}"{nav_home}>Home</a><a href="{site_href('guides.html')}"{nav_guides}>Guides</a><a href="{site_href('projects.html')}"{nav_proj}>Projects</a><a href="{site_href('about.html')}"{nav_about}>About</a><a href="{site_href('contact.html')}"{nav_contact}>Contact</a></nav><form class="top-search" onsubmit="{search_action}"><input type="search" placeholder="Search projects…" aria-label="Search"><button type="submit" aria-label="Search">Search</button></form></div></header>
 {featured_cat_bar(base, active == "home", active == "projects")}
 </div>"""
 
@@ -327,7 +372,7 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 </section>
 </main>
 {footer_html()}
-<script src="ui.js" defer></script>
+<script src="/ui.js" defer></script>
 </body>
 </html>
 """
@@ -361,7 +406,7 @@ def hero_html(latest_items: str = "") -> str:
       <h1 id="hero-heading">{esc(heading)}</h1>
       <p class="hero-sub hero-sub-compact">{esc(sub)}</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="projects.html">Explore Projects</a>
+        <a class="btn btn-primary" href="/projects.html">Explore Projects</a>
         <a class="btn btn-secondary" href="#roadmap">View Learning Path</a>
       </div>
       <div class="hero-stat-row">{stat_items}</div>
@@ -390,7 +435,7 @@ def home_featured_carousel(projects: list, card_fn) -> str:
       <h2>Featured Projects</h2>
     </div>
     <div class="carousel-controls">
-      <a class="view-all view-all-sm" href="projects.html">View all</a>
+      <a class="view-all view-all-sm" href="/projects.html">View all</a>
       <button type="button" class="carousel-btn" data-carousel="featured" data-dir="-1" aria-label="Scroll featured projects left">‹</button>
       <button type="button" class="carousel-btn" data-carousel="featured" data-dir="1" aria-label="Scroll featured projects right">›</button>
     </div>
@@ -434,7 +479,7 @@ def home_latest_categories_section(projects: list) -> str:
         tc = thumb_class(cat)
         icon = pick_icon(cat)
         cat_cards.append(
-            f'<a class="pop-cat tech-cat-card" href="category/{slug}.html">'
+            f'<a class="pop-cat tech-cat-card" href="/category/{slug}.html">'
             f'<span class="pop-cat-icon {tc}">{icon}</span><span>{label}</span></a>'
         )
     return f"""<section class="portal-section wrap reveal portal-duo" id="latest">
@@ -479,7 +524,7 @@ def home_roadmap_stats_section(project_count: int) -> str:
       <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
       <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">03</span><div><strong class="badge badge-advanced">Advanced</strong><span>Wi-Fi dashboards, alerts, logging</span></div></div>
     </div>
-    <a class="roadmap-link" href="projects.html">Browse all {project_count} projects →</a>
+    <a class="roadmap-link" href="/projects.html">Browse all {project_count} projects →</a>
   </div>
   <div class="portal-duo-col stats-panel">
     <div class="section-head-portal section-head-portal-inline">
@@ -520,6 +565,39 @@ def home_why_section() -> str:
 </section>"""
 
 
+def home_guides_section(guides: list) -> str:
+    if not guides:
+        return ""
+    ordered = sorted(guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99), g.get("slug", "")))
+    cards = []
+    for g in ordered:
+        slug = g["slug"]
+        headline = g.get("headline") or g.get("title", "").split("|")[0].strip()
+        desc = g.get("lead") or g.get("meta_description", "")
+        if len(desc) > 110:
+            desc = desc[:107].rstrip() + "…"
+        phase = g.get("phase")
+        phase_badge = f'<span class="badge badge-cat">Phase {phase}</span>' if phase else ""
+        cards.append(
+            f'<a class="guide-home-card" href="{site_href(f"guides/{slug}.html")}">'
+            f'<div class="guide-card-badges">{phase_badge}</div>'
+            f"<h3>{esc(headline)}</h3>"
+            f"<p>{esc(desc)}</p>"
+            f'<span class="card-read-more">Read Guide<span aria-hidden="true">→</span></span></a>'
+        )
+    return f"""<section class="portal-section wrap reveal" id="guides">
+  <div class="section-head-portal">
+    <div class="section-head-portal-text">
+      <p class="section-eyebrow">Start here</p>
+      <h2>ESP32 Learning Guides</h2>
+      <p class="section-sub">Phase 1 foundations and Phase 2 tooling before you open a project build.</p>
+    </div>
+    <a class="view-all view-all-sm" href="{site_href('guides.html')}">All guides</a>
+  </div>
+  <div class="guide-home-grid">{"".join(cards)}</div>
+</section>"""
+
+
 def home_community_section() -> str:
     return f"""<section class="portal-section wrap reveal" id="community">
   <div class="community-panel">
@@ -533,7 +611,7 @@ def home_community_section() -> str:
     </div>
     <div class="community-panel-actions">
       <a class="btn btn-primary" href="{esc(GITHUB_URL)}" rel="noopener noreferrer" target="_blank">Star on GitHub</a>
-      <a class="btn btn-secondary" href="contact.html">Join Discussion</a>
+      <a class="btn btn-secondary" href="/contact.html">Join Discussion</a>
     </div>
   </div>
 </section>"""
@@ -547,15 +625,15 @@ def home_cta_banner(project_count: int) -> str:
       <p>{project_count} parent projects · 3 difficulty levels · wiring &amp; code included</p>
     </div>
     <div class="portal-cta-actions">
-      <a class="btn btn-primary" href="projects.html">Explore Projects</a>
-      <a class="btn btn-secondary" href="category/iot-projects.html">Browse IoT</a>
+      <a class="btn btn-primary" href="/projects.html">Explore Projects</a>
+      <a class="btn btn-secondary" href="/category/iot-projects.html">Browse IoT</a>
     </div>
   </div>
 </section>"""
 
 
 def footer_html(base: str = "") -> str:
-    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>{SITE_NAME}</strong><p>15 parent ESP32 tutorials with Beginner, Intermediate, and Advanced stages — wiring tables, Arduino code, and troubleshooting for makers and students.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}category/iot-projects.html">Categories</a><a href="{base}sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div></footer>"""
+    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>{SITE_NAME}</strong><p>15 parent ESP32 tutorials with Beginner, Intermediate, and Advanced stages — wiring tables, Arduino code, and troubleshooting for makers and students.</p></div><div class="footer-col"><h4>Explore</h4><a href="{site_href()}">Home</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('projects.html')}">All Projects</a><a href="{site_href('category/iot-projects.html')}">Categories</a><a href="{site_href('sitemap.html')}">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{site_href('about.html')}">About</a><a href="{site_href('contact.html')}">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{site_href('privacy.html')}">Privacy Policy</a><a href="{site_href('terms.html')}">Terms of Service</a><a href="{site_href('disclaimer.html')}">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div></footer>"""
 
 
 def related_cards_html(related: list, base: str = "") -> str:
