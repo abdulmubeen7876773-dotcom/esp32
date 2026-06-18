@@ -165,4 +165,27 @@
       track.scrollBy({ left: dir * amount, behavior: 'smooth' });
     });
   });
+
+  var searchOpen = document.getElementById('search-open');
+  var searchOverlay = document.getElementById('search-overlay');
+  if (searchOpen && searchOverlay) {
+    var searchInput = document.getElementById('global-search');
+    searchOpen.addEventListener('click', function () {
+      searchOverlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+      if (searchInput) searchInput.focus();
+    });
+    searchOverlay.querySelectorAll('[data-close-search]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        searchOverlay.hidden = true;
+        document.body.style.overflow = '';
+      });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !searchOverlay.hidden) {
+        searchOverlay.hidden = true;
+        document.body.style.overflow = '';
+      }
+    });
+  }
 })();

@@ -302,7 +302,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0B1020">
+<meta name="theme-color" content="#6D28D9">
 <meta name="robots" content="index,follow,max-image-preview:large">
 {pinterest_verification_meta()}
 {gsc_verification_meta()}
@@ -338,13 +338,13 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
   <article class="article-main parent-article">
     <header class="article-header">
       {breadcrumb}
-      <div class="parent-hero-row">
+      <div class="parent-hero-row project-hero-banner">
         <div class="parent-hero-text">
           <h1>{esc(parent['title'])}</h1>
           <div class="article-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span>{level_badges}</div>
           <p class="article-lead">{esc(parent['description'])}</p>
         </div>
-        <div class="article-thumb {tc} parent-thumb">{icon}</div>
+        <div class="article-thumb project-hero-image {tc} parent-thumb">{icon}</div>
       </div>
     </header>
     <div class="difficulty-switcher">

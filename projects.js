@@ -1,5 +1,5 @@
 (function () {
-  var PAGE_SIZE = 9;
+  var PAGE_SIZE = 12;
 
   function esc(text) {
     var d = document.createElement('div');
@@ -20,21 +20,25 @@
     return 'badge-beginner';
   }
 
+  function readTime(slug) {
+    var base = 8;
+    if (slug) base += slug.length % 5;
+    return base + ' min read';
+  }
+
   function thumbHtml(category) {
     var icons = window.PROJECT_ICONS || {};
     var thumbs = window.PROJECT_THUMBS || {};
     var svg = icons[category] || icons.__default__ || '';
-    var cls = thumbs[category] || 'thumb-esp32';
-    return '<div class="card-thumb ' + cls + '">' + svg + '</div>';
+    var cls = thumbs[category] || 't-default';
+    return '<div class="card-media"><div class="card-thumb ' + cls + '">' + svg + '</div></div>';
   }
 
   function levelBadges(levels) {
     var list = levels || ['Beginner', 'Intermediate', 'Advanced'];
     return list
       .map(function (lv) {
-        return (
-          '<span class="badge ' + badgeClass(lv) + '">' + esc(lv) + '</span>'
-        );
+        return '<span class="badge ' + badgeClass(lv) + '">' + esc(lv) + '</span>';
       })
       .join('');
   }
@@ -44,8 +48,9 @@
     var descHtml = desc ? '<p class="card-desc">' + esc(desc) + '</p>' : '';
     var levels = p.levels || ['Beginner', 'Intermediate', 'Advanced'];
     var levelsStr = levels.join(',');
+    var rt = readTime(p.slug || '');
     return (
-      '<a class="card project-card modern-card parent-card compact-card premium-card product-card" href="' +
+      '<a class="card project-card modern-card project-card-item" href="' +
       esc(p.href) +
       '" data-title="' +
       esc((p.title || '').toLowerCase()) +
@@ -53,18 +58,21 @@
       esc(p.category || '') +
       '" data-levels="' +
       esc(levelsStr) +
+      '" data-featured="' +
+      (p.featured ? '1' : '0') +
       '">' +
-      '<span class="product-card-glow" aria-hidden="true"></span>' +
       thumbHtml(p.category) +
       '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
       esc(shortCategory(p.category)) +
       '</span>' +
       levelBadges(levels) +
-      '</div><h3>' +
+      '<span class="badge badge-time">' +
+      esc(rt) +
+      '</span></div><h3>' +
       esc(p.title) +
       '</h3>' +
       descHtml +
-      '<div class="card-footer"><span class="card-read-more">View Project<span aria-hidden="true">→</span></span></div></div></a>'
+      '<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">→</span></span></div></div></a>'
     );
   }
 
@@ -114,6 +122,7 @@
     var q = document.getElementById('q');
     var cat = document.getElementById('cat');
     var diff = document.getElementById('diff');
+    var sort = document.getElementById('sort');
     var count = document.getElementById('count');
     grid = document.getElementById('grid');
     if (!q || !cat || !diff || !count || !grid) return;
@@ -139,6 +148,24 @@
       }
     }
 
+    function sortCards() {
+      if (!sort) return;
+      var cards = getCards().slice();
+      var mode = sort.value || 'featured';
+      cards.sort(function (a, b) {
+        if (mode === 'title') {
+          return (a.dataset.title || '').localeCompare(b.dataset.title || '');
+        }
+        if (mode === 'category') {
+          return (a.dataset.category || '').localeCompare(b.dataset.category || '');
+        }
+        return (parseInt(b.dataset.featured || '0', 10) || 0) - (parseInt(a.dataset.featured || '0', 10) || 0);
+      });
+      cards.forEach(function (card) {
+        grid.appendChild(card);
+      });
+    }
+
     function filterProjects() {
       var g = document.getElementById('grid');
       if (g) g.dataset.expanded = '';
@@ -155,6 +182,7 @@
           (!difficulty || levels.indexOf(difficulty) !== -1);
         card.classList.toggle('filter-hidden', !ok);
       });
+      sortCards();
       var visible = applyPagination();
       count.textContent = getVisibleCards().length + ' projects found · showing ' + visible;
     }
@@ -163,6 +191,9 @@
       el.addEventListener('input', filterProjects);
       el.addEventListener('change', filterProjects);
     });
+    if (sort) {
+      sort.addEventListener('change', filterProjects);
+    }
 
     var loadBtn = document.getElementById('projects-load-more');
     if (loadBtn) {

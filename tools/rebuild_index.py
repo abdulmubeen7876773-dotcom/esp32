@@ -19,6 +19,7 @@ from site_layout import (
     website_schema,
     CSS_VERSION,
     short_category,
+    read_time_label,
     home_featured_carousel,
     home_latest_categories_section,
     home_roadmap_stats_section,
@@ -31,6 +32,10 @@ from site_layout import (
     pagination_nav_html,
     projects_page_path,
     projects_page_canonical,
+    sidebar_categories_html,
+    filters_bar_html,
+    category_hero_html,
+    esc as layout_esc,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -191,17 +196,19 @@ def parent_grid_card(p: dict) -> str:
         f' data-title="{esc(p["title"].lower())}"'
         f' data-category="{esc(p["category"])}"'
         f' data-levels="{esc(",".join(p.get("levels", LEVELS)))}"'
+        f' data-featured="{1 if p.get("featured") else 0}"'
     )
     tc = icon_thumb_class(p["category"])
     icon = pick_icon(p["category"])
     desc = esc(p.get("desc", ""))
-    return f"""<a class="card project-card modern-card parent-card compact-card premium-card product-card" href="{esc(p['href'])}"{attrs}>
-<span class="product-card-glow" aria-hidden="true"></span>
-<div class="card-thumb {tc}">{icon}</div>
-<div class="card-body"><div class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}</div>
+    rt = esc(read_time_label("Beginner", p.get("slug", "")))
+    feat = '<span class="badge badge-featured">Featured</span>' if p.get("featured") else ""
+    return f"""<a class="card project-card modern-card project-card-item" href="{esc(p['href'])}"{attrs}>
+<div class="card-media"><div class="card-thumb {tc}">{icon}</div></div>
+<div class="card-body"><div class="card-badges">{feat}<span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}<span class="badge badge-time">{rt}</span></div>
 <h3>{esc(p['title'])}</h3>
 <p class="card-desc">{desc}</p>
-<div class="card-footer"><span class="card-read-more">View Project<span aria-hidden="true">→</span></span></div></div></a>"""
+<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
 def project_json_record(p: dict) -> dict:
@@ -216,6 +223,7 @@ def project_json_record(p: dict) -> dict:
         "slug": p["slug"],
         "levels": p.get("levels", LEVELS),
         "readMin": p.get("readMin", 12),
+        "featured": bool(p.get("featured")),
     }
 
 
@@ -259,7 +267,7 @@ def home_html(projects):
 <head>
 {head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True)}
 </head>
-<body class="portal-home">
+<body class="home-page">
 <main>
 {header_html("home")}
 {hero_html()}
@@ -297,37 +305,39 @@ def projects_listing_html(
     title = f"ESP32 Projects — {total_count} Tutorials | ESP32 Engine{page_label}"
     page_links = pagination_head_links(page, total_pages, lambda n: projects_page_path(n))
     pagination = pagination_nav_html(page, total_pages, projects_page_path)
+    filters = filters_bar_html(True).replace(
+        '<select id="cat" aria-label="Filter by category"><option value="">All categories</option></select>',
+        f'<select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>',
+    )
+    hero = category_hero_html(
+        "ESP32 Project Library",
+        f"Browse {total_count} hands-on ESP32 tutorials with wiring diagrams, Arduino code, and Beginner, Intermediate, and Advanced build stages.",
+        "IoT Projects",
+        '<span class="badge badge-light">15 Categories</span><span class="badge badge-light">3 Levels Each</span><span class="badge badge-light">Free &amp; Open</span>',
+    )
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 {head_html("", title, desc, canonical_path=canon, extra_schema=schema)}
 {page_links}
 </head>
-<body>
+<body class="projects-page">
 <main>
 {header_html("projects")}
-<section class="section-block wrap page-head page-head-compact">
-  <p class="hero-eyebrow">Project Directory</p>
-  <h1>Browse ESP32 Projects</h1>
-  <p class="hero-sub">{total_count} guides with Beginner, Intermediate, and Advanced stages.</p>
-</section>
-<div class="filters-sticky">
-  <div class="wrap">
-    <div class="search-panel search-panel-compact">
-      <input id="q" placeholder="Search ESP32 projects…" aria-label="Search projects">
-      <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
-      <select id="diff" aria-label="Filter by difficulty stage"><option value="">All difficulty stages</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
-    </div>
-    <p class="meta filter-meta" id="count">{len(page_projects)} projects on this page · {total_count} total</p>
+{hero}
+<div class="layout-with-sidebar wrap">
+  {sidebar_categories_html("projects")}
+  <div class="main-with-sidebar">
+    <div class="filters-sticky">{filters}</div>
+    <section class="section-block">
+      <div class="grid grid-projects" id="grid">{preview}</div>
+      <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary" id="projects-load-more">Load More</button></div>
+      {text_index}
+      {pagination}
+      <noscript><p class="meta">JavaScript is required for filters. Use the <a href="sitemap.html">sitemap</a>.</p></noscript>
+    </section>
   </div>
 </div>
-<section class="section-block wrap section-block-compact">
-  <div class="grid grid-compact" id="grid">{preview}</div>
-  <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary btn-sm" id="projects-load-more">Load More</button></div>
-  {text_index}
-  {pagination}
-  <noscript><p class="meta">JavaScript is required for card view and filters. Use the plain-text project index above or the <a href="sitemap.html">sitemap</a>.</p></noscript>
-</section>
 </main>
 {footer_html()}
 <script src="/project-icons.js" defer></script>
