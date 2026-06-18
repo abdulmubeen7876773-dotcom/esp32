@@ -91,7 +91,7 @@ def featured_cat_bar(base: str = "", home_active: bool = False, projects_active:
     for label, cat in FEATURED_CATEGORIES:
         tc = thumb_class(cat)
         pills.append(
-            f'<a class="cat-pill" href="{base}projects.html#cat-{slug_cat(cat)}">'
+            f'<a class="cat-pill" href="{base}category/{slug_cat(cat)}.html">'
             f'<span class="cat-pill-icon {tc}">{pick_icon(cat)}</span>{label}</a>'
         )
     pills.append(f'<a class="cat-pill{proj_cls}" href="{base}projects.html">All Projects</a>')

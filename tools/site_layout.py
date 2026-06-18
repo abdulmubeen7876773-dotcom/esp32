@@ -4,16 +4,18 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260617-tabs1"
+CSS_VERSION = "20260618-seo1"
 SITE_DOMAIN = "https://esp32engine.com"
-SITE_NAME = "ESP32 Project Library"
-ORG_NAME = "ESP32 Project Library"
+SITE_NAME = "ESP32 Engine"
+ORG_NAME = "ESP32 Engine"
 GITHUB_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32"
 CONTACT_ISSUES_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32/issues"
 GA4_MEASUREMENT_ID = "G-WLHZKSEFP3"
 GSC_VERIFICATION = "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI"
 PINTEREST_VERIFICATION = "f71bc8cce0ff2c76eeea8b5cf86dc70b"
-OG_IMAGE = f"{SITE_DOMAIN}/og-image.svg"
+OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
+OG_IMAGE_WIDTH = 1200
+OG_IMAGE_HEIGHT = 630
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 220 220" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="40" y1="60" x2="180" y2="160"><stop stop-color="#00D4FF"/><stop offset="1" stop-color="#00FFB3"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="35" y="58" width="150" height="96" rx="14" stroke="url(#heroGrad)" stroke-width="2.5" filter="url(#heroGlow)"/><rect x="54" y="76" width="112" height="60" rx="8" fill="rgba(0,212,255,.1)" stroke="rgba(0,212,255,.35)" stroke-width="1.5"/><path d="M35 78h-14M35 106h-14M35 134h-14M185 78h14M185 106h14M185 134h14M78 58V38M110 58V38M142 58V38M78 154V174M110 154V174M142 154V174" stroke="#00D4FF" stroke-width="2" stroke-linecap="round" opacity=".65"/><circle cx="110" cy="106" r="7" fill="#00FFB3" opacity=".95"/><circle cx="110" cy="106" r="14" stroke="#00FFB3" stroke-width="1" opacity=".25"/><text x="110" y="111" text-anchor="middle" fill="#F8FAFC" font-size="15" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text></svg>"""
 
@@ -157,10 +159,33 @@ def social_meta(title: str, description: str, url: str, og_type: str = "website"
 <meta property="og:description" content="{d}">
 <meta property="og:url" content="{u}">
 <meta property="og:image" content="{img}">
+<meta property="og:image:width" content="{OG_IMAGE_WIDTH}">
+<meta property="og:image:height" content="{OG_IMAGE_HEIGHT}">
+<meta property="og:image:alt" content="{esc(SITE_NAME)} — ESP32 projects and tutorials">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{d}">
 <meta name="twitter:image" content="{img}">"""
+
+
+def itemlist_schema(name: str, items: list[dict]) -> str:
+    elements = []
+    for i, item in enumerate(items, 1):
+        elements.append(
+            {
+                "@type": "ListItem",
+                "position": i,
+                "name": item["name"],
+                "url": item["url"],
+            }
+        )
+    data = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": name,
+        "itemListElement": elements,
+    }
+    return json_ld_script(data)
 
 
 def analytics_config_script() -> str:
@@ -345,7 +370,7 @@ def home_latest_categories_section(projects: list) -> str:
         tc = thumb_class(cat)
         icon = pick_icon(cat)
         cat_cards.append(
-            f'<a class="pop-cat tech-cat-card" href="projects.html#cat-{slug}">'
+            f'<a class="pop-cat tech-cat-card" href="category/{slug}.html">'
             f'<span class="pop-cat-icon {tc}">{icon}</span><span>{label}</span></a>'
         )
     return f"""<section class="portal-section wrap reveal portal-duo" id="latest">
@@ -459,14 +484,14 @@ def home_cta_banner(project_count: int) -> str:
     </div>
     <div class="portal-cta-actions">
       <a class="btn btn-primary" href="projects.html">Explore Projects</a>
-      <a class="btn btn-secondary" href="projects.html#cat-iot-projects">Browse IoT</a>
+      <a class="btn btn-secondary" href="category/iot-projects.html">Browse IoT</a>
     </div>
   </div>
 </section>"""
 
 
 def footer_html(base: str = "") -> str:
-    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>15 parent ESP32 tutorials with Beginner, Intermediate, and Advanced stages — wiring tables, Arduino code, and troubleshooting for makers and students.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>"""
+    return f"""<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>{SITE_NAME}</strong><p>15 parent ESP32 tutorials with Beginner, Intermediate, and Advanced stages — wiring tables, Arduino code, and troubleshooting for makers and students.</p></div><div class="footer-col"><h4>Explore</h4><a href="{base}index.html">Home</a><a href="{base}projects.html">All Projects</a><a href="{base}category/iot-projects.html">Categories</a><a href="{base}sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="{base}about.html">About</a><a href="{base}contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="{base}privacy.html">Privacy Policy</a><a href="{base}disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div></footer>"""
 
 
 def related_cards_html(related: list, base: str = "") -> str:

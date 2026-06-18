@@ -244,7 +244,7 @@ def home_html(projects):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Project Library — Build, Connect & Automate with ESP32", desc, canonical_path="/", extra_schema=schema, include_gsc=True)}
+{head_html("", "ESP32 Engine — Build, Connect & Automate with ESP32", desc, canonical_path="/", extra_schema=schema, include_gsc=True)}
 </head>
 <body class="portal-home">
 <main>
@@ -271,7 +271,7 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Projects — 15 Parent Tutorials with 3 Skill Levels | ESP32 Library", desc, canonical_path="projects.html", extra_schema=schema)}
+{head_html("", "ESP32 Projects — 15 Tutorials with 3 Skill Levels | ESP32 Engine", desc, canonical_path="projects.html", extra_schema=schema)}
 </head>
 <body>
 <main>

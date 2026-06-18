@@ -6,8 +6,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS, PARENT_BY_SLUG
 from staged_content import LEVELS, LEVEL_LABELS, build_all_levels
-from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
+from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from rebuild_projects import parse_project, esc
+from staged_content import build_all_levels
 from site_layout import (
     footer_html,
     related_cards_html,
@@ -95,18 +96,22 @@ def steps_html(items: list[str]) -> str:
 
 
 def faq_for_parent(parent: dict) -> list[tuple[str, str]]:
+    title = parent["title"]
+    sensor = parent.get("sensor", "sensor module")
+    output = parent.get("output", "output module")
+    cat = parent.get("category", "ESP32")
     return [
         (
-            "Do I need all three difficulty stages?",
-            "No. Start with Beginner, then move to Intermediate and Advanced when you are ready for displays, calibration, or Wi-Fi features.",
+            f"What hardware do I need for {title}?",
+            f"You need an ESP32 DevKit, {sensor}, {output}, a breadboard, jumper wires, and a USB cable for power and programming.",
         ),
         (
-            "Can Beginner run without internet?",
-            "Yes. Beginner and Intermediate stages run entirely on the ESP32 with USB power.",
+            f"Does {title} require Wi-Fi?",
+            "Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.",
         ),
         (
-            "Which libraries do Intermediate and Advanced need?",
-            "Intermediate uses Adafruit SSD1306 for OLED. Advanced uses built-in WiFi and WebServer — install board support for ESP32 in Arduino IDE.",
+            f"Which difficulty level should I start with for {title}?",
+            f"Start with Beginner if you are new to {cat}. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.",
         ),
     ]
 
@@ -124,6 +129,11 @@ def build_head(parent: dict, hardware: dict) -> str:
     url = f"{DOMAIN}/projects/{parent['slug']}.html"
     title = parent["title"]
     desc = parent["description"]
+    cat = parent["category"]
+    cat_slug = slug_cat(cat)
+    cat_url = f"{DOMAIN}/category/{cat_slug}.html"
+    levels = build_all_levels(parent, hardware)
+    beginner_how = levels["beginner"]["how"]
     faq_schema = []
     for q, a in faq_for_parent(parent):
         faq_schema.append(
@@ -131,11 +141,11 @@ def build_head(parent: dict, hardware: dict) -> str:
         )
     article = {
         "@context": "https://schema.org",
-        "@type": "Article",
+        "@type": "TechArticle",
         "headline": title,
         "description": desc,
         "datePublished": "2026-06-14",
-        "dateModified": "2026-06-17",
+        "dateModified": "2026-06-18",
         "image": OG_IMAGE,
         "author": {"@type": "Organization", "name": ORG_NAME, "url": DOMAIN + "/"},
         "publisher": {
@@ -144,15 +154,31 @@ def build_head(parent: dict, hardware: dict) -> str:
             "logo": {"@type": "ImageObject", "url": OG_IMAGE},
         },
         "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+        "proficiencyLevel": "Beginner",
+        "dependencies": f"ESP32 DevKit, {parent.get('sensor', 'sensor')}, {parent.get('output', 'output')}",
+    }
+    howto = {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": f"How to build {title} (Beginner)",
+        "description": desc,
+        "step": [
+            {
+                "@type": "HowToStep",
+                "position": i + 1,
+                "name": f"Step {i + 1}",
+                "text": step,
+            }
+            for i, step in enumerate(beginner_how)
+        ],
     }
     faq = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faq_schema}
-    cat = parent["category"]
     crumbs = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{DOMAIN}/index.html"},
-            {"@type": "ListItem", "position": 2, "name": cat, "item": f"{DOMAIN}/projects.html"},
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{DOMAIN}/"},
+            {"@type": "ListItem", "position": 2, "name": cat, "item": cat_url},
             {"@type": "ListItem", "position": 3, "name": title, "item": url},
         ],
     }
@@ -163,6 +189,7 @@ def build_head(parent: dict, hardware: dict) -> str:
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 {social}
 {json_ld_script(article)}
+{json_ld_script(howto)}
 {json_ld_script(faq)}
 {json_ld_script(crumbs)}"""
 
@@ -245,7 +272,7 @@ def render_difficulty_content(level: dict, parent: dict) -> str:
 def render_page(parent: dict, hardware: dict, related: list) -> str:
     levels = build_all_levels(parent, hardware)
     cat = parent["category"]
-    cat_slug = re.sub(r"[^a-z0-9]+", "-", cat.lower()).strip("-")
+    cat_slug = slug_cat(cat)
     tc = icon_thumb_class(cat)
     icon = pick_icon(cat)
     radios = []
@@ -260,7 +287,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
         )
     content_html = "".join(render_difficulty_content(levels[lv], parent) for lv in LEVELS)
     related_section = related_cards_html(related)
-    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
+    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../category/{cat_slug}.html">{esc(cat)}</a></li><li aria-current="page">{esc(parent['title'][:50])}</li></ol></nav>"""
     level_badges = "".join(
         f'<span class="badge badge-{lv}">{LEVEL_LABELS[lv]}</span>' for lv in LEVELS
     )
@@ -299,7 +326,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
       <h3 class="sidebar-divider">Sections</h3>
       {section_toc_html("beginner")}
       <h3 class="sidebar-divider">Category</h3>
-      <ul class="side-list"><li><a href="../projects.html#cat-{cat_slug}">{esc(cat)}</a></li></ul>
+      <ul class="side-list"><li><a href="../category/{cat_slug}.html">{esc(cat)}</a></li></ul>
     </div>
   </aside>
   <article class="article-main parent-article">
@@ -332,7 +359,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
   </article>
   <aside class="sidebar-right">
     <div class="sidebar-sticky">
-      <div class="promo-box"><strong>ESP32 Project Library</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="../projects.html">Browse all projects »</a></p></div>
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="../projects.html">Browse all projects »</a></p></div>
     </div>
   </aside>
 </div>
