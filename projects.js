@@ -204,6 +204,11 @@
     grid = document.getElementById('grid');
     if (!grid) return;
 
+    if (document.querySelectorAll('.project-card').length) {
+      initProjectFilters();
+      return;
+    }
+
     fetch('projects.json')
       .then(function (res) {
         if (!res.ok) throw new Error('Failed to load projects');

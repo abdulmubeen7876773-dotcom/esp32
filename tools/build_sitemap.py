@@ -1,12 +1,12 @@
 import html
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
+from email.utils import format_datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
-from project_icons import slug_cat
-from site_layout import SITE_DOMAIN, esc, header_html, footer_html, head_html
+from site_layout import PROJECTS_PAGE_SIZE, SITE_DOMAIN, esc, header_html, footer_html, head_html, projects_page_path
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -16,7 +16,7 @@ SITEMAP_HTML = ROOT / "sitemap.html"
 
 STATIC_PAGES = [
     ("", "weekly", "1.0"),
-    ("projects.html", "weekly", "0.9"),
+    ("feed.xml", "daily", "0.6"),
     ("about.html", "monthly", "0.5"),
     ("contact.html", "monthly", "0.5"),
     ("privacy.html", "monthly", "0.4"),
@@ -38,6 +38,22 @@ def category_pages() -> list[tuple[str, str, str]]:
     return [(f"category/{slug_cat(c)}.html", "weekly", "0.85") for c in cats]
 
 
+def slug_cat(cat: str) -> str:
+    import re
+
+    return re.sub(r"[^a-z0-9]+", "-", cat.lower()).strip("-")
+
+
+def project_listing_pages() -> list[tuple[str, str, str]]:
+    total = len(PARENTS)
+    pages = max(1, (total + PROJECTS_PAGE_SIZE - 1) // PROJECTS_PAGE_SIZE)
+    out = []
+    for n in range(1, pages + 1):
+        path = projects_page_path(n)
+        priority = "0.9" if n == 1 else "0.85"
+        out.append((path, "weekly", priority))
+    return out
+
 def parse_title(path: Path) -> str:
     raw = path.read_text(encoding="utf-8")
     import re
@@ -51,7 +67,7 @@ def write_sitemap_xml(project_files: list[Path]) -> None:
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
-    for page, freq, priority in STATIC_PAGES + category_pages():
+    for page, freq, priority in STATIC_PAGES + category_pages() + project_listing_pages():
         if page == "sitemap.html":
             continue
         loc = page_loc(page)
@@ -120,7 +136,13 @@ def main():
     )
     write_sitemap_xml(project_files)
     write_sitemap_html(project_files)
-    url_count = len(project_files) + len(STATIC_PAGES) + len(category_pages()) - 1
+    url_count = (
+        len(project_files)
+        + len(STATIC_PAGES)
+        + len(category_pages())
+        + len(project_listing_pages())
+        - 1
+    )
     print(f"Wrote sitemap.xml ({url_count} URLs) + sitemap.html")
 
 

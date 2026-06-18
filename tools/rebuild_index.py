@@ -24,6 +24,11 @@ from site_layout import (
     home_why_section,
     home_community_section,
     home_cta_banner,
+    PROJECTS_PAGE_SIZE,
+    pagination_head_links,
+    pagination_nav_html,
+    projects_page_path,
+    projects_page_canonical,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -264,14 +269,30 @@ def home_html(projects):
 """
 
 
-def projects_listing_html(cat_opts, preview_cards="", text_index=""):
-    desc = "Browse 15 ESP32 parent projects — each with Beginner, Intermediate, and Advanced build stages, wiring tables, and Arduino code."
+def projects_listing_html(
+    cat_opts,
+    page_projects: list,
+    page: int,
+    total_pages: int,
+    total_count: int,
+    text_index: str = "",
+):
+    page_label = f" — Page {page}" if total_pages > 1 else ""
+    desc = (
+        f"Browse {total_count} ESP32 project tutorials — wiring tables, Arduino code, "
+        f"and Beginner, Intermediate, and Advanced stages.{f' Page {page} of {total_pages}.' if total_pages > 1 else ''}"
+    )
     schema = organization_schema() + website_schema()
-    initial = preview_cards or '<p class="meta grid-loading">Loading project library…</p>'
+    preview = "\n".join(parent_grid_card(p) for p in page_projects)
+    canon = projects_page_canonical(page)
+    title = f"ESP32 Projects — {total_count} Tutorials | ESP32 Engine{page_label}"
+    page_links = pagination_head_links(page, total_pages, lambda n: projects_page_path(n))
+    pagination = pagination_nav_html(page, total_pages, projects_page_path)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Projects — 15 Tutorials with 3 Skill Levels | ESP32 Engine", desc, canonical_path="projects.html", extra_schema=schema)}
+{head_html("", title, desc, canonical_path=canon, extra_schema=schema)}
+{page_links}
 </head>
 <body>
 <main>
@@ -279,7 +300,7 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 <section class="section-block wrap page-head page-head-compact">
   <p class="hero-eyebrow">Project Directory</p>
   <h1>Browse ESP32 Projects</h1>
-  <p class="hero-sub">15 guides with Beginner, Intermediate, and Advanced stages.</p>
+  <p class="hero-sub">{total_count} guides with Beginner, Intermediate, and Advanced stages.</p>
 </section>
 <div class="filters-sticky">
   <div class="wrap">
@@ -288,13 +309,14 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
       <select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>
       <select id="diff" aria-label="Filter by difficulty stage"><option value="">All difficulty stages</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
     </div>
-    <p class="meta filter-meta" id="count">Loading projects…</p>
+    <p class="meta filter-meta" id="count">{len(page_projects)} projects on this page · {total_count} total</p>
   </div>
 </div>
 <section class="section-block wrap section-block-compact">
-  <div class="grid grid-compact" id="grid">{initial}</div>
+  <div class="grid grid-compact" id="grid">{preview}</div>
   <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary btn-sm" id="projects-load-more">Load More</button></div>
   {text_index}
+  {pagination}
   <noscript><p class="meta">JavaScript is required for card view and filters. Use the plain-text project index above or the <a href="sitemap.html">sitemap</a>.</p></noscript>
 </section>
 </main>
@@ -307,19 +329,42 @@ def projects_listing_html(cat_opts, preview_cards="", text_index=""):
 """
 
 
+def cleanup_old_project_pages():
+    for path in ROOT.glob("projects-page-*.html"):
+        path.unlink()
+
+
+def write_project_listing_pages(projects: list, cat_opts: str, text_index: str) -> int:
+    total = len(projects)
+    total_pages = max(1, (total + PROJECTS_PAGE_SIZE - 1) // PROJECTS_PAGE_SIZE)
+    cleanup_old_project_pages()
+    for page in range(1, total_pages + 1):
+        start = (page - 1) * PROJECTS_PAGE_SIZE
+        chunk = projects[start : start + PROJECTS_PAGE_SIZE]
+        html_out = projects_listing_html(cat_opts, chunk, page, total_pages, total, text_index if page == 1 else "")
+        out = ROOT / projects_page_path(page)
+        out.write_text(html_out, encoding="utf-8")
+    return total_pages
+
+
 def main():
     projects = [parent_listing_record(p) for p in PARENTS]
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
-    preview = "\n".join(parent_grid_card(p) for p in projects)
     text_index = projects_text_index(projects)
     INDEX_OUT.write_text(home_html(projects), encoding="utf-8")
     write_projects_json(projects)
     write_project_icons_js(projects)
-    PROJECTS_OUT.write_text(projects_listing_html(cat_opts, preview, text_index), encoding="utf-8")
-    print(f"Wrote index.html + projects.html + projects.json ({len(projects)} parent projects)")
+    pages = write_project_listing_pages(projects, cat_opts, text_index)
+    print(f"Wrote index.html + projects listing ({len(projects)} projects, {pages} page(s)) + projects.json")
+    import build_categories
+    import build_feed
     import build_sitemap
+    import ping_indexnow
 
+    build_categories.main()
+    build_feed.main()
     build_sitemap.main()
+    ping_indexnow.main()
 
 
 if __name__ == "__main__":

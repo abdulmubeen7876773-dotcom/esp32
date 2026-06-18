@@ -4,7 +4,7 @@ import re
 
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260618-seo1"
+CSS_VERSION = "20260618-seo2"
 SITE_DOMAIN = "https://esp32engine.com"
 SITE_NAME = "ESP32 Engine"
 ORG_NAME = "ESP32 Engine"
@@ -13,6 +13,8 @@ CONTACT_ISSUES_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32/issues"
 GA4_MEASUREMENT_ID = "G-WLHZKSEFP3"
 GSC_VERIFICATION = "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI"
 PINTEREST_VERIFICATION = "f71bc8cce0ff2c76eeea8b5cf86dc70b"
+INDEXNOW_KEY = "esp32engineindex20260618"
+PROJECTS_PAGE_SIZE = 50
 OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
 OG_IMAGE_WIDTH = 1200
 OG_IMAGE_HEIGHT = 630
@@ -193,6 +195,59 @@ def analytics_config_script() -> str:
     return f'<script>window.SITE_GA4="{ga}";</script>'
 
 
+def font_links_html() -> str:
+    return """<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"></noscript>"""
+
+
+def head_extras_html(base: str) -> str:
+    feed = f"{base}feed.xml" if base else "feed.xml"
+    return f'<link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="{esc(feed)}">'
+
+
+def pagination_head_links(page: int, total_pages: int, page_path_fn) -> str:
+    if total_pages <= 1:
+        return ""
+    links = []
+    if page > 1:
+        links.append(f'<link rel="prev" href="{esc(page_path_fn(page - 1))}">')
+    if page < total_pages:
+        links.append(f'<link rel="next" href="{esc(page_path_fn(page + 1))}">')
+    return "\n".join(links)
+
+
+def pagination_nav_html(page: int, total_pages: int, page_path_fn, base: str = "") -> str:
+    if total_pages <= 1:
+        return ""
+    prev_link = ""
+    next_link = ""
+    if page > 1:
+        prev_link = f'<a class="btn btn-secondary btn-sm" rel="prev" href="{esc(base + page_path_fn(page - 1))}">← Previous</a>'
+    if page < total_pages:
+        next_link = f'<a class="btn btn-secondary btn-sm" rel="next" href="{esc(base + page_path_fn(page + 1))}">Next →</a>'
+    nums = []
+    for n in range(1, total_pages + 1):
+        if n == page:
+            nums.append(f'<span class="pagination-current" aria-current="page">{n}</span>')
+        else:
+            nums.append(f'<a href="{esc(base + page_path_fn(n))}">{n}</a>')
+    return f"""<nav class="pagination wrap" aria-label="Project list pages">
+  <div class="pagination-actions">{prev_link}{next_link}</div>
+  <div class="pagination-nums">{" ".join(nums)}</div>
+  <p class="meta pagination-meta">Page {page} of {total_pages}</p>
+</nav>"""
+
+
+def projects_page_path(page: int) -> str:
+    return "projects.html" if page == 1 else f"projects-page-{page}.html"
+
+
+def projects_page_canonical(page: int) -> str:
+    return projects_page_path(page)
+
+
 def gsc_verification_meta() -> str:
     if not GSC_VERIFICATION:
         return ""
@@ -220,6 +275,7 @@ def head_html(
     favicon = f"{base}favicon.svg"
     gsc = gsc_verification_meta() if include_gsc else ""
     pinterest = pinterest_verification_meta()
+    extras = head_extras_html(base)
     return f"""<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
@@ -228,14 +284,13 @@ def head_html(
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="{favicon}" type="image/svg+xml">
+{extras}
 {social_meta(title, description, canon, og_type)}
 {pinterest}
 {gsc}
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+{font_links_html()}
 <link rel="stylesheet" href="{base}style.css?v={CSS_VERSION}">
 {extra_schema}"""
 
