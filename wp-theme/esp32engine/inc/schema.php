@@ -53,7 +53,7 @@ function esp32_schema_website(): array {
         'publisher'       => [ '@type' => 'Organization', 'name' => 'ESP32 Engine' ],
         'potentialAction' => [
             '@type'       => 'SearchAction',
-            'target'      => home_url( '/projects/?s={search_term_string}' ),
+            'target'      => home_url( '/?s={search_term_string}' ),
             'query-input' => 'required name=search_term_string',
         ],
     ];
