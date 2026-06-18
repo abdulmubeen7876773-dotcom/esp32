@@ -1,139 +1,26 @@
-PARENTS = [
-    {
-        "slug": "esp32-air-quality-monitor",
-        "title": "ESP32 Air Quality Monitor",
-        "category": "Environmental",
-        "description": "Monitor indoor air quality with an ESP32, gas sensor, and fan or relay control — from a simple threshold alarm to a connected dashboard.",
-        "source_base": "esp32-air-quality-monitor-for-low-power-use",
-        "sensor": "MQ135 gas sensor",
-        "output": "fan relay",
-    },
-    {
-        "slug": "esp32-camera-capture-server",
-        "title": "ESP32 Camera Capture Server",
-        "category": "ESP32-CAM",
-        "description": "Capture and stream images with ESP32-CAM — start with a local snapshot sketch, then add OTA updates and a web dashboard.",
-        "source_base": "esp32-camera-capture-server-with-ota-update",
-        "sensor": "camera module",
-        "output": "microSD storage",
-    },
-    {
-        "slug": "esp32-distance-monitoring-system",
-        "title": "ESP32 Distance Monitoring System",
-        "category": "Sensor Projects",
-        "description": "Measure distance with ultrasonic or ToF sensors on ESP32 — beginner breadboard builds through OLED feedback and tuned alerts.",
-        "source_base": "esp32-distance-monitoring-system-for-beginners",
-        "sensor": "ultrasonic sensor",
-        "output": "buzzer alert",
-    },
-    {
-        "slug": "esp32-learning-trainer",
-        "title": "ESP32 Learning Trainer Board",
-        "category": "Education",
-        "description": "Hands-on ESP32 trainer projects for classrooms — GPIO basics, sensor reads, and display output in three progressive stages.",
-        "source_base": "esp32-esp32-learning-trainer-for-beginners",
-        "sensor": "push button",
-        "output": "status LED",
-    },
-    {
-        "slug": "esp32-home-climate-automation",
-        "title": "ESP32 Home Climate Automation",
-        "category": "Home Automation",
-        "description": "Automate temperature and humidity control at home with ESP32, DHT sensors, and relay-driven HVAC or fan outputs.",
-        "source_base": "esp32-home-climate-automation-with-mobile-alerts",
-        "sensor": "DHT22 sensor",
-        "output": "relay module",
-    },
-    {
-        "slug": "esp32-iot-weather-station",
-        "title": "ESP32 IoT Weather Station",
-        "category": "IoT Projects",
-        "description": "Build a connected weather station — log temperature and humidity locally, then publish readings to a web dashboard.",
-        "source_base": "esp32-iot-weather-station-with-web-dashboard",
-        "sensor": "BME280 sensor",
-        "output": "OLED display",
-    },
-    {
-        "slug": "esp32-machine-monitoring-node",
-        "title": "ESP32 Machine Monitoring Node",
-        "category": "Industrial Automation",
-        "description": "Monitor machines with vibration or current sensors on ESP32 — bench alerts first, then local web status and mobile notifications.",
-        "source_base": "esp32-machine-monitoring-node-with-mobile-alerts",
-        "sensor": "current sensor",
-        "output": "status relay",
-    },
-    {
-        "slug": "esp32-motion-security-alert",
-        "title": "ESP32 Motion Security Alert",
-        "category": "Security Projects",
-        "description": "Detect motion with PIR sensors and trigger sirens, relays, or Wi-Fi alerts using ESP32 in three difficulty stages.",
-        "source_base": "esp32-motion-security-alert-for-low-power-use",
-        "sensor": "PIR motion sensor",
-        "output": "alarm relay",
-    },
-    {
-        "slug": "esp32-pulse-oximeter-logger",
-        "title": "ESP32 Pulse Oximeter Logger",
-        "category": "Healthcare",
-        "description": "Educational pulse and SpO2 logging with ESP32 — for learning only, not medical use. Progress from serial logs to connected monitoring.",
-        "source_base": "esp32-pulse-oximeter-logger-with-local-web-server",
-        "sensor": "pulse oximeter module",
-        "output": "OLED display",
-    },
-    {
-        "slug": "esp32-rgb-led-pattern-controller",
-        "title": "ESP32 RGB LED Pattern Controller",
-        "category": "LED Projects",
-        "description": "Control RGB LED strips and patterns with ESP32 — simple color fades, manual modes, then Wi-Fi and app-style control.",
-        "source_base": "esp32-rgb-led-pattern-controller-for-low-power-use",
-        "sensor": "potentiometer",
-        "output": "RGB LED strip",
-    },
-    {
-        "slug": "esp32-smart-energy-meter",
-        "title": "ESP32 Smart Energy Meter",
-        "category": "Energy Monitoring",
-        "description": "Track power usage with ESP32 and a current sensor — serial readings, calibrated LCD output, and cloud logging options.",
-        "source_base": "esp32-smart-energy-meter-with-cloud-logging",
-        "sensor": "current sensor",
-        "output": "relay cutoff",
-    },
-    {
-        "slug": "esp32-smart-irrigation-system",
-        "title": "ESP32 Smart Irrigation System",
-        "category": "Agriculture",
-        "description": "Automate garden watering with soil moisture sensing, relay-driven pumps, and optional Wi-Fi monitoring on ESP32.",
-        "source_base": "esp32-smart-irrigation-controller-with-cloud-logging",
-        "sensor": "soil moisture sensor",
-        "output": "water pump relay",
-    },
-    {
-        "slug": "esp32-smart-street-light",
-        "title": "ESP32 Smart Street Light",
-        "category": "Smart City",
-        "description": "Smart street lighting with LDR or motion sensing on ESP32 — dusk-to-dawn control through connected city-style automation.",
-        "source_base": "esp32-smart-street-light-with-ota-update",
-        "sensor": "LDR light sensor",
-        "output": "street light relay",
-    },
-    {
-        "slug": "esp32-tinyml-sound-classifier",
-        "title": "ESP32 TinyML Sound Classifier",
-        "category": "AI Projects",
-        "description": "Run lightweight audio classification on ESP32 — microphone input, on-device inference, and optional OLED or cloud feedback.",
-        "source_base": "esp32-tinyml-sound-classifier-for-beginners",
-        "sensor": "microphone module",
-        "output": "classification LED",
-    },
-    {
-        "slug": "esp32-wifi-robot-controller",
-        "title": "ESP32 WiFi Robot Controller",
-        "category": "Robotics",
-        "description": "Drive motors and servos with ESP32 — RC-style control, sensor-assisted steering, and Wi-Fi teleoperation in advanced stage.",
-        "source_base": "esp32-wifi-robot-controller-with-cloud-logging",
-        "sensor": "ultrasonic sensor",
-        "output": "motor driver",
-    },
-]
+import subprocess
+import sys
+from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cms_loader import load_projects
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def legacy_from_git() -> list[dict]:
+    try:
+        raw = subprocess.check_output(
+            ["git", "show", "HEAD:tools/parent_registry.py"],
+            cwd=ROOT,
+            stderr=subprocess.DEVNULL,
+        ).decode("utf-8")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return []
+    ns: dict = {}
+    exec(raw, ns)
+    return ns.get("PARENTS", [])
+
+
+PARENTS = load_projects() or legacy_from_git()
 PARENT_BY_SLUG = {p["slug"]: p for p in PARENTS}

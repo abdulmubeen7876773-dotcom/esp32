@@ -2,22 +2,24 @@ import html
 import json
 import re
 
+from cms_loader import load_home, load_site_settings
 from project_icons import pick_icon, thumb_class, featured_cat_bar
 
-CSS_VERSION = "20260618-seo2"
-SITE_DOMAIN = "https://esp32engine.com"
-SITE_NAME = "ESP32 Engine"
-ORG_NAME = "ESP32 Engine"
-GITHUB_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32"
-CONTACT_ISSUES_URL = "https://github.com/abdulmubeen7876773-dotcom/esp32/issues"
-GA4_MEASUREMENT_ID = "G-WLHZKSEFP3"
-GSC_VERIFICATION = "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI"
-PINTEREST_VERIFICATION = "f71bc8cce0ff2c76eeea8b5cf86dc70b"
-INDEXNOW_KEY = "esp32engineindex20260618"
-PROJECTS_PAGE_SIZE = 50
+_cfg = load_site_settings()
+CSS_VERSION = _cfg["css_version"]
+SITE_DOMAIN = _cfg["site_domain"]
+SITE_NAME = _cfg["site_name"]
+ORG_NAME = _cfg["org_name"]
+GITHUB_URL = _cfg["github_url"]
+CONTACT_ISSUES_URL = _cfg["contact_issues_url"]
+GA4_MEASUREMENT_ID = _cfg["ga4_measurement_id"]
+GSC_VERIFICATION = _cfg["gsc_verification"]
+PINTEREST_VERIFICATION = _cfg["pinterest_verification"]
+INDEXNOW_KEY = _cfg["indexnow_key"]
+PROJECTS_PAGE_SIZE = int(_cfg["projects_page_size"])
 OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
-OG_IMAGE_WIDTH = 1200
-OG_IMAGE_HEIGHT = 630
+OG_IMAGE_WIDTH = int(_cfg.get("og_image_width", 1200))
+OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 220 220" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="40" y1="60" x2="180" y2="160"><stop stop-color="#00D4FF"/><stop offset="1" stop-color="#00FFB3"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="35" y="58" width="150" height="96" rx="14" stroke="url(#heroGrad)" stroke-width="2.5" filter="url(#heroGlow)"/><rect x="54" y="76" width="112" height="60" rx="8" fill="rgba(0,212,255,.1)" stroke="rgba(0,212,255,.35)" stroke-width="1.5"/><path d="M35 78h-14M35 106h-14M35 134h-14M185 78h14M185 106h14M185 134h14M78 58V38M110 58V38M142 58V38M78 154V174M110 154V174M142 154V174" stroke="#00D4FF" stroke-width="2" stroke-linecap="round" opacity=".65"/><circle cx="110" cy="106" r="7" fill="#00FFB3" opacity=".95"/><circle cx="110" cy="106" r="14" stroke="#00FFB3" stroke-width="1" opacity=".25"/><text x="110" y="111" text-anchor="middle" fill="#F8FAFC" font-size="15" font-weight="700" font-family="Space Grotesk,Inter,sans-serif">ESP32</text></svg>"""
 
@@ -332,6 +334,13 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 
 
 def hero_html(latest_items: str = "") -> str:
+    home = load_home()
+    eyebrow = home.get("hero_eyebrow", "ESP32 &amp; IoT Technology Portal")
+    heading = home.get("hero_title", "One ESP32. Unlimited Possibilities.")
+    sub = home.get(
+        "hero_sub",
+        "Build IoT systems, smart automation, robotics, wireless devices, monitoring solutions, and real-world embedded projects.",
+    )
     stats = [
         ("15+", "Parent Projects"),
         ("45+", "Difficulty Levels"),
@@ -348,9 +357,9 @@ def hero_html(latest_items: str = "") -> str:
   <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
   <div class="wrap hero-portal-inner">
     <div class="hero-portal-content">
-      <p class="hero-eyebrow">ESP32 &amp; IoT Technology Portal</p>
-      <h1 id="hero-heading">One ESP32. Unlimited Possibilities.</h1>
-      <p class="hero-sub hero-sub-compact">Build IoT systems, smart automation, robotics, wireless devices, monitoring solutions, and real-world embedded projects.</p>
+      <p class="hero-eyebrow">{esc(eyebrow)}</p>
+      <h1 id="hero-heading">{esc(heading)}</h1>
+      <p class="hero-sub hero-sub-compact">{esc(sub)}</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="projects.html">Explore Projects</a>
         <a class="btn btn-secondary" href="#roadmap">View Learning Path</a>

@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from parent_registry import PARENTS
+from cms_loader import load_home
 from site_layout import (
     modern_card,
     footer_html,
@@ -162,6 +163,7 @@ def parent_listing_record(parent: dict) -> dict:
         "desc": desc,
         "category": parent["category"],
         "slug": parent["slug"],
+        "featured": bool(parent.get("featured")),
         "levels": LEVELS,
         "readMin": 12,
     }
@@ -244,12 +246,17 @@ def projects_text_index(projects: list) -> str:
 
 
 def home_html(projects):
-    desc = "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers."
+    home = load_home()
+    desc = home.get(
+        "meta_description",
+        "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers.",
+    )
+    title = home.get("meta_title", "ESP32 Engine — Build, Connect & Automate with ESP32")
     schema = organization_schema() + website_schema()
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "ESP32 Engine — Build, Connect & Automate with ESP32", desc, canonical_path="/", extra_schema=schema, include_gsc=True)}
+{head_html("", title, desc, canonical_path="/", extra_schema=schema, include_gsc=True)}
 </head>
 <body class="portal-home">
 <main>

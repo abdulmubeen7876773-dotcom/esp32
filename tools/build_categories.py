@@ -3,6 +3,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cms_loader import load_categories
 from parent_registry import PARENTS
 from project_icons import pick_icon, slug_cat, thumb_class
 from site_layout import (
@@ -22,7 +23,7 @@ from site_layout import (
 ROOT = Path(__file__).resolve().parent.parent
 CATEGORY_DIR = ROOT / "category"
 
-CATEGORY_INTROS = {
+CATEGORY_INTROS = load_categories() or {
     "Agriculture": "Automate irrigation, soil monitoring, and greenhouse control with ESP32 sensor nodes and relay outputs.",
     "Home Automation": "Build smart home projects — climate control, lighting, and appliance automation using ESP32 and common sensors.",
     "Security Projects": "Motion detection, alerts, and access monitoring tutorials with PIR sensors, relays, and Wi-Fi notifications.",
