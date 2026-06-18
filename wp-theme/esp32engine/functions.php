@@ -10,6 +10,8 @@ add_action( 'after_setup_theme', function () {
     add_theme_support( 'title-tag' );
     add_theme_support( 'post-thumbnails' );
     add_theme_support( 'responsive-embeds' );
+    add_theme_support( 'align-wide' );
+    add_theme_support( 'wp-block-styles' );
     add_theme_support( 'html5', [
         'search-form', 'comment-form', 'comment-list',
         'gallery', 'caption', 'style', 'script',
@@ -20,6 +22,16 @@ add_action( 'after_setup_theme', function () {
         'flex-width'  => true,
         'flex-height' => true,
     ] );
+    add_theme_support( 'editor-color-palette', [
+        [ 'name' => 'Primary',   'slug' => 'primary',   'color' => '#6D28D9' ],
+        [ 'name' => 'Secondary', 'slug' => 'secondary', 'color' => '#7C3AED' ],
+        [ 'name' => 'Accent',    'slug' => 'accent',    'color' => '#A855F7' ],
+    ] );
+
+    // Image sizes used by project cards and guide cards
+    add_image_size( 'esp32-card',   480, 320, true );
+    add_image_size( 'esp32-banner', 960, 400, true );
+    add_image_size( 'esp32-og',    1200, 630, true );
 
     register_nav_menus( [
         'primary'          => __( 'Primary Navigation', 'esp32engine' ),
@@ -49,19 +61,20 @@ add_action( 'wp_enqueue_scripts', function () {
         $ver
     );
 
-    // GA4 ID injected before ui.js loads
-    wp_add_inline_script(
-        'esp32engine-ui',
-        'window.SITE_GA4="G-WLHZKSEFP3";',
-        'before'
-    );
-
     wp_enqueue_script(
         'esp32engine-ui',
         get_template_directory_uri() . '/assets/js/ui.js',
         [],
         $ver,
         true
+    );
+
+    // GA4 ID from Customizer — injected before ui.js executes
+    $ga4_id = get_theme_mod( 'esp32_ga4_id', 'G-WLHZKSEFP3' );
+    wp_add_inline_script(
+        'esp32engine-ui',
+        'window.SITE_GA4=' . wp_json_encode( $ga4_id ) . ';',
+        'before'
     );
 
     if ( is_singular( 'esp32_project' ) ) {
@@ -241,3 +254,5 @@ function esp32_category_icon( string $slug ): string {
 require_once get_template_directory() . '/inc/post-types.php';
 require_once get_template_directory() . '/inc/taxonomies.php';
 require_once get_template_directory() . '/inc/schema.php';
+require_once get_template_directory() . '/inc/admin.php';
+require_once get_template_directory() . '/inc/customizer.php';
