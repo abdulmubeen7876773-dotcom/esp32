@@ -249,6 +249,34 @@ function esp32_category_icon( string $slug ): string {
 }
 
 /* ---------------------------------------------------------------
+   Prioritize project_category rewrite rules over built-in category.
+   Both use /category/ slug — add_rewrite_rule('top') prepends ours
+   so they match before WordPress's built-in category rules.
+--------------------------------------------------------------- */
+add_action( 'init', function (): void {
+    add_rewrite_rule(
+        'category/([^/]+)/feed/(feed|rdf|rss|rss2|atom)/?$',
+        'index.php?project_category=$matches[1]&feed=$matches[2]',
+        'top'
+    );
+    add_rewrite_rule(
+        'category/([^/]+)/page/?([0-9]{1,})/?$',
+        'index.php?project_category=$matches[1]&paged=$matches[2]',
+        'top'
+    );
+    add_rewrite_rule(
+        'category/([^/]+)/embed/?$',
+        'index.php?project_category=$matches[1]&embed=true',
+        'top'
+    );
+    add_rewrite_rule(
+        'category/([^/]+)/?$',
+        'index.php?project_category=$matches[1]',
+        'top'
+    );
+}, 1 );
+
+/* ---------------------------------------------------------------
    Include inc files
 --------------------------------------------------------------- */
 require_once get_template_directory() . '/inc/post-types.php';
