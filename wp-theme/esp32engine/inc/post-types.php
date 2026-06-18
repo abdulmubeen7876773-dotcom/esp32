@@ -1,0 +1,61 @@
+<?php
+add_action( 'init', function () {
+
+    register_post_type( 'esp32_project', [
+        'labels' => [
+            'name'               => 'Projects',
+            'singular_name'      => 'Project',
+            'add_new'            => 'Add New',
+            'add_new_item'       => 'Add New Project',
+            'edit_item'          => 'Edit Project',
+            'new_item'           => 'New Project',
+            'view_item'          => 'View Project',
+            'search_items'       => 'Search Projects',
+            'not_found'          => 'No projects found',
+            'not_found_in_trash' => 'No projects found in Trash',
+            'all_items'          => 'All Projects',
+            'menu_name'          => 'Projects',
+        ],
+        'public'             => true,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'show_in_nav_menus'  => true,
+        'show_in_rest'       => true,
+        'has_archive'        => 'projects',
+        'rewrite'            => [ 'slug' => 'projects', 'with_front' => false ],
+        'supports'           => [ 'title', 'editor', 'excerpt', 'custom-fields', 'revisions' ],
+        'menu_icon'          => 'dashicons-lightbulb',
+        'menu_position'      => 5,
+        'taxonomies'         => [ 'project_category', 'difficulty_level' ],
+        'capability_type'    => 'post',
+    ] );
+
+    register_post_type( 'esp32_guide', [
+        'labels' => [
+            'name'               => 'Guides',
+            'singular_name'      => 'Guide',
+            'add_new'            => 'Add New',
+            'add_new_item'       => 'Add New Guide',
+            'edit_item'          => 'Edit Guide',
+            'new_item'           => 'New Guide',
+            'view_item'          => 'View Guide',
+            'search_items'       => 'Search Guides',
+            'not_found'          => 'No guides found',
+            'all_items'          => 'All Guides',
+            'menu_name'          => 'Guides',
+        ],
+        'public'             => true,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'show_in_nav_menus'  => true,
+        'show_in_rest'       => true,
+        'has_archive'        => 'guides',
+        'rewrite'            => [ 'slug' => 'guides', 'with_front' => false ],
+        'supports'           => [ 'title', 'editor', 'excerpt', 'custom-fields', 'revisions' ],
+        'menu_icon'          => 'dashicons-book',
+        'menu_position'      => 6,
+        'capability_type'    => 'post',
+    ] );
+} );
