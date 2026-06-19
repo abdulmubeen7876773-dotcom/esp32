@@ -311,6 +311,27 @@ add_action( 'rest_api_init', function () {
 } );
 
 /* ---------------------------------------------------------------
+   Sitemap URL rewrite — replace localhost with ESP32_PROD_URL
+   so the sitemap is always correct even in local dev
+--------------------------------------------------------------- */
+if ( defined( 'ESP32_PROD_URL' ) ) {
+    $esp32_sitemap_rewrite = function ( array $entry ): array {
+        if ( isset( $entry['loc'] ) ) {
+            $entry['loc'] = str_replace(
+                rtrim( home_url(), '/' ),
+                rtrim( ESP32_PROD_URL, '/' ),
+                $entry['loc']
+            );
+        }
+        return $entry;
+    };
+    add_filter( 'wp_sitemaps_index_entry',       $esp32_sitemap_rewrite );
+    add_filter( 'wp_sitemaps_posts_entry',       $esp32_sitemap_rewrite );
+    add_filter( 'wp_sitemaps_taxonomies_entry',  $esp32_sitemap_rewrite );
+    add_filter( 'wp_sitemaps_users_entry',       $esp32_sitemap_rewrite );
+}
+
+/* ---------------------------------------------------------------
    Redirect /projects.html, /guides.html, etc. to clean URLs
 --------------------------------------------------------------- */
 add_action( 'template_redirect', function () {

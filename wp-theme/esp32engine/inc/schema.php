@@ -70,10 +70,27 @@ function esp32_output_seo_meta(): void {
 
     /* OG title + url */
     if ( is_singular() ) {
-        echo '<meta property="og:title" content="' . esc_attr( get_the_title() . ' — ESP32Engine' ) . '">' . "\n";
+        $og_title = get_the_title() . ' — ESP32Engine';
+        echo '<meta property="og:title" content="' . esc_attr( $og_title ) . '">' . "\n";
         echo '<meta property="og:url" content="' . esc_url( esp32_prod_permalink() ) . '">' . "\n";
         echo '<meta property="og:type" content="article">' . "\n";
     } else {
+        if ( is_front_page() ) {
+            $og_title = 'ESP32Engine — Learn ESP32 Programming';
+        } elseif ( is_post_type_archive( 'esp32_guide' ) ) {
+            $og_title = 'ESP32 Guides & Tutorials — ESP32Engine';
+        } elseif ( is_post_type_archive( 'esp32_project' ) ) {
+            $og_title = 'ESP32 Projects — ESP32Engine';
+        } elseif ( is_tax( 'project_category' ) ) {
+            $term_name = get_queried_object()->name;
+            $suffix    = ( stripos( $term_name, 'project' ) !== false ) ? '' : ' Projects';
+            $og_title  = $term_name . $suffix . ' — ESP32Engine';
+        } elseif ( is_search() ) {
+            $og_title = 'Search: ' . get_search_query() . ' — ESP32Engine';
+        } else {
+            $og_title = get_bloginfo( 'name' );
+        }
+        echo '<meta property="og:title" content="' . esc_attr( $og_title ) . '">' . "\n";
         echo '<meta property="og:url" content="' . esc_url( $canonical ?: esp32_prod_url( '/' ) ) . '">' . "\n";
         echo '<meta property="og:type" content="website">' . "\n";
     }
