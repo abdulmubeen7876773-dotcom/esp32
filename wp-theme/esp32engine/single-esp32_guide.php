@@ -106,14 +106,23 @@ $related  = get_post_meta( get_the_ID(), '_related_guides', true ) ?: [];
       <?php
       $related_posts = [];
       if ( ! empty( $related ) ) {
-          $related_posts = get_posts( [
-              'post_type'      => 'esp32_guide',
-              'post_status'    => 'publish',
-              'post_name__in'  => array_map( 'sanitize_title', (array) $related ),
-              'posts_per_page' => 4,
-              'orderby'        => 'title',
-              'order'          => 'ASC',
-          ] );
+          /* _related_guides may be a flat array of slug strings */
+          $related_slugs = [];
+          foreach ( (array) $related as $item ) {
+              if ( is_string( $item ) && $item !== '' ) {
+                  $related_slugs[] = sanitize_title( $item );
+              }
+          }
+          if ( ! empty( $related_slugs ) ) {
+              $related_posts = get_posts( [
+                  'post_type'      => 'esp32_guide',
+                  'post_status'    => 'publish',
+                  'post_name__in'  => $related_slugs,
+                  'posts_per_page' => 4,
+                  'orderby'        => 'title',
+                  'order'          => 'ASC',
+              ] );
+          }
       }
       if ( ! empty( $related_posts ) ) :
       ?>
