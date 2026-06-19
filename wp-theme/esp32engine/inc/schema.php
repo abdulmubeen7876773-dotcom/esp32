@@ -32,6 +32,8 @@ function esp32_output_seo_meta(): void {
     } elseif ( is_tax( 'project_category' ) ) {
         $term = get_queried_object();
         $desc = $term->description ?: ( $term->name . ' projects for ESP32 — wiring, code, and step-by-step tutorials.' );
+    } elseif ( is_post_type_archive( 'esp32_project' ) ) {
+        $desc = 'ESP32 projects with full Arduino code, wiring diagrams, and Beginner / Intermediate / Advanced guides.';
     } elseif ( is_post_type_archive( 'esp32_guide' ) ) {
         $desc = 'ESP32 guides and tutorials — from chip fundamentals to GPIO control, ADC, Wi-Fi, and beyond.';
     } elseif ( is_front_page() ) {
