@@ -134,8 +134,7 @@ $code_count = (int) $wpdb->get_var(
     </div>
 
     <!-- Phase 3 -->
-    <div class="learning-path-card learning-path-card-new">
-      <span class="learning-path-new-badge">New</span>
+    <div class="learning-path-card">
       <div class="learning-path-header">
         <span class="learning-path-num">03</span>
         <div>
@@ -151,6 +150,26 @@ $code_count = (int) $wpdb->get_var(
         <li><a href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">+ 7 more guides →</a></li>
       </ul>
       <a class="btn btn-primary btn-sm" href="<?php echo esc_url( home_url( '/guides/digital-inputs-esp32/' ) ); ?>">Start Phase 3</a>
+    </div>
+
+    <!-- Phase 4 — NEW -->
+    <div class="learning-path-card learning-path-card-new">
+      <span class="learning-path-new-badge">New</span>
+      <div class="learning-path-header">
+        <span class="learning-path-num">04</span>
+        <div>
+          <strong class="learning-path-phase">Phase 4</strong>
+          <h3>Connectivity &amp; Protocols</h3>
+        </div>
+      </div>
+      <ul class="learning-path-list">
+        <li><a href="<?php echo esc_url( home_url( '/guides/wifi-basics-esp32/' ) ); ?>">Wi-Fi Basics</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/mqtt-esp32/' ) ); ?>">MQTT Protocol</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/esp32-web-server/' ) ); ?>">Web Server</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/ble-esp32/' ) ); ?>">BLE GATT Server</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">+ 6 more guides →</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm" href="<?php echo esc_url( home_url( '/guides/wifi-basics-esp32/' ) ); ?>">Start Phase 4</a>
     </div>
   </div>
 </section>
@@ -262,6 +281,8 @@ $code_count = (int) $wpdb->get_var(
       <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">02</span><div><strong class="badge badge-intermediate">Phase 2</strong><span>Dev environment, Arduino &amp; IDE setup</span></div></div>
       <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
       <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">03</span><div><strong class="badge badge-advanced">Phase 3</strong><span>GPIO control, analog input &amp; hardware</span></div></div>
+      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">04</span><div><strong class="badge badge-cat">Phase 4</strong><span>Wi-Fi, MQTT, BLE, ESP-NOW &amp; OTA</span></div></div>
     </div>
     <a class="roadmap-link" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">Browse all <?php echo esc_html( $guide_count ); ?> guides →</a>
   </div>
