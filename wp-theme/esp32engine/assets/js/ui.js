@@ -72,27 +72,37 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
-  function loadAnalytics() {
-    var id = window.SITE_GA4;
-    if (!id) return;
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () {
-      window.dataLayer.push(arguments);
-    };
-    var s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
-    document.head.appendChild(s);
-    window.gtag('js', new Date());
-    window.gtag('config', id, { anonymize_ip: true });
+  function grantConsent() {
+    if (typeof window.gtag !== 'function') return;
+    window.gtag('consent', 'update', {
+      'analytics_storage':  'granted',
+      'ad_storage':         'denied',
+      'ad_user_data':       'denied',
+      'ad_personalization': 'denied'
+    });
+    /* Manual page_view for users who accept mid-session after the queued
+       hit already fired with denied consent */
+    window.gtag('event', 'page_view', {
+      'page_location': window.location.href,
+      'page_title':    document.title
+    });
+  }
+
+  function denyConsent() {
+    if (typeof window.gtag !== 'function') return;
+    window.gtag('consent', 'update', {
+      'analytics_storage':  'denied',
+      'ad_storage':         'denied',
+      'ad_user_data':       'denied',
+      'ad_personalization': 'denied'
+    });
   }
 
   function initCookieConsent() {
     var key = 'cookie-consent';
-    if (localStorage.getItem(key) === 'accepted') {
-      loadAnalytics();
-      return;
-    }
+    /* Returning visitors — consent already set via the inline head script;
+       just hide the bar and do nothing */
+    if (localStorage.getItem(key) === 'accepted') return;
     if (localStorage.getItem(key) === 'rejected') return;
 
     var bar = document.createElement('div');
@@ -106,11 +116,12 @@
     bar.querySelector('.cookie-accept').addEventListener('click', function () {
       localStorage.setItem(key, 'accepted');
       bar.remove();
-      loadAnalytics();
+      grantConsent();
     });
     bar.querySelector('.cookie-reject').addEventListener('click', function () {
       localStorage.setItem(key, 'rejected');
       bar.remove();
+      denyConsent();
     });
   }
 

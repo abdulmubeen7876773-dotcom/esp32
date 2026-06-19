@@ -43,7 +43,7 @@
       </nav>
 
       <div class="header-actions">
-        <button type="button" class="icon-btn" id="search-open" aria-label="Search">
+        <button type="button" class="icon-btn" id="search-open" data-search-open aria-label="Search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg>
         </button>
         <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
@@ -66,8 +66,8 @@
   <div class="search-overlay-backdrop" data-close-search></div>
   <div class="search-overlay-panel" role="dialog" aria-label="Search projects">
     <form class="search-overlay-form" action="<?php echo esc_url( home_url( '/projects/' ) ); ?>" method="get">
-      <label class="visually-hidden" for="global-search">Search projects</label>
-      <input id="global-search" name="s" type="search" placeholder="Search ESP32 projects, guides, categories…" autocomplete="off">
+      <label class="visually-hidden" for="search-overlay-input">Search guides and projects</label>
+      <input id="search-overlay-input" name="s" type="search" placeholder="Search ESP32 guides, projects, FAQs…" autocomplete="off">
       <button type="submit" class="btn btn-primary">Search</button>
       <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
     </form>

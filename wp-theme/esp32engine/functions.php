@@ -42,6 +42,57 @@ add_action( 'after_setup_theme', function () {
 } );
 
 /* ---------------------------------------------------------------
+   Google Tag (GA4) — Consent Mode v2
+   Loads gtag.js globally on every page. Consent defaults to denied
+   until the user accepts the cookie bar. For returning visitors who
+   already accepted, consent is granted immediately via an inline
+   script before the first page_view queues.
+--------------------------------------------------------------- */
+add_action( 'wp_head', 'esp32_output_ga4_tag', 1 );
+
+function esp32_output_ga4_tag(): void {
+    $ga4_id = get_theme_mod( 'esp32_ga4_id', 'G-WLHZKSEFP3' );
+    if ( ! $ga4_id ) return;
+    ?>
+<!-- Google tag (gtag.js) — Consent Mode v2 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $ga4_id ); ?>"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.SITE_GA4 = <?php echo wp_json_encode( $ga4_id ); ?>;
+
+/* Consent Mode v2 defaults — denied until user explicitly accepts */
+gtag('consent', 'default', {
+  'analytics_storage':   'denied',
+  'ad_storage':          'denied',
+  'ad_user_data':        'denied',
+  'ad_personalization':  'denied',
+  'wait_for_update':     500
+});
+
+/* Immediately grant for returning visitors (avoids a round-trip) */
+(function(){
+  try {
+    if (localStorage.getItem('cookie-consent') === 'accepted') {
+      gtag('consent', 'update', {
+        'analytics_storage':  'granted',
+        'ad_storage':         'denied',  /* never grant ad targeting */
+        'ad_user_data':       'denied',
+        'ad_personalization': 'denied'
+      });
+    }
+  } catch(e) {}
+})();
+
+gtag('js', new Date());
+gtag('config', <?php echo wp_json_encode( $ga4_id ); ?>, {
+  'send_page_view': true
+});
+</script>
+<?php
+}
+
+/* ---------------------------------------------------------------
    Enqueue assets
 --------------------------------------------------------------- */
 add_action( 'wp_enqueue_scripts', function () {
@@ -67,14 +118,6 @@ add_action( 'wp_enqueue_scripts', function () {
         [],
         $ver,
         true
-    );
-
-    // GA4 ID from Customizer — injected before ui.js executes
-    $ga4_id = get_theme_mod( 'esp32_ga4_id', 'G-WLHZKSEFP3' );
-    wp_add_inline_script(
-        'esp32engine-ui',
-        'window.SITE_GA4=' . wp_json_encode( $ga4_id ) . ';',
-        'before'
     );
 
     if ( is_singular( 'esp32_project' ) ) {
