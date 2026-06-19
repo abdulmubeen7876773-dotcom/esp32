@@ -1,0 +1,36 @@
+# Production .htaccess for esp32engine.com
+# Place in the WordPress root directory on the production server.
+# Replaces /esp32/ subpath (local dev) with root / (production).
+
+# ── Redirects from old GitHub Pages static routes → WordPress URLs ──────────
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# Static HTML page aliases
+RewriteRule ^guides\.html$              /guides/              [R=301,L]
+RewriteRule ^projects\.html$           /projects/            [R=301,L]
+RewriteRule ^about\.html$              /about/               [R=301,L]
+RewriteRule ^contact\.html$            /contact/             [R=301,L]
+RewriteRule ^disclaimer\.html$         /disclaimer/          [R=301,L]
+RewriteRule ^privacy\.html$            /privacy/             [R=301,L]
+
+# Old static guide URLs → WordPress guide slugs
+RewriteRule ^([a-z0-9-]+)\.html$       /guides/$1/           [R=301,L]
+
+# Old projects.html?q= search redirect
+RewriteCond %{QUERY_STRING} ^q=(.+)$
+RewriteRule ^projects\.html$           /?s=%1                [R=301,L]
+</IfModule>
+# ────────────────────────────────────────────────────────────────────────────
+
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress

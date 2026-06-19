@@ -1,19 +1,43 @@
 <?php
+/* ── Production URL helper ───────────────────────────────────────────────
+   Replaces the local home_url() base with the ESP32_PROD_URL constant when
+   defined, so canonical tags and schema @id values always use the live
+   domain even during local development. Once deployed and siteurl/home are
+   updated in the DB, home_url() will naturally return the production URL
+   and this helper becomes a transparent pass-through.
+────────────────────────────────────────────────────────────────────────── */
+function esp32_prod_url( string $path = '/' ): string {
+    $base = defined( 'ESP32_PROD_URL' ) ? rtrim( ESP32_PROD_URL, '/' ) : rtrim( home_url(), '/' );
+    return $base . '/' . ltrim( $path, '/' );
+}
+
+function esp32_prod_permalink( int $post_id = 0 ): string {
+    $permalink = $post_id ? get_permalink( $post_id ) : get_permalink();
+    if ( ! defined( 'ESP32_PROD_URL' ) ) return $permalink;
+    return str_replace( rtrim( home_url(), '/' ), rtrim( ESP32_PROD_URL, '/' ), $permalink );
+}
+
+function esp32_prod_term_link( $term ): string {
+    $link = get_term_link( $term );
+    if ( is_wp_error( $link ) || ! defined( 'ESP32_PROD_URL' ) ) return is_wp_error( $link ) ? '' : $link;
+    return str_replace( rtrim( home_url(), '/' ), rtrim( ESP32_PROD_URL, '/' ), $link );
+}
+
 /* ── Canonical + Meta Description ── */
 add_action( 'wp_head', 'esp32_output_seo_meta', 4 );
 
 function esp32_output_seo_meta(): void {
-    /* Canonical */
+    /* Canonical — always uses production domain */
     if ( is_singular() ) {
-        $canonical = get_permalink();
+        $canonical = esp32_prod_permalink();
     } elseif ( is_post_type_archive( 'esp32_guide' ) ) {
-        $canonical = home_url( '/guides/' );
+        $canonical = esp32_prod_url( '/guides/' );
     } elseif ( is_post_type_archive( 'esp32_project' ) ) {
-        $canonical = home_url( '/projects/' );
+        $canonical = esp32_prod_url( '/projects/' );
     } elseif ( is_tax( 'project_category' ) ) {
-        $canonical = get_term_link( get_queried_object() );
+        $canonical = esp32_prod_term_link( get_queried_object() );
     } elseif ( is_front_page() ) {
-        $canonical = home_url( '/' );
+        $canonical = esp32_prod_url( '/' );
     } else {
         $canonical = '';
     }
@@ -44,13 +68,18 @@ function esp32_output_seo_meta(): void {
         echo '<meta property="og:description" content="' . esc_attr( wp_strip_all_tags( $desc ) ) . '">' . "\n";
     }
 
-    /* OG title */
+    /* OG title + url */
     if ( is_singular() ) {
         echo '<meta property="og:title" content="' . esc_attr( get_the_title() . ' — ESP32Engine' ) . '">' . "\n";
-        echo '<meta property="og:url" content="' . esc_url( get_permalink() ) . '">' . "\n";
+        echo '<meta property="og:url" content="' . esc_url( esp32_prod_permalink() ) . '">' . "\n";
         echo '<meta property="og:type" content="article">' . "\n";
+    } else {
+        echo '<meta property="og:url" content="' . esc_url( $canonical ?: esp32_prod_url( '/' ) ) . '">' . "\n";
+        echo '<meta property="og:type" content="website">' . "\n";
     }
-    echo '<meta property="og:image" content="' . esc_url( home_url( '/og-image.jpg' ) ) . '">' . "\n";
+    echo '<meta property="og:image" content="' . esc_url( esp32_prod_url( '/og-image.jpg' ) ) . '">' . "\n";
+    echo '<meta property="og:image:width" content="1200">' . "\n";
+    echo '<meta property="og:image:height" content="630">' . "\n";
     echo '<meta property="og:site_name" content="ESP32Engine">' . "\n";
 }
 
@@ -86,8 +115,8 @@ function esp32_schema_organization(): array {
         '@context' => 'https://schema.org',
         '@type'    => 'Organization',
         'name'     => 'ESP32 Engine',
-        'url'      => home_url( '/' ),
-        'logo'     => home_url( '/og-image.jpg' ),
+        'url'      => esp32_prod_url( '/' ),
+        'logo'     => esp32_prod_url( '/og-image.jpg' ),
         'sameAs'   => [
             'https://github.com/abdulmubeen7876773-dotcom/esp32',
             'https://www.youtube.com/@ESP32Engine',
@@ -105,11 +134,11 @@ function esp32_schema_website(): array {
         '@context'        => 'https://schema.org',
         '@type'           => 'WebSite',
         'name'            => 'ESP32 Engine',
-        'url'             => home_url( '/' ),
+        'url'             => esp32_prod_url( '/' ),
         'publisher'       => [ '@type' => 'Organization', 'name' => 'ESP32 Engine' ],
         'potentialAction' => [
             '@type'       => 'SearchAction',
-            'target'      => home_url( '/?s={search_term_string}' ),
+            'target'      => esp32_prod_url( '/?s={search_term_string}' ),
             'query-input' => 'required name=search_term_string',
         ],
     ];
@@ -125,10 +154,10 @@ function esp32_schema_tech_article(): array {
         'description'       => get_the_excerpt(),
         'datePublished'     => get_the_date( 'c' ),
         'dateModified'      => get_the_modified_date( 'c' ),
-        'image'             => home_url( '/og-image.jpg' ),
-        'author'            => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'url' => home_url( '/' ) ],
-        'publisher'         => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'logo' => [ '@type' => 'ImageObject', 'url' => home_url( '/og-image.jpg' ) ] ],
-        'mainEntityOfPage'  => [ '@type' => 'WebPage', '@id' => get_permalink() ],
+        'image'             => esp32_prod_url( '/og-image.jpg' ),
+        'author'            => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'url' => esp32_prod_url( '/' ) ],
+        'publisher'         => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'logo' => [ '@type' => 'ImageObject', 'url' => esp32_prod_url( '/og-image.jpg' ) ] ],
+        'mainEntityOfPage'  => [ '@type' => 'WebPage', '@id' => esp32_prod_permalink() ],
         'proficiencyLevel'  => 'Beginner',
         'dependencies'      => $deps ?: '',
     ];
@@ -216,10 +245,10 @@ function esp32_schema_article(): array {
         'description'      => wp_strip_all_tags( $meta_desc ),
         'datePublished'    => get_the_date( 'c' ),
         'dateModified'     => get_the_modified_date( 'c' ),
-        'image'            => home_url( '/og-image.jpg' ),
-        'author'           => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'url' => home_url( '/' ) ],
-        'publisher'        => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'logo' => [ '@type' => 'ImageObject', 'url' => home_url( '/og-image.jpg' ) ] ],
-        'mainEntityOfPage' => [ '@type' => 'WebPage', '@id' => get_permalink() ],
+        'image'            => esp32_prod_url( '/og-image.jpg' ),
+        'author'           => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'url' => esp32_prod_url( '/' ) ],
+        'publisher'        => [ '@type' => 'Organization', 'name' => 'ESP32 Engine', 'logo' => [ '@type' => 'ImageObject', 'url' => esp32_prod_url( '/og-image.jpg' ) ] ],
+        'mainEntityOfPage' => [ '@type' => 'WebPage', '@id' => esp32_prod_permalink() ],
         'articleSection'   => $phase,
         'keywords'         => 'ESP32, ' . $phase . ', Arduino, microcontroller, GPIO',
     ];
@@ -227,7 +256,7 @@ function esp32_schema_article(): array {
 
 function esp32_schema_breadcrumb(): array {
     $items   = [];
-    $items[] = [ '@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => home_url( '/' ) ];
+    $items[] = [ '@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => esp32_prod_url( '/' ) ];
     $pos     = 2;
 
     if ( is_singular( 'esp32_project' ) ) {
@@ -237,16 +266,16 @@ function esp32_schema_breadcrumb(): array {
                 '@type'    => 'ListItem',
                 'position' => $pos++,
                 'name'     => $cats[0]->name,
-                'item'     => get_term_link( $cats[0] ),
+                'item'     => esp32_prod_term_link( $cats[0] ),
             ];
         }
-        $items[] = [ '@type' => 'ListItem', 'position' => $pos, 'name' => get_the_title(), 'item' => get_permalink() ];
+        $items[] = [ '@type' => 'ListItem', 'position' => $pos, 'name' => get_the_title(), 'item' => esp32_prod_permalink() ];
     } elseif ( is_singular( 'esp32_guide' ) ) {
-        $items[] = [ '@type' => 'ListItem', 'position' => $pos++, 'name' => 'Guides', 'item' => home_url( '/guides/' ) ];
-        $items[] = [ '@type' => 'ListItem', 'position' => $pos, 'name' => get_the_title(), 'item' => get_permalink() ];
+        $items[] = [ '@type' => 'ListItem', 'position' => $pos++, 'name' => 'Guides', 'item' => esp32_prod_url( '/guides/' ) ];
+        $items[] = [ '@type' => 'ListItem', 'position' => $pos, 'name' => get_the_title(), 'item' => esp32_prod_permalink() ];
     } elseif ( is_tax( 'project_category' ) ) {
         $term    = get_queried_object();
-        $items[] = [ '@type' => 'ListItem', 'position' => $pos, 'name' => $term->name, 'item' => get_term_link( $term ) ];
+        $items[] = [ '@type' => 'ListItem', 'position' => $pos, 'name' => $term->name, 'item' => esp32_prod_term_link( $term ) ];
     }
 
     return [
