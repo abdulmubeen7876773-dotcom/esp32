@@ -146,6 +146,30 @@ $related  = get_post_meta( get_the_ID(), '_related_guides', true ) ?: [];
       </section>
       <?php endif; ?>
 
+      <!-- Next / Prev Guide Navigation -->
+      <?php
+      $prev_guide = get_adjacent_post( false, '', true,  'post_type' );
+      $next_guide = get_adjacent_post( false, '', false, 'post_type' );
+      if ( $prev_guide || $next_guide ) :
+      ?>
+      <nav class="guide-nextprev" aria-label="Guide navigation">
+        <?php if ( $prev_guide ) : ?>
+        <a class="guide-nextprev-link is-prev" href="<?php echo esc_url( get_permalink( $prev_guide->ID ) ); ?>">
+          <span class="guide-nextprev-dir">← Previous</span>
+          <span class="guide-nextprev-title"><?php echo esc_html( $prev_guide->post_title ); ?></span>
+        </a>
+        <?php else : ?>
+        <span></span>
+        <?php endif; ?>
+        <?php if ( $next_guide ) : ?>
+        <a class="guide-nextprev-link is-next" href="<?php echo esc_url( get_permalink( $next_guide->ID ) ); ?>">
+          <span class="guide-nextprev-dir">Next →</span>
+          <span class="guide-nextprev-title"><?php echo esc_html( $next_guide->post_title ); ?></span>
+        </a>
+        <?php endif; ?>
+      </nav>
+      <?php endif; ?>
+
       <!-- Bottom nav -->
       <div class="guide-bottom-nav">
         <a class="btn btn-secondary" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">← All Guides</a>

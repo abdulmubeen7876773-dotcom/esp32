@@ -117,6 +117,20 @@ add_action( 'wp_enqueue_scripts', function () {
         $ver,
         false  // load in <head> so dark-mode applies before first paint
     );
+
+    /* AJAX search */
+    wp_enqueue_script(
+        'esp32engine-search',
+        get_template_directory_uri() . '/assets/js/search.js',
+        [],
+        $ver,
+        true
+    );
+    wp_add_inline_script(
+        'esp32engine-search',
+        'window.ESP32_SEARCH_URL=' . wp_json_encode( rest_url( 'esp32/v1/search' ) ) . ';',
+        'before'
+    );
 } );
 
 /* ---------------------------------------------------------------
@@ -142,6 +156,97 @@ add_filter( 'upload_mimes', function ( $mimes ) {
     $mimes['svgz'] = 'image/svg+xml';
     return $mimes;
 } );
+
+/* ---------------------------------------------------------------
+   REST API: Instant search endpoint — /wp-json/esp32/v1/search?q=...
+--------------------------------------------------------------- */
+add_action( 'rest_api_init', function () {
+    register_rest_route( 'esp32/v1', '/search', [
+        'methods'             => 'GET',
+        'callback'            => 'esp32_search_handler',
+        'permission_callback' => '__return_true',
+        'args'                => [
+            'q' => [
+                'sanitize_callback' => 'sanitize_text_field',
+                'validate_callback' => fn( $v ) => is_string( $v ) && strlen( $v ) >= 2,
+                'required'          => true,
+            ],
+        ],
+    ] );
+} );
+
+function esp32_search_handler( WP_REST_Request $req ): WP_REST_Response {
+    $q       = $req->get_param( 'q' );
+    $results = [];
+
+    /* Search guides */
+    $guides = get_posts( [
+        'post_type'      => 'esp32_guide',
+        'post_status'    => 'publish',
+        's'              => $q,
+        'posts_per_page' => 5,
+        'orderby'        => 'relevance',
+    ] );
+    foreach ( $guides as $p ) {
+        $results[] = [
+            'type'    => 'Guide',
+            'title'   => $p->post_title,
+            'url'     => get_permalink( $p->ID ),
+            'excerpt' => wp_trim_words( $p->post_excerpt ?: wp_strip_all_tags( $p->post_content ), 15 ),
+            'phase'   => get_post_meta( $p->ID, 'guide_phase', true ) ?: 'Guide',
+        ];
+    }
+
+    /* Search projects */
+    $projects = get_posts( [
+        'post_type'      => 'esp32_project',
+        'post_status'    => 'publish',
+        's'              => $q,
+        'posts_per_page' => 4,
+        'orderby'        => 'relevance',
+    ] );
+    foreach ( $projects as $p ) {
+        $cats     = get_the_terms( $p->ID, 'project_category' );
+        $cat_name = ( $cats && ! is_wp_error( $cats ) ) ? $cats[0]->name : 'Project';
+        $results[] = [
+            'type'    => 'Project',
+            'title'   => $p->post_title,
+            'url'     => get_permalink( $p->ID ),
+            'excerpt' => wp_trim_words( $p->post_excerpt ?: wp_strip_all_tags( $p->post_content ), 15 ),
+            'phase'   => $cat_name,
+        ];
+    }
+
+    /* Search guide FAQs */
+    if ( count( $results ) < 8 ) {
+        $faq_guides = get_posts( [
+            'post_type'      => 'esp32_guide',
+            'post_status'    => 'publish',
+            'posts_per_page' => 20,
+        ] );
+        $q_lower = strtolower( $q );
+        foreach ( $faq_guides as $p ) {
+            $faqs = get_post_meta( $p->ID, 'faq_items', true ) ?: [];
+            foreach ( (array) $faqs as $faq ) {
+                if ( ! is_array( $faq ) ) continue;
+                $question = $faq['q'] ?? '';
+                $answer   = $faq['a'] ?? '';
+                if ( stripos( $question . ' ' . $answer, $q ) !== false ) {
+                    $results[] = [
+                        'type'    => 'FAQ',
+                        'title'   => $question,
+                        'url'     => get_permalink( $p->ID ) . '#faq-heading',
+                        'excerpt' => wp_trim_words( $answer, 15 ),
+                        'phase'   => $p->post_title,
+                    ];
+                    if ( count( $results ) >= 10 ) break 2;
+                }
+            }
+        }
+    }
+
+    return new WP_REST_Response( array_slice( $results, 0, 10 ), 200 );
+}
 
 /* ---------------------------------------------------------------
    REST API: expose custom meta fields for projects

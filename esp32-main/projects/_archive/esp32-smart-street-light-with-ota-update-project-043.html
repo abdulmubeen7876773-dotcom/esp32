@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#020617">
+<meta name="robots" content="noindex,nofollow">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<title>ESP32 Street Light with Live Telegram Bot Updates for Urban Node II | ESP32 Project Guide</title>
+<meta name="description" content="Learn how Ldr Sensor signal data on GPIO33 triggers Street Light Relay control for reliable Street Logger operation.">
+<link rel="canonical" href="https://abdulmubeen7876773-dotcom.github.io/esp32/projects/esp32-smart-street-light-with-ota-update-project-043.html">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Project Library">
+<meta property="og:title" content="ESP32 Street Light with Live Telegram Bot Updates for Urban Node II | ESP32 Project Guide">
+<meta property="og:description" content="Learn how Ldr Sensor signal data on GPIO33 triggers Street Light Relay control for reliable Street Logger operation.">
+<meta property="og:url" content="https://abdulmubeen7876773-dotcom.github.io/esp32/projects/esp32-smart-street-light-with-ota-update-project-043.html">
+<meta property="og:image" content="https://abdulmubeen7876773-dotcom.github.io/esp32/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Street Light with Live Telegram Bot Updates for Urban Node II | ESP32 Project Guide">
+<meta name="twitter:description" content="Learn how Ldr Sensor signal data on GPIO33 triggers Street Light Relay control for reliable Street Logger operation.">
+<meta name="twitter:image" content="https://abdulmubeen7876773-dotcom.github.io/esp32/og-image.svg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"ESP32 Street Light with Live Telegram Bot Updates for Urban Node II","description":"Learn how Ldr Sensor signal data on GPIO33 triggers Street Light Relay control for reliable Street Logger operation.","datePublished":"2026-06-14","dateModified":"2026-06-15","image":"https://abdulmubeen7876773-dotcom.github.io/esp32/og-image.svg","author":{"@type":"Organization","name":"ESP32 Project Library","url":"https://abdulmubeen7876773-dotcom.github.io/esp32/"},"publisher":{"@type":"Organization","name":"ESP32 Project Library","logo":{"@type":"ImageObject","url":"https://abdulmubeen7876773-dotcom.github.io/esp32/og-image.svg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://abdulmubeen7876773-dotcom.github.io/esp32/projects/esp32-smart-street-light-with-ota-update-project-043.html"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What power supply do I need?","acceptedAnswer":{"@type":"Answer","text":"A stable 5 V USB supply is enough for bench tests; use a proper relay supply for heavy loads."}},{"@type":"Question","name":"Can I change GPIO pins?","acceptedAnswer":{"@type":"Answer","text":"Yes — update SENSOR_PIN, OUTPUT_PIN, and the wiring table together."}},{"@type":"Question","name":"Why is my output always on?","acceptedAnswer":{"@type":"Answer","text":"Your threshold may be too low or the sensor wiring might be floating — add a pull-up/down if required."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://abdulmubeen7876773-dotcom.github.io/esp32/index.html"},{"@type":"ListItem","position":2,"name":"Smart City","item":"https://abdulmubeen7876773-dotcom.github.io/esp32/projects.html"},{"@type":"ListItem","position":3,"name":"ESP32 Street Light with Live Telegram Bot Updates for Urban Node II","item":"https://abdulmubeen7876773-dotcom.github.io/esp32/projects/esp32-smart-street-light-with-ota-update-project-043.html"}]}</script>
+<link rel="stylesheet" href="../style.css?v=20260617-saas10">
+</head>
+<body>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.html">Sitemap</a></nav></div></header>
+<nav class="cat-bar"><div class="wrap cat-nav"><a class="cat-pill" href="../index.html"><span class="cat-pill-icon t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="18" width="44" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="16" y="24" width="32" height="16" rx="2" fill="currentColor" opacity=".18"/><path d="M10 26h-4M10 34h-4M10 42h-4M54 26h4M54 34h4M54 42h4M22 18V14M32 18V14M42 18V14M22 46V50M32 46V50M42 46V50" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><text x="32" y="35" text-anchor="middle" fill="currentColor" font-size="7" font-weight="700" font-family="Inter,Arial,sans-serif">ESP32</text></svg></span>Home</a><a class="cat-pill" href="../projects.html#cat-iot-projects"><span class="cat-pill-icon t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></span>IoT</a><a class="cat-pill" href="../projects.html#cat-robotics"><span class="cat-pill-icon t-robot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="16" y="20" width="32" height="28" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="26" cy="32" r="3" fill="currentColor"/><circle cx="38" cy="32" r="3" fill="currentColor"/><path d="M24 42H40" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 12V20M20 16H14M44 16H50" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>Robotics</a><a class="cat-pill" href="../projects.html#cat-esp32-cam"><span class="cat-pill-icon t-cam"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="22" width="44" height="30" rx="4" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="37" r="9" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="37" r="4" fill="currentColor" opacity=".35"/><path d="M22 22L26 16H38L42 22" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>ESP32-CAM</a><a class="cat-pill" href="../projects.html#cat-home-automation"><span class="cat-pill-icon t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></span>Smart Home</a><a class="cat-pill" href="../projects.html#cat-sensor-projects"><span class="cat-pill-icon t-sensor"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="10" stroke="currentColor" stroke-width="2"/><path d="M32 10V18M32 46V54M10 32H18M46 32H54M16 16L22 22M42 42L48 48M48 16L42 22M22 42L16 48" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>Sensors</a><a class="cat-pill" href="../projects.html#cat-ai-projects"><span class="cat-pill-icon t-ai"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="18" y="18" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="currentColor" opacity=".2"/><path d="M18 26H12M18 32H12M18 38H12M46 26H52M46 32H52M46 38H52M26 18V12M32 18V12M38 18V12M26 46V52M32 46V52M38 46V52" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>AI Projects</a><a class="cat-pill" href="../projects.html">All Projects</a></div></nav>
+</div>
+<main>
+<div class="wrap article-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+    <h3>On this page</h3>
+    <ul class="side-list side-toc">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#parts">Parts</a></li>
+      <li><a href="#wiring">Wiring</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#code">Code</a></li>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#related">Related</a></li>
+    </ul>
+    <h3 class="sidebar-divider">Category</h3>
+    <ul class="side-list"><li><a href="../projects.html#cat-smart-city">Smart City</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main">
+    <header class="article-header">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-smart-city">Smart City</a></li><li aria-current="page">ESP32 Street Light with Live Telegram Bot Updates for Urban </li></ol></nav>
+    <h1>ESP32 Street Light with Live Telegram Bot Updates for Urban Node II</h1>
+    <div class="article-badges"><span class="badge badge-cat">Smart City</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-time">8 min read</span></div>
+    <p class="article-lead">Learn how Ldr Sensor signal data on GPIO33 triggers Street Light Relay control for reliable Street Logger operation.</p>
+    
+    </header>
+    
+    <div class="article-feature"><div class="article-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="28" width="14" height="22" stroke="currentColor" stroke-width="2"/><rect x="28" y="18" width="12" height="32" stroke="currentColor" stroke-width="2"/><rect x="44" y="34" width="10" height="16" stroke="currentColor" stroke-width="2"/><path d="M8 50H56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+    <div class="article-content">
+      <div class="article-intro"><p>This tutorial walks through street light with live telegram bot updates for urban node ii — wiring, firmware, and a quick bench test.</p><p>Expect about 10 minutes to wire the board, flash firmware, and verify Serial output.</p><p>Built for street logger: extend later with SPI Display if you need remote visibility.</p></div>
+      <section class="content-section" id="overview">
+      <h2>Project Overview</h2>
+      <p>A beginner-friendly Smart City circuit where Ldr Sensor signal feeds the ESP32 and Street Light Relay control handles the physical action.</p>
+      <ul class="overview-list">
+        <li>Ldr Sensor signal connects to GPIO33 (ADC input)</li><li>Threshold is set to 2822 in firmware (adjust after calibration)</li><li>Street Light Relay control is driven on GPIO25 when the condition is met</li><li>The main loop samples every 637 ms while powered</li>
+      </ul>
+      </section>
+      <section class="content-section" id="parts">
+      <h2>Parts Required</h2>
+      <p>Components needed for this build:</p>
+      <ul class="parts-grid"><li><span>ESP32 Dev Board</span></li><li><span>Ldr Sensor</span></li><li><span>Street Light Relay</span></li><li><span>Motion Sensor</span></li><li><span>5V Power Supply</span></li></ul>
+      </section>
+      <section class="content-section schematics-section" id="wiring">
+      <h2>Schematics &amp; Wiring</h2>
+      <p>Match each component to the GPIO pin below before uploading firmware.</p>
+      <div class="schematics-panel">
+      
+      <div class="pin-table-wrap"><table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody><tr><td>Ldr Sensor signal</td><td><strong>GPIO33</strong></td></tr><tr><td>Street Light Relay control</td><td><strong>GPIO25</strong></td></tr><tr><td>Motion Sensor SDA</td><td><strong>GPIO21</strong></td></tr><tr><td>SCL</td><td><strong>GPIO22</strong></td></tr><tr><td>VCC</td><td><strong>3.3V/5V</strong></td></tr><tr><td>GND</td><td><strong>GND</strong></td></tr></tbody></table></div>
+      
+      </div>
+      </section>
+      <section class="content-section" id="how">
+      <h2>How It Works</h2>
+      
+    <div class="steps">
+      <div class="step"><span class="step-no">01</span><h3>Read</h3><p>The ESP32 samples the input sensor on GPIO33, producing a raw reading.</p></div>
+      <div class="step"><span class="step-no">02</span><h3>Compare</h3><p>That reading is checked against a threshold configured in the sketch.</p></div>
+      <div class="step"><span class="step-no">03</span><h3>Decide</h3><p>When the condition is met, the ESP32 sets GPIO25 high; otherwise it stays low.</p></div>
+      <div class="step"><span class="step-no">04</span><h3>Act</h3><p>The ESP32 drives Street Light Relay control on GPIO25 high while the condition stays true, then releases it.</p></div>
+    </div>
+      </section>
+      <section class="content-section" id="code">
+      <h2>Arduino Code</h2>
+      <p>Upload this sketch in the Arduino IDE. Adjust pins and threshold for your hardware.</p>
+      <div class="code-block"><div class="code-bar"><span>esp32_smart_street_light_with_ota_update.ino</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre id="code-content">// ESP32 Street Light with Live Telegram Bot Updates for Urban Node II
+const int SENSOR_PIN = 33;
+const int OUTPUT_PIN = 25;
+const int THRESHOLD = 3029;
+const int SAMPLE_DELAY_MS = 637;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(OUTPUT_PIN, OUTPUT);
+  pinMode(SENSOR_PIN, INPUT);
+  Serial.println(&quot;Starting: street light with live telegram bot updates for urban node ii&quot;);
+  Serial.print(&quot;Threshold: &quot;);
+  Serial.println(THRESHOLD);
+}
+
+void loop() {
+  int reading = analogRead(SENSOR_PIN);
+  Serial.print(&quot;Ldr Sensor signal: &quot;);
+  Serial.println(reading);
+  bool active = reading &gt; THRESHOLD;
+  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);
+  delay(SAMPLE_DELAY_MS);
+}</pre></div>
+      </section>
+      <div class="detail-columns">
+      <section class="detail-panel"><h2>Applications</h2><ul class="detail-list"><li>Field trial in Street Logger environments</li><li>Hands-on Smart City learning with real GPIO control</li></ul></section>
+      <section class="detail-panel"><h2>Advantages</h2><ul class="detail-list"><li>Safe starting point for Smart City experiments</li><li>Clear GPIO33 / GPIO25 wiring table included</li><li>Serial logs help you calibrate quickly</li><li>Documented steps from wiring to demonstration</li></ul></section>
+      <section class="detail-panel"><h2>Future Ideas</h2><ul class="detail-list"><li>Expose tuning knobs through a captive portal page</li><li>Store CSV logs on SD card for long-term trends</li><li>Integrate OTA updates for remote firmware fixes</li></ul></section>
+      </div>
+      <section class="content-section" id="demo">
+      <h2>Demonstration</h2>
+      <p class="demo-note">Open Serial Monitor at <strong>115200 baud</strong>. Trigger the sensor and confirm the output on <strong>GPIO25</strong> responds when readings cross the threshold.</p>
+      <p class="demo-detail">Open Serial Monitor at 115200 baud, move ldr sensor signal, and confirm street light relay control responds on GPIO25 when readings cross THRESHOLD.</p>
+      </section>
+      <section class="content-section wrap-up-section">
+      <h2>Wrapping Up</h2>
+      <p>That completes the street light with live telegram bot updates for urban node ii walkthrough. Extend it with SPI Display when you are ready for remote monitoring.</p>
+      </section>
+      <section class="content-section" id="faq">
+      <h2>FAQ</h2>
+      <div class="faq-list">
+        <div class="faq-item open"><button class="faq-q" onclick="toggleFaq(this)">What power supply do I need?<span class="plus">+</span></button><div class="faq-a"><p>A stable 5 V USB supply is enough for bench tests; use a proper relay supply for heavy loads.</p></div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Can I change GPIO pins?<span class="plus">+</span></button><div class="faq-a"><p>Yes — update SENSOR_PIN, OUTPUT_PIN, and the wiring table together.</p></div></div><div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Why is my output always on?<span class="plus">+</span></button><div class="faq-a"><p>Your threshold may be too low or the sensor wiring might be floating — add a pull-up/down if required.</p></div></div>
+      </div>
+      </section>
+      <section class="content-section" id="related">
+      <h2>Related Projects</h2>
+      <div class="related-grid"><a class="related-card" href="esp32-smart-street-light-with-ota-update-project-001.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="28" width="14" height="22" stroke="currentColor" stroke-width="2"/><rect x="28" y="18" width="12" height="32" stroke="currentColor" stroke-width="2"/><rect x="44" y="34" width="10" height="16" stroke="currentColor" stroke-width="2"/><path d="M8 50H56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart City</span><h3>ESP32 Street Light for Urban Node</h3></div></a><a class="related-card" href="esp32-smart-street-light-with-ota-update-project-003.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="28" width="14" height="22" stroke="currentColor" stroke-width="2"/><rect x="28" y="18" width="12" height="32" stroke="currentColor" stroke-width="2"/><rect x="44" y="34" width="10" height="16" stroke="currentColor" stroke-width="2"/><path d="M8 50H56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart City</span><h3>ESP32 Street Light with Live Telegram Bot Updates</h3></div></a><a class="related-card" href="esp32-smart-street-light-with-ota-update-project-005.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="28" width="14" height="22" stroke="currentColor" stroke-width="2"/><rect x="28" y="18" width="12" height="32" stroke="currentColor" stroke-width="2"/><rect x="44" y="34" width="10" height="16" stroke="currentColor" stroke-width="2"/><path d="M8 50H56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart City</span><h3>ESP32 Street Light with Street Light Relay Control</h3></div></a><a class="related-card" href="esp32-smart-street-light-with-ota-update-project-007.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="28" width="14" height="22" stroke="currentColor" stroke-width="2"/><rect x="28" y="18" width="12" height="32" stroke="currentColor" stroke-width="2"/><rect x="44" y="34" width="10" height="16" stroke="currentColor" stroke-width="2"/><path d="M8 50H56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart City</span><h3>ESP32 Street Light for Public Node Automation</h3></div></a></div>
+      </section>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+    <div class="ad-slot ad-slot-sidebar" data-ad-slot="sidebar" aria-hidden="true"></div>
+    <div class="promo-box"><strong>ESP32 Project Library</strong><p class="promo-text">1,000+ tutorials with wiring diagrams, code, and step-by-step guides.</p><p class="promo-link"><a href="../projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer"><div class="wrap footer-grid footer-grid-wide"><div class="footer-brand"><strong>ESP32 Project Library</strong><p>1,000+ ESP32 tutorials with wiring diagrams, source code, parts lists, and step-by-step build guides for makers, students, and engineers.</p></div><div class="footer-col"><h4>Explore</h4><a href="../index.html">Home</a><a href="../projects.html">All Projects</a><a href="../sitemap.html">Sitemap</a></div><div class="footer-col"><h4>Company</h4><a href="../about.html">About</a><a href="../contact.html">Contact</a></div><div class="footer-col"><h4>Legal</h4><a href="../privacy.html">Privacy Policy</a><a href="../disclaimer.html">Disclaimer</a></div></div><div class="wrap footer-bottom"><p>© 2026 ESP32 Project Library. All rights reserved.</p></div></footer>
+<script src="../ui.js" defer></script>
+<script src="../project.js"></script>
+</body>
+</html>

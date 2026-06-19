@@ -1,0 +1,695 @@
+import html
+import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar
+from content_variants import assign_varied_content
+from flagship_polish import (
+    apply_flagship_polish,
+    hero_diagram_dark,
+    is_flagship,
+    wiring_diagram_enhanced,
+    wiring_tips_html,
+)
+from site_layout import (
+    footer_html,
+    related_cards_html,
+    read_time_label,
+    short_category,
+    badge_class,
+    normalize_terms,
+    CSS_VERSION,
+    SITE_DOMAIN,
+    OG_IMAGE,
+    ORG_NAME,
+    json_ld_script,
+    social_meta,
+    analytics_config_script,
+)
+
+ROOT = Path(__file__).resolve().parent.parent
+PROJECTS = ROOT / "projects"
+DOMAIN = SITE_DOMAIN
+
+LEAF_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z" fill="#4C7A3D"/><path d="M12 13V21" stroke="#33531F" stroke-width="1.6" stroke-linecap="round"/></svg>'
+
+ICON_CHIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/></svg>'
+ICON_DROP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 C12 2 6 10 6 15 a6 6 0 0012 0 C18 10 12 2 12 2z"/></svg>'
+ICON_RELAY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2"/><circle cx="8" cy="12" r="1.5" fill="currentColor" stroke="none"/><line x1="13" y1="12" x2="18" y2="12"/></svg>'
+ICON_MOTOR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'
+ICON_POWER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="10" x2="22" y2="14"/></svg>'
+ICON_LEAF = ICON_DROP
+ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
+
+
+def esc(text: str) -> str:
+    return html.escape(text or "", quote=True)
+
+
+def first_match(pattern, text, flags=re.I | re.S):
+    m = re.search(pattern, text, flags)
+    if not m:
+        return ""
+    return (m.group(1) if m.lastindex else m.group(0)).strip()
+
+
+def all_matches(pattern, text, flags=re.I | re.S):
+    return [m.group(1).strip() for m in re.finditer(pattern, text, flags)]
+
+
+def part_icon(name: str) -> str:
+    n = name.lower()
+    if "esp32" in n:
+        return ICON_CHIP
+    if any(k in n for k in ("sensor", "moisture", "dht", "pir", "bme", "ultrasonic", "microphone", "camera")):
+        return ICON_DROP
+    if "relay" in n:
+        return ICON_RELAY
+    if any(k in n for k in ("pump", "motor", "driver", "servo")):
+        return ICON_MOTOR
+    if "power" in n or "battery" in n or "supply" in n:
+        return ICON_POWER
+    if "led" in n:
+        return ICON_LEAF
+    return ICON_CHIP
+
+
+def short_label(text: str, limit: int = 14) -> str:
+    words = re.sub(r"[^A-Za-z0-9 ]", " ", text).split()
+    if not words:
+        return "SENSOR"
+    label = " ".join(words[:3]).upper()
+    return label[:limit]
+
+
+def parse_project(path: Path) -> dict:
+    raw = path.read_text(encoding="utf-8")
+    tags = [t for t in all_matches(r'<span class="tag leaf">([^<]+)</span>', raw) if t.lower() not in ("part",)]
+    clay_tags = all_matches(r'<span class="tag clay">([^<]+)</span>', raw)
+    plain_tags = all_matches(r'<span class="tag">([^<]+)</span>', raw)
+    category = tags[0] if tags else "ESP32"
+    difficulty = clay_tags[0].replace(" build", "") if clay_tags else "Beginner"
+    meta_m = re.search(r'<p class="article-meta">([^<]+)</p>', raw)
+    if meta_m:
+        parts = [p.strip() for p in meta_m.group(1).split("·")]
+        if parts and parts[0] not in ("ESP32", "Project") and category in ("ESP32", ""):
+            category = parts[0]
+        if len(parts) > 1:
+            difficulty = parts[1].replace(" build", "").strip()
+    if category in ("ESP32", ""):
+        bc = re.search(r'"position": 2, "name": "([^"]+)"', raw)
+        if bc and bc.group(1) not in ("Home",):
+            category = bc.group(1)
+    project_tag = plain_tags[0] if plain_tags else "Project"
+    title = first_match(r"<h1>([^<]+)</h1>", raw)
+    lead = first_match(r'<p class="lead">([^<]+)</p>', raw) or first_match(r'<p class="article-lead">([^<]+)</p>', raw)
+    overview = first_match(r'<section id="overview"[^>]*>.*?<p class="lead">([^<]+)</p>', raw)
+    blog_section_match = first_match(r'<section id="blog"[\s\S]*?</section>', raw)
+    if blog_section_match:
+        blog_paras = all_matches(r"<p>([^<]+)</p>", blog_section_match)
+    else:
+        article = first_match(r'<div class="article-content">([\s\S]*?)</div>\s*</article>', raw)
+        blog_paras = all_matches(r"<p>([^<]+)</p>", article) if article else []
+    components = []
+    comp_block = first_match(r'<section id="components"[\s\S]*?</section>', raw)
+    if comp_block:
+        for name in all_matches(r'<h3>([^<]+)</h3>', comp_block):
+            if name.lower() not in ("applications", "advantages"):
+                components.append(name)
+    if not components:
+        parts_block = first_match(r'<ul class="parts-list">([\s\S]*?)</ul>', raw)
+        if parts_block:
+            components = all_matches(r"<strong>([^<]+)</strong>", parts_block)
+    wiring = []
+    wire_block = first_match(r'<section id="wiring"[\s\S]*?</section>', raw)
+    if not wire_block:
+        wire_block = first_match(r'<table class="pin-table">([\s\S]*?)</table>', raw)
+    if wire_block:
+        for row in re.finditer(r"<tr><td>([^<]+)</td><td[^>]*>(?:<strong>)?([^<]+)(?:</strong>)?</td></tr>", wire_block):
+            wiring.append((row.group(1).strip(), row.group(2).strip()))
+    how = first_match(r'<section id="how"[\s\S]*?<div class="box"><p>([^<]+)</p>', raw)
+    if not how:
+        how = first_match(r'<div class="step"><span class="step-no">04</span>[\s\S]*?<p>([^<]+)</p>', raw)
+    code = first_match(r'<pre id="code-content">([\s\S]*?)</pre>', raw)
+    if not code:
+        code = first_match(r"<section id=\"code\"[\s\S]*?<pre>([\s\S]*?)</pre>", raw)
+    code = html.unescape(code.strip())
+    apps_block = first_match(r'<h2>Applications</h2><ul[^>]*>([\s\S]*?)</ul>', raw)
+    apps = all_matches(r"<li>([^<]+)</li>", apps_block) if apps_block else []
+    adv_block = first_match(r'<h2>Advantages</h2><ul[^>]*>([\s\S]*?)</ul>', raw)
+    advantages = all_matches(r"<li>([^<]+)</li>", adv_block) if adv_block else []
+    future = []
+    fut_block = first_match(r'<h2>Future improvements</h2>[\s\S]*?<div class="grid">([\s\S]*?)</div></section>', raw)
+    if fut_block:
+        future = all_matches(r"<h3>([^<]+)</h3>", fut_block)
+    related = []
+    rel_block = first_match(r'<h2>Related ESP32 projects</h2>[\s\S]*?<div class="grid">([\s\S]*?)</div></section>', raw)
+    if not rel_block:
+        rel_block = first_match(r'<h3>Related Projects</h3>[\s\S]*?<ul class="side-list">([\s\S]*?)</ul>', raw)
+    if rel_block:
+        for m in re.finditer(
+            r'<a class="card" href="([^"]+)"><span class="tag leaf">([^<]+)</span><h3>([^<]+)</h3><p>([^<]+)</p></a>',
+            rel_block,
+        ):
+            related.append({"href": m.group(1), "cat": m.group(2), "title": m.group(3), "desc": m.group(4)})
+        for m in re.finditer(r'<a href="([^"]+)">([^<]+)</a>', rel_block):
+            if not any(r["href"] == m.group(1) for r in related):
+                related.append({"href": m.group(1), "cat": category, "title": m.group(2).strip(), "desc": ""})
+    faq_q = first_match(r'<section id="faq"[\s\S]*?<h3>([^<]+)</h3>', raw)
+    faq_a = first_match(r'<section id="faq"[\s\S]*?<h3>[^<]+</h3><p>([^<]+)</p>', raw)
+    slug = first_match(r'<div class="meta">([^<]+)</div>', raw) or path.stem
+    head = first_match(r"<head>([\s\S]*?)</head>", raw)
+    head = re.sub(r'<link rel="stylesheet"[^>]*>', "", head)
+    head = re.sub(r'<link rel="preconnect"[^>]*>', "", head)
+    head = re.sub(r'<meta charset="utf-8">', "", head, flags=re.I)
+    head = re.sub(r'<meta name="viewport"[^>]*>', "", head, flags=re.I)
+    head = re.sub(r"\s+", " ", head).strip()
+    sensor_pin = wiring[0][1] if wiring else "GPIO34"
+    output_pin = wiring[1][1] if len(wiring) > 1 else "GPIO26"
+    sensor_name = wiring[0][0] if wiring else "Sensor"
+    output_name = wiring[1][0] if len(wiring) > 1 else "Output device"
+    core_parts = len([c for c in components if c.lower() not in ("jumper wires", "breadboard", "5v power supply")])
+    gpio_count = len([p for _, p in wiring if "gpio" in p.lower()])
+    return {
+        "path": path,
+        "head": head,
+        "category": category,
+        "difficulty": difficulty,
+        "project_tag": project_tag,
+        "title": title,
+        "lead": lead,
+        "overview": overview or lead,
+        "blog_paras": blog_paras[:3],
+        "components": components,
+        "wiring": wiring,
+        "how": how,
+        "code": code,
+        "apps": apps[:5],
+        "advantages": advantages[:5],
+        "future": future[:4],
+        "related": related[:4],
+        "faq_q": faq_q or "Can this project work offline?",
+        "faq_a": faq_a or "Yes. The core logic runs locally on the ESP32, so the project keeps working without Wi-Fi.",
+        "slug": slug,
+        "sensor_pin": sensor_pin,
+        "output_pin": output_pin,
+        "sensor_name": sensor_name,
+        "output_name": output_name,
+        "core_parts": max(core_parts, 3),
+        "gpio_count": max(gpio_count, 2),
+    }
+
+
+def hero_diagram(d: dict) -> str:
+    sensor = short_label(d["sensor_name"], 16)
+    output = short_label(d["output_name"].replace(" control", ""), 12)
+    return f"""
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1000 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Control loop diagram">
+      <path d="M60 160 A70 70 0 0 1 130 90" stroke="#2C6E8E" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M130 90 A70 70 0 0 1 200 160" stroke="#B5703A" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <line class="needle" x1="130" y1="160" x2="130" y2="98" stroke="#202B1B" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="130" cy="160" r="6" fill="#202B1B"/>
+      <text x="130" y="208" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5C6A55">{esc(sensor)}</text>
+      <path d="M220 160 L300 160" stroke="#C9D2BA" stroke-width="3" fill="none" stroke-dasharray="6 6"/>
+      <circle class="pulse pulse-1" cx="220" cy="160" r="5" fill="#2C6E8E"/>
+      <rect x="300" y="110" width="160" height="100" rx="10" fill="#F5F8EF" stroke="#C9D2BA" stroke-width="2"/>
+      <text x="380" y="166" text-anchor="middle" font-family="Fraunces, serif" font-weight="700" font-size="22" fill="#33531F">ESP32</text>
+      <circle class="esp-led" cx="442" cy="124" r="5" fill="#4C7A3D"/>
+      <text x="380" y="190" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#5C6A55">CONTROL LOOP</text>
+      <path d="M460 160 L560 160" stroke="#C9D2BA" stroke-width="3" fill="none" stroke-dasharray="6 6"/>
+      <circle class="pulse pulse-2" cx="460" cy="160" r="5" fill="#E0A24A"/>
+      <rect x="560" y="120" width="110" height="80" rx="10" fill="#F5F8EF" stroke="#C9D2BA" stroke-width="2"/>
+      <circle class="relay-led" cx="650" cy="135" r="6" fill="#D6DCC9"/>
+      <text x="615" y="168" text-anchor="middle" font-family="Fraunces, serif" font-weight="700" font-size="17" fill="#33531F">OUTPUT</text>
+      <line class="power-wire" x1="670" y1="160" x2="745" y2="160" stroke="#C9D2BA" stroke-width="3"/>
+      <rect x="745" y="125" width="90" height="70" rx="10" fill="#F5F8EF" stroke="#C9D2BA" stroke-width="2"/>
+      <text x="790" y="167" text-anchor="middle" font-family="Fraunces, serif" font-weight="700" font-size="13" fill="#33531F">{esc(output)}</text>
+      <circle class="drop drop1" cx="850" cy="160" r="5" fill="#2C6E8E"/>
+      <circle class="drop drop2" cx="850" cy="160" r="5" fill="#2C6E8E"/>
+      <circle class="drop drop3" cx="850" cy="160" r="5" fill="#2C6E8E"/>
+      <g class="plant">
+        <rect x="880" y="225" width="50" height="34" rx="4" fill="#B5703A"/>
+        <path class="plant-leaf" d="M905 225 C905 200 875 195 870 175 C895 175 910 195 905 225 Z" fill="#7FA56B"/>
+        <path class="plant-leaf" d="M905 225 C905 195 935 188 942 168 C915 170 900 192 905 225 Z" fill="#7FA56B"/>
+        <line x1="905" y1="225" x2="905" y2="195" stroke="#33531F" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <div class="diagram-caption">
+      <span><span class="dot"></span>Live loop — sense, decide, act</span>
+      <span>Sensor → ESP32 → Output → Result</span>
+    </div>
+  </div>"""
+
+
+def wiring_diagram(d: dict) -> str:
+    s_pin = esc(d["sensor_pin"])
+    o_pin = esc(d["output_pin"])
+    return f"""
+      <div class="wiring-diagram">
+        <svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wiring diagram">
+          <rect x="130" y="40" width="140" height="160" rx="10" fill="#EAEFE2" stroke="#C9D2BA" stroke-width="2"/>
+          <text x="200" y="125" text-anchor="middle" font-family="Fraunces, serif" font-weight="700" font-size="20" fill="#33531F">ESP32</text>
+          <circle cx="130" cy="80" r="4" fill="#2C6E8E"/>
+          <circle cx="130" cy="160" r="4" fill="#E0A24A"/>
+          <text x="142" y="84" font-family="IBM Plex Mono, monospace" font-size="11" fill="#2C6E8E">{s_pin}</text>
+          <text x="142" y="164" font-family="IBM Plex Mono, monospace" font-size="11" fill="#B5703A">{o_pin}</text>
+          <line x1="60" y1="80" x2="130" y2="80" stroke="#2C6E8E" stroke-width="2" stroke-dasharray="5 4"/>
+          <line x1="60" y1="160" x2="130" y2="160" stroke="#B5703A" stroke-width="2" stroke-dasharray="5 4"/>
+          <rect x="10" y="55" width="60" height="50" rx="6" fill="#F5F8EF" stroke="#C9D2BA" stroke-width="2"/>
+          <text x="40" y="84" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#202B1B">SENSOR</text>
+          <rect x="10" y="135" width="60" height="50" rx="6" fill="#F5F8EF" stroke="#C9D2BA" stroke-width="2"/>
+          <text x="40" y="164" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#202B1B">OUTPUT</text>
+          <line x1="270" y1="120" x2="340" y2="120" stroke="#C9D2BA" stroke-width="2"/>
+          <rect x="340" y="95" width="50" height="50" rx="6" fill="#F5F8EF" stroke="#C9D2BA" stroke-width="2"/>
+          <text x="365" y="124" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#202B1B">5V</text>
+        </svg>
+      </div>"""
+
+
+def build_steps(d: dict) -> str:
+    how = d["how"] or "The ESP32 reads a sensor, compares the value to a threshold, and drives the output."
+    return f"""
+    <div class="steps">
+      <div class="step"><span class="step-no">01</span><h3>Read</h3><p>The ESP32 samples the input sensor on {esc(d['sensor_pin'])}, producing a raw reading.</p></div>
+      <div class="step"><span class="step-no">02</span><h3>Compare</h3><p>That reading is checked against a threshold configured in the sketch.</p></div>
+      <div class="step"><span class="step-no">03</span><h3>Decide</h3><p>When the condition is met, the ESP32 sets {esc(d['output_pin'])} high; otherwise it stays low.</p></div>
+      <div class="step"><span class="step-no">04</span><h3>Act</h3><p>{esc(d.get('step_act') or how)}</p></div>
+    </div>"""
+
+
+def item_list(items: list[str], default_desc: str) -> str:
+    rows = []
+    for item in items:
+        rows.append(
+            f'<li><span class="ico">{ICON_LEAF}</span><span class="txt"><b>{esc(item)}</b><span>{esc(default_desc)}</span></span></li>'
+        )
+    return "\n".join(rows)
+
+
+THUMB = {
+    "Agriculture": "t-agriculture",
+    "Home Automation": "t-home",
+    "Security Projects": "t-security",
+    "IoT Projects": "t-iot",
+    "Sensor Projects": "t-iot",
+    "Robotics": "t-default",
+    "Industrial Automation": "t-default",
+    "LED Projects": "t-led",
+    "ESP32-CAM": "t-cam",
+    "AI Projects": "t-ai",
+    "Energy Monitoring": "t-default",
+    "Healthcare": "t-default",
+    "Environmental": "t-agriculture",
+    "Smart City": "t-iot",
+    "Education": "t-default",
+}
+
+
+def thumb_class(cat: str) -> str:
+    return icon_thumb_class(cat)
+
+
+def thumb_label(title: str, cat: str) -> str:
+    words = re.sub(r"[^A-Za-z0-9 ]", " ", title).split()
+    short = " ".join(words[:3]).upper()
+    return short[:20] or cat.upper()[:12]
+
+
+def ensure_content_blocks(d: dict) -> None:
+    cat = short_category(d["category"])
+    title = d.get("title") or "this project"
+    if not d.get("apps"):
+        d["apps"] = [
+            f"Prototype {title.lower()} for home or lab testing",
+            f"Practice {cat.lower()} builds with a reproducible ESP32 circuit",
+            "Extend the firmware with MQTT, HTTP, or mobile alerts later",
+        ]
+    if not d.get("advantages"):
+        d["advantages"] = [
+            "Low-cost ESP32 board with widely available components",
+            "Clear wiring table and copy-paste Arduino sketch",
+            "Runs locally without cloud dependency",
+        ]
+    if not d.get("future"):
+        d["future"] = [
+            "Add Wi-Fi telemetry and remote monitoring",
+            "Log sensor data to SD card or a cloud dashboard",
+            "Tune thresholds from a web configuration page",
+        ]
+
+
+def faq_items(d: dict) -> list:
+    items = [(d["faq_q"], d["faq_a"])]
+    items.extend(d.get("faq_extra") or [])
+    if len(items) < 3:
+        items.append(
+            (
+                "How do I choose the threshold?",
+                "Log raw readings in Serial Monitor, then pick a value between your normal and trigger readings.",
+            )
+        )
+    deduped = []
+    seen = set()
+    offline_keys = {"offline", "internet", "wi-fi", "wifi", "cloud"}
+    has_offline = False
+    for q, a in items:
+        q_norm = re.sub(r"\s+", " ", (q or "").strip().lower())
+        if not q_norm:
+            continue
+        if any(k in q_norm for k in offline_keys):
+            if has_offline:
+                continue
+            has_offline = True
+        if q_norm in seen:
+            continue
+        seen.add(q_norm)
+        deduped.append((q.strip(), a.strip()))
+    limit = 5 if d.get("featured") else 3
+    return deduped[:limit]
+
+
+def build_head(d: dict) -> str:
+    url = f"{DOMAIN}/projects/{d['path'].name}"
+    t = esc(d["title"])
+    desc = esc(d["lead"])
+    cat = esc(d["category"])
+    faq_schema = []
+    for q, a in faq_items(d):
+        faq_schema.append(
+            {
+                "@type": "Question",
+                "name": q,
+                "acceptedAnswer": {"@type": "Answer", "text": a},
+            }
+        )
+    article = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": d["title"],
+        "description": d["lead"],
+        "datePublished": "2026-06-14",
+        "dateModified": "2026-06-15",
+        "image": OG_IMAGE,
+        "author": {"@type": "Organization", "name": ORG_NAME, "url": DOMAIN + "/"},
+        "publisher": {
+            "@type": "Organization",
+            "name": ORG_NAME,
+            "logo": {"@type": "ImageObject", "url": OG_IMAGE},
+        },
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+    }
+    faq = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faq_schema}
+    crumbs = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{DOMAIN}/index.html"},
+            {"@type": "ListItem", "position": 2, "name": cat, "item": f"{DOMAIN}/projects.html"},
+            {"@type": "ListItem", "position": 3, "name": d["title"], "item": url},
+        ],
+    }
+    social = social_meta(f"{d['title']} | ESP32 Project Guide", d["lead"], url, "article")
+    return f"""<title>{t} | ESP32 Project Guide</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{url}">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+{social}
+{json_ld_script(article)}
+{json_ld_script(faq)}
+{json_ld_script(crumbs)}"""
+
+
+def prose_subject(title: str) -> str:
+    from content_variants import prose_subject as _ps
+
+    return _ps(title)
+
+
+def build_blog_paras(d: dict) -> list:
+    return d.get("blog_paras") or []
+
+
+def normalize_text_fields(d: dict) -> None:
+    for key in ("title", "lead", "overview", "sensor_name", "output_name"):
+        if d.get(key):
+            d[key] = normalize_terms(d[key])
+    d["blog_paras"] = [normalize_terms(p) for p in d.get("blog_paras", [])]
+
+
+def fill_related(all_data: list) -> None:
+    from collections import defaultdict
+
+    by_cat = defaultdict(list)
+    for d in all_data:
+        by_cat[d["category"]].append(d)
+    for d in all_data:
+        seen = {d["slug"]}
+        filled = []
+        for r in d.get("related", []):
+            href_slug = Path(r["href"]).name.replace(".html", "") if r.get("href") else ""
+            if href_slug:
+                seen.add(href_slug)
+            filled.append(r)
+        for peer in by_cat.get(d["category"], []):
+            if len(filled) >= 4:
+                break
+            if peer["slug"] in seen:
+                continue
+            seen.add(peer["slug"])
+            filled.append(
+                {
+                    "href": peer["path"].name,
+                    "cat": peer["category"],
+                    "title": peer.get("title") or peer["slug"],
+                    "desc": (peer.get("lead") or "")[:120],
+                }
+            )
+        d["related"] = filled[:4]
+
+
+def assign_titles(all_data: list) -> None:
+    from collections import defaultdict
+
+    groups = defaultdict(list)
+    for d in all_data:
+        base = re.sub(r"-project-\d+$", "", d["slug"], flags=re.I)
+        groups[base].append(d)
+    used_global = set()
+    for items in groups.values():
+        items.sort(key=lambda x: int(re.search(r"project-(\d+)$", x["slug"], re.I).group(1)))
+        for i, d in enumerate(items):
+            assign_varied_content(d, i, used_global)
+            d["featured"] = is_flagship(d["slug"])
+            if d["featured"]:
+                apply_flagship_polish(d, i)
+            normalize_text_fields(d)
+            d["head"] = build_head(d)
+    title_map = {d["slug"]: d["title"] for d in all_data}
+    for d in all_data:
+        for r in d.get("related", []):
+            href_slug = Path(r["href"]).stem
+            if href_slug in title_map:
+                r["title"] = title_map[href_slug]
+            if r.get("title"):
+                r["title"] = normalize_terms(r["title"])
+
+
+def rnt_header():
+    return f"""<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.html">Sitemap</a></nav></div></header>
+{featured_cat_bar("../")}
+</div>"""
+
+
+def render_page(d: dict) -> str:
+    tc = thumb_class(d["category"])
+    icon = pick_icon(d["category"])
+    wiring_rows = []
+    for name, pin in d["wiring"]:
+        wiring_rows.append(f"<tr><td>{esc(name)}</td><td><strong>{esc(pin)}</strong></td></tr>")
+    related_section = related_cards_html(d["related"])
+    rt = read_time_label(d["difficulty"], d["slug"])
+    blog_bits = "".join(f"<p>{esc(p)}</p>" for p in d["blog_paras"][:4])
+    intro_block = f'<div class="article-intro">{blog_bits}</div>' if blog_bits else ""
+    apps_li = "".join(f"<li>{esc(a)}</li>" for a in d["apps"])
+    adv_li = "".join(f"<li>{esc(a)}</li>" for a in d["advantages"])
+    future_li = "".join(f"<li>{esc(f)}</li>" for f in d["future"])
+    parts_items = []
+    for comp in d["components"]:
+        if comp.lower() not in ("jumper wires", "breadboard"):
+            parts_items.append(f"<li><span>{esc(comp)}</span></li>")
+    parts_html = "".join(parts_items)
+    code_fname = re.sub(r"[^a-z0-9]+", "_", d["slug"].lower()).strip("_")[:40] + ".ino"
+    code_esc = esc(d["code"])
+    faq_html = []
+    for i, (fq, fa) in enumerate(faq_items(d)):
+        open_cls = " open" if i == 0 else ""
+        faq_html.append(
+            f'<div class="faq-item{open_cls}"><button class="faq-q" onclick="toggleFaq(this)">{esc(fq)}<span class="plus">+</span></button><div class="faq-a"><p>{esc(fa)}</p></div></div>'
+        )
+    faq_block = "".join(faq_html)
+    how = d["how"] or "The ESP32 reads the sensor and drives the output when the threshold is met."
+    wrap = d.get("wrap_up") or f"You now have a working {prose_subject(d['title'])} setup ready to test and extend."
+    ob_ul = d.get("overview_bullets") or [
+        "The ESP32 connects to your circuit and reads the input sensor;",
+        "Sensor values are compared against a threshold in the sketch;",
+        f"When the condition is met, the output device is activated on {d['output_pin']};",
+        "The loop repeats while the board is powered.",
+    ]
+    ob_li = "".join(f"<li>{esc(b)}</li>" for b in ob_ul)
+    cat_slug = re.sub(r"[^a-z0-9]+", "-", d["category"].lower()).strip("-")
+    health_note = ""
+    if d["category"] == "Healthcare":
+        health_note = '<p class="notice notice-health">This tutorial is for educational purposes only and is not medical advice. Do not use it for diagnosis, treatment, or patient monitoring without proper validation.</p>'
+    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(d['category'])}</a></li><li aria-current="page">{esc(d['title'][:60])}</li></ol></nav>"""
+    featured_badge = '<span class="badge badge-featured">Featured</span>' if d.get("featured") else ""
+    hero_block = hero_diagram_dark(d) if d.get("featured") else ""
+    wiring_viz = wiring_diagram_enhanced(d) if d.get("featured") else ""
+    wiring_tips = wiring_tips_html(d) if d.get("featured") else ""
+    diff_clean = d["difficulty"].replace(" build", "")
+    cat_short = short_category(d["category"])
+    badge_row = f"""<div class="article-badges">{featured_badge}<span class="badge badge-cat">{esc(cat_short)}</span><span class="badge {badge_class(diff_clean)}">{esc(diff_clean)}</span><span class="badge badge-time">{esc(rt)}</span></div>"""
+    feature_block = ""
+    if not d.get("featured"):
+        feature_block = f'<div class="article-feature"><div class="article-thumb {tc}">{icon}</div></div>'
+    cat_slug_nav = re.sub(r"[^a-z0-9]+", "-", d["category"].lower()).strip("-")
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#020617">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<script>document.documentElement.classList.add("js")</script>
+{analytics_config_script()}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+{d['head']}
+<link rel="stylesheet" href="../style.css?v={CSS_VERSION}">
+</head>
+<body>
+{rnt_header()}
+<main>
+<div class="wrap article-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+    <h3>On this page</h3>
+    <ul class="side-list side-toc">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#parts">Parts</a></li>
+      <li><a href="#wiring">Wiring</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#code">Code</a></li>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#related">Related</a></li>
+    </ul>
+    <h3 class="sidebar-divider">Category</h3>
+    <ul class="side-list"><li><a href="../projects.html#cat-{cat_slug_nav}">{esc(d['category'])}</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main">
+    <header class="article-header">
+    {breadcrumb}
+    <h1>{esc(d['title'])}</h1>
+    {badge_row}
+    <p class="article-lead">{esc(d['lead'])}</p>
+    {health_note}
+    </header>
+    {hero_block}
+    {feature_block}
+    <div class="article-content">
+      {intro_block}
+      <section class="content-section" id="overview">
+      <h2>Project Overview</h2>
+      <p>{esc(d['overview'])}</p>
+      <ul class="overview-list">
+        {ob_li}
+      </ul>
+      </section>
+      <section class="content-section" id="parts">
+      <h2>Parts Required</h2>
+      <p>Components needed for this build:</p>
+      <ul class="parts-grid">{parts_html}</ul>
+      </section>
+      <section class="content-section schematics-section" id="wiring">
+      <h2>Schematics &amp; Wiring</h2>
+      <p>Match each component to the GPIO pin below before uploading firmware.</p>
+      <div class="schematics-panel">
+      {wiring_viz}
+      <div class="pin-table-wrap"><table class="pin-table"><thead><tr><th>Component</th><th>ESP32 Pin</th></tr></thead><tbody>{''.join(wiring_rows)}</tbody></table></div>
+      {wiring_tips}
+      </div>
+      </section>
+      <section class="content-section" id="how">
+      <h2>How It Works</h2>
+      {build_steps(d)}
+      </section>
+      <section class="content-section" id="code">
+      <h2>Arduino Code</h2>
+      <p>Upload this sketch in the Arduino IDE. Adjust pins and threshold for your hardware.</p>
+      <div class="code-block"><div class="code-bar"><span>{esc(code_fname)}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre id="code-content">{code_esc}</pre></div>
+      </section>
+      <div class="detail-columns">
+      <section class="detail-panel"><h2>Applications</h2><ul class="detail-list">{apps_li}</ul></section>
+      <section class="detail-panel"><h2>Advantages</h2><ul class="detail-list">{adv_li}</ul></section>
+      <section class="detail-panel"><h2>Future Ideas</h2><ul class="detail-list">{future_li}</ul></section>
+      </div>
+      <section class="content-section" id="demo">
+      <h2>Demonstration</h2>
+      <p class="demo-note">Open Serial Monitor at <strong>115200 baud</strong>. Trigger the sensor and confirm the output on <strong>{esc(d['output_pin'])}</strong> responds when readings cross the threshold.</p>
+      <p class="demo-detail">{esc(how)}</p>
+      </section>
+      <section class="content-section wrap-up-section">
+      <h2>Wrapping Up</h2>
+      <p>{esc(wrap)}</p>
+      </section>
+      <section class="content-section" id="faq">
+      <h2>FAQ</h2>
+      <div class="faq-list">
+        {faq_block}
+      </div>
+      </section>
+      <section class="content-section" id="related">
+      <h2>Related Projects</h2>
+      {related_section}
+      </section>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+    <div class="ad-slot ad-slot-sidebar" data-ad-slot="sidebar" aria-hidden="true"></div>
+    <div class="promo-box"><strong>ESP32 Project Library</strong><p class="promo-text">1,000+ tutorials with wiring diagrams, code, and step-by-step guides.</p><p class="promo-link"><a href="../projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+{footer_html("../")}
+<script src="../ui.js" defer></script>
+<script src="../project.js"></script>
+</body>
+</html>
+"""
+
+
+def main():
+    files = sorted(PROJECTS.glob("*.html"))
+    if not files:
+        print("No project files found", file=sys.stderr)
+        sys.exit(1)
+    all_data = [parse_project(path) for path in files]
+    assign_titles(all_data)
+    fill_related(all_data)
+    for i, data in enumerate(all_data, 1):
+        data["path"].write_text(render_page(data), encoding="utf-8")
+        if i % 100 == 0:
+            print(f"Rebuilt {i}/{len(all_data)}")
+    print(f"Done — rebuilt {len(all_data)} project pages with unique titles")
+
+
+if __name__ == "__main__":
+    main()

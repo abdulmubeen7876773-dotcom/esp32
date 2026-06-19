@@ -1,4 +1,21 @@
-<?php get_header(); ?>
+<?php get_header();
+
+/* ── Dynamic counts ── */
+$guide_count   = wp_count_posts( 'esp32_guide' )->publish;
+$project_count = wp_count_posts( 'esp32_project' )->publish;
+$cat_count     = wp_count_terms( 'project_category' );
+if ( is_wp_error( $cat_count ) ) $cat_count = 0;
+
+/* Count code examples (guides that have <pre> blocks) */
+global $wpdb;
+$code_count = (int) $wpdb->get_var(
+    "SELECT COUNT(*) FROM {$wpdb->posts}
+     WHERE post_type IN ('esp32_guide','esp32_project')
+       AND post_status = 'publish'
+       AND post_content LIKE '%<pre>%'"
+);
+
+?>
 <main>
 
 <!-- ===== HERO ===== -->
@@ -8,15 +25,33 @@
       <p class="hero-eyebrow">Learn | Build | Innovate</p>
       <h1 id="hero-heading">The Premium ESP32 Learning Platform</h1>
       <p class="hero-sub">Master ESP32, IoT, embedded systems, and Arduino with step-by-step guides, wiring diagrams, and production-ready project tutorials.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">Explore Projects</a>
-        <a class="btn btn-secondary btn-lg" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">Start Learning</a>
+
+      <!-- Hero search box -->
+      <div class="hero-search-wrap" role="search" aria-label="Site search">
+        <div class="hero-search-box" id="hero-search-box">
+          <svg class="hero-search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true" width="18" height="18">
+            <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/>
+            <path d="M14 14l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input type="search" class="hero-search-input" id="hero-search-input"
+            placeholder='Search guides, projects, FAQs…  (or press / )'
+            aria-label="Search guides, projects and FAQs"
+            autocomplete="off" spellcheck="false">
+        </div>
+        <div class="hero-search-results" id="hero-search-results" hidden></div>
       </div>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">Start Learning</a>
+        <a class="btn btn-secondary btn-lg" href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">Explore Projects</a>
+      </div>
+
+      <!-- Dynamic Stats -->
       <div class="hero-stat-row">
-        <div class="hero-stat-pill"><strong>15+</strong><span>Parent Projects</span></div>
-        <div class="hero-stat-pill"><strong>45+</strong><span>Difficulty Levels</span></div>
-        <div class="hero-stat-pill"><strong>10+</strong><span>Categories</span></div>
-        <div class="hero-stat-pill"><strong>100%</strong><span>Free Learning</span></div>
+        <div class="hero-stat-pill"><strong><?php echo esc_html( $guide_count ); ?></strong><span>Guides</span></div>
+        <div class="hero-stat-pill"><strong><?php echo esc_html( $project_count ); ?>+</strong><span>Projects</span></div>
+        <div class="hero-stat-pill"><strong><?php echo esc_html( $cat_count ); ?>+</strong><span>Categories</span></div>
+        <div class="hero-stat-pill"><strong><?php echo esc_html( max( $code_count, 30 ) ); ?>+</strong><span>Code Examples</span></div>
       </div>
     </div>
     <div class="hero-home-visual" aria-hidden="true">
@@ -48,74 +83,127 @@
   </div>
 </section>
 
-<!-- ===== GUIDES ===== -->
-<section class="section-premium wrap reveal" id="guides">
+<!-- ===== START LEARNING ESP32 ===== -->
+<section class="section-premium wrap reveal" id="start-learning">
   <div class="section-head">
     <div>
-      <p class="section-eyebrow">Learning paths</p>
-      <h2>ESP32 Guides &amp; Tutorials</h2>
-      <p class="section-sub">Structured paths from chip fundamentals to Arduino IDE setup and beyond.</p>
+      <p class="section-eyebrow">Structured learning paths</p>
+      <h2>Start Learning ESP32</h2>
+      <p class="section-sub">Follow the structured path from zero to confident ESP32 developer — three phases, each building on the last.</p>
     </div>
-    <a class="btn btn-secondary btn-sm" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">All guides</a>
+    <a class="btn btn-secondary btn-sm" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">All <?php echo esc_html( $guide_count ); ?> guides</a>
   </div>
 
-  <div class="guide-tracks-grid">
-    <a class="guide-track-card" href="<?php echo esc_url( home_url( '/guides/what-is-esp32/' ) ); ?>">
-      <span class="guide-track-badge">Phase 1</span>
-      <h3>Beginner Guides</h3>
-      <p>Foundations, chip basics, and your first breadboard builds.</p>
-      <span class="btn btn-card">Browse<span aria-hidden="true">→</span></span>
-    </a>
-    <a class="guide-track-card" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">
-      <span class="guide-track-badge">Phase 2</span>
-      <h3>Intermediate Guides</h3>
-      <p>OLED feedback, calibration, and multi-sensor workflows.</p>
-      <span class="btn btn-card">Browse<span aria-hidden="true">→</span></span>
-    </a>
-    <a class="guide-track-card" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">
-      <span class="guide-track-badge">Coming soon</span>
-      <h3>ESP-IDF Tutorials</h3>
-      <p>Native SDK concepts for production firmware.</p>
-      <span class="btn btn-card">Browse<span aria-hidden="true">→</span></span>
-    </a>
-    <a class="guide-track-card" href="<?php echo esc_url( home_url( '/guides/installing-arduino-ide-esp32/' ) ); ?>">
-      <span class="guide-track-badge">Setup</span>
-      <h3>Arduino Tutorials</h3>
-      <p>IDE setup, board packages, and sketch workflows.</p>
-      <span class="btn btn-card">Browse<span aria-hidden="true">→</span></span>
-    </a>
+  <div class="learning-path-grid">
+    <!-- Phase 1 -->
+    <div class="learning-path-card">
+      <div class="learning-path-header">
+        <span class="learning-path-num">01</span>
+        <div>
+          <strong class="learning-path-phase">Phase 1</strong>
+          <h3>ESP32 Fundamentals</h3>
+        </div>
+      </div>
+      <p>Learn what ESP32 is, how its GPIO works, the pinout, variants, memory architecture, boot strapping, and power consumption. Perfect starting point.</p>
+      <ul class="learning-path-list">
+        <li><a href="<?php echo esc_url( home_url( '/guides/what-is-esp32/' ) ); ?>">What is ESP32?</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/esp32-vs-esp8266/' ) ); ?>">ESP32 vs ESP8266</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/esp32-pinout-guide/' ) ); ?>">ESP32 Pinout Guide</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">+ 7 more guides →</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm" href="<?php echo esc_url( home_url( '/guides/what-is-esp32/' ) ); ?>">Start Phase 1</a>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="learning-path-card">
+      <div class="learning-path-header">
+        <span class="learning-path-num">02</span>
+        <div>
+          <strong class="learning-path-phase">Phase 2</strong>
+          <h3>Dev Environment Setup</h3>
+        </div>
+      </div>
+      <p>Install Arduino IDE, ESP-IDF, PlatformIO, and VS Code extensions. Write your first sketch, upload it, and use the serial monitor for debugging.</p>
+      <ul class="learning-path-list">
+        <li><a href="<?php echo esc_url( home_url( '/guides/installing-arduino-ide-esp32/' ) ); ?>">Installing Arduino IDE</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/first-esp32-program/' ) ); ?>">First ESP32 Program</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/serial-monitor-guide/' ) ); ?>">Using Serial Monitor</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">+ 7 more guides →</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm" href="<?php echo esc_url( home_url( '/guides/installing-arduino-ide-esp32/' ) ); ?>">Start Phase 2</a>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="learning-path-card learning-path-card-new">
+      <span class="learning-path-new-badge">New</span>
+      <div class="learning-path-header">
+        <span class="learning-path-num">03</span>
+        <div>
+          <strong class="learning-path-phase">Phase 3</strong>
+          <h3>GPIO &amp; Hardware Control</h3>
+        </div>
+      </div>
+      <p>Master digital inputs and outputs, pull-up/pull-down resistors, button debouncing, LED PWM control, relay switching, and analog reading with ADC/DAC.</p>
+      <ul class="learning-path-list">
+        <li><a href="<?php echo esc_url( home_url( '/guides/digital-inputs-esp32/' ) ); ?>">Digital Inputs on ESP32</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/reading-buttons-esp32/' ) ); ?>">Reading Buttons</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/adc-explained-esp32/' ) ); ?>">ADC Explained</a></li>
+        <li><a href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">+ 7 more guides →</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm" href="<?php echo esc_url( home_url( '/guides/digital-inputs-esp32/' ) ); ?>">Start Phase 3</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== POPULAR GUIDES ===== -->
+<section class="section-premium wrap reveal" id="popular-guides">
+  <div class="section-head">
+    <div>
+      <p class="section-eyebrow">Most read</p>
+      <h2>Popular Guides</h2>
+    </div>
+    <a class="btn btn-secondary btn-sm" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">View all guides</a>
   </div>
 
   <?php
-  $guides = new WP_Query( [
+  /* Featured guides: what-is-esp32, esp32-vs-esp8266, esp32-pinout-guide + 3 recent */
+  $featured_slugs = [ 'what-is-esp32', 'esp32-vs-esp8266', 'esp32-pinout-guide',
+                      'digital-inputs-esp32', 'installing-arduino-ide-esp32', 'adc-explained-esp32' ];
+  $pop_guides = get_posts( [
       'post_type'      => 'esp32_guide',
-      'posts_per_page' => 2,
-      'orderby'        => 'menu_order',
-      'order'          => 'ASC',
+      'post_status'    => 'publish',
+      'post_name__in'  => $featured_slugs,
+      'posts_per_page' => 6,
+      'orderby'        => 'post__in',
   ] );
-  if ( $guides->have_posts() ) :
+  if ( empty( $pop_guides ) ) {
+      $pop_guides = get_posts( [ 'post_type' => 'esp32_guide', 'post_status' => 'publish', 'posts_per_page' => 6 ] );
+  }
   ?>
-  <div class="guide-home-grid">
-    <?php while ( $guides->have_posts() ) : $guides->the_post();
-        $phase = get_post_meta( get_the_ID(), 'guide_phase', true ) ?: 'Guide';
+  <div class="popular-guides-grid">
+    <?php foreach ( $pop_guides as $g ) :
+      $phase = get_post_meta( $g->ID, 'guide_phase', true ) ?: 'Guide';
+      $rtime = get_post_meta( $g->ID, 'guide_read_time', true ) ?: '10 min';
     ?>
-    <a class="guide-home-card" href="<?php the_permalink(); ?>">
-      <div class="guide-card-badges"><span class="badge badge-cat"><?php echo esc_html( $phase ); ?></span></div>
-      <h3><?php the_title(); ?></h3>
-      <p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 20 ) ); ?></p>
-      <span class="btn btn-card">Read Guide<span aria-hidden="true">→</span></span>
+    <a class="pop-guide-card" href="<?php echo esc_url( get_permalink( $g->ID ) ); ?>">
+      <div class="pop-guide-badges">
+        <span class="badge badge-cat"><?php echo esc_html( $phase ); ?></span>
+        <span class="badge badge-time"><?php echo esc_html( $rtime ); ?></span>
+      </div>
+      <strong class="pop-guide-title"><?php echo esc_html( $g->post_title ); ?></strong>
+      <p class="pop-guide-excerpt"><?php echo esc_html( wp_trim_words( $g->post_excerpt ?: $g->post_content, 18 ) ); ?></p>
+      <span class="pop-guide-arrow" aria-hidden="true">Read Guide →</span>
     </a>
-    <?php endwhile; wp_reset_postdata(); ?>
+    <?php endforeach; ?>
   </div>
-  <?php endif; ?>
 </section>
 
-<!-- ===== FEATURED PROJECTS CAROUSEL ===== -->
+<!-- ===== FEATURED PROJECTS ===== -->
 <section class="section-premium wrap reveal" id="featured">
   <div class="section-head">
     <div>
       <p class="section-eyebrow">Editor's pick</p>
-      <h2>Featured Projects</h2>
+      <h2>Popular Projects</h2>
     </div>
     <div class="carousel-controls">
       <a class="btn btn-secondary btn-sm" href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">View all</a>
@@ -161,12 +249,47 @@
   </div>
 </section>
 
+<!-- ===== SITE STATS ===== -->
+<section class="portal-section wrap reveal portal-duo portal-roadmap-stats" id="roadmap">
+  <div class="portal-duo-col roadmap-panel">
+    <div class="section-head-portal section-head-portal-inline">
+      <p class="section-eyebrow">Structured learning</p>
+      <h2>ESP32 Learning Roadmap</h2>
+    </div>
+    <div class="roadmap-track roadmap-track-premium">
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">01</span><div><strong class="badge badge-beginner">Phase 1</strong><span>ESP32 fundamentals &amp; chip concepts</span></div></div>
+      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">02</span><div><strong class="badge badge-intermediate">Phase 2</strong><span>Dev environment, Arduino &amp; IDE setup</span></div></div>
+      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
+      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">03</span><div><strong class="badge badge-advanced">Phase 3</strong><span>GPIO control, analog input &amp; hardware</span></div></div>
+    </div>
+    <a class="roadmap-link" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">Browse all <?php echo esc_html( $guide_count ); ?> guides →</a>
+  </div>
+  <div class="portal-duo-col stats-panel">
+    <div class="section-head-portal section-head-portal-inline">
+      <p class="section-eyebrow">Library at a glance</p>
+      <h2>Content Statistics</h2>
+    </div>
+    <div class="portal-stats-grid">
+      <div class="portal-stat"><strong><?php echo esc_html( $guide_count ); ?></strong><span>Total Guides</span></div>
+      <div class="portal-stat"><strong><?php echo esc_html( $project_count ); ?>+</strong><span>Projects</span></div>
+      <div class="portal-stat"><strong><?php echo esc_html( $cat_count ); ?>+</strong><span>Categories</span></div>
+      <div class="portal-stat"><strong><?php echo esc_html( max( $code_count, 30 ) ); ?>+</strong><span>Code Examples</span></div>
+    </div>
+    <div class="stats-highlights">
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⚡</span><span>Wiring tables on every guide</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⌨</span><span>Copy-paste Arduino sketches</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">📱</span><span>Mobile-friendly layouts</span></div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== LATEST TUTORIALS + CATEGORIES ===== -->
 <section class="portal-section wrap reveal portal-duo" id="latest">
   <div class="portal-duo-col portal-latest">
     <div class="section-head-portal section-head-portal-inline">
-      <p class="section-eyebrow">Fresh guides</p>
-      <h2>Latest Tutorials</h2>
+      <p class="section-eyebrow">Fresh projects</p>
+      <h2>Latest Projects</h2>
     </div>
     <div class="tutorial-list">
       <?php
@@ -207,47 +330,7 @@
         <span class="pop-cat-icon <?php echo esc_attr( $thumb_class ); ?>"><?php echo esp32_category_icon( $cat->slug ); ?></span>
         <span><?php echo esc_html( $cat->name ); ?></span>
       </a>
-      <?php endforeach; else : ?>
-      <a class="pop-cat tech-cat-card" href="<?php echo esc_url( home_url( '/category/iot-projects/' ) ); ?>"><span class="pop-cat-icon t-iot"><?php echo esp32_category_icon( 'iot-projects' ); ?></span><span>IoT</span></a>
-      <a class="pop-cat tech-cat-card" href="<?php echo esc_url( home_url( '/category/home-automation/' ) ); ?>"><span class="pop-cat-icon t-home"><?php echo esp32_category_icon( 'home-automation' ); ?></span><span>Automation</span></a>
-      <a class="pop-cat tech-cat-card" href="<?php echo esc_url( home_url( '/category/sensor-projects/' ) ); ?>"><span class="pop-cat-icon t-sensor"><?php echo esp32_category_icon( 'sensor-projects' ); ?></span><span>Sensors</span></a>
-      <a class="pop-cat tech-cat-card" href="<?php echo esc_url( home_url( '/category/robotics/' ) ); ?>"><span class="pop-cat-icon t-robot"><?php echo esp32_category_icon( 'robotics' ); ?></span><span>Robotics</span></a>
-      <?php endif; ?>
-    </div>
-  </div>
-</section>
-
-<!-- ===== ROADMAP + STATS ===== -->
-<section class="portal-section wrap reveal portal-duo portal-roadmap-stats" id="roadmap">
-  <div class="portal-duo-col roadmap-panel">
-    <div class="section-head-portal section-head-portal-inline">
-      <p class="section-eyebrow">Structured learning</p>
-      <h2>ESP32 Learning Roadmap</h2>
-    </div>
-    <div class="roadmap-track roadmap-track-premium">
-      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">01</span><div><strong class="badge badge-beginner">Beginner</strong><span>Sensors, serial output, threshold logic</span></div></div>
-      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
-      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">02</span><div><strong class="badge badge-intermediate">Intermediate</strong><span>OLED, calibration, manual/auto modes</span></div></div>
-      <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
-      <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">03</span><div><strong class="badge badge-advanced">Advanced</strong><span>Wi-Fi dashboards, alerts, logging</span></div></div>
-    </div>
-    <a class="roadmap-link" href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">Browse all 15 projects →</a>
-  </div>
-  <div class="portal-duo-col stats-panel">
-    <div class="section-head-portal section-head-portal-inline">
-      <p class="section-eyebrow">Library at a glance</p>
-      <h2>Project Statistics</h2>
-    </div>
-    <div class="portal-stats-grid">
-      <div class="portal-stat"><strong>15+</strong><span>Parent Projects</span></div>
-      <div class="portal-stat"><strong>45+</strong><span>Difficulty Levels</span></div>
-      <div class="portal-stat"><strong>10+</strong><span>Categories</span></div>
-      <div class="portal-stat"><strong>100%</strong><span>Free Learning</span></div>
-    </div>
-    <div class="stats-highlights">
-      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⚡</span><span>Wiring tables on every guide</span></div>
-      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⌨</span><span>Copy-paste Arduino sketches</span></div>
-      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">📱</span><span>Mobile-friendly layouts</span></div>
+      <?php endforeach; endif; ?>
     </div>
   </div>
 </section>
@@ -261,30 +344,12 @@
     </div>
   </div>
   <div class="why-grid-premium">
-    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">🎯</span><strong>Beginner Friendly</strong><p>Start with breadboard builds and clear wiring tables.</p></div>
-    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">🔧</span><strong>Real Hardware Projects</strong><p>Every guide maps to sensors, relays, and ESP32 pins.</p></div>
-    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">📊</span><strong>Multiple Difficulty Levels</strong><p>Beginner, Intermediate, and Advanced on every project.</p></div>
-    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">⚡</span><strong>Practical Learning</strong><p>Copy-paste Arduino code with troubleshooting steps.</p></div>
-    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">📡</span><strong>Modern ESP32 Techniques</strong><p>Wi-Fi, OLED, MQTT, and IoT dashboards.</p></div>
-    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">🚀</span><strong>Production Ready Concepts</strong><p>Patterns you can ship beyond the prototype stage.</p></div>
-  </div>
-</section>
-
-<!-- ===== COMMUNITY PANEL ===== -->
-<section class="portal-section wrap reveal" id="community">
-  <div class="community-panel">
-    <div class="community-panel-icon" aria-hidden="true">
-      <svg viewBox="0 0 64 64" fill="none" width="40" height="40"><circle cx="32" cy="22" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 52c0-11 9-18 20-18s20 7 20 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </div>
-    <div class="community-panel-body">
-      <p class="section-eyebrow">Stay connected</p>
-      <h2>Newsletter &amp; Community</h2>
-      <p class="community-lead">Get project updates, share builds, and connect with makers learning ESP32.</p>
-    </div>
-    <div class="community-panel-actions">
-      <a class="btn btn-primary" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank">Star on GitHub</a>
-      <a class="btn btn-secondary" href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Join Discussion</a>
-    </div>
+    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">🎯</span><strong>Beginner Friendly</strong><p>Start with breadboard builds and clear wiring tables — zero assumed knowledge.</p></div>
+    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">🔧</span><strong>Real Hardware Projects</strong><p>Every guide maps to real sensors, relays, and ESP32 GPIO pins you can hold.</p></div>
+    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">📊</span><strong>3 Difficulty Levels</strong><p>Beginner, Intermediate, and Advanced guides on every major topic.</p></div>
+    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">⚡</span><strong>Copy-Paste Code</strong><p>Every guide includes tested Arduino sketches with detailed inline comments.</p></div>
+    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">📡</span><strong>Modern ESP32 Techniques</strong><p>Wi-Fi, OLED, MQTT, IoT dashboards, OTA updates, and ESP-IDF patterns.</p></div>
+    <div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">🚀</span><strong>Production Ready</strong><p>Patterns and practices you can take from prototype to shipped product.</p></div>
   </div>
 </section>
 
@@ -293,11 +358,11 @@
   <div class="portal-cta-inner">
     <div class="portal-cta-text">
       <h2>Start Building with ESP32 Today</h2>
-      <p>15 parent projects · 3 difficulty levels · wiring &amp; code included</p>
+      <p><?php echo esc_html( $guide_count ); ?> guides · <?php echo esc_html( $project_count ); ?>+ projects · wiring &amp; code included</p>
     </div>
     <div class="portal-cta-actions">
-      <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">Explore Projects</a>
-      <a class="btn btn-secondary" href="<?php echo esc_url( home_url( '/category/iot-projects/' ) ); ?>">Browse IoT</a>
+      <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/guides/' ) ); ?>">Start Learning</a>
+      <a class="btn btn-secondary" href="<?php echo esc_url( home_url( '/projects/' ) ); ?>">Explore Projects</a>
     </div>
   </div>
 </section>
