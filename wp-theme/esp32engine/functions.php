@@ -108,6 +108,15 @@ add_action( 'wp_enqueue_scripts', function () {
         $ver,
         true
     );
+
+    /* Theme: dark mode + TOC + reading progress + phase filter */
+    wp_enqueue_script(
+        'esp32engine-theme',
+        get_template_directory_uri() . '/assets/js/theme.js',
+        [],
+        $ver,
+        false  // load in <head> so dark-mode applies before first paint
+    );
 } );
 
 /* ---------------------------------------------------------------
