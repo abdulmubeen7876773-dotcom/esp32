@@ -1,10 +1,10 @@
 # Project Quality Report
 
-Generated: 2026-06-26T19:41:51Z
+Generated: 2026-06-26T19:46:14Z
 
 Benchmark: **ESP32 Mini Weather Station** is the golden standard (`content/projects/esp32-iot-weather-station.yaml`).
 
-Portfolio: 1 golden · 14 staged placeholder(s)
+Portfolio: 2 golden · 13 staged placeholder(s)
 
 Standard: [GOLDEN_PROJECT_STANDARD.md](../editorial/GOLDEN_PROJECT_STANDARD.md)
 
@@ -30,11 +30,11 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | ESP32 Pulse Oximeter Logger | staged | 84/100 | HIGH | 0 |
 | ESP32 RGB LED Pattern Controller | staged | 84/100 | HIGH | 0 |
 | ESP32 Smart Energy Meter | staged | 84/100 | HIGH | 0 |
-| ESP32 Smart Irrigation System | staged | 84/100 | HIGH | 0 |
 | ESP32 Smart Street Light | staged | 84/100 | HIGH | 0 |
 | ESP32 TinyML Sound Classifier | staged | 84/100 | HIGH | 0 |
 | ESP32 WiFi Robot Controller | staged | 84/100 | HIGH | 0 |
 | Build Your Mini Weather Station | golden | 100/100 | LOW | 0 |
+| Build Your Smart Plant Monitor | golden | 100/100 | LOW | 0 |
 
 ## ESP32 Air Quality Monitor (`esp32-air-quality-monitor`)
 
@@ -296,32 +296,6 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 - Staged placeholder — upgrade to format: golden with full project block
 
-## ESP32 Smart Irrigation System (`esp32-smart-irrigation-system`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
 ## ESP32 Smart Street Light (`esp32-smart-street-light`)
 
 **Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
@@ -401,6 +375,27 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 - Staged placeholder — upgrade to format: golden with full project block
 
 ## Build Your Mini Weather Station (`esp32-iot-weather-station`)
+
+**Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build Your Smart Plant Monitor (`esp32-smart-irrigation-system`)
 
 **Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
 

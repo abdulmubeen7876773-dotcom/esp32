@@ -1,29 +1,150 @@
+format: golden
 slug: esp32-smart-irrigation-system
-title: ESP32 Smart Irrigation System
+title: ESP32 Smart Plant Monitor
 category: Agriculture
-description: Automate garden watering with soil moisture sensing, relay-driven pumps, and optional Wi-Fi
-  monitoring on ESP32.
+description: Build a smart plant monitor that reads soil moisture and tells you when your plant is thirsty — right on your computer screen.
 source_base: esp32-smart-irrigation-controller-with-cloud-logging
 sensor: soil moisture sensor
-output: water pump relay
+output: Serial Monitor
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-18'
+date_modified: '2026-06-27'
+
 hardware:
   sensor_pin: GPIO34
-  output_pin: GPIO26
-  sensor_name: Soil Moisture Sensor signal
-  output_name: Water Pump control
+  output_pin: GPIO34
+  sensor_name: Soil moisture sensor signal
+  output_name: Serial Monitor
   wiring:
-  - component: Soil Moisture Sensor signal
-    pin: GPIO34
-  - component: Water Pump control
-    pin: GPIO26
-  - component: Relay Module SDA
-    pin: GPIO21
-  - component: SCL
-    pin: GPIO22
-  - component: VCC
-    pin: 3.3V/5V
-  - component: GND
-    pin: GND
+    - component: Soil moisture sensor VCC
+      pin: 3.3V
+    - component: Soil moisture sensor GND
+      pin: GND
+    - component: Soil moisture sensor signal
+      pin: GPIO34
+
+project:
+  icon: "🌱"
+  mission_title: Build Your Smart Plant Monitor
+  difficulty: Beginner
+  age: Ages 10+
+  estimated_time: 45–60 min
+  budget: Under $15
+  story: |
+    Your plant cannot text you when it is thirsty — but you can build something that checks for it.
+
+    In this project you stick a soil moisture sensor in the dirt, connect it to your ESP32, and watch live moisture readings appear on your screen. When the soil gets dry, your code speaks up before the leaves start to droop.
+
+    Greenhouses and smart gardens use the same trick — sense first, water only when needed.
+  eli12: |
+    The soil sensor is like a sponge detective. It checks how wet the dirt is and sends a number to the ESP32. Your board reads that number and tells your laptop whether the plant is happy or needs a drink — like a plant nurse on duty every two seconds.
+  parent_safety: |
+    This project uses 3.3 V USB power only — no mains electricity and no water pump in the starter build. Children should have an adult nearby for USB connections and breadboard wiring. Unplug before changing wires. Do not submerge the electronics — only the sensor probe belongs in soil.
+  what_you_build: |
+    A breadboard circuit with a soil moisture sensor and ESP32. Your code reads analog moisture values every two seconds, prints them to Serial Monitor, and warns you when the soil looks dry.
+  components:
+    - item: ESP32 DevKit board
+      note: Any board with USB port
+      link: /components/esp32-devkit.html
+      icon: "🖥"
+    - item: Soil moisture sensor module
+      note: Capacitive type is safer for long-term plant use
+      icon: "🌱"
+    - item: Breadboard
+      note: Half-size is fine
+      icon: "🧩"
+    - item: Jumper wires
+      note: Male-to-male, at least 3
+      icon: "🔗"
+    - item: USB cable
+      note: Data-capable, not charge-only
+      icon: "🔌"
+    - item: 1-channel relay module
+      note: Optional — for the pump upgrade later
+      link: /components/relay-module.html
+      icon: "⚡"
+  wiring:
+    illustration_alt: Soil moisture sensor connected to ESP32 — VCC to 3.3 V, GND to GND, signal to GPIO34
+    summary: Use a 3-pin soil moisture module. Keep the ESP32 on the breadboard and only the probe in the soil. Match each wire before plugging in USB.
+    steps:
+      - "Unplug USB. Place the ESP32 and soil moisture module on your breadboard."
+      - "Connect VCC on the module to 3.3 V on the ESP32."
+      - "Connect GND on the module to GND on the ESP32."
+      - "Connect the sensor signal pin to GPIO34 on the ESP32."
+      - "Insert only the probe end into a cup of damp soil or a potted plant — not the electronics."
+      - "Double-check all three wires, then plug in USB."
+  code:
+    filename: smart_plant_monitor.ino
+    content: |
+      #define MOISTURE_PIN 34
+      const int DRY_THRESHOLD = 3000;
+
+      void setup() {
+        Serial.begin(115200);
+        Serial.println("Smart Plant Monitor ready!");
+      }
+
+      void loop() {
+        int moisture = analogRead(MOISTURE_PIN);
+
+        Serial.print("Soil moisture raw: ");
+        Serial.println(moisture);
+
+        if (moisture > DRY_THRESHOLD) {
+          Serial.println("Plant is thirsty — time to water!");
+        } else {
+          Serial.println("Soil looks okay.");
+        }
+
+        delay(2000);
+      }
+  expected_output: |
+    Open Serial Monitor at 115200 baud. Every 2 seconds you should see:
+
+    Soil moisture raw: 1850
+    Soil looks okay.
+
+    When the soil dries out, the raw number rises and you should see:
+
+    Soil moisture raw: 3200
+    Plant is thirsty — time to water!
+
+    Try watering the plant lightly — the raw value should drop within a minute.
+  common_mistakes:
+    - text: Putting the whole module in water or soil instead of just the probe.
+    - text: Signal wire on the wrong GPIO pin compared to your code.
+    - text: Using a charge-only USB cable that cannot upload code.
+    - text: Expecting instant changes — wait a minute after watering for the reading to settle.
+  troubleshooting:
+    - problem: Raw value stuck at 0 or 4095
+      fix: Check VCC, GND, and signal wiring. Confirm GPIO34 in code matches your wire.
+    - problem: No output in Serial Monitor
+      fix: Set baud rate to 115200 and select the correct COM port for your ESP32.
+    - problem: Always says thirsty or always says okay
+      fix: Change DRY_THRESHOLD in code. Test with dry soil and wet soil to find a value that works for your sensor.
+  upgrade_ideas:
+    - Add an OLED display to show moisture without a laptop
+    - Connect a relay on GPIO26 to switch a small water pump when soil is dry (Advanced — adult supervision)
+    - Log readings to a chart over Wi-Fi (Advanced)
+    - Combine with Mission 2 DHT22 to track temperature and soil together
+  related_guides:
+    - title: Read Temperature with DHT22
+      href: /guides/read-temperature-dht22.html
+      description: Step-by-step mission — another sensor skill for your garden build.
+    - title: Connect an OLED Display
+      href: /guides/connect-oled-esp32.html
+      description: Show moisture readings on a tiny screen.
+  related_projects:
+    - title: ESP32 Mini Weather Station
+      href: /projects/esp32-iot-weather-station.html
+      description: Read air temperature and humidity — perfect partner for plant care.
+    - title: ESP32 Home Climate Automation
+      href: /projects/esp32-home-climate-automation.html
+      description: Use sensor data to control devices automatically.
+  complete:
+    summary: |
+      You built a real plant monitor! You connected a soil sensor, wrote code, and learned when your plant needs water before it wilts. That is smart gardening — and you built it yourself.
+    skills:
+      - Wired a soil moisture sensor to ESP32 GPIO34
+      - Read analog sensor values with analogRead()
+      - Used Serial Monitor to debug live soil moisture data
