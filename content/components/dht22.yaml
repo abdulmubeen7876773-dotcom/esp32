@@ -5,50 +5,126 @@ difficulty: Beginner
 icon: "🌡"
 image: https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg
 summary: Measures temperature and humidity in the air. Perfect for weather stations and room monitors.
-eli12: Think of DHT22 like a tiny weather reporter inside a plastic box. It tells your ESP32 how warm and how damp the air is — just like checking if your room feels cozy or sticky.
+
+eli12: |
+  Think of the DHT22 as a tiny weather reporter in a plastic box. It tells your ESP32 how warm the room is and how damp the air feels — like checking if your room is cozy or sticky after gym class.
+
+quick_facts:
+  - label: Measures
+    value: Air temperature and humidity
+  - label: Pins
+    value: 3 wires — power, ground, data
+  - label: Best for
+    value: Weather stations and room monitors
+  - label: Update speed
+    value: New reading every 2 seconds
+
 specs:
-  - "Temperature range: -40°C to 80°C"
+  - "Temperature range: −40°C to 80°C"
   - "Humidity range: 0–100% RH"
-  - "Operating voltage: 3.3 V to 5 V"
-  - "Single data pin"
-  - "Update rate: every 2 seconds"
-pins:
-  - "VCC → 3.3 V"
-  - "GND → GND"
-  - "DATA → GPIO4 (with 10kΩ pull-up to 3.3 V)"
+  - "Operating voltage: 3.3 V (recommended for ESP32)"
+  - "Single data pin with digital protocol"
+  - "Sampling rate: 0.5 Hz (every 2 seconds)"
+
+pinout:
+  - pin: "1 · VCC"
+    role: Power
+    connects: ESP32 3.3 V
+    note: Use 3.3 V for direct ESP32 wiring
+  - pin: "2 · DATA"
+    role: Signal
+    connects: ESP32 GPIO4
+    note: Add 10 kΩ pull-up to 3.3 V on bare sensors; many modules include one
+  - pin: "3 · GND"
+    role: Ground
+    connects: ESP32 GND
+    note: Common ground with the ESP32
+
+wiring:
+  illustration_alt: DHT22 module — VCC to 3.3 V, GND to GND, DATA to GPIO4 on ESP32
+  summary: A DHT22 module with three pins is the easiest way to start. Match each pin to the ESP32 as shown below.
+  steps:
+    - "Unplug USB. Place the DHT22 module on your breadboard."
+    - "Connect VCC on the module to 3.3 V on the ESP32."
+    - "Connect GND on the module to GND on the ESP32."
+    - "Connect DATA on the module to GPIO4 on the ESP32."
+    - "Double-check — VCC to 3.3 V, GND to GND, DATA to GPIO4."
+    - "Plug in USB. Your code must use the same GPIO number."
+
 library: DHT sensor library by Adafruit
-example_code: |
-  #include "DHT.h"
-  #define DHTPIN 4
-  #define DHTTYPE DHT22
-  DHT dht(DHTPIN, DHTTYPE);
-  void setup() {
-    Serial.begin(115200);
-    dht.begin();
-  }
-  void loop() {
-    float t = dht.readTemperature();
-    float h = dht.readHumidity();
-    Serial.printf("Temp: %.1f°C  Humidity: %.0f%%\n", t, h);
-    delay(2000);
-  }
-output: Serial Monitor shows live temperature and humidity readings every 2 seconds.
-applications:
-  - Weather stations
-  - Greenhouse monitors
-  - Smart home climate control
-  - Classroom science experiments
+
+code:
+  filename: dht22_read.ino
+  content: |
+    #include "DHT.h"
+
+    #define DHTPIN 4
+    #define DHTTYPE DHT22
+
+    DHT dht(DHTPIN, DHTTYPE);
+
+    void setup() {
+      Serial.begin(115200);
+      dht.begin();
+    }
+
+    void loop() {
+      float temp = dht.readTemperature();
+      float humidity = dht.readHumidity();
+
+      if (isnan(temp) || isnan(humidity)) {
+        Serial.println("Read failed — check wiring");
+      } else {
+        Serial.printf("Temp: %.1f C  Humidity: %.0f%%\n", temp, humidity);
+      }
+
+      delay(2000);
+    }
+
+output: |
+  Open Serial Monitor at 115200 baud. Every 2 seconds you should see a line like:
+
+  Temp: 24.3 C  Humidity: 55%
+
+  The numbers change when you breathe on the sensor or move it near a window.
+
+common_mistakes:
+  - text: Reading faster than every 2 seconds — the DHT22 needs time between reads.
+  - text: DATA wire on a different GPIO than the code uses.
+  - text: Forgetting a pull-up resistor on bare (non-module) sensors.
+  - text: Loose jumper wires that look connected but are not.
+
+troubleshooting:
+  - problem: Serial shows NaN or Read failed
+    fix: Check VCC, GND, and DATA wiring. Confirm GPIO4 in code matches your wire. Wait 2 seconds between reads.
+  - problem: Readings stuck at zero
+    fix: Verify the sensor has power at 3.3 V and the DATA pin is firmly seated in the breadboard.
+  - problem: Humidity jumps wildly
+    fix: Keep the sensor away from your breath, heaters, and hot electronics for a minute before trusting the number.
+
+related_guides:
+  - title: Read Temperature with DHT22
+    href: /guides/read-temperature-dht22.html
+    description: Step-by-step mission — wire, code, quiz, and challenge.
+  - title: What Is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Background on the board that runs your sensor code.
+
 related_projects:
   - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
+    description: Build a connected weather display with live readings.
   - title: ESP32 Home Climate Automation
     href: /projects/esp32-home-climate-automation.html
-related_guides:
-  - title: What Is ESP32?
-    href: /guides/what-is-esp32.html
+    description: Use sensor data to control fans or alerts automatically.
+
 datasheet_url: https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf
+datasheet_note: Official DHT22 datasheet (PDF) — helpful for teachers and advanced builders.
+
 faqs:
-  - question: Can I use 5 V with ESP32?
-    answer: Yes on VCC if your board has a 3.3 V regulator, but keep the data line at 3.3 V logic.
+  - question: Can I power the DHT22 with 5 V?
+    answer: Many modules accept 5 V on VCC, but keep the DATA line at 3.3 V logic when talking to an ESP32.
   - question: Why do I get NaN readings?
-    answer: Check wiring, add a pull-up resistor, and wait 2 seconds between reads.
+    answer: Check wiring, confirm the pull-up resistor, match the GPIO in code, and wait at least 2 seconds between reads.
+  - question: DHT22 vs DHT11 — which should I use?
+    answer: DHT22 is more accurate and better for learning projects. DHT11 is cheaper but less precise.
