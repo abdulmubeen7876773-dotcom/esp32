@@ -71,6 +71,9 @@ def main():
             "errors": [],
         }
     )
+    from content_dashboard import generate_content_dashboard
+
+    generate_content_dashboard()
     print("\nBuild complete. Deploy root HTML/JSON/JS to static hosting.")
 
 
