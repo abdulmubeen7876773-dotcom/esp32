@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-06-26T19:53:44Z
+Generated: 2026-06-26T20:16:28Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
@@ -9,10 +9,10 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 ## Summary
 
 - Total assets required: **51**
-- Completed: **0**
-- Missing: **1**
+- Completed: **1**
+- Missing: **0**
 - Placeholder: **50**
-- Completion: **0.0%**
+- Completion: **2.0%**
 
 ## By type
 
@@ -29,17 +29,15 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 | project_illustration | 2 | 0 | 0 | 2 |
 | project_output | 2 | 0 | 0 | 2 |
 | project_wiring | 2 | 0 | 0 | 2 |
-| wiring_diagram | 3 | 0 | 1 | 2 |
+| wiring_diagram | 3 | 1 | 0 | 2 |
 
 ## Validation
 
-### Errors
-
-- Missing file: /assets/visuals/guides/wiring/blink-led-wiring-esp32.svg (guides/blink-led-esp32:wiring)
+- No blocking errors.
 
 ## Missing assets
 
-- `/assets/visuals/guides/wiring/blink-led-wiring-esp32.svg` — wiring_diagram (/guides/blink-led-esp32.html)
+- None
 
 ## Placeholder assets
 

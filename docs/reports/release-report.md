@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-06-26T19:53:43Z
+Generated: 2026-06-26T20:16:27Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: PASS
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 19
-- INFO: 303
-- Total findings: 322
+- WARNING: 18
+- INFO: 302
+- Total findings: 320
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 19
+Count: 18
 
 ### missing_illustrations (3)
 
@@ -63,9 +63,8 @@ Count: 19
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
 
-### missing_wiring_diagrams (4)
+### missing_wiring_diagrams (3)
 
-- guides/blink-led-esp32.yaml: missing wiring diagram file (/assets/visuals/guides/wiring/blink-led-wiring-esp32.svg)
 - guides/connect-oled-esp32.yaml: missing wiring diagram file (guides/connect-oled-esp32.yaml)
 - guides/read-temperature-dht22.yaml: missing wiring diagram file (guides/read-temperature-dht22.yaml)
 - components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
@@ -81,7 +80,7 @@ Count: 19
 
 ## INFO
 
-Count: 303
+Count: 302
 
 ### coming_soon_content (299)
 
@@ -117,7 +116,3 @@ Count: 303
 - Guides roadmap: 5/100 complete (95 remaining)
 - Components roadmap: 6/210 complete (204 remaining)
 - Projects portfolio: 15 golden projects published
-
-### planned_assets (1)
-
-- guides/blink-led-esp32.yaml: planned wiring asset not yet published (/assets/visuals/guides/wiring/blink-led-wiring-esp32.svg)

@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-06-26T19:53:38Z
+Generated: 2026-06-26T20:16:21Z
 
 ## Components
 
@@ -61,12 +61,11 @@ Missing items:
 
 ## Wiring
 
-- Complete: 0
-- Missing: 4
+- Complete: 1
+- Missing: 3
 
 Missing items:
 
-- guides/blink-led-esp32: wiring diagram
 - guides/connect-oled-esp32: wiring diagram
 - guides/read-temperature-dht22: wiring diagram
 - components/dht22: wiring diagram
