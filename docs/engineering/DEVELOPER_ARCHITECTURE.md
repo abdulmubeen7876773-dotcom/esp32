@@ -141,6 +141,22 @@ git auto-commit generated artifacts
 **Hosting:** GitHub Pages from repo root  
 **Domain:** `CNAME` → `esp32engine.com`
 
+### Staging (`stg.esp32engine.com`)
+
+| Environment | DNS | Source | Status |
+|-------------|-----|--------|--------|
+| **Production** | `esp32engine.com` → GitHub Pages (`185.199.x.x`) | `main` branch | Current mission-based build |
+| **Staging** | `stg.esp32engine.com` → must not use legacy AWS IP | `staging` branch (synced from `main` after each CI build) | Fix DNS or Amplify branch |
+
+**Diagnosis:** If staging shows “The Premium ESP32 Learning Platform”, 40 guides, or `/sensors/` URLs, it is serving a **pre-mission static snapshot** — not the current `main` build. Local and production GitHub Pages output do not contain those strings.
+
+**Fix staging (pick one):**
+
+1. **GitHub Pages (recommended)** — Point `stg.esp32engine.com` DNS CNAME to `abdulmubeen7876773-dotcom.github.io` (same artifact as production). Remove any A record to legacy hosts (e.g. `16.192.62.20`).
+2. **AWS Amplify** — Connect the staging app to branch `staging` (auto-synced from `main` on each build). Use root `amplify.yml` (`python tools/build_all.py`). Disable deploys from `wordpress-theme`.
+
+CI pushes `main` → `staging` after every successful build so Amplify or any branch-based host can track production output.
+
 ---
 
 ## Phase 1 exclusions (by design)
