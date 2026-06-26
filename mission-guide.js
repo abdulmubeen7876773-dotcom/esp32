@@ -40,6 +40,8 @@
   document.querySelectorAll('.quiz-question').forEach(function (block) {
     var feedback = block.querySelector('.quiz-feedback');
     var explanation = block.getAttribute('data-explanation') || '';
+    var correctFeedback = block.getAttribute('data-correct-feedback') || '';
+    var wrongFeedback = block.getAttribute('data-wrong-feedback') || '';
     block.querySelectorAll('.quiz-option').forEach(function (opt) {
       opt.addEventListener('click', function () {
         if (block.classList.contains('answered')) return;
@@ -50,6 +52,7 @@
         if (!correct) {
           block.querySelectorAll('.quiz-option[data-correct="1"]').forEach(function (c) {
             c.classList.add('is-correct');
+            c.setAttribute('aria-pressed', 'true');
           });
         }
         block.querySelectorAll('.quiz-option').forEach(function (o) {
@@ -57,9 +60,15 @@
         });
         if (feedback) {
           feedback.hidden = false;
-          feedback.textContent = correct
-            ? 'Correct! ' + explanation
-            : 'Not quite — ' + explanation;
+          if (correct) {
+            feedback.textContent = correctFeedback
+              ? correctFeedback + (explanation ? ' ' + explanation : '')
+              : 'Correct! ' + explanation;
+          } else {
+            feedback.textContent = wrongFeedback
+              ? wrongFeedback + (explanation ? ' ' + explanation : '')
+              : 'Not quite — ' + explanation;
+          }
           feedback.classList.toggle('is-success', correct);
           feedback.classList.toggle('is-error', !correct);
         }

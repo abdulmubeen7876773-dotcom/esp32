@@ -1,8 +1,26 @@
+import re
 from pathlib import Path
 
 from site_layout import badge_class, esc, site_href
 
 _ROOT = Path(__file__).resolve().parent.parent
+
+_ARDUINO_KEYWORDS = frozenset(
+    {
+        "void", "int", "if", "else", "for", "while", "return", "boolean", "char",
+        "long", "float", "double", "byte", "uint8_t", "uint16_t", "uint32_t",
+        "true", "false",
+    }
+)
+_ARDUINO_BUILTINS = frozenset(
+    {
+        "pinMode", "digitalWrite", "digitalRead", "analogRead", "analogWrite",
+        "delay", "delayMicroseconds", "Serial", "print", "println", "begin",
+        "setup", "loop",
+    }
+)
+_ARDUINO_CONSTANTS = frozenset({"HIGH", "LOW", "INPUT", "OUTPUT", "INPUT_PULLUP"})
+_TOKEN_RE = re.compile(r"\#[a-zA-Z_]\w*|\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+(?:\.\d+)?\b")
 
 
 def section_heading(section_id: str, icon: str, title: str) -> str:
@@ -101,7 +119,7 @@ def things_list(items: list) -> str:
     return f'<ul class="mission-things-list">{"".join(rows)}</ul>'
 
 
-def component_cards_section(items: list) -> str:
+def component_cards_section(items: list, lead: str = "") -> str:
     linked = [i for i in items if isinstance(i, dict) and i.get("link")]
     if not linked:
         return ""
@@ -121,9 +139,10 @@ def component_cards_section(items: list) -> str:
   </div>
 </a>"""
         )
+    lead_text = lead or "Learn more about the parts in your circuit."
     return f"""<section class="mission-section mission-components" id="components" aria-labelledby="components-heading">
   {section_heading("components", "🔌", "Component Spotlight")}
-  <p class="mission-section-lead">Learn more about your ESP32 board.</p>
+  <p class="mission-section-lead">{esc(lead_text)}</p>
   <div class="mission-component-grid">{"".join(cards)}</div>
 </section>"""
 
@@ -146,9 +165,54 @@ def safety_block(items: list) -> str:
 </section>"""
 
 
+def highlight_arduino(source: str) -> str:
+    lines = [_highlight_code_line(line) for line in source.split("\n")]
+    return "\n".join(lines)
+
+
+def _highlight_code_line(line: str) -> str:
+    if not line:
+        return ""
+    comment = ""
+    code = line
+    if "//" in line:
+        idx = line.index("//")
+        code, comment = line[:idx], line[idx:]
+    if code.strip().startswith("#"):
+        return f'<span class="tok-pre">{esc(line)}</span>'
+    highlighted = _highlight_tokens(code)
+    if comment:
+        highlighted += f'<span class="tok-com">{esc(comment)}</span>'
+    return highlighted
+
+
+def _highlight_tokens(code: str) -> str:
+    parts = []
+    last = 0
+    for match in _TOKEN_RE.finditer(code):
+        parts.append(esc(code[last : match.start()]))
+        word = match.group(0)
+        if word.startswith("#"):
+            parts.append(f'<span class="tok-pre">{esc(word)}</span>')
+        elif word in _ARDUINO_CONSTANTS:
+            parts.append(f'<span class="tok-const">{esc(word)}</span>')
+        elif word in _ARDUINO_BUILTINS:
+            parts.append(f'<span class="tok-fn">{esc(word)}</span>')
+        elif word in _ARDUINO_KEYWORDS:
+            parts.append(f'<span class="tok-kw">{esc(word)}</span>')
+        elif word[0].isdigit():
+            parts.append(f'<span class="tok-num">{esc(word)}</span>')
+        else:
+            parts.append(esc(word))
+        last = match.end()
+    parts.append(esc(code[last:]))
+    return "".join(parts)
+
+
 def code_panel(code: dict) -> str:
     filename = code.get("filename", "sketch.ino")
     content = (code.get("content") or "").strip("\n")
+    highlighted = highlight_arduino(content)
     return f"""<div class="code-panel">
   <div class="code-panel-head">
     <div class="code-panel-chrome" aria-hidden="true">
@@ -162,7 +226,7 @@ def code_panel(code: dict) -> str:
       <span class="btn-copy-label">Copy</span>
     </button>
   </div>
-  <pre class="code-block"><code>{esc(content)}</code></pre>
+  <pre class="code-block"><code class="language-arduino">{highlighted}</code></pre>
 </div>"""
 
 
@@ -174,13 +238,15 @@ def quiz_block(questions: list) -> str:
         options = q.get("options", [])
         correct = int(q.get("correct", 0))
         explanation = q.get("explanation", "")
+        correct_fb = q.get("correct_feedback", "")
+        wrong_fb = q.get("wrong_feedback", "")
         qid = f"quiz-q-{i}"
         opts_html = "".join(
             f'<button type="button" class="quiz-option" data-index="{j}" data-correct="{1 if j == correct else 0}">{esc(opt)}</button>'
             for j, opt in enumerate(options)
         )
         blocks.append(
-            f"""<div class="quiz-question" data-quiz-q="{i}" data-explanation="{esc(explanation)}">
+            f"""<div class="quiz-question" data-quiz-q="{i}" data-explanation="{esc(explanation)}" data-correct-feedback="{esc(correct_fb)}" data-wrong-feedback="{esc(wrong_fb)}">
   <p class="quiz-q-text" id="{qid}"><span class="quiz-q-num">Q{i + 1}.</span> {esc(q.get("question", ""))}</p>
   <div class="quiz-options" role="group" aria-labelledby="{qid}">{opts_html}</div>
   <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
@@ -276,7 +342,7 @@ def render_friendly_intro(guide: dict, *, is_mission: bool) -> str:
     if story:
         story_html = f"""<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
   {section_heading("story", "📖", "The Story")}
-  <div class="mission-story">{_paragraphs(story)}</div>
+  <div class="mission-story">{_rich_content(story)}</div>
 </section>"""
 
     eli12_html = ""
@@ -284,7 +350,7 @@ def render_friendly_intro(guide: dict, *, is_mission: bool) -> str:
         eli12_html = f"""<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
   <div class="eli12-box mission-eli12">
     {section_heading("eli12", "🧒", "Explain Like I'm 12")}
-    <div class="eli12-content">{_paragraphs(eli12)}</div>
+    <div class="eli12-content">{_rich_content(eli12)}</div>
   </div>
 </section>"""
 
@@ -296,6 +362,61 @@ def render_friendly_intro(guide: dict, *, is_mission: bool) -> str:
 </div>"""
 
 
+def _output_preview(text: str) -> str:
+    if not text.strip():
+        return ""
+    blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+    return blocks[0] if blocks else ""
+
+
+def code_section(code: dict, output: str) -> str:
+    if not code.get("content"):
+        return ""
+    notes = (code.get("notes") or code.get("explain") or "").strip()
+    notes_html = ""
+    if notes:
+        notes_html = f'<div class="mission-code-notes">{_rich_content(notes)}</div>'
+    preview = _output_preview(output)
+    preview_html = ""
+    if preview:
+        preview_html = f"""<aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body">{_rich_content(preview)}</div>
+</aside>"""
+    return f"""<section class="mission-section" id="code" aria-labelledby="code-heading">
+  {section_heading("code", "⌨️", "Code")}
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main">{code_panel(code)}</div>
+    {preview_html}
+  </div>
+  {notes_html}
+</section>"""
+
+
+def challenge_section(challenge: str, items: list) -> str:
+    if items:
+        rows = []
+        for item in items:
+            icon = item.get("icon", "🎯") if isinstance(item, dict) else "🎯"
+            text = item.get("text", item) if isinstance(item, dict) else str(item)
+            rows.append(
+                f'<li class="mission-challenge-item">'
+                f'<span class="mission-challenge-icon" aria-hidden="true">{esc(icon)}</span>'
+                f'<span class="mission-challenge-text">{esc(text)}</span></li>'
+            )
+        body = f'<ul class="mission-challenge-list">{"".join(rows)}</ul>'
+    elif challenge.strip():
+        body = f'<div class="mission-challenge-box">{_rich_content(challenge)}</div>'
+    else:
+        return ""
+    return f"""<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  {section_heading("challenge", "🎯", "Challenge Yourself")}
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  {body}
+</section>"""
+
+
 def render_mission_guide(guide: dict) -> str:
     m = guide.get("mission") or {}
     intro_html = render_friendly_intro(guide, is_mission=True)
@@ -303,9 +424,9 @@ def render_mission_guide(guide: dict) -> str:
     build = m.get("what_you_build", "").strip()
     build_html = ""
     if build:
-        build_html = f"""<section class="mission-section" id="build" aria-labelledby="build-heading">
+        build_html = f"""<section class="mission-section mission-build" id="build" aria-labelledby="build-heading">
   {section_heading("build", "🛠", "What You'll Build")}
-  <div class="mission-prose">{_paragraphs(build)}</div>
+  <div class="mission-build-panel">{_rich_content(build)}</div>
 </section>"""
 
     things = m.get("things_you_need", [])
@@ -317,7 +438,7 @@ def render_mission_guide(guide: dict) -> str:
 </section>"""
 
     safety_html = safety_block(m.get("safety", []))
-    components_html = component_cards_section(things)
+    components_html = component_cards_section(things, m.get("component_spotlight_lead", ""))
 
     concept = m.get("concept") or {}
     concept_body = (concept.get("body") or "").strip()
@@ -325,8 +446,8 @@ def render_mission_guide(guide: dict) -> str:
     if concept_body or concept.get("illustration_alt"):
         concept_html = f"""<section class="mission-section" id="concept" aria-labelledby="concept-heading">
   {section_heading("concept", "💡", concept.get("title", "The Concept"))}
-  {illustration_placeholder(concept.get("illustration_alt", "Concept diagram"), "Concept Illustration", "💡")}
-  <div class="mission-prose">{_paragraphs(concept_body)}</div>
+  {illustration_block(concept.get("illustration_alt", "Concept diagram"), "Concept Illustration", "💡", concept.get("image", ""))}
+  <div class="mission-prose">{_rich_content(concept_body)}</div>
 </section>"""
 
     wiring = m.get("wiring") or {}
@@ -341,41 +462,39 @@ def render_mission_guide(guide: dict) -> str:
 </section>"""
 
     code = m.get("code") or {}
-    code_html = ""
-    if code.get("content"):
-        code_html = f"""<section class="mission-section" id="code" aria-labelledby="code-heading">
-  {section_heading("code", "⌨️", "Code")}
-  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
-  {code_panel(code)}
-</section>"""
-
     output = m.get("expected_output", "").strip()
+    code_html = code_section(code, output)
+
     output_html = ""
     if output:
         output_html = f"""<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
   {section_heading("output", "✨", "Expected Output")}
-  <div class="mission-output-body">{_paragraphs(output)}</div>
+  <div class="mission-output-body">{_rich_content(output)}</div>
 </section>"""
 
     quiz_html = quiz_block(m.get("quiz", []))
 
-    challenge = m.get("challenge", "").strip()
-    challenge_html = ""
-    if challenge:
-        challenge_html = f"""<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
-  {section_heading("challenge", "🎯", "Challenge Yourself")}
-  <div class="mission-challenge-box">{_paragraphs(challenge)}</div>
-</section>"""
+    challenge_html = challenge_section(
+        m.get("challenge", "").strip(),
+        m.get("challenge_items", []),
+    )
 
     complete = m.get("complete") or {}
     complete_summary = (complete.get("summary") or "").strip()
+    complete_subtitle = (complete.get("subtitle") or "").strip()
     skills = complete.get("skills", [])
     skills_html = "".join(f"<li>{esc(s)}</li>" for s in skills)
+    subtitle_html = (
+        f'<p class="mission-complete-subtitle">{esc(complete_subtitle)}</p>'
+        if complete_subtitle
+        else ""
+    )
     complete_html = f"""<section class="mission-section mission-complete" id="complete" aria-labelledby="complete-heading">
   <div class="mission-complete-panel">
     <span class="mission-complete-badge" aria-hidden="true">🏆</span>
     <h2 id="complete-heading">Mission Complete!</h2>
-    <div class="mission-complete-body">{_paragraphs(complete_summary)}</div>
+    {subtitle_html}
+    <div class="mission-complete-body">{_rich_content(complete_summary)}</div>
     {"<ul class='mission-skills'>" + skills_html + "</ul>" if skills_html else ""}
   </div>
 </section>"""
@@ -422,3 +541,18 @@ def _paragraphs(text: str) -> str:
         return ""
     parts = [p.strip() for p in text.split("\n\n") if p.strip()]
     return "".join(f"<p>{esc(p)}</p>" for p in parts)
+
+
+def _rich_content(text: str) -> str:
+    if not text:
+        return ""
+    blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+    html_parts = []
+    for block in blocks:
+        lines = [ln.strip() for ln in block.split("\n") if ln.strip()]
+        if lines and all(ln.startswith("- ") for ln in lines):
+            items = "".join(f"<li>{esc(ln[2:])}</li>" for ln in lines)
+            html_parts.append(f'<ul class="mission-bullets">{items}</ul>')
+        else:
+            html_parts.append(f"<p>{esc(block)}</p>")
+    return "".join(html_parts)
