@@ -17,12 +17,31 @@ STEPS = [
 ]
 
 
-def run_step(name: str) -> None:
+def run_step(name: str) -> list[str]:
     path = TOOLS / name
     if not path.exists():
         raise SystemExit(f"Missing build script: {path}")
     print(f"\n=== {name} ===")
-    subprocess.run([sys.executable, str(path)], cwd=ROOT, check=True)
+    proc = subprocess.run(
+        [sys.executable, str(path)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.stdout:
+        print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
+    if proc.stderr:
+        print(proc.stderr, end="" if proc.stderr.endswith("\n") else "\n", file=sys.stderr)
+    if proc.returncode != 0:
+        raise SystemExit(proc.returncode)
+
+    warnings: list[str] = []
+    for line in (proc.stdout + proc.stderr).splitlines():
+        text = line.strip()
+        if text.startswith("IndexNow: HTTP") and "HTTP 200" not in text:
+            warnings.append(text)
+    return warnings
 
 
 def main():
@@ -36,20 +55,20 @@ def main():
         )
     print("Static-first build (Phase 1) — files only, no runtime server.")
     started = time.perf_counter()
-    steps_run = []
+    warnings: list[str] = []
     for step in STEPS:
-        run_step(step)
-        steps_run.append({"name": step, "status": "PASS"})
+        warnings.extend(run_step(step))
     duration = round(time.perf_counter() - started, 2)
 
     sys.path.insert(0, str(TOOLS))
-    from release_readiness import run_release_readiness
+    from build_report import generate_build_report
 
-    run_release_readiness(
+    generate_build_report(
         {
             "status": "PASS",
             "duration_seconds": duration,
-            "steps": steps_run,
+            "warnings": warnings,
+            "errors": [],
         }
     )
     print("\nBuild complete. Deploy root HTML/JSON/JS to static hosting.")
