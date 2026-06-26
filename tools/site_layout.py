@@ -49,12 +49,12 @@ HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
 NAV_ITEMS = [
     ("home", "Home", ""),
     ("learning", "Learning", "learning.html"),
+    ("guides", "Guides", "guides.html"),
     ("components", "Components", "components.html"),
     ("projects", "Projects", "projects.html"),
-    ("guides", "Guides", "guides.html"),
-    ("downloads", "Downloads", "downloads.html"),
+    ("parents", "Parents", "parents.html"),
+    ("teachers", "Teachers", "teachers.html"),
     ("tools", "Tools", "tools.html"),
-    ("news", "News", "news.html"),
     ("about", "About", "about.html"),
 ]
 
@@ -654,13 +654,14 @@ def home_learning_paths_section() -> str:
     paths = load_learning_paths()
     cards = []
     for p in paths:
+        steps = p.get("steps_label") or f"{p.get('lessons', 0)} steps"
         cards.append(
             f'<a class="path-card" href="{esc(site_href(p.get("href", "learning.html")))}">'
             f'<span class="path-icon" aria-hidden="true">{esc(p.get("icon", "🚀"))}</span>'
             f'<h3>{esc(p["title"])}</h3>'
             f'<p>{esc(p.get("description", ""))}</p>'
             f'<div class="path-meta">'
-            f'<span class="badge badge-cat">{esc(str(p.get("lessons", 0)))} lessons</span>'
+            f'<span class="badge badge-cat">{esc(str(steps))}</span>'
             f'<span class="badge {badge_class(p.get("difficulty", "Beginner"))}">{esc(p.get("difficulty", "Beginner"))}</span>'
             f'</div></a>'
         )
@@ -724,27 +725,52 @@ def home_featured_projects_section(projects: list, card_fn) -> str:
 </section>"""
 
 
+def home_parents_section() -> str:
+    return f"""<section class="section-premium wrap reveal audience-section audience-parents" id="for-parents">
+  <div class="audience-panel">
+    <div class="audience-icon" aria-hidden="true">👨‍👩‍👧</div>
+    <div class="audience-content">
+      <p class="section-eyebrow">For Parents</p>
+      <h2>Safe, Simple Learning for Young Makers</h2>
+      <p>ESP32 Engine helps children learn electronics through guided projects, safety notes, and simple explanations parents can trust.</p>
+      <a class="btn btn-primary" href="{site_href('parents.html')}">Guide for Parents</a>
+    </div>
+  </div>
+</section>"""
+
+
+def home_teachers_section() -> str:
+    return f"""<section class="section-premium wrap reveal audience-section audience-teachers" id="for-teachers">
+  <div class="audience-panel">
+    <div class="audience-icon" aria-hidden="true">🏫</div>
+    <div class="audience-content">
+      <p class="section-eyebrow">For Teachers</p>
+      <h2>Ready for Classroom Learning</h2>
+      <p>Use structured lessons, project ideas, and printable resources to teach electronics, coding, and IoT step by step.</p>
+      <a class="btn btn-primary" href="{site_href('teachers.html')}">Guide for Teachers</a>
+    </div>
+  </div>
+</section>"""
+
+
 def home_latest_guides_section(guides: list) -> str:
+    from guide_mission import mission_meta_badges_html
+
     mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
     ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))[:4]
     cards = []
     for g in ordered:
         slug = g["slug"]
         headline = g.get("headline") or g.get("title", "").split("|")[0].strip()
-        reading = g.get("reading_time", "10 min")
-        level = g.get("proficiency_level", "Beginner")
-        m = g.get("mission") or {}
-        badge = m.get("badge", "")
-        badge_html = f'<span class="badge badge-cat">{esc(badge)}</span>' if badge else ""
         cards.append(
-            f'<a class="guide-home-card" href="{site_href(f"guides/{slug}.html")}">'
-            f'<div class="guide-card-badges">{badge_html}<span class="badge {badge_class(level)}">{esc(level)}</span><span class="badge badge-time">{esc(reading)}</span></div>'
+            f'<a class="mission-index-card guide-home-mission-card" href="{site_href(f"guides/{slug}.html")}">'
+            f'{mission_meta_badges_html(g)}'
             f'<h3>{esc(headline)}</h3>'
             f'<span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span></a>'
         )
     return f"""<section class="section-premium wrap reveal" id="latest-guides">
   <div class="section-head">
-    <div><p class="section-eyebrow">Interactive journeys</p><h2>Latest Guides</h2><p class="section-sub">Each guide is a mission — not a boring article. Learn step by step.</p></div>
+    <div><p class="section-eyebrow">Interactive journeys</p><h2>Mission Journeys</h2><p class="section-sub">Hands-on missions with stories, safety tips, and step-by-step builds — not boring articles.</p></div>
     <a class="btn btn-secondary btn-sm" href="{site_href('guides.html')}">All guides</a>
   </div>
   <div class="guide-home-grid">{"".join(cards)}</div>

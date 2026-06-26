@@ -22,6 +22,8 @@ from site_layout import (
     read_time_label,
     home_featured_carousel,
     home_learning_paths_section,
+    home_parents_section,
+    home_teachers_section,
     home_components_section,
     home_featured_projects_section,
     home_latest_guides_section,
@@ -272,6 +274,8 @@ def home_html(projects):
 {header_html("home")}
 {hero_html()}
 {home_learning_paths_section()}
+{home_parents_section()}
+{home_teachers_section()}
 {home_components_section()}
 {home_featured_projects_section(projects, portal_carousel_card)}
 {home_latest_guides_section(store.guides())}

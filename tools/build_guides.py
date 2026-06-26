@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
-from guide_mission import mission_index_card, render_mission_guide
+from guide_mission import mission_index_card, render_friendly_intro, render_mission_guide
 from site_layout import (
     OG_IMAGE,
     ORG_NAME,
@@ -52,12 +52,11 @@ def legacy_guide_card_html(g: dict) -> str:
     desc = g.get("lead") or g.get("meta_description", "")
     if len(desc) > 160:
         desc = desc[:157].rstrip() + "…"
-    phase = g.get("phase")
-    phase_badge = f'<span class="badge badge-cat">Phase {phase}</span>' if phase else ""
     reading = g.get("reading_time", "")
     return (
-        f'<a class="guide-index-card" href="{esc(href)}">'
-        f'<div class="guide-card-badges">{phase_badge}<span class="badge {badge_class(g.get("proficiency_level", "Beginner"))}">{esc(g.get("proficiency_level", "Beginner"))}</span></div>'
+        f'<a class="guide-index-card reference-guide-card" href="{esc(href)}">'
+        f'<span class="badge badge-reference">Reference Guide</span>'
+        f'<span class="badge {badge_class(g.get("proficiency_level", "Beginner"))}">{esc(g.get("proficiency_level", "Beginner"))}</span>'
         f"<h3>{esc(headline)}</h3>"
         f"<p>{esc(desc)}</p>"
         f'<span class="meta">{esc(reading)}</span>'
@@ -180,24 +179,26 @@ def render_legacy_guide(guide: dict) -> str:
     canon = f"guides/{slug}.html"
     schema = guide_schema(guide, faqs)
     headline = guide.get("headline") or page_title.split("|")[0].strip()
-    phase = guide.get("phase")
-    phase_label = f"Phase {phase} · " if phase else ""
     breadcrumb = f"""  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('guides.html')}">Guides</a></li><li aria-current="page">{esc(headline)}</li></ol></nav>"""
+    intro = render_friendly_intro(guide, is_mission=False)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 {head_html("", page_title, desc, canonical_path=canon, og_type="article", extra_schema=schema)}
 </head>
-<body>
+<body class="reference-guide-page">
 <main>
 {header_html("guides")}
 <section class="section-block wrap page-head static-page guide-page">
 {breadcrumb}
-  <p class="hero-eyebrow">{esc(phase_label)}ESP32 Guide</p>
+  <p class="hero-eyebrow">Background reading</p>
   <h1>{esc(headline)}</h1>
   <p class="article-lead">{esc(lead)}</p>
   <p class="meta guide-meta">{esc(guide.get("reading_time", "14 min read"))} · Updated {esc(guide.get("date_modified", "2026-06-26"))}</p>
+{intro}
+  <div class="guide-technical-content">
 {body}
+  </div>
 {faq_section_html(faqs)}
   <h2 id="conclusion">Conclusion</h2>
   <p>{esc(guide.get("conclusion", ""))}</p>
@@ -220,14 +221,7 @@ def render_mission_page(guide: dict) -> str:
     canon = f"guides/{slug}.html"
     schema = guide_schema(guide, guide.get("faqs", []))
     headline = guide.get("headline") or page_title.split("|")[0].strip()
-    m = guide.get("mission") or {}
-    badge = m.get("badge") or f"Mission {guide.get('mission_number', '')}"
     breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('guides.html')}">Guides</a></li><li aria-current="page">{esc(headline)}</li></ol></nav>"""
-    meta_row = f"""<div class="mission-meta-row">
-  <span class="badge badge-cat">{esc(badge)}</span>
-  <span class="badge {badge_class(guide.get('proficiency_level', 'Beginner'))}">{esc(guide.get('proficiency_level', 'Beginner'))}</span>
-  <span class="badge badge-time">{esc(guide.get('reading_time', ''))}</span>
-</div>"""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -241,7 +235,6 @@ def render_mission_page(guide: dict) -> str:
   <p class="hero-eyebrow">Interactive Mission</p>
   <h1>{esc(headline)}</h1>
   <p class="article-lead">{esc(lead)}</p>
-  {meta_row}
 {render_mission_guide(guide)}
 </section>
 </main>
@@ -286,7 +279,7 @@ def render_guides_index(guides: list[dict]) -> str:
     if missions:
         missions_html = f"""  <section class="guide-missions-block" id="missions">
     <h2>Mission Journeys</h2>
-    <p class="section-sub">Not articles — adventures. Complete missions in order to build real skills.</p>
+    <p class="section-sub">{len(missions)} hands-on missions with stories, safety tips, wiring, code, and quizzes — start here if you're new.</p>
     <div class="mission-index-grid">{mission_cards}</div>
   </section>"""
     legacy_html = ""
@@ -294,13 +287,14 @@ def render_guides_index(guides: list[dict]) -> str:
         legacy_cards = "".join(legacy_guide_card_html(g) for g in legacy)
         legacy_html = f"""  <section class="guide-phase-block" id="reference">
     <h2>Reference Guides</h2>
-    <p class="section-sub">Background reading when you need deeper explanations.</p>
-    <div class="guide-index-grid">{legacy_cards}</div>
+    <p class="section-sub">{len(legacy)} background articles for deeper reading after your first missions.</p>
+    <div class="guide-index-grid reference-guide-grid">{legacy_cards}</div>
   </section>"""
     body = f"""  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li aria-current="page">Guides</li></ol></nav>
   <p class="hero-eyebrow">Learn by doing</p>
-  <h1>ESP32 Missions</h1>
-  <p class="article-lead">Every mission tells a story, teaches one skill, and leaves you ready for the next build. Start with Mission 1 if you're new!</p>
+  <h1>ESP32 Learning Guides</h1>
+  <p class="article-lead">Start with Mission Journeys — fun step-by-step builds for kids and beginners. Reference Guides are here when you want extra background.</p>
+  <p class="guide-count-summary meta">{len(missions)} mission journeys · {len(legacy)} reference guides</p>
 {missions_html}
 {legacy_html}
   <p class="meta guide-index-footer"><a href="{site_href('learning.html')}">View learning paths →</a> · <a href="{site_href('projects.html')}">Browse projects →</a></p>"""

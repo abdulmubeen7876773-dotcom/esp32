@@ -11,6 +11,42 @@ def illustration_placeholder(alt: str, label: str = "Illustration") -> str:
 </figure>"""
 
 
+def mission_number_label(guide: dict) -> str:
+    n = guide.get("mission_number")
+    if n is not None:
+        return f"Mission {int(n):02d}"
+    m = guide.get("mission") or {}
+    badge = m.get("badge", "")
+    if badge:
+        return badge
+    return "Mission"
+
+
+def mission_reading_label(guide: dict) -> str:
+    rt = (guide.get("reading_time") or "").strip()
+    if rt:
+        return (
+            rt.replace(" min mission", " minutes")
+            .replace(" min read", " minutes")
+            .replace(" min", " minutes")
+        )
+    return "10–15 minutes"
+
+
+def mission_meta_badges_html(guide: dict, include_trust: bool = True, compact: bool = False) -> str:
+    level = guide.get("proficiency_level", "Beginner")
+    parts = [
+        f'<span class="badge badge-mission">{esc(mission_number_label(guide))}</span>',
+        f'<span class="badge {badge_class(level)}">{esc(level)}</span>',
+        f'<span class="badge badge-time">{esc(mission_reading_label(guide))}</span>',
+    ]
+    if include_trust:
+        parts.append('<span class="badge badge-parent-safe">Parent Safe</span>')
+        parts.append('<span class="badge badge-teacher-friendly">Teacher Friendly</span>')
+    cls = "mission-meta-row mission-meta-row-compact" if compact else "mission-meta-row"
+    return f'<div class="{cls}">{"".join(parts)}</div>'
+
+
 def things_list(items: list) -> str:
     rows = []
     for item in items:
@@ -100,25 +136,55 @@ def next_mission_cards(missions: list) -> str:
 </section>"""
 
 
-def mission_card_html(m: dict) -> str:
-    badge = m.get("badge") or f"Mission {m.get('mission_number', '')}"
+def mission_card_html(guide: dict) -> str:
+    m = guide.get("mission") or {}
     icon = m.get("icon", "🚀")
     title = m.get("title", "")
+    label = mission_number_label(guide)
     return f"""<div class="mission-card">
   <span class="mission-card-icon" aria-hidden="true">{esc(icon)}</span>
-  <span class="mission-card-badge">{esc(badge)}</span>
+  <span class="mission-card-badge">{esc(label)}</span>
   <h2 class="mission-card-title">{esc(title)}</h2>
+  {mission_meta_badges_html(guide, compact=True)}
 </div>"""
 
 
-def render_mission_guide(guide: dict) -> str:
+def reference_intro_card(guide: dict) -> str:
+    headline = guide.get("headline") or guide.get("title", "").split("|")[0].strip()
+    return f"""<div class="reference-intro-card">
+  <span class="reference-intro-label">Reference Guide</span>
+  <h2 class="reference-intro-title">{esc(headline)}</h2>
+</div>"""
+
+
+def render_friendly_intro(guide: dict, *, is_mission: bool) -> str:
     m = guide.get("mission") or {}
-    mission_card = mission_card_html(m)
+    intro = guide.get("intro") or {}
 
-    story = m.get("story", "").strip()
-    story_html = f'<div class="mission-story">{_paragraphs(story)}</div>' if story else ""
+    if is_mission:
+        header = mission_card_html(guide)
+        story = (m.get("story") or "").strip()
+        eli12 = (m.get("eli12") or "").strip()
+        safety = m.get("safety", [])
+    else:
+        header = reference_intro_card(guide)
+        story = (intro.get("story") or guide.get("lead") or "").strip()
+        eli12 = (intro.get("eli12") or "").strip()
+        safety = intro.get("safety", [])
+        if not safety:
+            safety = [
+                {"text": "Work at a clear desk with good lighting."},
+                {"text": "Children should have an adult nearby when plugging in USB cables."},
+                {"text": "Disconnect power before changing wiring."},
+            ]
 
-    eli12 = m.get("eli12", "").strip()
+    story_html = ""
+    if story:
+        story_html = f"""<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading">The Story</h2>
+  <div class="mission-story">{_paragraphs(story)}</div>
+</section>"""
+
     eli12_html = ""
     if eli12:
         eli12_html = f"""<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
@@ -127,6 +193,20 @@ def render_mission_guide(guide: dict) -> str:
     {_paragraphs(eli12)}
   </div>
 </section>"""
+
+    safety_html = safety_block(safety)
+
+    return f"""<div class="guide-friendly-intro">
+{header}
+{story_html}
+{eli12_html}
+{safety_html}
+</div>"""
+
+
+def render_mission_guide(guide: dict) -> str:
+    m = guide.get("mission") or {}
+    intro_html = render_friendly_intro(guide, is_mission=True)
 
     build = m.get("what_you_build", "").strip()
     build_html = ""
@@ -143,8 +223,6 @@ def render_mission_guide(guide: dict) -> str:
   <h2 id="parts-heading">Things You'll Need</h2>
   {things_list(things)}
 </section>"""
-
-    safety_html = safety_block(m.get("safety", []))
 
     concept = m.get("concept") or {}
     concept_body = (concept.get("body") or "").strip()
@@ -210,12 +288,9 @@ def render_mission_guide(guide: dict) -> str:
     next_html = next_mission_cards(m.get("next_missions", []))
 
     return f"""<article class="mission-journey">
-{mission_card}
-{story_html}
-{eli12_html}
+{intro_html}
 {build_html}
 {things_html}
-{safety_html}
 {concept_html}
 {wiring_html}
 {code_html}
@@ -235,19 +310,12 @@ def mission_index_card(guide: dict) -> str:
     if len(desc) > 120:
         desc = desc[:117].rstrip() + "…"
     m = guide.get("mission") or {}
-    badge = m.get("badge") or f"Mission {guide.get('mission_number', '')}"
     icon = m.get("icon", "🚀")
-    level = guide.get("proficiency_level", "Beginner")
-    reading = guide.get("reading_time", "")
     return f"""<a class="mission-index-card" href="{esc(href)}">
   <span class="mission-index-icon" aria-hidden="true">{esc(icon)}</span>
-  <span class="mission-index-badge">{esc(badge)}</span>
+  {mission_meta_badges_html(guide)}
   <h3>{esc(headline)}</h3>
   <p>{esc(desc)}</p>
-  <div class="path-meta">
-    <span class="badge {badge_class(level)}">{esc(level)}</span>
-    <span class="badge badge-time">{esc(reading)}</span>
-  </div>
   <span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span>
 </a>"""
 
