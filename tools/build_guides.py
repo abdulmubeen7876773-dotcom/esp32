@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
-from guide_mission import mission_index_card, render_friendly_intro, render_mission_guide
+from guide_mission import mission_index_card, mission_meta_badges_html, render_friendly_intro, render_mission_guide
 from site_layout import (
     OG_IMAGE,
     ORG_NAME,
@@ -221,7 +221,8 @@ def render_mission_page(guide: dict) -> str:
     canon = f"guides/{slug}.html"
     schema = guide_schema(guide, guide.get("faqs", []))
     headline = guide.get("headline") or page_title.split("|")[0].strip()
-    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('guides.html')}">Guides</a></li><li aria-current="page">{esc(headline)}</li></ol></nav>"""
+    breadcrumb = f"""<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('guides.html')}">Guides</a></li><li aria-current="page">{esc(headline)}</li></ol></nav>"""
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -230,11 +231,18 @@ def render_mission_page(guide: dict) -> str:
 <body class="mission-guide-page">
 <main>
 {header_html("guides")}
-<section class="section-block wrap mission-guide-shell">
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
 {breadcrumb}
-  <p class="hero-eyebrow">Interactive Mission</p>
-  <h1>{esc(headline)}</h1>
-  <p class="article-lead">{esc(lead)}</p>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">{esc(headline)}</h1>
+      <p class="article-lead mission-hero-lead">{esc(lead)}</p>
+      {mission_meta_badges_html(guide)}
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
 {render_mission_guide(guide)}
 </section>
 </main>

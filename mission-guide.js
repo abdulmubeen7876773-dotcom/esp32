@@ -5,9 +5,16 @@
       var code = panel && panel.querySelector('code');
       if (!code) return;
       var text = code.textContent;
+      var label = btn.querySelector('.btn-copy-label');
       function done() {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+        btn.classList.add('is-copied');
+        btn.setAttribute('aria-label', 'Code copied to clipboard');
+        if (label) label.textContent = 'Copied!';
+        setTimeout(function () {
+          btn.classList.remove('is-copied');
+          btn.setAttribute('aria-label', 'Copy code to clipboard');
+          if (label) label.textContent = 'Copy';
+        }, 2000);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done).catch(function () {
@@ -39,11 +46,15 @@
         block.classList.add('answered');
         var correct = opt.getAttribute('data-correct') === '1';
         opt.classList.add(correct ? 'is-correct' : 'is-wrong');
+        opt.setAttribute('aria-pressed', 'true');
         if (!correct) {
           block.querySelectorAll('.quiz-option[data-correct="1"]').forEach(function (c) {
             c.classList.add('is-correct');
           });
         }
+        block.querySelectorAll('.quiz-option').forEach(function (o) {
+          o.disabled = true;
+        });
         if (feedback) {
           feedback.hidden = false;
           feedback.textContent = correct
