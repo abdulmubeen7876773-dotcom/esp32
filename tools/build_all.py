@@ -83,6 +83,12 @@ def main():
             "errors": [],
         }
     )
+    from validate_visual_assets import generate_visual_assets
+
+    print("\n=== validate_visual_assets.py ===")
+    generate_visual_assets()
+    print("Wrote assets/visuals/manifest.json")
+    print("Wrote docs/reports/visual-assets-report.md")
     print("\nBuild complete. Deploy root HTML/JSON/JS to static hosting.")
 
 
