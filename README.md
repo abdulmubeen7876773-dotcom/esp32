@@ -30,6 +30,7 @@ py tools/build_all.py
 | Guide | For |
 |-------|-----|
 | [docs/README.md](docs/README.md) | Documentation map — where every doc type belongs |
+| [docs/editorial/MANIFESTO.md](docs/editorial/MANIFESTO.md) | Principles and mission |
 | [docs/guides/CONTENT_EDITOR_GUIDE.md](docs/guides/CONTENT_EDITOR_GUIDE.md) | Adding guides, components, projects — no coding needed |
 | [docs/engineering/DEVELOPER_ARCHITECTURE.md](docs/engineering/DEVELOPER_ARCHITECTURE.md) | Build pipeline, static architecture, Phase 2 path |
 | [content/manifest.yaml](content/manifest.yaml) | Content folder map |
