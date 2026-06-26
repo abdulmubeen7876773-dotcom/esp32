@@ -1,4 +1,38 @@
 (function () {
+  function initTheme() {
+    var root = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(theme) {
+      root.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      if (btn) {
+        btn.setAttribute(
+          'aria-label',
+          theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+        );
+      }
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) {
+        meta.setAttribute('content', theme === 'dark' ? '#0B1220' : '#0088EE');
+      }
+    }
+    function currentTheme() {
+      return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    }
+    if (!root.getAttribute('data-theme')) {
+      applyTheme('light');
+    }
+    if (btn) {
+      btn.addEventListener('click', function () {
+        applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+      });
+    }
+  }
+
+  initTheme();
+
   function showReveal(el) {
     el.classList.add('is-visible');
   }
