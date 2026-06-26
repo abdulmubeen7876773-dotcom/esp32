@@ -1,4 +1,4 @@
-name: Build Site
+name: Build Static Site
 
 on:
   push:
@@ -6,7 +6,13 @@ on:
     paths:
       - content/**
       - tools/**
-      - admin/**
+      - static.config.yaml
+      - style.css
+      - ui.js
+      - search.js
+      - mission-guide.js
+      - projects.js
+      - project.js
   workflow_dispatch:
 
 permissions:
@@ -22,14 +28,25 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: pip install -r requirements.txt
 
-      - name: Build static site
+      - name: Validate content and build static site
         run: python tools/build_all.py
 
-      - name: Commit generated HTML
+      - name: Commit generated static artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: rebuild site from CMS"
-          file_pattern: "*.html *.xml *.json *.js category/** guides/** projects/*.html sitemap.* feed.xml esp32engineindex*.txt"
+          commit_message: "chore: rebuild static site from content files"
+          file_pattern: |
+            *.html
+            *.xml
+            *.json
+            *.js
+            category/**
+            guides/**
+            components/**
+            projects/*.html
+            sitemap.*
+            feed.xml
+            esp32engineindex*.txt

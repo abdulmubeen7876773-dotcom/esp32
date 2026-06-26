@@ -1,0 +1,119 @@
+format: mission
+phase: 1
+sort_order: 3
+mission_number: 3
+slug: connect-oled-esp32
+title: Connect OLED Display with ESP32 | ESP32 Engine
+headline: Connect OLED Display with ESP32
+meta_description: Mission 3 — connect an SSD1306 OLED display to ESP32. I2C wiring, friendly explanations, Arduino code with copy button, quiz, and challenge.
+lead: Serial Monitor is great for debugging — but a real screen on your project looks amazing. This mission adds a tiny OLED display that shows your own messages.
+keywords: ESP32 OLED, SSD1306 ESP32, I2C display beginner, ESP32 screen
+proficiency_level: Beginner
+reading_time: 20 min mission
+date_published: '2026-06-26'
+date_modified: '2026-06-26'
+
+mission:
+  badge: Mission 3
+  icon: "📺"
+  title: Give Your Project a Face!
+  story: |
+    Blinking lights and sensor numbers are cool — but every great gadget has a screen. Game consoles, phones, even microwave ovens show you what's happening.
+
+    Your ESP32 will talk to a small OLED display using just four wires. When you see "Hello, Maker!" glow on that blue screen, your project starts to feel like a real product.
+  eli12: |
+    The OLED is a tiny TV screen with only four wires: power, ground, and two communication wires called SDA and SCL. They form a language called I2C — like a two-lane road where the ESP32 sends drawing instructions and the screen shows them.
+  what_you_build: |
+    An SSD1306 128×64 OLED connected to ESP32 over I2C. Your code clears the screen and displays a message in large text — the foundation for showing sensor readings, menus, and game scores.
+  things_you_need:
+    - item: ESP32 DevKit board
+      link: /components/esp32-devkit.html
+    - item: SSD1306 OLED display
+      note: 0.96 inch, 128×64, I2C interface
+      link: /components/ssd1306-oled.html
+    - item: Breadboard and jumper wires
+      note: Four wires for VCC, GND, SDA, SCL
+    - item: USB cable
+  safety:
+    - text: Connect VCC to 3.3 V — some OLEDs tolerate 5 V but 3.3 V is safest with ESP32.
+    - text: Handle the glass screen gently — OLED panels can crack if dropped.
+    - text: Unplug USB before moving wires.
+  concept:
+    title: What Is I2C?
+    illustration_alt: ESP32 connected to OLED via SDA and SCL lines with shared ground, labeled 0x3C address
+    body: |
+      I2C lets multiple devices share two wires — SDA (data) and SCL (clock). Each device has an address; OLED modules usually use 0x3C.
+
+      The Adafruit SSD1306 library handles the hard work. You call display.println() like Serial, then display.display() to refresh the pixels.
+  wiring:
+    illustration_alt: OLED VCC to 3.3V, GND to GND, SDA to GPIO21, SCL to GPIO22
+    steps:
+      - "Unplug USB. Place the OLED module on the breadboard or connect its pins directly."
+      - "Connect OLED VCC to ESP32 3.3 V."
+      - "Connect OLED GND to ESP32 GND."
+      - "Connect OLED SDA to ESP32 GPIO21 (default I2C SDA)."
+      - "Connect OLED SCL to ESP32 GPIO22 (default I2C SCL)."
+      - "Install Adafruit SSD1306 and Adafruit GFX libraries in Arduino IDE."
+  code:
+    filename: oled_hello.ino
+    content: |
+      #include <Wire.h>
+      #include <Adafruit_GFX.h>
+      #include <Adafruit_SSD1306.h>
+
+      #define SCREEN_WIDTH 128
+      #define SCREEN_HEIGHT 64
+      #define OLED_RESET -1
+
+      Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+      void setup() {
+        if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+          for (;;) {}
+        }
+        display.clearDisplay();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 20);
+        display.println("Hello,");
+        display.println("Maker!");
+        display.display();
+      }
+
+      void loop() {
+      }
+  expected_output: |
+    After upload, the OLED shows "Hello," on the first line and "Maker!" on the second in bright white text on a dark background.
+
+    If the screen stays blank, run an I2C scanner sketch or check SDA/SCL wiring. Try address 0x3D if 0x3C doesn't work on your module.
+  quiz:
+    - question: Which two pins carry I2C communication on ESP32?
+      options:
+        - GPIO21 (SDA) and GPIO22 (SCL)
+        - GPIO2 and GPIO4
+        - GPIO34 and GPIO35
+      correct: 0
+      explanation: Default I2C pins on ESP32 DevKit are GPIO21 for SDA and GPIO22 for SCL.
+    - question: What function updates the pixels on the screen?
+      options:
+        - display.display()
+        - display.clearDisplay()
+        - pinMode()
+      correct: 0
+      explanation: You draw into a buffer, then display.display() pushes those pixels to the OLED.
+  challenge: |
+    Show live DHT22 temperature on the OLED if you completed Mission 2 — combine both sketches! Or animate text: scroll "ESP32 Engine" across the screen using setCursor in a loop.
+  complete:
+    summary: |
+      Your ESP32 now has a display! You learned I2C wiring, display libraries, and how embedded devices show information without a computer attached. This is exactly how commercial IoT gadgets work.
+    skills:
+      - Wire SSD1306 OLED via I2C (SDA, SCL, 3.3 V, GND)
+      - Use Adafruit SSD1306 and GFX libraries
+      - Draw text on a 128×64 screen
+  next_missions:
+    - slug: read-temperature-dht22
+      title: Read Temperature with DHT22
+      description: Combine sensor data with your new display.
+    - slug: blink-led-esp32
+      title: Blink an LED
+      description: Add a status LED that blinks when the screen updates.

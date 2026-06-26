@@ -1,0 +1,60 @@
+phase: 1
+runtime: static
+description: Static-first ESP32 Engine — no server, database, or auth at runtime
+
+content:
+  backend: files
+  root: content
+  formats:
+    - yaml
+
+build:
+  entrypoint: tools/build_all.py
+  requires: python
+  dependencies: requirements.txt
+
+runtime:
+  hosting: static
+  search: client-side
+  search_index: search-index.json
+
+phase_1_excludes:
+  - backend_api
+  - database
+  - authentication
+  - admin_panel
+  - server_side_rendering
+
+generated_artifacts:
+  html:
+    - index.html
+    - guides.html
+    - components.html
+    - projects.html
+    - search.html
+    - guides/**
+    - components/**
+    - projects/*.html
+    - category/**
+  json:
+    - search-index.json
+    - projects.json
+  js:
+    - project-icons.js
+  xml:
+    - sitemap.xml
+    - feed.xml
+
+client_scripts:
+  - ui.js
+  - search.js
+  - mission-guide.js
+  - projects.js
+  - project.js
+
+future_phase_2:
+  note: Swap content.backend to api and implement tools/content_api.py without changing HTML templates
+  preserved_interfaces:
+    - tools/content_store.py
+    - tools/site_layout.py
+    - tools/guide_mission.py

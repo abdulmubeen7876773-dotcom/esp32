@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from cms_loader import load_pages
+from content_store import get_content_store
 from site_layout import (
     SITE_NAME,
     breadcrumb_schema,
@@ -46,7 +46,7 @@ def page_schema(page: dict) -> str:
 def cms_page_html(page: dict) -> str:
     slug = page["slug"]
     return static_page_shell(
-        page.get("nav", "about"),
+        page.get("nav", slug),
         page["title"],
         page["meta_description"],
         normalize_body(page.get("body_html", "")),
@@ -77,7 +77,7 @@ def not_found_page() -> str:
 
 
 def main():
-    pages = load_pages()
+    pages = get_content_store().pages()
     if not pages:
         raise SystemExit("No CMS pages found in content/pages/. Run tools/migrate_to_cms.py first.")
     for slug, data in pages.items():

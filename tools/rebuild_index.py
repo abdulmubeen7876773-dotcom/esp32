@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from parent_registry import PARENTS
-from cms_loader import load_guides, load_home
+from content_store import get_content_store
 from site_layout import (
     modern_card,
     footer_html,
@@ -21,12 +21,11 @@ from site_layout import (
     short_category,
     read_time_label,
     home_featured_carousel,
-    home_latest_categories_section,
-    home_roadmap_stats_section,
-    home_why_section,
-    home_guides_section,
-    home_community_section,
-    home_cta_banner,
+    home_learning_paths_section,
+    home_components_section,
+    home_featured_projects_section,
+    home_latest_guides_section,
+    home_newsletter_section,
     PROJECTS_PAGE_SIZE,
     pagination_head_links,
     pagination_nav_html,
@@ -255,7 +254,8 @@ def projects_text_index(projects: list) -> str:
 
 
 def home_html(projects):
-    home = load_home()
+    store = get_content_store()
+    home = store.home()
     desc = home.get(
         "meta_description",
         "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers.",
@@ -271,15 +271,14 @@ def home_html(projects):
 <main>
 {header_html("home")}
 {hero_html()}
-{home_guides_section(load_guides())}
-{home_featured_carousel(projects, portal_carousel_card)}
-{home_latest_categories_section(projects)}
-{home_roadmap_stats_section(len(projects))}
-{home_why_section()}
-{home_community_section()}
-{home_cta_banner(len(projects))}
+{home_learning_paths_section()}
+{home_components_section()}
+{home_featured_projects_section(projects, portal_carousel_card)}
+{home_latest_guides_section(store.guides())}
+{home_newsletter_section()}
 </main>
 {footer_html()}
+<script src="/search.js" defer></script>
 <script src="/ui.js" defer></script>
 </body>
 </html>
@@ -341,6 +340,7 @@ def projects_listing_html(
 </main>
 {footer_html()}
 <script src="/project-icons.js" defer></script>
+<script src="/search.js" defer></script>
 <script src="/ui.js" defer></script>
 <script src="/projects.js" defer></script>
 </body>

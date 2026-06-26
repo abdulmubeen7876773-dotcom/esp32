@@ -23,7 +23,7 @@ OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
 OG_IMAGE_WIDTH = int(_cfg.get("og_image_width", 1200))
 OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
 
-HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 240 240" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="40" y1="60" x2="200" y2="180"><stop stop-color="#A855F7"/><stop offset="1" stop-color="#6D28D9"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="40" y="62" width="160" height="104" rx="16" stroke="url(#heroGrad)" stroke-width="2.5" filter="url(#heroGlow)"/><rect x="62" y="84" width="116" height="60" rx="10" fill="rgba(109,40,217,.12)" stroke="rgba(109,40,217,.35)" stroke-width="1.5"/><path d="M40 86h-16M40 114h-16M40 142h-16M200 86h16M200 114h16M200 142h16M86 62V42M120 62V42M154 62V42M86 166V186M120 166V186M154 166V186" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" opacity=".55"/><circle cx="120" cy="114" r="8" fill="#6D28D9"/><circle cx="120" cy="114" r="16" stroke="#A855F7" stroke-width="1.2" opacity=".35"/><text x="120" y="119" text-anchor="middle" fill="#fff" font-size="16" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text></svg>"""
+HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#0099FF"/><stop offset="1" stop-color="#00C896"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(0,153,255,.1)" stroke="rgba(0,153,255,.3)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#0099FF" stroke-width="2.5" stroke-linecap="round" opacity=".6"/><circle cx="140" cy="130" r="10" fill="#00C896"/><circle cx="140" cy="130" r="20" stroke="#0099FF" stroke-width="1.5" opacity=".4"/><text x="140" y="136" text-anchor="middle" fill="#007ACC" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#FFD54F" opacity=".9"/><circle cx="70" cy="220" r="5" fill="#FF6B6B" opacity=".8"/><path d="M200 220l20-16 12 20" stroke="#00C896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>"""
 
 SIDEBAR_CATEGORIES = [
     ("ESP32 Basics", "guides/what-is-esp32.html", "basics"),
@@ -41,10 +41,22 @@ ICON_YOUTUBE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentCol
 ICON_SEARCH = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg>'
 
 HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
-<div class="hero-float-card hero-float-card-a"><span class="hero-float-label">GPIO Monitor</span><strong>34</strong><span class="hero-float-sub">Analog Input</span></div>
-<div class="hero-float-card hero-float-card-b"><span class="hero-float-label">Wi-Fi Status</span><strong>Online</strong><span class="hero-float-sub">2.4 GHz Connected</span></div>
-<div class="hero-float-card hero-float-card-c"><span class="hero-float-label">Relay Output</span><strong>ACTIVE</strong><span class="hero-float-sub">GPIO26 · Pump ON</span></div>
+<div class="hero-float-card hero-float-card-a"><span class="hero-float-label">🌡 Temperature</span><strong>24°C</strong><span class="hero-float-sub">DHT22 Sensor</span></div>
+<div class="hero-float-card hero-float-card-b"><span class="hero-float-label">📡 Wi-Fi</span><strong>Connected!</strong><span class="hero-float-sub">Your project is live</span></div>
+<div class="hero-float-card hero-float-card-c"><span class="hero-float-label">💡 LED</span><strong>ON</strong><span class="hero-float-sub">You did it!</span></div>
 </div>"""
+
+NAV_ITEMS = [
+    ("home", "Home", ""),
+    ("learning", "Learning", "learning.html"),
+    ("components", "Components", "components.html"),
+    ("projects", "Projects", "projects.html"),
+    ("guides", "Guides", "guides.html"),
+    ("downloads", "Downloads", "downloads.html"),
+    ("tools", "Tools", "tools.html"),
+    ("news", "News", "news.html"),
+    ("about", "About", "about.html"),
+]
 
 
 def esc(t):
@@ -203,7 +215,7 @@ def website_schema() -> str:
         "publisher": {"@type": "Organization", "name": ORG_NAME},
         "potentialAction": {
             "@type": "SearchAction",
-            "target": f"{SITE_DOMAIN}/projects.html?q={{search_term_string}}",
+            "target": f"{SITE_DOMAIN}/search.html?q={{search_term_string}}",
             "query-input": "required name=search_term_string",
         },
     }
@@ -257,9 +269,9 @@ def analytics_config_script() -> str:
 
 def font_links_html() -> str:
     return """<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap"></noscript>"""
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>"""
 
 
 def head_extras_html() -> str:
@@ -341,7 +353,7 @@ def head_html(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
-<meta name="theme-color" content="#6D28D9">
+<meta name="theme-color" content="#0099FF">
 <meta name="robots" content="{esc(robots)}">
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -374,35 +386,31 @@ def sidebar_categories_html(active: str = "") -> str:
 
 
 def search_overlay_html() -> str:
-    return f"""<div class="search-overlay" id="search-overlay" hidden>
+    return """<div class="search-overlay" id="search-overlay" hidden>
   <div class="search-overlay-backdrop" data-close-search></div>
-  <div class="search-overlay-panel" role="dialog" aria-label="Search projects">
-    <form class="search-overlay-form" action="/projects.html" method="get">
-      <label class="visually-hidden" for="global-search">Search projects</label>
-      <input id="global-search" name="q" type="search" placeholder="Search ESP32 projects, guides, categories…" autocomplete="off">
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
       <button type="submit" class="btn btn-primary">Search</button>
       <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
     </form>
+    <div class="search-results" id="search-results-live" hidden></div>
   </div>
 </div>"""
 
 
 def header_html(active: str = "home", base: str = ""):
-    nav_home = ' class="active"' if active == "home" else ""
-    nav_guides = ' class="active"' if active == "guides" else ""
-    nav_proj = ' class="active"' if active == "projects" else ""
-    nav_about = ' class="active"' if active == "about" else ""
-    nav_contact = ' class="active"' if active == "contact" else ""
+    nav_links = []
+    for key, label, href in NAV_ITEMS:
+        cls = ' class="active"' if active == key else ""
+        nav_links.append(f'<a href="{site_href(href)}"{cls}>{esc(label)}</a>')
     return f"""<div class="site-nav-sticky">
 <header class="site-header"><div class="wrap header-inner">
   <a class="site-logo" href="{site_href()}"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">{esc(SITE_TAGLINE)}</span></a>
   <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   <nav class="top-nav" aria-label="Main">
-    <a href="{site_href()}"{nav_home}>Home</a>
-    <a href="{site_href('guides.html')}"{nav_guides}>Guides</a>
-    <a href="{site_href('projects.html')}"{nav_proj}>Projects</a>
-    <a href="{site_href('about.html')}"{nav_about}>About</a>
-    <a href="{site_href('contact.html')}"{nav_contact}>Contact</a>
+    {"".join(nav_links)}
   </nav>
   <div class="header-actions">
     <button type="button" class="icon-btn" id="search-open" aria-label="Search">{ICON_SEARCH}</button>
@@ -467,6 +475,7 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 </section>
 </main>
 {footer_html()}
+<script src="/search.js" defer></script>
 <script src="/ui.js" defer></script>
 </body>
 </html>
@@ -475,21 +484,11 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 
 def hero_html(latest_items: str = "") -> str:
     home = load_home()
-    eyebrow = home.get("hero_eyebrow", "ESP32 &amp; IoT Technology Portal")
-    heading = home.get("hero_title", "One ESP32. Unlimited Possibilities.")
+    eyebrow = home.get("hero_eyebrow", "Your ESP32 Adventure Starts Here")
+    heading = home.get("hero_title", "Build Amazing Things with ESP32")
     sub = home.get(
         "hero_sub",
-        "Build IoT systems, smart automation, robotics, wireless devices, monitoring solutions, and real-world embedded projects.",
-    )
-    stats = [
-        ("15+", "Parent Projects"),
-        ("45+", "Difficulty Levels"),
-        ("10+", "Categories"),
-        ("100%", "Free Learning"),
-    ]
-    stat_items = "".join(
-        f'<div class="hero-stat-pill"><strong>{esc(val)}</strong><span>{esc(label)}</span></div>'
-        for val, label in stats
+        "Learn electronics through fun projects, simple explanations and interactive guides.",
     )
     return f"""<section class="hero-home reveal" aria-labelledby="hero-heading">
   <div class="wrap hero-home-inner">
@@ -498,10 +497,9 @@ def hero_html(latest_items: str = "") -> str:
       <h1 id="hero-heading">{esc(heading)}</h1>
       <p class="hero-sub">{esc(sub)}</p>
       <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="/projects.html">Explore Projects</a>
-        <a class="btn btn-secondary btn-lg" href="/guides.html">Start Learning</a>
+        <a class="btn btn-primary btn-lg" href="{site_href('learning.html')}">Start Learning</a>
+        <a class="btn btn-secondary btn-lg" href="{site_href('components.html')}">Browse Components</a>
       </div>
-      <div class="hero-stat-row">{stat_items}</div>
     </div>
     <div class="hero-home-visual" aria-hidden="true">
       <div class="hero-visual-frame">{HERO_BOARD_SVG}{HERO_FLOAT_CARDS}</div>
@@ -651,41 +649,120 @@ def home_why_section() -> str:
 </section>"""
 
 
-def home_guides_section(guides: list) -> str:
-    tracks = [
-        ("Beginner Guides", "Foundations, chip basics, and your first breadboard builds.", site_href("guides/what-is-esp32.html"), "Phase 1"),
-        ("Intermediate Guides", "OLED feedback, calibration, and multi-sensor workflows.", site_href("guides.html"), "Phase 2"),
-        ("ESP-IDF Tutorials", "Native SDK concepts for production firmware.", site_href("guides.html"), "Coming soon"),
-        ("Arduino Tutorials", "IDE setup, board packages, and sketch workflows.", site_href("guides/installing-arduino-ide-esp32.html"), "Setup"),
+def home_learning_paths_section() -> str:
+    from cms_loader import load_learning_paths
+    paths = load_learning_paths()
+    cards = []
+    for p in paths:
+        cards.append(
+            f'<a class="path-card" href="{esc(site_href(p.get("href", "learning.html")))}">'
+            f'<span class="path-icon" aria-hidden="true">{esc(p.get("icon", "🚀"))}</span>'
+            f'<h3>{esc(p["title"])}</h3>'
+            f'<p>{esc(p.get("description", ""))}</p>'
+            f'<div class="path-meta">'
+            f'<span class="badge badge-cat">{esc(str(p.get("lessons", 0)))} lessons</span>'
+            f'<span class="badge {badge_class(p.get("difficulty", "Beginner"))}">{esc(p.get("difficulty", "Beginner"))}</span>'
+            f'</div></a>'
+        )
+    return f"""<section class="section-premium wrap reveal" id="learning-paths">
+  <div class="section-head">
+    <div><p class="section-eyebrow">Choose your adventure</p><h2>Learning Paths</h2><p class="section-sub">Pick a path that matches your level. Every journey has fun missions and real builds.</p></div>
+    <a class="btn btn-secondary btn-sm" href="{site_href('learning.html')}">All paths</a>
+  </div>
+  <div class="learning-path-grid">{"".join(cards)}</div>
+</section>"""
+
+
+def home_components_section() -> str:
+    from cms_loader import load_components
+    components = load_components()[:6]
+    cards = []
+    for c in components:
+        img = c.get("image", "")
+        img_html = f'<img src="{esc(img)}" alt="{esc(c["name"])}" loading="lazy">' if img else f'<span style="font-size:3rem">{esc(c.get("icon", "🔌"))}</span>'
+        cards.append(
+            f'<a class="component-card" href="{site_href(f"components/{c["slug"]}.html")}">'
+            f'<div class="component-card-img">{img_html}</div>'
+            f'<div class="component-card-body">'
+            f'<span class="badge badge-cat">{esc(c.get("category", ""))}</span>'
+            f'<span class="badge {badge_class(c.get("difficulty", "Beginner"))}">{esc(c.get("difficulty", "Beginner"))}</span>'
+            f'<h3>{esc(c["name"])}</h3>'
+            f'<span class="btn btn-card">View Guide<span aria-hidden="true">→</span></span>'
+            f'</div></a>'
+        )
+    return f"""<section class="section-premium wrap reveal" id="components">
+  <div class="section-head">
+    <div><p class="section-eyebrow">Component encyclopedia</p><h2>Popular Components</h2><p class="section-sub">Learn what each part does, how to wire it, and what you can build.</p></div>
+    <a class="btn btn-secondary btn-sm" href="{site_href('components.html')}">Browse all</a>
+  </div>
+  <div class="grid grid-projects">{"".join(cards)}</div>
+</section>"""
+
+
+def home_featured_projects_section(projects: list, card_fn) -> str:
+    featured_titles = [
+        "ESP32 IoT Weather Station",
+        "ESP32 WiFi Robot Controller",
+        "ESP32 Smart Irrigation System",
+        "ESP32 Motion Security Alert",
+        "ESP32 Home Climate Automation",
+        "ESP32 TinyML Sound Classifier",
     ]
-    track_cards = "".join(
-        f'<a class="guide-track-card" href="{esc(href)}"><span class="guide-track-badge">{esc(badge)}</span><h3>{esc(title)}</h3><p>{esc(desc)}</p><span class="btn btn-card">Browse<span aria-hidden="true">→</span></span></a>'
-        for title, desc, href, badge in tracks
-    )
-    ordered = sorted(guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99), g.get("slug", "")))
-    article_cards = []
+    by_title = {p["title"]: p for p in projects}
+    featured = [by_title[t] for t in featured_titles if t in by_title]
+    if not featured:
+        featured = projects[:6]
+    cards = "".join(card_fn(p) for p in featured)
+    return f"""<section class="section-premium wrap reveal" id="featured">
+  <div class="section-head">
+    <div><p class="section-eyebrow">Build something cool</p><h2>Featured Projects</h2><p class="section-sub">Weather stations, robots, smart homes and more — pick a project and start building.</p></div>
+    <a class="btn btn-secondary btn-sm" href="{site_href('projects.html')}">All projects</a>
+  </div>
+  <div class="carousel-shell">
+    <div class="carousel-track" id="carousel-featured" tabindex="0" role="region" aria-label="Featured ESP32 projects">{cards}</div>
+  </div>
+</section>"""
+
+
+def home_latest_guides_section(guides: list) -> str:
+    mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
+    ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))[:4]
+    cards = []
     for g in ordered:
         slug = g["slug"]
         headline = g.get("headline") or g.get("title", "").split("|")[0].strip()
-        desc = g.get("lead") or g.get("meta_description", "")
-        if len(desc) > 110:
-            desc = desc[:107].rstrip() + "…"
-        phase = g.get("phase")
-        phase_badge = f'<span class="badge badge-cat">Phase {phase}</span>' if phase else ""
-        article_cards.append(
+        reading = g.get("reading_time", "10 min")
+        level = g.get("proficiency_level", "Beginner")
+        m = g.get("mission") or {}
+        badge = m.get("badge", "")
+        badge_html = f'<span class="badge badge-cat">{esc(badge)}</span>' if badge else ""
+        cards.append(
             f'<a class="guide-home-card" href="{site_href(f"guides/{slug}.html")}">'
-            f'<div class="guide-card-badges">{phase_badge}</div>'
-            f"<h3>{esc(headline)}</h3>"
-            f"<p>{esc(desc)}</p>"
-            f'<span class="btn btn-card">Read Guide<span aria-hidden="true">→</span></span></a>'
+            f'<div class="guide-card-badges">{badge_html}<span class="badge {badge_class(level)}">{esc(level)}</span><span class="badge badge-time">{esc(reading)}</span></div>'
+            f'<h3>{esc(headline)}</h3>'
+            f'<span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span></a>'
         )
-    return f"""<section class="section-premium wrap reveal" id="guides">
+    return f"""<section class="section-premium wrap reveal" id="latest-guides">
   <div class="section-head">
-    <div><p class="section-eyebrow">Learning paths</p><h2>ESP32 Guides &amp; Tutorials</h2><p class="section-sub">Structured paths from chip fundamentals to Arduino IDE setup and beyond.</p></div>
+    <div><p class="section-eyebrow">Interactive journeys</p><h2>Latest Guides</h2><p class="section-sub">Each guide is a mission — not a boring article. Learn step by step.</p></div>
     <a class="btn btn-secondary btn-sm" href="{site_href('guides.html')}">All guides</a>
   </div>
-  <div class="guide-tracks-grid">{track_cards}</div>
-  <div class="guide-home-grid">{"".join(article_cards)}</div>
+  <div class="guide-home-grid">{"".join(cards)}</div>
+</section>"""
+
+
+def home_newsletter_section() -> str:
+    return f"""<section class="section-premium wrap reveal" id="newsletter">
+  <div class="newsletter-panel">
+    <div>
+      <h2>Join the ESP32 Adventure!</h2>
+      <p>Get new projects, fun challenges, and learning tips delivered to your inbox.</p>
+    </div>
+    <form class="newsletter-form" action="{site_href('contact.html')}" method="get">
+      <input type="email" name="email" placeholder="Your email" aria-label="Email address" required>
+      <button type="submit" class="btn btn-lg">Subscribe</button>
+    </form>
+  </div>
 </section>"""
 
 
@@ -724,32 +801,20 @@ def home_cta_banner(project_count: int) -> str:
 
 
 def footer_html(base: str = "") -> str:
-    from project_icons import slug_cat
-
-    cat_links = "".join(
-        f'<a href="{site_href(f"category/{slug_cat(cat)}.html")}">{esc(short_category(cat))}</a>'
-        for _, cat in [
-            ("IoT", "IoT Projects"),
-            ("CAM", "ESP32-CAM"),
-            ("Home", "Home Automation"),
-            ("Robotics", "Robotics"),
-            ("Sensors", "Sensor Projects"),
-        ]
-    )
     return f"""<footer class="site-footer">
   <div class="wrap footer-grid">
     <div class="footer-brand">
       <strong>{SITE_NAME}</strong>
       <p class="footer-tagline">{esc(SITE_TAGLINE)}</p>
-      <p>Premium ESP32 tutorials with wiring tables, Arduino code, and three difficulty levels for makers and engineers.</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
       <div class="footer-social">
         <a href="{esc(GITHUB_URL)}" rel="noopener noreferrer" target="_blank" aria-label="GitHub">{ICON_GITHUB}</a>
         <a href="{esc(YOUTUBE_URL)}" rel="noopener noreferrer" target="_blank" aria-label="YouTube">{ICON_YOUTUBE}</a>
       </div>
     </div>
-    <div class="footer-col"><h4>Explore</h4><a href="{site_href()}">Home</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('projects.html')}">All Projects</a><a href="{site_href('sitemap.html')}">Sitemap</a></div>
-    <div class="footer-col"><h4>Categories</h4>{cat_links}</div>
-    <div class="footer-col"><h4>Company</h4><a href="{site_href('about.html')}">About</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy Policy</a><a href="{site_href('terms.html')}">Terms</a><a href="{site_href('disclaimer.html')}">Disclaimer</a></div>
+    <div class="footer-col"><h4>Learn</h4><a href="{site_href('learning.html')}">Learning Paths</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('components.html')}">Components</a><a href="{site_href('projects.html')}">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Downloads</a><a href="{site_href('tools.html')}">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="{site_href('about.html')}">About</a><a href="{site_href('news.html')}">News</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a></div>
   </div>
   <div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div>
 </footer>"""

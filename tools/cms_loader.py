@@ -7,6 +7,7 @@ CONTENT = ROOT / "content"
 PROJECTS_DIR = CONTENT / "projects"
 PAGES_DIR = CONTENT / "pages"
 GUIDES_DIR = CONTENT / "guides"
+COMPONENTS_DIR = CONTENT / "components"
 
 DEFAULT_SITE = {
     "site_name": "ESP32 Engine",
@@ -18,8 +19,8 @@ DEFAULT_SITE = {
     "gsc_verification": "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI",
     "pinterest_verification": "f71bc8cce0ff2c76eeea8b5cf86dc70b",
     "indexnow_key": "esp32engineindex20260618",
-    "css_version": "20260615-premium1",
-    "site_tagline": "Learn | Build | Innovate",
+    "css_version": "20260626-learn-v2",
+    "site_tagline": "Learn · Build · Explore",
     "youtube_url": "https://www.youtube.com/@ESP32Engine",
     "projects_page_size": 50,
     "og_image_width": 1200,
@@ -105,3 +106,34 @@ def load_guides() -> list[dict]:
         data.setdefault("slug", path.stem)
         guides.append(data)
     return guides
+
+
+def load_components() -> list[dict]:
+    if not COMPONENTS_DIR.exists():
+        return []
+    components = []
+    for path in sorted(COMPONENTS_DIR.glob("*.yaml")):
+        data = load_yaml(path)
+        if not isinstance(data, dict):
+            continue
+        data.setdefault("slug", path.stem)
+        components.append(data)
+    return components
+
+
+def load_learning_paths() -> list[dict]:
+    data = load_yaml(CONTENT / "learning-paths.yaml")
+    if isinstance(data, dict) and "paths" in data:
+        return data["paths"]
+    if isinstance(data, list):
+        return data
+    return []
+
+
+def load_component_categories() -> list[str]:
+    data = load_yaml(CONTENT / "component-categories.yaml")
+    if isinstance(data, dict) and "categories" in data:
+        return data["categories"]
+    if isinstance(data, list):
+        return data
+    return []

@@ -1,0 +1,47 @@
+slug: hc-sr04
+name: HC-SR04 Ultrasonic Distance Sensor
+category: Sensors
+difficulty: Beginner
+icon: "📏"
+image: https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg
+summary: Measures distance using sound waves. Great for robots, parking sensors, and level detectors.
+eli12: HC-SR04 is like a bat that sends out a tiny sound you can't hear. It listens for the echo and tells your ESP32 how far away something is — like measuring how close your hand is to a wall.
+specs:
+  - "Range: 2 cm to 400 cm"
+  - "Operating voltage: 5 V"
+  - "Trigger and Echo pins"
+  - "Accuracy: about 3 mm"
+pins:
+  - "VCC → 5 V"
+  - "GND → GND"
+  - "TRIG → GPIO5"
+  - "ECHO → GPIO18 (via level shifter if needed)"
+library: Built-in Arduino timing (or NewPing library)
+example_code: |
+  #define TRIG 5
+  #define ECHO 18
+  void setup() { Serial.begin(115200); pinMode(TRIG, OUTPUT); pinMode(ECHO, INPUT); }
+  void loop() {
+    digitalWrite(TRIG, LOW); delayMicroseconds(2);
+    digitalWrite(TRIG, HIGH); delayMicroseconds(10);
+    digitalWrite(TRIG, LOW);
+    long duration = pulseIn(ECHO, HIGH);
+    float cm = duration * 0.034 / 2;
+    Serial.printf("Distance: %.1f cm\n", cm);
+    delay(500);
+  }
+output: Serial Monitor prints distance in centimeters.
+applications:
+  - Robot obstacle avoidance
+  - Water tank level sensing
+  - Automatic door triggers
+related_projects:
+  - title: ESP32 Distance Monitoring System
+    href: /projects/esp32-distance-monitoring-system.html
+related_guides:
+  - title: What Is ESP32?
+    href: /guides/what-is-esp32.html
+datasheet_url: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+faqs:
+  - question: Why does it show 0 cm?
+    answer: The object may be too close (under 2 cm) or the sensor is angled wrong.

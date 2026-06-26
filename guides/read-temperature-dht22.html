@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Read Temperature with DHT22 | ESP32 Engine</title>
+<meta name="description" content="Mission 2 — read real temperature and humidity with DHT22 and ESP32. Simple wiring, kid-friendly explanation, code, quiz, and challenge.">
+<meta name="theme-color" content="#0099FF">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/read-temperature-dht22.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="Read Temperature with DHT22 | ESP32 Engine">
+<meta property="og:description" content="Mission 2 — read real temperature and humidity with DHT22 and ESP32. Simple wiring, kid-friendly explanation, code, quiz, and challenge.">
+<meta property="og:url" content="https://esp32engine.com/guides/read-temperature-dht22.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Read Temperature with DHT22 | ESP32 Engine">
+<meta name="twitter:description" content="Mission 2 — read real temperature and humidity with DHT22 and ESP32. Simple wiring, kid-friendly explanation, code, quiz, and challenge.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260626-learn-v2" as="style">
+<link rel="stylesheet" href="/style.css?v=20260626-learn-v2">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Read Temperature with DHT22","description":"Mission 2 — read real temperature and humidity with DHT22 and ESP32. Simple wiring, kid-friendly explanation, code, quiz, and challenge.","datePublished":"2026-06-26","dateModified":"2026-06-26","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/read-temperature-dht22.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 DHT22, temperature sensor ESP32, humidity sensor beginner"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Read Temperature with DHT22","item":"https://esp32engine.com/guides/read-temperature-dht22.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How often should you read the DHT22 at minimum?","acceptedAnswer":{"@type":"Answer","text":"The DHT22 needs about 2 seconds between readings to prepare a fresh measurement."}},{"@type":"Question","name":"What does NaN mean in the Serial output?","acceptedAnswer":{"@type":"Answer","text":"NaN means Not a Number — the library couldn't get valid data. Check wiring and pull-up resistor."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/guides.html" class="active">Guides</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a><a href="/news.html">News</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">Read Temperature with DHT22</li></ol></nav>
+  <p class="hero-eyebrow">Interactive Mission</p>
+  <h1>Read Temperature with DHT22</h1>
+  <p class="article-lead">Lights are fun — but sensors make your ESP32 smart. This mission connects a DHT22 so your board can feel the temperature and humidity in the room.</p>
+  <div class="mission-meta-row">
+  <span class="badge badge-cat">Mission 2</span>
+  <span class="badge badge-beginner">Beginner</span>
+  <span class="badge badge-time">18 min mission</span>
+</div>
+<article class="mission-journey">
+<div class="mission-card">
+  <span class="mission-card-icon" aria-hidden="true">🌡</span>
+  <span class="mission-card-badge">Mission 2</span>
+  <h2 class="mission-card-title">Teach Your ESP32 to Feel the Weather!</h2>
+</div>
+<div class="mission-story"><p>Your ESP32 already knows how to blink. Now it needs senses — like a robot opening its eyes for the first time.</p><p>The DHT22 is a small sensor that measures how warm and how humid the air is. You&#x27;ll wire it up, ask it for readings, and watch numbers appear in the Serial Monitor. That&#x27;s the same skill used in weather stations and greenhouse monitors worldwide.</p></div>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading">Explain Like I'm 12</h2>
+    <p>The DHT22 is a tiny weather box with three legs. One leg gets power, one connects to ground, and the data leg sends numbers back to the ESP32 — like sending a text message that says &quot;it&#x27;s 24 degrees and kind of sticky outside.&quot;</p>
+  </div>
+</section>
+<section class="mission-section" id="build" aria-labelledby="build-heading">
+  <h2 id="build-heading">What You'll Build</h2>
+  <p>A breadboard circuit with DHT22 connected to ESP32. Your code reads temperature (°C) and humidity (%) every two seconds and prints them to Serial Monitor on your computer.</p>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading">Things You'll Need</h2>
+  <ul class="mission-things-list"><li><a href="/components/esp32-devkit.html">ESP32 DevKit board</a></li><li><a href="/components/dht22.html">DHT22 sensor module</a> <span class="meta">— 3-pin or 4-pin module with built-in resistor is easiest</span></li><li>Breadboard and jumper wires</li><li>USB cable</li></ul>
+</section>
+<aside class="mission-safety" aria-label="Safety first">
+  <div class="mission-safety-head"><span aria-hidden="true">⚠️</span><strong>Safety First</strong></div>
+  <ul><li>Power the DHT22 at 3.3 V when connecting directly to ESP32 GPIO.</li><li>Do not touch the exposed sensor grid while powered — oils from fingers can affect readings.</li><li>Keep liquids away from the breadboard and board.</li></ul>
+</aside>
+<section class="mission-section" id="concept" aria-labelledby="concept-heading">
+  <h2 id="concept-heading">How Does the DHT22 Send Data?</h2>
+  <figure class="mission-illustration" aria-label="DHT22 sensor with VCC, GND, and single data line connected to ESP32 GPIO4 with pull-up resistor">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">🎨</span>
+    <span class="mission-illustration-label">Concept Illustration</span>
+    <span class="mission-illustration-alt">DHT22 sensor with VCC, GND, and single data line connected to ESP32 GPIO4 with pull-up resistor</span>
+  </div>
+</figure>
+  <p>The DHT22 uses one data wire for communication. The ESP32 sends a start signal, then the sensor replies with a packet of bits that the library converts into temperature and humidity numbers.</p><p>A pull-up resistor (often built into modules) keeps the data line stable at 3.3 V until the sensor pulls it low to send data.</p>
+</section>
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading">Wiring</h2>
+  <figure class="mission-illustration" aria-label="DHT22 VCC to 3.3V, GND to GND, DATA to GPIO4">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">🎨</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">DHT22 VCC to 3.3V, GND to GND, DATA to GPIO4</span>
+  </div>
+</figure>
+  <ol class="mission-steps"><li>Unplug USB. Place DHT22 module on the breadboard.</li><li>Connect VCC on the module to ESP32 3.3 V.</li><li>Connect GND on the module to ESP32 GND.</li><li>Connect DATA on the module to ESP32 GPIO4.</li><li>If using bare DHT22 (not module), add a 10 kΩ pull-up from DATA to 3.3 V.</li><li>Install the DHT sensor library in Arduino IDE (Library Manager → search DHT).</li></ol>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading">Code</h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="code-panel">
+  <div class="code-panel-head">
+    <span class="code-panel-filename">dht22_read.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code">Copy</button>
+  </div>
+  <pre class="code-block"><code>#include &quot;DHT.h&quot;
+
+#define DHTPIN 4
+#define DHTTYPE DHT22
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+  Serial.println(&quot;DHT22 ready!&quot;);
+}
+
+void loop() {
+  float humidity = dht.readHumidity();
+  float tempC = dht.readTemperature();
+
+  if (isnan(humidity) || isnan(tempC)) {
+    Serial.println(&quot;Read failed — check wiring&quot;);
+    delay(2000);
+    return;
+  }
+
+  Serial.print(&quot;Temperature: &quot;);
+  Serial.print(tempC);
+  Serial.print(&quot; °C  |  Humidity: &quot;);
+  Serial.print(humidity);
+  Serial.println(&quot; %&quot;);
+
+  delay(2000);
+}</code></pre>
+</div>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading">Expected Output</h2>
+  <p>Open Serial Monitor at 115200 baud. Every two seconds you&#x27;ll see lines like:</p><p>Temperature: 24.3 °C  |  Humidity: 55.0 %</p><p>Breathe warm air near the sensor — temperature should rise slightly. If you see &quot;Read failed&quot;, check DATA on GPIO4 and 3.3 V power.</p>
+</section>
+<section class="mission-section mission-quiz" id="quiz" aria-labelledby="quiz-heading">
+  <h2 id="quiz-heading">Mini Quiz</h2>
+  <p class="mission-section-lead">Quick check — no grades, just confidence!</p>
+  <div class="mission-quiz-list"><div class="quiz-question" data-quiz-q="0" data-explanation="The DHT22 needs about 2 seconds between readings to prepare a fresh measurement.">
+  <p class="quiz-q-text"><span class="quiz-q-num">Q1.</span> How often should you read the DHT22 at minimum?</p>
+  <div class="quiz-options" role="group"><button type="button" class="quiz-option" data-index="0" data-correct="1">About every 2 seconds</button><button type="button" class="quiz-option" data-index="1" data-correct="0">As fast as possible in a tight loop</button><button type="button" class="quiz-option" data-index="2" data-correct="0">Once per hour</button></div>
+  <p class="quiz-feedback" hidden></p>
+</div><div class="quiz-question" data-quiz-q="1" data-explanation="NaN means Not a Number — the library couldn&#x27;t get valid data. Check wiring and pull-up resistor.">
+  <p class="quiz-q-text"><span class="quiz-q-num">Q2.</span> What does NaN mean in the Serial output?</p>
+  <div class="quiz-options" role="group"><button type="button" class="quiz-option" data-index="0" data-correct="1">The reading failed — usually a wiring issue</button><button type="button" class="quiz-option" data-index="1" data-correct="0">The temperature is zero</button><button type="button" class="quiz-option" data-index="2" data-correct="0">The sensor is working perfectly</button></div>
+  <p class="quiz-feedback" hidden></p>
+</div></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading">Challenge Yourself</h2>
+  <div class="mission-challenge-box"><p>Add an alert: if temperature goes above 28 °C, print &quot;It&#x27;s getting warm!&quot; If humidity goes above 70 %, print &quot;Feels humid!&quot;. Try holding an ice cube near the sensor (not touching water to the board).</p></div>
+</section>
+<section class="mission-section mission-complete" id="complete" aria-labelledby="complete-heading">
+  <div class="mission-complete-panel">
+    <span class="mission-complete-badge" aria-hidden="true">🏆</span>
+    <h2 id="complete-heading">Mission Complete!</h2>
+    <p>Your ESP32 can now read the real world! Temperature and humidity data powers weather stations, smart thermostats, and plant monitors. You learned sensor wiring, libraries, and Serial debugging — core skills every engineer uses.</p>
+    <ul class='mission-skills'><li>Wire a DHT22 to 3.3 V, GND, and GPIO4</li><li>Install and use the DHT sensor library</li><li>Read and debug sensor values in Serial Monitor</li></ul>
+  </div>
+</section>
+<section class="mission-section mission-next" id="next-mission" aria-labelledby="next-heading">
+  <h2 id="next-heading">Continue Your Journey</h2>
+  <div class="next-mission-grid"><a class="next-mission-card" href="/guides/connect-oled-esp32.html">
+  <span class="next-mission-label">Next Mission</span>
+  <h3>Connect an OLED Display</h3>
+  <p>Show temperature on a screen instead of Serial Monitor.</p>
+  <span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span>
+</a><a class="next-mission-card" href="/guides/blink-led-esp32.html">
+  <span class="next-mission-label">Next Mission</span>
+  <h3>Blink an LED</h3>
+  <p>Revisit Mission 1 if you want to combine LED alerts with sensor readings.</p>
+  <span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span>
+</a></div>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js" defer></script>
+<script src="/ui.js" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>

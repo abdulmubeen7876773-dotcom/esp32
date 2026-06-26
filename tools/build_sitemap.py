@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
-from cms_loader import load_guides
+from content_store import get_content_store
 from site_layout import PROJECTS_PAGE_SIZE, SITE_DOMAIN, esc, header_html, footer_html, head_html, projects_page_path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -17,7 +17,16 @@ SITEMAP_HTML = ROOT / "sitemap.html"
 
 STATIC_PAGES = [
     ("", "weekly", "1.0"),
+    ("learning.html", "weekly", "0.95"),
+    ("components.html", "weekly", "0.95"),
     ("guides.html", "weekly", "0.92"),
+    ("projects.html", "weekly", "0.92"),
+    ("parents.html", "monthly", "0.7"),
+    ("teachers.html", "monthly", "0.7"),
+    ("downloads.html", "monthly", "0.6"),
+    ("tools.html", "monthly", "0.6"),
+    ("news.html", "weekly", "0.6"),
+    ("search.html", "monthly", "0.4"),
     ("about.html", "monthly", "0.5"),
     ("contact.html", "monthly", "0.5"),
     ("privacy.html", "monthly", "0.4"),
@@ -65,7 +74,12 @@ def parse_title(path: Path) -> str:
 
 
 def guide_pages() -> list[tuple[str, str, str]]:
-    return [(f"guides/{g['slug']}.html", "monthly", "0.88") for g in sorted(load_guides(), key=lambda g: (g.get("phase", 99), g.get("sort_order", 99), g.get("slug", "")))]
+    store = get_content_store()
+    return [(f"guides/{g['slug']}.html", "monthly", "0.88") for g in sorted(store.guides(), key=lambda g: (g.get("phase", 99), g.get("sort_order", 99), g.get("slug", "")))]
+
+
+def component_pages() -> list[tuple[str, str, str]]:
+    return [(f"components/{c['slug']}.html", "monthly", "0.86") for c in get_content_store().components()]
 
 
 def write_sitemap_xml(project_files: list[Path]) -> None:
@@ -73,7 +87,7 @@ def write_sitemap_xml(project_files: list[Path]) -> None:
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
-    for page, freq, priority in STATIC_PAGES + guide_pages() + category_pages() + project_listing_pages():
+    for page, freq, priority in STATIC_PAGES + guide_pages() + component_pages() + category_pages() + project_listing_pages():
         if page == "sitemap.html":
             continue
         loc = page_loc(page)
@@ -146,6 +160,7 @@ def main():
         len(project_files)
         + len(STATIC_PAGES)
         + len(guide_pages())
+        + len(component_pages())
         + len(category_pages())
         + len(project_listing_pages())
         - 1
