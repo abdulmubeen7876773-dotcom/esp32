@@ -343,8 +343,8 @@ git push origin main
 | Question | Look here |
 |----------|-----------|
 | What goes where? | `content/manifest.yaml` |
-| Full file inventory? | `docs/CONTENT_INVENTORY.md` |
-| Architecture details? | `docs/DEVELOPER_ARCHITECTURE.md` |
+| Full file inventory? | `docs/reference/CONTENT_INVENTORY.md` |
+| Architecture details? | `docs/engineering/DEVELOPER_ARCHITECTURE.md` |
 | Build failed? | Error output from `py tools/build_all.py` |
 | Example mission guide? | `content/guides/blink-led-esp32.yaml` |
 | Example component? | `content/components/dht22.yaml` |

@@ -224,6 +224,6 @@ Until templates read `image:`, keep `illustration_alt` populated and add the fil
 
 ## Related docs
 
-- `docs/CONTENT_EDITOR_GUIDE.md` — YAML fields and build workflow
-- `docs/CONTENT_INVENTORY.md` — what is source vs generated
+- `docs/guides/CONTENT_EDITOR_GUIDE.md` — YAML fields and build workflow
+- `docs/reference/CONTENT_INVENTORY.md` — what is source vs generated
 - `content/guide-roadmap.yaml` / `content/component-roadmap.yaml` — planned art needs

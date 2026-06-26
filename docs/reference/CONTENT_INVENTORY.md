@@ -218,4 +218,4 @@ The **editable surface** is only **37 YAML files** in `content/` (guides, compon
 | Add/edit project | `content/projects/*.yaml` | `py tools/build_all.py` |
 | Re-export wiring from archive | — | `py tools/legacy/export_project_hardware.py` |
 
-See also: `docs/CONTENT_EDITOR_GUIDE.md`, `content/manifest.yaml`, `static.config.yaml`
+See also: `docs/guides/CONTENT_EDITOR_GUIDE.md`, `content/manifest.yaml`, `static.config.yaml`

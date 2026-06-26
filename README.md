@@ -29,8 +29,9 @@ py tools/build_all.py
 
 | Guide | For |
 |-------|-----|
-| [docs/CONTENT_EDITOR_GUIDE.md](docs/CONTENT_EDITOR_GUIDE.md) | Adding guides, components, projects — no coding needed |
-| [docs/DEVELOPER_ARCHITECTURE.md](docs/DEVELOPER_ARCHITECTURE.md) | Build pipeline, static architecture, Phase 2 path |
+| [docs/README.md](docs/README.md) | Documentation map — where every doc type belongs |
+| [docs/guides/CONTENT_EDITOR_GUIDE.md](docs/guides/CONTENT_EDITOR_GUIDE.md) | Adding guides, components, projects — no coding needed |
+| [docs/engineering/DEVELOPER_ARCHITECTURE.md](docs/engineering/DEVELOPER_ARCHITECTURE.md) | Build pipeline, static architecture, Phase 2 path |
 | [content/manifest.yaml](content/manifest.yaml) | Content folder map |
 | [static.config.yaml](static.config.yaml) | Phase 1 static-first config |
 
@@ -52,4 +53,4 @@ py tools/build_all.py
 2. Run `py tools/build_all.py`
 3. Push to `main`
 
-See [docs/CONTENT_EDITOR_GUIDE.md](docs/CONTENT_EDITOR_GUIDE.md) for step-by-step instructions.
+See [docs/guides/CONTENT_EDITOR_GUIDE.md](docs/guides/CONTENT_EDITOR_GUIDE.md) for step-by-step instructions.
