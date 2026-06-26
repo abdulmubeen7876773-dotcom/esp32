@@ -112,7 +112,10 @@ def load_components() -> list[dict]:
     if not COMPONENTS_DIR.exists():
         return []
     components = []
+    skip = {"component-template.yaml"}
     for path in sorted(COMPONENTS_DIR.glob("*.yaml")):
+        if path.name in skip:
+            continue
         data = load_yaml(path)
         if not isinstance(data, dict):
             continue
