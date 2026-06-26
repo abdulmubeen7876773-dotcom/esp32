@@ -35,7 +35,7 @@ ARCHIVE = PROJECTS / "_archive"
 DOMAIN = SITE_DOMAIN
 
 
-def load_hardware(parent: dict) -> dict:
+def load_hardware_from_archive(parent: dict) -> dict:
     base = parent["source_base"]
     matches = sorted(
         PROJECTS.glob(f"{base}-project-*.html"),
@@ -59,6 +59,28 @@ def load_hardware(parent: dict) -> dict:
     if data["category"] in ("ESP32", ""):
         data["category"] = parent["category"]
     return data
+
+
+def load_hardware(parent: dict) -> dict:
+    stored = parent.get("hardware")
+    if isinstance(stored, dict):
+        wiring = []
+        for row in stored.get("wiring", []):
+            if isinstance(row, dict):
+                wiring.append((row.get("component", ""), row.get("pin", "")))
+            elif isinstance(row, (list, tuple)) and len(row) >= 2:
+                wiring.append((row[0], row[1]))
+        if wiring or stored.get("sensor_pin"):
+            return {
+                "wiring": wiring,
+                "sensor_pin": stored.get("sensor_pin", "GPIO34"),
+                "output_pin": stored.get("output_pin", "GPIO26"),
+                "sensor_name": stored.get("sensor_name") or parent.get("sensor", "Sensor"),
+                "output_name": stored.get("output_name") or parent.get("output", "Output"),
+                "category": parent.get("category", "ESP32"),
+            }
+
+    return load_hardware_from_archive(parent)
 
 
 def wiring_table(rows: list[tuple[str, str, str]]) -> str:

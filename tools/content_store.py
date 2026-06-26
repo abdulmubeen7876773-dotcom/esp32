@@ -126,11 +126,19 @@ def validate_content() -> list[str]:
             errors.append(f"components/{slug}: missing name")
         if not comp.get("summary"):
             errors.append(f"components/{slug}: missing summary")
+        if not comp.get("slug"):
+            errors.append(f"components/{slug}: missing slug")
 
     for proj in store.projects():
         slug = proj.get("slug", "?")
         if not proj.get("title"):
             errors.append(f"projects/{slug}: missing title")
+        if not proj.get("category"):
+            errors.append(f"projects/{slug}: missing category")
+        if not proj.get("description"):
+            errors.append(f"projects/{slug}: missing description")
+        if not proj.get("source_base"):
+            errors.append(f"projects/{slug}: missing source_base")
 
     for slug, page in store.pages().items():
         if not page.get("meta_description"):

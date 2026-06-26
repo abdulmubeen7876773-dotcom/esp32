@@ -4,16 +4,36 @@
 
 ---
 
+## Source of truth (edit only these folders)
+
+All normal content editing happens in three folders under `content/`:
+
+| Folder | What you edit | Build output |
+|--------|---------------|--------------|
+| **`content/guides/`** | Mission journeys and reference guides | `guides/*.html`, `guides.html` |
+| **`content/components/`** | Component encyclopedia entries | `components/*.html`, `components.html` |
+| **`content/projects/`** | Project metadata and wiring | `projects/*.html`, `projects.json`, `feed.xml` |
+
+Also edit when needed:
+
+- `content/pages/*.yaml` — static pages (about, parents, teachers, etc.)
+- `content/home.yaml` — homepage hero text
+- `content/site.yaml` — domain, analytics, CSS version
+
+**Never edit generated files** — see section 6 below.
+
+---
+
 ## The one rule
 
-**Only edit files inside `content/`.**  
-Everything else is built automatically.
+**Only edit YAML inside `content/`.**  
+Run `py tools/build_all.py` to regenerate HTML, sitemap, feed, and search index.
 
 ---
 
 ## Quick checklist (every time you publish)
 
-1. Edit or add a YAML file in `content/`
+1. Edit or add a YAML file in `content/guides/`, `content/components/`, or `content/projects/`
 2. Run the build:
    ```
    py tools/build_all.py
@@ -55,8 +75,9 @@ Guides live in **`content/guides/`**.
 
 1. Copy `content/guides/what-is-esp32.yaml`
 2. Remove `format: mission` and the `mission:` block
-3. Write content in `body_html:` using HTML tags (`<h2>`, `<p>`, `<ul>`, etc.)
-4. Rebuild
+3. Add an `intro:` block with `story`, `eli12`, and `safety` for kid-friendly opening
+4. Write technical content in `body_html:` using HTML tags (`<h2>`, `<p>`, `<ul>`, etc.)
+5. Rebuild
 
 ---
 
@@ -101,13 +122,15 @@ Projects live in **`content/projects/`**.
    | `description` | One paragraph summary |
    | `sensor` | Main sensor used |
    | `output` | Main output (relay, OLED, etc.) |
-   | `source_base` | Same as slug or legacy base name |
+   | `source_base` | Legacy archive filename prefix (for fallback wiring) |
    | `featured` | `true` or `false` |
+   | `hardware` | Wiring table — edit pins and components directly |
 
-4. Run `py tools/build_all.py`
-5. Page appears at: `/projects/esp32-your-project.html`
+4. Edit the `hardware:` block to set wiring, sensor pin, and output pin
+5. Run `py tools/build_all.py`
+6. Page appears at: `/projects/esp32-your-project.html`
 
-**Note:** The build generates Beginner, Intermediate, and Advanced stages automatically from project metadata.
+**Note:** The build generates Beginner, Intermediate, and Advanced stages from project YAML. Wiring comes from the `hardware:` section in your YAML file.
 
 ---
 
@@ -122,8 +145,6 @@ py tools/build_all.py
 ```
 
 When you add or edit a guide, component, project, or page in `content/`, the search index updates automatically.
-
-To verify: open `search-index.json` after building and search for your new title.
 
 ---
 
@@ -141,8 +162,8 @@ py tools/build_all.py
 
 **What the build does:**
 1. Validates your YAML content
-2. Generates all HTML pages
-3. Updates `search-index.json`, `projects.json`, `sitemap.xml`, `feed.xml`
+2. Generates all HTML pages from `content/guides/`, `content/components/`, `content/projects/`
+3. Updates `search-index.json`, `projects.json`, `project-icons.js`, `sitemap.xml`, `feed.xml`
 4. Prints `Build complete` when done
 
 **If build fails:** read the error message — it usually names the file and field that needs fixing.
@@ -153,24 +174,27 @@ py tools/build_all.py
 
 These are **generated**. Your edits will be overwritten on the next build.
 
-| Do not edit | Why |
-|-------------|-----|
-| `*.html` (root and subfolders) | Built from `content/` |
-| `guides/*.html` | Built from `content/guides/` |
-| `components/*.html` | Built from `content/components/` |
-| `projects/*.html` | Built from `content/projects/` |
-| `category/*.html` | Built automatically |
-| `search-index.json` | Built from all content |
-| `projects.json` | Built from projects |
-| `project-icons.js` | Built automatically |
-| `sitemap.xml` | Built automatically |
-| `feed.xml` | Built automatically |
+| Do not edit | Built from |
+|-------------|------------|
+| `*.html` (root and subfolders) | `content/` YAML |
+| `guides/*.html` | `content/guides/` |
+| `components/*.html` | `content/components/` |
+| `projects/*.html` (parent pages) | `content/projects/` |
+| `category/*.html` | Build scripts |
+| `search-index.json` | All content |
+| `projects.json` | `content/projects/` |
+| `project-icons.js` | Project categories |
+| `sitemap.xml` | All public URLs |
+| `feed.xml` | `content/projects/` |
 
 ### Safe to edit
 
 | Folder / file | Purpose |
 |---------------|---------|
-| `content/**` | **All site content** |
+| `content/guides/` | **Guide source** |
+| `content/components/` | **Component source** |
+| `content/projects/` | **Project source** |
+| `content/pages/`, `content/home.yaml`, `content/site.yaml` | Other site content |
 | `style.css` | Visual design |
 | `ui.js`, `search.js`, `mission-guide.js` | Client behavior |
 | `static.config.yaml` | Architecture settings |
@@ -180,15 +204,7 @@ These are **generated**. Your edits will be overwritten on the next build.
 
 ## 7. How to deploy to GitHub Pages
 
-### First-time setup (once)
-
-1. Push this repo to GitHub
-2. Go to **Settings → Pages**
-3. Source: **Deploy from branch**
-4. Branch: **`main`** / **root**
-5. Custom domain: `esp32engine.com` (CNAME file is already in the repo)
-
-### Every publish after that
+### Every publish
 
 ```
 git add content/
@@ -196,11 +212,7 @@ git commit -m "Add new guide: my-mission"
 git push origin main
 ```
 
-GitHub Actions (`.github/workflows/build-site.yml`) will:
-- Validate content
-- Run `py tools/build_all.py`
-- Commit generated HTML/JSON
-- GitHub Pages serves the updated site
+GitHub Actions (`.github/workflows/build-site.yml`) validates content, runs `py tools/build_all.py`, and commits generated artifacts.
 
 **You can also build locally first** to preview, then push both `content/` and generated files.
 
@@ -208,18 +220,11 @@ GitHub Actions (`.github/workflows/build-site.yml`) will:
 
 ## 8. Coming back after 10+ days
 
-Forget everything? Just do this:
-
-1. Open `content/` — find the folder for what you want to change
+1. Open `content/guides/`, `content/components/`, or `content/projects/`
 2. Copy the nearest existing YAML file
 3. Edit text fields
-4. Run:
-   ```
-   py tools/build_all.py
-   ```
+4. Run `py tools/build_all.py`
 5. Push to `main`
-
-The live site keeps running while you are away. No server to restart. No database to maintain.
 
 ---
 
@@ -228,6 +233,7 @@ The live site keeps running while you are away. No server to restart. No databas
 | Question | Look here |
 |----------|-----------|
 | What goes where? | `content/manifest.yaml` |
+| Full file inventory? | `docs/CONTENT_INVENTORY.md` |
 | Architecture details? | `docs/DEVELOPER_ARCHITECTURE.md` |
 | Build failed? | Error output from `py tools/build_all.py` |
 | Example mission guide? | `content/guides/blink-led-esp32.yaml` |

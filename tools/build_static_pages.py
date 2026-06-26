@@ -79,7 +79,7 @@ def not_found_page() -> str:
 def main():
     pages = get_content_store().pages()
     if not pages:
-        raise SystemExit("No CMS pages found in content/pages/. Run tools/migrate_to_cms.py first.")
+        raise SystemExit("No pages found in content/pages/. Add a YAML file under content/pages/.")
     for slug, data in pages.items():
         out = ROOT / f"{slug}.html"
         out.write_text(cms_page_html(data), encoding="utf-8")

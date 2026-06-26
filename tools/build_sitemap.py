@@ -20,7 +20,6 @@ STATIC_PAGES = [
     ("learning.html", "weekly", "0.95"),
     ("components.html", "weekly", "0.95"),
     ("guides.html", "weekly", "0.92"),
-    ("projects.html", "weekly", "0.92"),
     ("parents.html", "monthly", "0.7"),
     ("teachers.html", "monthly", "0.7"),
     ("downloads.html", "monthly", "0.6"),
@@ -82,14 +81,16 @@ def component_pages() -> list[tuple[str, str, str]]:
     return [(f"components/{c['slug']}.html", "monthly", "0.86") for c in get_content_store().components()]
 
 
-def write_sitemap_xml(project_files: list[Path]) -> None:
+def write_sitemap_xml(project_files: list[Path]) -> int:
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
+    seen: set[str] = set()
     for page, freq, priority in STATIC_PAGES + guide_pages() + component_pages() + category_pages() + project_listing_pages():
-        if page == "sitemap.html":
+        if page == "sitemap.html" or page in seen:
             continue
+        seen.add(page)
         loc = page_loc(page)
         lines.append(
             f"<url><loc>{html.escape(loc)}</loc><lastmod>{TODAY}</lastmod>"
@@ -99,12 +100,16 @@ def write_sitemap_xml(project_files: list[Path]) -> None:
         if "_archive" in path.parts or "-project-" in path.name:
             continue
         loc = f"{SITE_DOMAIN}/projects/{path.name}"
+        if loc in seen:
+            continue
+        seen.add(loc)
         lines.append(
             f"<url><loc>{html.escape(loc)}</loc><lastmod>{TODAY}</lastmod>"
             f"<changefreq>weekly</changefreq><priority>0.8</priority></url>"
         )
     lines.append("</urlset>")
     SITEMAP_XML.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return len(seen)
 
 
 def write_sitemap_html(project_files: list[Path]) -> None:
@@ -154,17 +159,8 @@ def main():
         for p in PROJECTS.glob("*.html")
         if p.is_file() and "-project-" not in p.name and "_archive" not in p.parts
     )
-    write_sitemap_xml(project_files)
+    url_count = write_sitemap_xml(project_files)
     write_sitemap_html(project_files)
-    url_count = (
-        len(project_files)
-        + len(STATIC_PAGES)
-        + len(guide_pages())
-        + len(component_pages())
-        + len(category_pages())
-        + len(project_listing_pages())
-        - 1
-    )
     print(f"Wrote sitemap.xml ({url_count} URLs) + sitemap.html")
 
 
