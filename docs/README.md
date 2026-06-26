@@ -53,6 +53,7 @@ Map of all repository documentation. Website content lives in `content/` (YAML);
 | [editorial/MANIFESTO.md](editorial/MANIFESTO.md) | Why ESP32 Engine exists — principles and promises |
 | [editorial/EDUCATIONAL_FRAMEWORK.md](editorial/EDUCATIONAL_FRAMEWORK.md) | Pedagogy, curriculum, mission structure, assessment |
 | [editorial/WRITING_STYLE_GUIDE.md](editorial/WRITING_STYLE_GUIDE.md) | Voice, readability, YAML prose conventions |
+| [editorial/CONTENT_QA_CHECKLIST.md](editorial/CONTENT_QA_CHECKLIST.md) | Pre-publish QA for guides, components, and projects |
 
 ### Asset documentation (co-located with files)
 
