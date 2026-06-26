@@ -28,6 +28,11 @@ from site_layout import (
     home_featured_projects_section,
     home_latest_guides_section,
     home_newsletter_section,
+    home_v2_declaration,
+    home_v2_proof,
+    home_v2_engine,
+    home_v2_invitation,
+    home_v2_showcase_js,
     PROJECTS_PAGE_SIZE,
     pagination_head_links,
     pagination_nav_html,
@@ -264,6 +269,7 @@ def home_html(projects):
     )
     title = home.get("meta_title", "ESP32 Engine — Build, Connect & Automate with ESP32")
     schema = organization_schema() + website_schema()
+    guides = store.guides()
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -272,18 +278,15 @@ def home_html(projects):
 <body class="home-page">
 <main>
 {header_html("home")}
-{hero_html()}
-{home_learning_paths_section()}
-{home_parents_section()}
-{home_teachers_section()}
-{home_components_section()}
-{home_featured_projects_section(projects, portal_carousel_card)}
-{home_latest_guides_section(store.guides())}
-{home_newsletter_section()}
+{home_v2_declaration()}
+{home_v2_proof()}
+{home_v2_engine(guides)}
+{home_v2_invitation()}
 </main>
 {footer_html()}
 <script src="/search.js" defer></script>
 <script src="/ui.js" defer></script>
+{home_v2_showcase_js()}
 </body>
 </html>
 """

@@ -826,6 +826,185 @@ def home_cta_banner(project_count: int) -> str:
 </section>"""
 
 
+_V2_ARROW_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>'
+
+_V2_HERO_BOARD_SVG = """<svg class="v2-hero-board-svg" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><linearGradient id="v2hGrad" x1="60" y1="80" x2="260" y2="240"><stop stop-color="#0099FF" stop-opacity=".9"/><stop offset="1" stop-color="#00C896" stop-opacity=".9"/></linearGradient><filter id="v2hGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="v2hSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><ellipse cx="160" cy="160" rx="110" ry="88" fill="rgba(0,153,255,0.06)" filter="url(#v2hSoft)"/><rect x="60" y="80" width="200" height="130" rx="18" stroke="url(#v2hGrad)" stroke-width="2.5" fill="rgba(0,153,255,0.04)" filter="url(#v2hGlow)"/><rect x="90" y="108" width="140" height="74" rx="10" fill="rgba(0,153,255,0.05)" stroke="rgba(0,153,255,0.18)" stroke-width="1.5"/><path d="M60 108h-22M60 128h-22M60 148h-22M60 168h-22M60 188h-22" stroke="#0099FF" stroke-width="2" stroke-linecap="round" opacity=".4"/><path d="M260 108h22M260 128h22M260 148h22M260 168h22M260 188h22" stroke="#0099FF" stroke-width="2" stroke-linecap="round" opacity=".4"/><path d="M110 80V56M140 80V56M170 80V56M200 80V56M230 80V56" stroke="#00C896" stroke-width="2" stroke-linecap="round" opacity=".35"/><path d="M110 210V234M140 210V234M170 210V234M200 210V234M230 210V234" stroke="#00C896" stroke-width="2" stroke-linecap="round" opacity=".35"/><rect x="120" y="120" width="80" height="50" rx="6" fill="rgba(0,153,255,0.1)" stroke="rgba(0,153,255,0.35)" stroke-width="1.5"/><circle cx="160" cy="145" r="14" fill="rgba(0,200,150,0.12)" stroke="#00C896" stroke-width="1.5"/><text x="160" y="150" text-anchor="middle" fill="#0099FF" font-size="13" font-weight="700" font-family="Poppins,Inter,sans-serif" opacity=".9">ESP32</text><circle cx="240" cy="95" r="5" fill="#00C896" opacity=".8"/><circle cx="224" cy="95" r="5" fill="#FFD54F" opacity=".65"/><rect x="150" y="228" width="20" height="10" rx="3" stroke="rgba(0,153,255,0.35)" stroke-width="1.5" fill="none"/></svg>"""
+
+_V2_HERO_FLOAT_CARDS = """<div class="v2-hero-float-stack" aria-hidden="true">
+<div class="v2-hero-float-card v2-hero-float-card-a"><span class="v2-float-label">Temperature</span><strong>24.3°C</strong><span class="v2-float-sub">DHT22 Sensor</span></div>
+<div class="v2-hero-float-card v2-hero-float-card-b"><span class="v2-float-label">Wi-Fi</span><strong>Connected</strong><span class="v2-float-sub">Your project is live</span></div>
+<div class="v2-hero-float-card v2-hero-float-card-c"><span class="v2-float-label">LED</span><strong>ON</strong><span class="v2-float-sub">Mission complete</span></div>
+</div>"""
+
+_V2_SVG_WEATHER = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2wG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#0099FF" stop-opacity=".8"/><stop offset="1" stop-color="#00C896" stop-opacity=".6"/></linearGradient><filter id="v2wGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="70" y="30" width="140" height="100" rx="8" stroke="url(#v2wG)" stroke-width="2" fill="rgba(0,153,255,0.07)" filter="url(#v2wGl)"/><rect x="82" y="46" width="116" height="2" rx="1" fill="rgba(0,153,255,0.5)"/><text x="140" y="90" text-anchor="middle" fill="#0099FF" font-size="30" font-weight="700" font-family="JetBrains Mono,monospace">24°C</text><text x="140" y="112" text-anchor="middle" fill="rgba(0,200,150,0.75)" font-size="11" font-family="Inter,sans-serif">Humidity: 62% · UV: Low</text><line x1="105" y1="130" x2="105" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="140" y1="130" x2="140" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="175" y1="130" x2="175" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><rect x="88" y="165" width="104" height="64" rx="6" stroke="rgba(0,200,150,0.55)" stroke-width="1.5" fill="rgba(0,200,150,0.05)"/><text x="140" y="193" text-anchor="middle" fill="rgba(0,200,150,0.7)" font-size="10" font-family="JetBrains Mono,monospace">DHT22</text><text x="140" y="210" text-anchor="middle" fill="rgba(0,200,150,0.45)" font-size="9" font-family="Inter,sans-serif">Temperature &amp; Humidity</text><line x1="105" y1="229" x2="105" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><line x1="140" y1="229" x2="140" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><line x1="175" y1="229" x2="175" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><path d="M220 80 Q230 70 240 80" stroke="rgba(0,153,255,0.5)" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M214 74 Q228 58 242 74" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="228" cy="87" r="3" fill="rgba(0,153,255,0.65)"/></svg>"""
+
+_V2_SVG_IRRIGATION = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2iG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#00C896" stop-opacity=".9"/><stop offset="1" stop-color="#0099FF" stop-opacity=".5"/></linearGradient><filter id="v2iGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="140" y1="240" x2="140" y2="150" stroke="#00C896" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><path d="M140 175 C140 175 115 160 112 140 C128 142 140 155 140 175Z" fill="rgba(0,200,150,0.16)" stroke="#00C896" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/><path d="M140 155 C140 155 165 140 168 120 C152 122 140 135 140 155Z" fill="rgba(0,200,150,0.16)" stroke="#00C896" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/><path d="M140 130 C140 130 155 110 152 92 C138 96 130 112 140 130Z" fill="rgba(0,200,150,0.2)" stroke="#00C896" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/><rect x="115" y="225" width="50" height="18" rx="4" stroke="rgba(0,200,150,0.55)" stroke-width="1.5" fill="rgba(0,200,150,0.08)" filter="url(#v2iGl)"/><text x="140" y="239" text-anchor="middle" fill="rgba(0,200,150,0.65)" font-size="9" font-family="JetBrains Mono,monospace">SOIL SENSOR</text><line x1="70" y1="243" x2="210" y2="243" stroke="rgba(0,200,150,0.18)" stroke-width="2" stroke-dasharray="4,4"/><ellipse cx="65" cy="80" rx="8" ry="11" fill="rgba(0,153,255,0.3)" stroke="rgba(0,153,255,0.55)" stroke-width="1.5"/><ellipse cx="88" cy="65" rx="6" ry="9" fill="rgba(0,153,255,0.22)" stroke="rgba(0,153,255,0.45)" stroke-width="1.2"/><ellipse cx="50" cy="55" rx="5" ry="7" fill="rgba(0,153,255,0.16)" stroke="rgba(0,153,255,0.35)" stroke-width="1"/><path d="M75 85 Q100 100 115 200" stroke="rgba(0,153,255,0.15)" stroke-width="1.5" fill="none" stroke-dasharray="3,4"/><rect x="175" y="155" width="80" height="52" rx="6" stroke="rgba(0,200,150,0.38)" stroke-width="1.5" fill="rgba(0,200,150,0.05)"/><text x="215" y="175" text-anchor="middle" fill="#00C896" font-size="9" font-family="Inter,sans-serif">Soil: 45%</text><text x="215" y="190" text-anchor="middle" fill="rgba(0,200,150,0.55)" font-size="9" font-family="Inter,sans-serif">Valve: OPEN</text><text x="215" y="201" text-anchor="middle" fill="rgba(0,200,150,0.38)" font-size="8" font-family="JetBrains Mono,monospace">Auto Mode</text></svg>"""
+
+_V2_SVG_SECURITY = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2sG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#FF6B6B" stop-opacity=".9"/><stop offset="1" stop-color="#FFD54F" stop-opacity=".5"/></linearGradient><filter id="v2sGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M140 30 L205 56 L205 116 C205 158 173 190 140 204 C107 190 75 158 75 116 L75 56 Z" stroke="url(#v2sG)" stroke-width="2.5" fill="rgba(255,107,107,0.06)" filter="url(#v2sGl)"/><path d="M110 116 L132 138 L170 96" stroke="#FF6B6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/><path d="M70 200 Q75 180 90 170" stroke="rgba(255,107,107,0.28)" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M58 215 Q65 185 88 168" stroke="rgba(255,107,107,0.18)" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M45 230 Q55 190 86 165" stroke="rgba(255,107,107,0.1)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="75" cy="200" r="12" stroke="rgba(255,107,107,0.48)" stroke-width="1.5" fill="rgba(255,107,107,0.08)"/><circle cx="75" cy="200" r="5" fill="rgba(255,107,107,0.4)"/><rect x="185" y="170" width="68" height="56" rx="8" stroke="rgba(255,107,107,0.38)" stroke-width="1.5" fill="rgba(255,107,107,0.05)"/><text x="219" y="192" text-anchor="middle" fill="#FF6B6B" font-size="9" font-family="Inter,sans-serif" font-weight="600">ALERT</text><text x="219" y="207" text-anchor="middle" fill="rgba(255,107,107,0.55)" font-size="8" font-family="JetBrains Mono,monospace">Motion: YES</text><text x="219" y="218" text-anchor="middle" fill="rgba(255,107,107,0.38)" font-size="8" font-family="Inter,sans-serif">SMS Sent</text><circle cx="219" cy="232" r="4" fill="#FF6B6B" opacity=".75"/></svg>"""
+
+_V2_SVG_CLIMATE = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2cG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#A855F7" stop-opacity=".9"/><stop offset="1" stop-color="#0099FF" stop-opacity=".5"/></linearGradient><filter id="v2cGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 150 L140 60 L230 150 L230 240 L50 240 Z" stroke="url(#v2cG)" stroke-width="2.5" fill="rgba(168,85,247,0.05)" stroke-linejoin="round" filter="url(#v2cGl)"/><rect x="118" y="200" width="44" height="40" rx="3" stroke="rgba(168,85,247,0.38)" stroke-width="1.5" fill="rgba(168,85,247,0.05)"/><rect x="72" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="90" y1="175" x2="90" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="72" y1="190" x2="108" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="172" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="190" y1="175" x2="190" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="172" y1="190" x2="208" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="104" y="120" width="72" height="50" rx="8" stroke="rgba(168,85,247,0.48)" stroke-width="1.5" fill="rgba(168,85,247,0.08)"/><text x="140" y="143" text-anchor="middle" fill="#A855F7" font-size="16" font-weight="700" font-family="JetBrains Mono,monospace">22°C</text><text x="140" y="159" text-anchor="middle" fill="rgba(168,85,247,0.55)" font-size="9" font-family="Inter,sans-serif">AUTO · COOL</text><circle cx="35" cy="75" r="4" fill="rgba(168,85,247,0.48)"/><circle cx="245" cy="75" r="4" fill="rgba(0,153,255,0.48)"/><text x="35" y="65" text-anchor="middle" fill="rgba(168,85,247,0.38)" font-size="8" font-family="Inter,sans-serif">WiFi</text><text x="245" y="65" text-anchor="middle" fill="rgba(0,153,255,0.38)" font-size="8" font-family="Inter,sans-serif">Cloud</text><line x1="35" y1="79" x2="55" y2="100" stroke="rgba(168,85,247,0.18)" stroke-width="1" stroke-dasharray="3,3"/><line x1="245" y1="79" x2="225" y2="100" stroke="rgba(0,153,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/></svg>"""
+
+
+def home_v2_declaration() -> str:
+    """Section 1 — Homepage v2: The Declaration (full-viewport hero)."""
+    return f"""<section class="v2-declaration" aria-labelledby="v2-hero-heading">
+  <div class="wrap v2-declaration-inner">
+    <div class="v2-declaration-content reveal">
+      <p class="v2-eyebrow">ESP32 Engine</p>
+      <h1 id="v2-hero-heading" class="v2-declaration-headline">Build things that exist<br>in the real world.</h1>
+      <p class="v2-declaration-sub">ESP32 Engine is where engineers, makers, and curious minds learn to build hardware that actually works.</p>
+      <a class="v2-btn-hero" href="{site_href('learning.html')}">Start Building {_V2_ARROW_ICON}</a>
+    </div>
+    <div class="v2-declaration-visual" aria-hidden="true">
+      <div class="v2-hero-visual-frame">
+        {_V2_HERO_BOARD_SVG}
+        {_V2_HERO_FLOAT_CARDS}
+      </div>
+    </div>
+  </div>
+</section>"""
+
+
+def home_v2_proof() -> str:
+    """Section 2 — Homepage v2: Proof of Possibility (full-bleed showcase)."""
+    panels = [
+        ("v2-panel-weather",    _V2_SVG_WEATHER,    "Weather Station — ESP32 + DHT22 + OLED"),
+        ("v2-panel-irrigation", _V2_SVG_IRRIGATION, "Smart Irrigation — ESP32 + Soil Sensor + Relay"),
+        ("v2-panel-security",   _V2_SVG_SECURITY,   "Motion Security Alert — ESP32 + PIR + SMS"),
+        ("v2-panel-climate",    _V2_SVG_CLIMATE,    "Home Climate Automation — ESP32 + WiFi + Cloud"),
+    ]
+    panel_html = ""
+    for cls, svg, tag in panels:
+        panel_html += (
+            f'<div class="{cls} v2-showcase-panel" role="group" aria-label="{esc(tag)}">'
+            f'<div class="v2-showcase-glow" aria-hidden="true"></div>'
+            f'<div class="v2-showcase-illustration" aria-hidden="true">{svg}</div>'
+            f'<div class="v2-showcase-info"><span class="v2-showcase-tag">{esc(tag)}</span></div>'
+            f'</div>'
+        )
+    dots = "".join(
+        f'<button class="v2-showcase-dot{" is-active" if i == 0 else ""}" '
+        f'aria-label="Panel {i + 1}" data-panel="{i}"></button>'
+        for i in range(len(panels))
+    )
+    return f"""<section class="v2-proof" aria-labelledby="v2-proof-heading">
+  <div class="v2-proof-header">
+    <div class="wrap">
+      <h2 id="v2-proof-heading" class="v2-proof-heading">What engineers build here.</h2>
+    </div>
+  </div>
+  <div class="v2-showcase-track" id="v2-showcase-track" role="region" aria-label="Project showcase">{panel_html}</div>
+  <div class="v2-showcase-dots" role="group" aria-label="Showcase navigation">{dots}</div>
+</section>"""
+
+
+def home_v2_engine(guides: list) -> str:
+    """Section 3 — Homepage v2: The Engine (methodology)."""
+    from guide_mission import mission_meta_badges_html  # noqa: F401 – kept for parity
+
+    mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
+    ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))[:3]
+
+    pillars = [
+        ("LEARN", "Focused Theory", "Only what you need for the next step — no filler, no detours."),
+        ("BUILD", "A Guided Project", "Build something real from scratch, wire to final firmware."),
+        ("SHIP", "A Working Circuit", "A physical project you understand completely. Ship it."),
+    ]
+    pillar_html = "".join(
+        f'<div class="v2-pillar">'
+        f'<p class="v2-pillar-label">{label}</p>'
+        f'<h3 class="v2-pillar-title">{title}</h3>'
+        f'<p class="v2-pillar-desc">{desc}</p>'
+        f'</div>'
+        for label, title, desc in pillars
+    )
+
+    arc_nodes = []
+    milestone_positions = {1, 4, 8, 12}
+    for i in range(1, 13):
+        is_live = i <= len(ordered)
+        is_milestone = i in milestone_positions
+        label = f"Mission {i:02d}"
+        if is_live:
+            guide = ordered[i - 1]
+            slug = guide["slug"]
+            headline = (guide.get("headline") or guide.get("title", "")).split("|")[0].strip()
+            short = (headline[:24] + "…") if len(headline) > 24 else headline
+            href = site_href(f"guides/{slug}.html")
+            arc_nodes.append(
+                f'<a class="v2-arc-node is-milestone" href="{esc(href)}" title="{esc(headline)}">'
+                f'<div class="v2-arc-dot"></div>'
+                f'<span class="v2-arc-node-label">{esc(label)}</span>'
+                f'</a>'
+            )
+        elif is_milestone:
+            arc_nodes.append(
+                f'<span class="v2-arc-node">'
+                f'<div class="v2-arc-dot"></div>'
+                f'<span class="v2-arc-node-label">{esc(label)}</span>'
+                f'</span>'
+            )
+        else:
+            arc_nodes.append('<span class="v2-arc-node"><div class="v2-arc-dot"></div></span>')
+
+    return f"""<section class="v2-engine reveal" aria-labelledby="v2-engine-heading">
+  <div class="wrap">
+    <p class="v2-engine-eyebrow">How it works</p>
+    <h2 id="v2-engine-heading" class="v2-engine-heading">Missions, not modules.</h2>
+    <p class="v2-engine-sub">Every mission ends with something real you built. Not a quiz. Not a certificate. A working project.</p>
+    <div class="v2-engine-pillars">{pillar_html}</div>
+    <div class="v2-mission-arc">
+      <p class="v2-arc-label-row">Mission path — start here, ship something every step</p>
+      <div class="v2-arc-track">
+        <div class="v2-arc-spine" aria-hidden="true"></div>
+        {"".join(arc_nodes)}
+      </div>
+    </div>
+  </div>
+</section>"""
+
+
+def home_v2_invitation() -> str:
+    """Section 4 — Homepage v2: The Invitation (final CTA)."""
+    return f"""<section class="v2-invitation" aria-labelledby="v2-invite-heading">
+  <div class="wrap v2-invitation-inner reveal">
+    <h2 id="v2-invite-heading" class="v2-invitation-heading">Your first project<br>ships in two hours.</h2>
+    <p class="v2-invitation-sub">No prior experience needed.<br>A USB cable and curiosity are enough.</p>
+    <div>
+      <a class="v2-btn-invitation" href="{site_href('guides/blink-led-esp32.html')}">Start Mission 01 — Free {_V2_ARROW_ICON}</a>
+    </div>
+    <p class="v2-no-account">No account required to begin.</p>
+  </div>
+</section>"""
+
+
+def home_v2_showcase_js() -> str:
+    """Minimal inline JS for showcase drag-scroll and dot indicator (homepage only)."""
+    return """<script>
+(function(){
+  var track=document.getElementById('v2-showcase-track');
+  if(!track)return;
+  var dots=document.querySelectorAll('.v2-showcase-dot');
+  var panels=track.querySelectorAll('.v2-showcase-panel');
+  function updateDots(){
+    var idx=Math.round(track.scrollLeft/track.offsetWidth);
+    dots.forEach(function(d,i){d.classList.toggle('is-active',i===idx);});
+  }
+  track.addEventListener('scroll',updateDots,{passive:true});
+  dots.forEach(function(dot){
+    dot.addEventListener('click',function(){
+      var p=parseInt(dot.getAttribute('data-panel'),10);
+      track.scrollTo({left:p*track.offsetWidth,behavior:'smooth'});
+    });
+  });
+  var startX,startScroll,dragging=false;
+  track.addEventListener('mousedown',function(e){startX=e.pageX;startScroll=track.scrollLeft;dragging=true;track.classList.add('is-dragging');});
+  document.addEventListener('mousemove',function(e){if(!dragging)return;track.scrollLeft=startScroll-(e.pageX-startX);});
+  document.addEventListener('mouseup',function(){dragging=false;track.classList.remove('is-dragging');});
+})();
+</script>"""
+
+
 def footer_html(base: str = "") -> str:
     return f"""<footer class="site-footer">
   <div class="wrap footer-grid">
