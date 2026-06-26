@@ -69,7 +69,10 @@ def load_projects() -> list[dict]:
     if not PROJECTS_DIR.exists():
         return []
     projects = []
+    skip = {"project-template.yaml"}
     for path in sorted(PROJECTS_DIR.glob("*.yaml")):
+        if path.name in skip:
+            continue
         data = load_yaml(path)
         if not isinstance(data, dict):
             continue
