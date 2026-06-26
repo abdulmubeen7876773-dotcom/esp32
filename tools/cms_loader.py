@@ -99,7 +99,10 @@ def load_guides() -> list[dict]:
     if not GUIDES_DIR.exists():
         return []
     guides = []
+    skip = {"guide-template.yaml"}
     for path in sorted(GUIDES_DIR.glob("*.yaml")):
+        if path.name in skip:
+            continue
         data = load_yaml(path)
         if not isinstance(data, dict):
             continue
