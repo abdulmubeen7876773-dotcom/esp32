@@ -76,7 +76,13 @@ def main():
     generate_content_dashboard()
     from release_validation import generate_release_report
 
-    generate_release_report()
+    generate_release_report(
+        {
+            "status": "PASS",
+            "duration_seconds": duration,
+            "errors": [],
+        }
+    )
     print("\nBuild complete. Deploy root HTML/JSON/JS to static hosting.")
 
 

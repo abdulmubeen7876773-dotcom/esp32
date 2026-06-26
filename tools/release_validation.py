@@ -1,9 +1,10 @@
 import json
 import re
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cms_loader import load_components, load_guides, load_projects
+from cms_loader import load_components, load_guides, load_projects, load_yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
@@ -11,7 +12,6 @@ REPORTS_DIR = ROOT / "docs" / "reports"
 
 HREF_RE = re.compile(r"""href=["']([^"'#?]+)["']""")
 SRC_RE = re.compile(r"""src=["']([^"'#?]+)["']""")
-YAML_PATH_RE = re.compile(r"""["'](/(?:assets|guides|components|projects|category|images)[^"']+)["']""")
 
 HTML_SCAN_DIRS = (
     ROOT,
@@ -22,6 +22,26 @@ HTML_SCAN_DIRS = (
 )
 
 PLACEHOLDER_HINTS = ("placeholder", "placehold.co", "via.placeholder", "unsplash.com", "picsum.photos")
+
+REQUIRED_BUILD_OUTPUT = (
+    "index.html",
+    "guides.html",
+    "components.html",
+    "projects.html",
+    "search-index.json",
+    "sitemap.xml",
+    "feed.xml",
+    "projects.json",
+    "project-icons.js",
+)
+
+Severity = str
+
+
+def _finding(severity: Severity, category: str, message: str, **fields) -> dict:
+    item = {"severity": severity, "category": category, "message": message}
+    item.update(fields)
+    return item
 
 
 def _is_mission(guide: dict) -> bool:
@@ -59,6 +79,10 @@ def _local_asset_exists(url: str) -> bool:
     return (ROOT / url.lstrip("/")).is_file()
 
 
+def _local_visual_photo(url: str) -> bool:
+    return url.startswith("/assets/visuals/") and _local_asset_exists(url)
+
+
 def _normalize_site_url(url: str) -> str:
     path = url.split("?")[0].split("#")[0]
     if not path.startswith("/"):
@@ -70,6 +94,10 @@ def _normalize_site_url(url: str) -> str:
     if "." in Path(path.lstrip("/")).name:
         return path
     return f"{path}.html"
+
+
+def _is_asset_url(url: str) -> bool:
+    return url.startswith(("/assets/", "/images/"))
 
 
 def _iter_html_files() -> list[Path]:
@@ -87,46 +115,23 @@ def _iter_html_files() -> list[Path]:
     return sorted(set(files))
 
 
-def _collect_yaml_asset_paths() -> set[str]:
-    paths: set[str] = set()
-    for folder in (CONTENT / "guides", CONTENT / "components", CONTENT / "projects", CONTENT / "pages"):
-        if not folder.exists():
-            continue
-        for yaml_path in folder.glob("*.yaml"):
-            text = yaml_path.read_text(encoding="utf-8", errors="replace")
-            for match in YAML_PATH_RE.finditer(text):
-                paths.add(match.group(1))
-    return paths
+def _load_roadmap(name: str) -> dict:
+    path = CONTENT / name
+    if not path.exists():
+        return {}
+    data = load_yaml(path)
+    return data if isinstance(data, dict) else {}
 
 
-def _collect_image_urls() -> list[dict]:
-    refs: list[dict] = []
-    for guide in load_guides():
-        slug = guide.get("slug", "?")
-        mission = guide.get("mission") or {}
-        for block_name in ("concept", "wiring"):
-            block = mission.get(block_name) or {}
-            if isinstance(block, dict) and block.get("image"):
-                refs.append({"source": f"guides/{slug}.yaml", "url": str(block["image"])})
-    for comp in load_components():
-        slug = comp.get("slug", "?")
-        if comp.get("image"):
-            refs.append({"source": f"components/{slug}.yaml", "url": str(comp["image"])})
-        wiring = comp.get("wiring") or {}
-        if isinstance(wiring, dict) and wiring.get("image"):
-            refs.append({"source": f"components/{slug}.yaml", "url": str(wiring["image"])})
-    for proj in load_projects():
-        slug = proj.get("slug", "?")
-        project = proj.get("project") or {}
-        for field in ("hero_image", "image", "wiring_image", "output_image"):
-            url = project.get(field) or proj.get(field)
-            if url:
-                refs.append({"source": f"projects/{slug}.yaml", "url": str(url)})
-    return refs
+def _published_slugs(folder: str) -> set[str]:
+    path = CONTENT / folder
+    if not path.exists():
+        return set()
+    return {p.stem for p in path.glob("*.yaml")}
 
 
 def check_broken_links() -> list[dict]:
-    issues: list[dict] = []
+    findings: list[dict] = []
     seen: set[str] = set()
 
     for html_path in _iter_html_files():
@@ -143,55 +148,160 @@ def check_broken_links() -> list[dict]:
             if raw.startswith("/"):
                 targets.add(_normalize_site_url(raw))
         for target in targets:
+            if _is_asset_url(target):
+                continue
             key = f"{target}|{page}"
             if key in seen:
                 continue
             seen.add(key)
             if not _url_exists(target):
-                issues.append({"url": target, "source": page, "type": "html"})
+                findings.append(
+                    _finding(
+                        "BLOCKER",
+                        "broken_links",
+                        f"Broken link {target} on {page}",
+                        url=target,
+                        source=page,
+                    )
+                )
+    return findings
 
-    for yaml_path in sorted(_collect_yaml_asset_paths()):
-        key = f"{yaml_path}|yaml"
-        if key in seen:
-            continue
-        seen.add(key)
-        if not _url_exists(yaml_path):
-            issues.append({"url": yaml_path, "source": "content YAML", "type": "yaml"})
-    return issues
+
+def check_missing_pages() -> list[dict]:
+    findings: list[dict] = []
+    for guide in load_guides():
+        slug = guide.get("slug", "?")
+        html_path = ROOT / "guides" / f"{slug}.html"
+        if not html_path.is_file():
+            findings.append(
+                _finding(
+                    "BLOCKER",
+                    "missing_pages",
+                    f"Guide YAML has no built HTML page: guides/{slug}.html",
+                    slug=slug,
+                    source=f"content/guides/{slug}.yaml",
+                    expected=str(html_path.relative_to(ROOT)),
+                )
+            )
+    for comp in load_components():
+        slug = comp.get("slug", "?")
+        html_path = ROOT / "components" / f"{slug}.html"
+        if not html_path.is_file():
+            findings.append(
+                _finding(
+                    "BLOCKER",
+                    "missing_pages",
+                    f"Component YAML has no built HTML page: components/{slug}.html",
+                    slug=slug,
+                    source=f"content/components/{slug}.yaml",
+                    expected=str(html_path.relative_to(ROOT)),
+                )
+            )
+    for proj in load_projects():
+        slug = proj.get("slug", "?")
+        html_path = ROOT / "projects" / f"{slug}.html"
+        if not html_path.is_file():
+            findings.append(
+                _finding(
+                    "BLOCKER",
+                    "missing_pages",
+                    f"Project YAML has no built HTML page: projects/{slug}.html",
+                    slug=slug,
+                    source=f"content/projects/{slug}.yaml",
+                    expected=str(html_path.relative_to(ROOT)),
+                )
+            )
+    return findings
 
 
-def check_missing_assets() -> list[dict]:
-    issues: list[dict] = []
+def check_missing_build_output() -> list[dict]:
+    findings: list[dict] = []
+    for rel in REQUIRED_BUILD_OUTPUT:
+        path = ROOT / rel
+        if not path.is_file():
+            findings.append(
+                _finding(
+                    "BLOCKER",
+                    "missing_build_output",
+                    f"Required build artifact missing: {rel}",
+                    path=rel,
+                )
+            )
+    return findings
+
+
+def check_build_failures(build_meta: dict) -> list[dict]:
+    findings: list[dict] = []
+    status = str(build_meta.get("status", "PASS")).upper()
+    if status == "FAIL":
+        findings.append(
+            _finding(
+                "BLOCKER",
+                "build_failures",
+                "Build did not complete successfully",
+                status=status,
+            )
+        )
+    for error in build_meta.get("errors") or []:
+        findings.append(
+            _finding(
+                "BLOCKER",
+                "build_failures",
+                str(error),
+                detail=str(error),
+            )
+        )
+    return findings
+
+
+def check_duplicate_urls() -> list[dict]:
+    findings: list[dict] = []
+    sitemap_path = ROOT / "sitemap.xml"
+    if not sitemap_path.exists():
+        return findings
+    try:
+        root = ET.parse(sitemap_path).getroot()
+        ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        locs = [el.text.strip() for el in root.findall(".//sm:loc", ns) if el.text]
+        if not locs:
+            locs = [el.text.strip() for el in root.findall(".//loc") if el.text]
+        seen: dict[str, int] = {}
+        for loc in locs:
+            seen[loc] = seen.get(loc, 0) + 1
+        for loc, count in sorted(seen.items()):
+            if count > 1:
+                findings.append(
+                    _finding(
+                        "BLOCKER",
+                        "duplicate_urls",
+                        f"Duplicate sitemap URL ({count}×): {loc}",
+                        url=loc,
+                        count=count,
+                    )
+                )
+    except ET.ParseError:
+        findings.append(
+            _finding(
+                "BLOCKER",
+                "duplicate_urls",
+                "Could not parse sitemap.xml to check duplicate URLs",
+                path="sitemap.xml",
+            )
+        )
+    return findings
+
+
+def check_placeholder_images() -> list[dict]:
+    findings: list[dict] = []
     seen: set[str] = set()
 
-    for ref in _collect_image_urls():
-        url = ref["url"]
-        if not url.startswith("/"):
+    for comp in load_components():
+        slug = comp.get("slug", "?")
+        source = f"components/{slug}.yaml"
+        url = str(comp.get("image") or "")
+        if not url:
             continue
-        if url in seen:
-            continue
-        seen.add(url)
-        if not _local_file_for_url(url) or not _url_exists(url):
-            issues.append({"url": url, "source": ref["source"]})
-
-    for yaml_path in sorted(_collect_yaml_asset_paths()):
-        if not yaml_path.startswith("/assets/"):
-            continue
-        if yaml_path in seen:
-            continue
-        seen.add(yaml_path)
-        if not _url_exists(yaml_path):
-            issues.append({"url": yaml_path, "source": "content YAML"})
-    return issues
-
-
-def check_placeholders() -> list[dict]:
-    issues: list[dict] = []
-    seen: set[str] = set()
-
-    for ref in _collect_image_urls():
-        url = ref["url"]
-        key = f"{url}|{ref['source']}"
+        key = f"{source}|{url}"
         if key in seen:
             continue
         seen.add(key)
@@ -201,110 +311,348 @@ def check_placeholders() -> list[dict]:
             reason = "external CDN URL"
         elif any(hint in lower for hint in PLACEHOLDER_HINTS):
             reason = "placeholder path"
-        elif url.startswith("/") and not _url_exists(url):
-            reason = "missing local file"
         if reason:
-            issues.append({"url": url, "source": ref["source"], "reason": reason})
-    return issues
+            findings.append(
+                _finding(
+                    "WARNING",
+                    "placeholder_images",
+                    f"{source}: {reason}",
+                    url=url,
+                    source=source,
+                    reason=reason,
+                )
+            )
+    return findings
 
 
-def _has_troubleshooting(guide: dict, mission: dict) -> bool:
-    if guide.get("troubleshooting") or mission.get("troubleshooting"):
-        return True
-    expected = str(mission.get("expected_output") or guide.get("expected_output") or "")
-    body = str(guide.get("body") or "")
-    combined = (expected + body).lower()
-    return any(
-        phrase in combined
-        for phrase in ("troubleshoot", "if nothing", "if the screen", "if you see", "if upload")
-    )
-
-
-def check_missing_quiz() -> list[dict]:
-    issues: list[dict] = []
-    for guide in load_guides():
-        if not _is_mission(guide):
-            continue
-        mission = guide.get("mission") or {}
-        if mission.get("quiz") or guide.get("quiz"):
-            continue
-        issues.append({"slug": guide.get("slug", "?"), "source": f"guides/{guide.get('slug', '?')}.yaml"})
-    return issues
-
-
-def check_missing_wiring() -> list[dict]:
-    issues: list[dict] = []
+def check_missing_wiring_diagrams() -> list[dict]:
+    findings: list[dict] = []
     for guide in load_guides():
         if not _is_mission(guide):
             continue
         slug = guide.get("slug", "?")
+        source = f"guides/{slug}.yaml"
         mission = guide.get("mission") or {}
         wiring = mission.get("wiring") or {}
         if not isinstance(wiring, dict) or not wiring.get("steps"):
-            issues.append({"slug": slug, "source": f"guides/{slug}.yaml", "detail": "no wiring steps"})
+            findings.append(
+                _finding(
+                    "WARNING",
+                    "missing_wiring_diagrams",
+                    f"{source}: no wiring steps",
+                    slug=slug,
+                    source=source,
+                )
+            )
             continue
         image = str(wiring.get("image") or "")
         if not _local_asset_exists(image):
-            issues.append({"slug": slug, "source": f"guides/{slug}.yaml", "detail": "missing wiring diagram file"})
-    return issues
+            findings.append(
+                _finding(
+                    "WARNING",
+                    "missing_wiring_diagrams",
+                    f"{source}: missing wiring diagram file",
+                    slug=slug,
+                    source=source,
+                    url=image or None,
+                )
+            )
+
+    for comp in load_components():
+        slug = comp.get("slug", "?")
+        source = f"components/{slug}.yaml"
+        wiring = comp.get("wiring") or {}
+        if not isinstance(wiring, dict) or not (wiring.get("steps") or wiring.get("summary")):
+            continue
+        image = str(wiring.get("image") or "")
+        if not _local_asset_exists(image):
+            findings.append(
+                _finding(
+                    "WARNING",
+                    "missing_wiring_diagrams",
+                    f"{source}: missing wiring diagram file",
+                    slug=slug,
+                    source=source,
+                    url=image or None,
+                )
+            )
+    return findings
 
 
-def check_missing_challenge() -> list[dict]:
-    issues: list[dict] = []
+def check_missing_illustrations() -> list[dict]:
+    findings: list[dict] = []
     for guide in load_guides():
         if not _is_mission(guide):
             continue
+        slug = guide.get("slug", "?")
+        source = f"guides/{slug}.yaml"
         mission = guide.get("mission") or {}
-        if mission.get("challenge_items") or mission.get("challenge") or guide.get("challenge"):
+        concept = mission.get("concept") or {}
+        if not isinstance(concept, dict):
             continue
-        issues.append({"slug": guide.get("slug", "?"), "source": f"guides/{guide.get('slug', '?')}.yaml"})
-    return issues
+        if not (concept.get("illustration_alt") or concept.get("image")):
+            continue
+        image = str(concept.get("image") or "")
+        if not _local_asset_exists(image):
+            findings.append(
+                _finding(
+                    "WARNING",
+                    "missing_illustrations",
+                    f"{source}: missing concept illustration",
+                    slug=slug,
+                    source=source,
+                    url=image or None,
+                )
+            )
+    return findings
 
 
-def check_missing_troubleshooting() -> list[dict]:
-    issues: list[dict] = []
+def check_missing_photos() -> list[dict]:
+    findings: list[dict] = []
+    for comp in load_components():
+        slug = comp.get("slug", "?")
+        source = f"components/{slug}.yaml"
+        image = str(comp.get("image") or "")
+        if _local_visual_photo(image):
+            continue
+        findings.append(
+            _finding(
+                "WARNING",
+                "missing_photos",
+                f"{source}: no local component photo in /assets/visuals/",
+                slug=slug,
+                source=source,
+                url=image or None,
+            )
+        )
+    return findings
+
+
+def check_coming_soon_content() -> list[dict]:
+    findings: list[dict] = []
+    guide_roadmap = _load_roadmap("guide-roadmap.yaml")
+    component_roadmap = _load_roadmap("component-roadmap.yaml")
+    published_guides = _published_slugs("guides")
+    published_components = _published_slugs("components")
+
+    for item in guide_roadmap.get("missions") or []:
+        if str(item.get("status", "")).lower() != "coming soon":
+            continue
+        slug = item.get("slug", "?")
+        findings.append(
+            _finding(
+                "INFO",
+                "coming_soon_content",
+                f"Guide mission coming soon: {item.get('title', slug)}",
+                slug=slug,
+                roadmap="guide-roadmap.yaml",
+                status="Coming Soon",
+                published=slug in published_guides,
+            )
+        )
+
+    for item in component_roadmap.get("components") or []:
+        if str(item.get("status", "")).lower() != "coming soon":
+            continue
+        slug = item.get("slug", "?")
+        findings.append(
+            _finding(
+                "INFO",
+                "coming_soon_content",
+                f"Component coming soon: {item.get('name', slug)}",
+                slug=slug,
+                roadmap="component-roadmap.yaml",
+                status="Coming Soon",
+                published=slug in published_components,
+            )
+        )
+    return findings
+
+
+def check_planned_assets() -> list[dict]:
+    findings: list[dict] = []
     for guide in load_guides():
         if not _is_mission(guide):
             continue
+        slug = guide.get("slug", "?")
+        source = f"guides/{slug}.yaml"
         mission = guide.get("mission") or {}
-        if _has_troubleshooting(guide, mission):
+        wiring = mission.get("wiring") or {}
+        if not isinstance(wiring, dict):
             continue
-        issues.append({"slug": guide.get("slug", "?"), "source": f"guides/{guide.get('slug', '?')}.yaml"})
-    return issues
+        image = str(wiring.get("image") or "")
+        if image.startswith("/assets/visuals/") and not _local_asset_exists(image):
+            findings.append(
+                _finding(
+                    "INFO",
+                    "planned_assets",
+                    f"{source}: planned wiring asset not yet published",
+                    slug=slug,
+                    source=source,
+                    url=image,
+                )
+            )
+        concept = mission.get("concept") or {}
+        if isinstance(concept, dict):
+            image = str(concept.get("image") or "")
+            if image.startswith("/assets/visuals/") and not _local_asset_exists(image):
+                findings.append(
+                    _finding(
+                        "INFO",
+                        "planned_assets",
+                        f"{source}: planned concept asset not yet published",
+                        slug=slug,
+                        source=source,
+                        url=image,
+                    )
+                )
+    return findings
 
 
-def build_release_report() -> dict:
-    broken_links = check_broken_links()
-    missing_assets = check_missing_assets()
-    placeholders = check_placeholders()
-    missing_quiz = check_missing_quiz()
-    missing_wiring = check_missing_wiring()
-    missing_challenge = check_missing_challenge()
-    missing_troubleshooting = check_missing_troubleshooting()
+def check_incomplete_roadmap_items() -> list[dict]:
+    findings: list[dict] = []
+    guide_roadmap = _load_roadmap("guide-roadmap.yaml")
+    component_roadmap = _load_roadmap("component-roadmap.yaml")
 
-    summary = {
-        "broken_links": len(broken_links),
-        "missing_assets": len(missing_assets),
-        "placeholders": len(placeholders),
-        "missing_quiz": len(missing_quiz),
-        "missing_wiring": len(missing_wiring),
-        "missing_challenge": len(missing_challenge),
-        "missing_troubleshooting": len(missing_troubleshooting),
+    if guide_roadmap:
+        complete = int(guide_roadmap.get("complete_count") or 0)
+        planned = int(guide_roadmap.get("target_total") or 0)
+        remaining = max(0, planned - complete)
+        findings.append(
+            _finding(
+                "INFO",
+                "incomplete_roadmap_items",
+                f"Guides roadmap: {complete}/{planned} complete ({remaining} remaining)",
+                roadmap="guide-roadmap.yaml",
+                complete=complete,
+                planned=planned,
+                remaining=remaining,
+            )
+        )
+
+    if component_roadmap:
+        complete = int(component_roadmap.get("complete_count") or 0)
+        planned = int(component_roadmap.get("target_total") or 0)
+        remaining = max(0, planned - complete)
+        findings.append(
+            _finding(
+                "INFO",
+                "incomplete_roadmap_items",
+                f"Components roadmap: {complete}/{planned} complete ({remaining} remaining)",
+                roadmap="component-roadmap.yaml",
+                complete=complete,
+                planned=planned,
+                remaining=remaining,
+            )
+        )
+
+    projects_complete = len(load_projects())
+    findings.append(
+        _finding(
+            "INFO",
+            "incomplete_roadmap_items",
+            f"Projects portfolio: {projects_complete} golden projects published",
+            complete=projects_complete,
+            planned=projects_complete,
+            remaining=0,
+        )
+    )
+    return findings
+
+
+def _count_by_severity(findings: list[dict]) -> dict:
+    counts = {"BLOCKER": 0, "WARNING": 0, "INFO": 0}
+    for item in findings:
+        counts[item["severity"]] = counts.get(item["severity"], 0) + 1
+    return counts
+
+
+def _count_by_category(findings: list[dict]) -> dict:
+    categories: dict[str, dict[str, int]] = {}
+    for item in findings:
+        cat = item["category"]
+        sev = item["severity"]
+        if cat not in categories:
+            categories[cat] = {"BLOCKER": 0, "WARNING": 0, "INFO": 0, "total": 0}
+        categories[cat][sev] = categories[cat].get(sev, 0) + 1
+        categories[cat]["total"] += 1
+    return categories
+
+
+def _release_status(severity_counts: dict) -> str:
+    if severity_counts.get("BLOCKER", 0) > 0:
+        return "BLOCKED"
+    if severity_counts.get("WARNING", 0) > 0:
+        return "WARN"
+    return "PASS"
+
+
+def build_release_report(build_meta: dict | None = None) -> dict:
+    build_meta = build_meta or {"status": "PASS", "errors": []}
+    all_findings = [
+        *check_build_failures(build_meta),
+        *check_broken_links(),
+        *check_missing_pages(),
+        *check_missing_build_output(),
+        *check_duplicate_urls(),
+        *check_placeholder_images(),
+        *check_missing_wiring_diagrams(),
+        *check_missing_illustrations(),
+        *check_missing_photos(),
+        *check_coming_soon_content(),
+        *check_planned_assets(),
+        *check_incomplete_roadmap_items(),
+    ]
+
+    severity_counts = _count_by_severity(all_findings)
+    grouped = {
+        "blocker": [f for f in all_findings if f["severity"] == "BLOCKER"],
+        "warning": [f for f in all_findings if f["severity"] == "WARNING"],
+        "info": [f for f in all_findings if f["severity"] == "INFO"],
     }
-    summary["total_issues"] = sum(summary.values())
 
     return {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "status": "PASS" if summary["total_issues"] == 0 else "WARN",
-        "summary": summary,
-        "broken_links": broken_links,
-        "missing_assets": missing_assets,
-        "placeholders": placeholders,
-        "missing_quiz": missing_quiz,
-        "missing_wiring": missing_wiring,
-        "missing_challenge": missing_challenge,
-        "missing_troubleshooting": missing_troubleshooting,
+        "status": _release_status(severity_counts),
+        "build_status": str(build_meta.get("status", "PASS")).upper(),
+        "summary": {
+            "blocker": severity_counts.get("BLOCKER", 0),
+            "warning": severity_counts.get("WARNING", 0),
+            "info": severity_counts.get("INFO", 0),
+            "total": len(all_findings),
+        },
+        "severity_rules": {
+            "BLOCKER": [
+                "broken_links",
+                "missing_pages",
+                "missing_build_output",
+                "build_failures",
+                "duplicate_urls",
+            ],
+            "WARNING": [
+                "placeholder_images",
+                "missing_wiring_diagrams",
+                "missing_illustrations",
+                "missing_photos",
+            ],
+            "INFO": [
+                "coming_soon_content",
+                "planned_assets",
+                "incomplete_roadmap_items",
+            ],
+        },
+        "categories": _count_by_category(all_findings),
+        "findings": grouped,
     }
+
+
+def _format_finding(item: dict) -> str:
+    parts = [item["message"]]
+    if item.get("url"):
+        parts.append(f"({item['url']})")
+    elif item.get("source") and item["category"] not in ("coming_soon_content", "incomplete_roadmap_items"):
+        parts.append(f"({item['source']})")
+    return " ".join(parts)
 
 
 def write_release_report_md(report: dict) -> None:
@@ -315,55 +663,70 @@ def write_release_report_md(report: dict) -> None:
         "",
         f"Generated: {report['generated_at']}",
         "",
-        "## Status",
+        "## Release Status",
         "",
         report["status"],
         "",
-        "## Summary",
+        f"Build status: {report['build_status']}",
         "",
-        f"- Broken links: {summary['broken_links']}",
-        f"- Missing assets: {summary['missing_assets']}",
-        f"- Placeholders: {summary['placeholders']}",
-        f"- Missing quiz: {summary['missing_quiz']}",
-        f"- Missing wiring: {summary['missing_wiring']}",
-        f"- Missing challenge: {summary['missing_challenge']}",
-        f"- Missing troubleshooting: {summary['missing_troubleshooting']}",
-        f"- Total issues: {summary['total_issues']}",
+        "## Severity Summary",
+        "",
+        f"- BLOCKER: {summary['blocker']}",
+        f"- WARNING: {summary['warning']}",
+        f"- INFO: {summary['info']}",
+        f"- Total findings: {summary['total']}",
+        "",
+        "## Severity Rules",
+        "",
+        "### BLOCKER",
+        "",
+        "- Broken links",
+        "- Missing pages",
+        "- Missing build output",
+        "- Build failures",
+        "- Duplicate URLs",
+        "",
+        "### WARNING",
+        "",
+        "- Placeholder images",
+        "- Missing wiring diagrams",
+        "- Missing illustrations",
+        "- Missing photos",
+        "",
+        "### INFO",
+        "",
+        "- Coming soon content",
+        "- Planned assets",
+        "- Incomplete roadmap items",
         "",
     ]
 
-    sections = [
-        ("Broken Links", "broken_links", lambda item: f"{item['url']} (from {item['source']})"),
-        ("Missing Assets", "missing_assets", lambda item: f"{item['url']} (from {item['source']})"),
-        (
-            "Placeholders",
-            "placeholders",
-            lambda item: f"{item['url']} — {item['reason']} (from {item['source']})",
-        ),
-        ("Missing Quiz", "missing_quiz", lambda item: item["source"]),
-        (
-            "Missing Wiring",
-            "missing_wiring",
-            lambda item: f"{item['source']} — {item.get('detail', 'missing wiring')}",
-        ),
-        ("Missing Challenge", "missing_challenge", lambda item: item["source"]),
-        ("Missing Troubleshooting", "missing_troubleshooting", lambda item: item["source"]),
-    ]
-
-    for title, key, fmt in sections:
-        items = report[key]
+    for severity_key, title in (("blocker", "BLOCKER"), ("warning", "WARNING"), ("info", "INFO")):
+        items = report["findings"][severity_key]
         lines.extend([f"## {title}", "", f"Count: {len(items)}", ""])
-        if items:
-            lines.extend(f"- {fmt(item)}" for item in items)
-        else:
+        if not items:
             lines.append("- None")
-        lines.append("")
+            lines.append("")
+            continue
+        by_category: dict[str, list[dict]] = {}
+        for item in items:
+            by_category.setdefault(item["category"], []).append(item)
+        for category in sorted(by_category):
+            cat_items = by_category[category]
+            lines.append(f"### {category} ({len(cat_items)})")
+            lines.append("")
+            display_items = cat_items if severity_key != "info" else cat_items[:25]
+            for item in display_items:
+                lines.append(f"- {_format_finding(item)}")
+            if severity_key == "info" and len(cat_items) > 25:
+                lines.append(f"- … and {len(cat_items) - 25} more")
+            lines.append("")
 
     (REPORTS_DIR / "release-report.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def generate_release_report() -> dict:
-    report = build_release_report()
+def generate_release_report(build_meta: dict | None = None) -> dict:
+    report = build_release_report(build_meta)
     (ROOT / "release-report.json").write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -372,5 +735,10 @@ def generate_release_report() -> dict:
     print("\n=== release_validation.py ===")
     print("Wrote release-report.json")
     print("Wrote docs/reports/release-report.md")
-    print(f"Release status: {report['status']} ({report['summary']['total_issues']} issues)")
+    print(
+        f"Release status: {report['status']} "
+        f"(blocker={report['summary']['blocker']}, "
+        f"warning={report['summary']['warning']}, "
+        f"info={report['summary']['info']})"
+    )
     return report
