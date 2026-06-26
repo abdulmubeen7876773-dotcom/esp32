@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -34,8 +35,23 @@ def main():
             "Missing content/site.yaml. Add site settings under content/ before building."
         )
     print("Static-first build (Phase 1) — files only, no runtime server.")
+    started = time.perf_counter()
+    steps_run = []
     for step in STEPS:
         run_step(step)
+        steps_run.append({"name": step, "status": "PASS"})
+    duration = round(time.perf_counter() - started, 2)
+
+    sys.path.insert(0, str(TOOLS))
+    from release_readiness import run_release_readiness
+
+    run_release_readiness(
+        {
+            "status": "PASS",
+            "duration_seconds": duration,
+            "steps": steps_run,
+        }
+    )
     print("\nBuild complete. Deploy root HTML/JSON/JS to static hosting.")
 
 
