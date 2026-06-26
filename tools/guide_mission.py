@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from site_layout import badge_class, esc, site_href
+
+_ROOT = Path(__file__).resolve().parent.parent
 
 
 def section_heading(section_id: str, icon: str, title: str) -> str:
@@ -18,6 +22,21 @@ def illustration_placeholder(alt: str, label: str = "Illustration", icon: str = 
     <span class="mission-illustration-alt">{esc(alt)}</span>
   </div>
 </figure>"""
+
+
+def illustration_block(
+    alt: str,
+    label: str = "Illustration",
+    icon: str = "🎨",
+    image: str = "",
+) -> str:
+    if image:
+        rel = image.lstrip("/")
+        if (_ROOT / rel).is_file():
+            return f"""<figure class="mission-illustration mission-illustration--image" aria-label="{esc(alt)}">
+  <img src="{esc(image)}" alt="{esc(alt)}" loading="lazy" decoding="async">
+</figure>"""
+    return illustration_placeholder(alt, label, icon)
 
 
 def mission_number_label(guide: dict) -> str:
@@ -317,7 +336,7 @@ def render_mission_guide(guide: dict) -> str:
         wiring_html = f"""<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
   {section_heading("wiring", "🔗", "Wiring Diagram")}
   <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
-  {illustration_placeholder(wiring.get("illustration_alt", "Wiring diagram"), "Wiring Diagram", "🔗")}
+  {illustration_block(wiring.get("illustration_alt", "Wiring diagram"), "Wiring Diagram", "🔗", wiring.get("image", ""))}
   {wiring_steps_html(wiring_steps)}
 </section>"""
 
