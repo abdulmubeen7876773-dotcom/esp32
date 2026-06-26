@@ -74,6 +74,9 @@ def main():
     from content_dashboard import generate_content_dashboard
 
     generate_content_dashboard()
+    from release_validation import generate_release_report
+
+    generate_release_report()
     print("\nBuild complete. Deploy root HTML/JSON/JS to static hosting.")
 
 
