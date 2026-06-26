@@ -30,9 +30,15 @@ from site_layout import (
     home_newsletter_section,
     home_v2_declaration,
     home_v2_proof,
-    home_v2_engine,
     home_v2_invitation,
     home_v2_showcase_js,
+    home_v3_journey,
+    home_v3_roadmap,
+    home_v3_mission_feature,
+    home_v3_component_feature,
+    home_v3_project_feature,
+    home_v3_why,
+    home_v3_progress,
     PROJECTS_PAGE_SIZE,
     pagination_head_links,
     pagination_nav_html,
@@ -270,6 +276,8 @@ def home_html(projects):
     title = home.get("meta_title", "ESP32 Engine — Build, Connect & Automate with ESP32")
     schema = organization_schema() + website_schema()
     guides = store.guides()
+    project_count = len(projects)
+    guide_count = len(guides)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -280,7 +288,13 @@ def home_html(projects):
 {header_html("home")}
 {home_v2_declaration()}
 {home_v2_proof()}
-{home_v2_engine(guides)}
+{home_v3_journey()}
+{home_v3_roadmap(guides)}
+{home_v3_mission_feature(guides)}
+{home_v3_component_feature()}
+{home_v3_project_feature()}
+{home_v3_why()}
+{home_v3_progress(project_count, guide_count)}
 {home_v2_invitation()}
 </main>
 {footer_html()}

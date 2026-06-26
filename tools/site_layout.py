@@ -1005,6 +1005,303 @@ def home_v2_showcase_js() -> str:
 </script>"""
 
 
+# ── Homepage v3 Constants ─────────────────────────────────────────────────
+
+_V3_LED_SVG = """<svg viewBox="0 0 280 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="200" cy="168" r="60" fill="rgba(255,213,79,0.06)"/>
+  <rect x="20" y="50" width="130" height="80" rx="8" fill="rgba(0,200,150,0.05)" stroke="rgba(0,200,150,0.3)" stroke-width="1.5"/>
+  <rect x="55" y="70" width="60" height="40" rx="4" fill="rgba(0,200,150,0.12)" stroke="rgba(0,200,150,0.4)" stroke-width="1"/>
+  <text x="85" y="94" text-anchor="middle" fill="rgba(0,200,150,0.75)" font-size="10" font-family="JetBrains Mono,monospace" font-weight="700">ESP32</text>
+  <line x1="150" y1="75" x2="160" y2="75" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="150" y1="90" x2="160" y2="90" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="150" y1="105" x2="160" y2="105" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M160 75 Q200 75 200 115" stroke="#FFD54F" stroke-width="2" stroke-dasharray="5,3" fill="none" stroke-linecap="round"/>
+  <rect x="190" y="110" width="20" height="10" rx="3" fill="rgba(255,213,79,0.18)" stroke="#FFD54F" stroke-width="1.25"/>
+  <line x1="200" y1="120" x2="200" y2="148" stroke="#FFD54F" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round"/>
+  <path d="M160 105 Q245 105 245 168" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="4,3" fill="none" stroke-linecap="round"/>
+  <circle cx="200" cy="168" r="34" fill="rgba(255,213,79,0.05)"/>
+  <circle cx="200" cy="168" r="22" fill="rgba(255,213,79,0.09)"/>
+  <circle cx="200" cy="168" r="13" fill="rgba(255,213,79,0.22)" stroke="#FFD54F" stroke-width="1.5"/>
+  <circle cx="200" cy="168" r="6" fill="rgba(255,225,80,0.6)"/>
+  <line x1="200" y1="155" x2="200" y2="148" stroke="#FFD54F" stroke-width="2" stroke-linecap="round"/>
+  <line x1="200" y1="181" x2="200" y2="190" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="164" y="73" fill="rgba(0,200,150,0.55)" font-size="7.5" font-family="JetBrains Mono,monospace">GPIO2</text>
+  <text x="164" y="103" fill="rgba(255,255,255,0.2)" font-size="7.5" font-family="JetBrains Mono,monospace">GND</text>
+  <text x="213" y="119" fill="rgba(255,213,79,0.55)" font-size="7.5" font-family="JetBrains Mono,monospace">220Ω</text>
+  <text x="200" y="222" text-anchor="middle" fill="rgba(255,213,79,0.4)" font-size="8" font-family="JetBrains Mono,monospace" letter-spacing="2">● BLINK</text>
+</svg>"""
+
+
+def home_v3_journey() -> str:
+    """Section 3 — Homepage v3: Choose Your Journey (row links, not cards). White bg."""
+    PATHS = [
+        {
+            "num": "01", "level": "Beginner", "cls": "beginner",
+            "title": "First Circuits",
+            "desc": "Start from zero. Blink an LED, read a sensor, display data. No experience needed — just curiosity.",
+            "meta": "3 missions · 10–15 min each",
+            "href": "guides.html",
+        },
+        {
+            "num": "02", "level": "Builder", "cls": "intermediate",
+            "title": "Real Projects",
+            "desc": "Combine sensors and components into useful, working devices you can actually use and show off.",
+            "meta": "15 projects · 3 difficulty levels each",
+            "href": "projects.html",
+        },
+        {
+            "num": "03", "level": "Engineer", "cls": "advanced",
+            "title": "Advanced Systems",
+            "desc": "IoT dashboards, TinyML on-device AI, automated control systems, and production-grade firmware.",
+            "meta": "5+ IoT builds · Advanced concepts",
+            "href": "learning.html",
+        },
+    ]
+    arrow = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 9h10M10 5l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    rows = "".join(
+        f'<li><a class="v3-journey-row" href="{esc(p["href"])}">'
+        f'<span class="v3-journey-num">{p["num"]}</span>'
+        f'<span class="v3-journey-badge v3-journey-badge-{p["cls"]}">{esc(p["level"])}</span>'
+        f'<span class="v3-journey-body">'
+        f'<span class="v3-journey-title">{esc(p["title"])}</span>'
+        f'<span class="v3-journey-desc">{esc(p["desc"])}</span>'
+        f'</span>'
+        f'<span class="v3-journey-meta">{esc(p["meta"])}</span>'
+        f'<span class="v3-journey-arrow">{arrow}</span>'
+        f'</a></li>'
+        for p in PATHS
+    )
+    return f"""<section class="v3-journey reveal" aria-label="Choose Your Learning Journey">
+  <div class="wrap">
+    <header class="v3-journey-header">
+      <p class="v3-journey-eyebrow">Choose Your Journey</p>
+      <h2 class="v3-journey-heading">Three paths.<br>One destination: maker.</h2>
+    </header>
+    <ul class="v3-journey-list">{rows}</ul>
+  </div>
+</section>"""
+
+
+def home_v3_roadmap(guides: list) -> str:
+    """Section 4 — Homepage v3: Learning Roadmap (LEARN/BUILD/SHIP + mission arc). Off-white bg."""
+    mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
+    ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))[:3]
+
+    PILLARS = [
+        ("01", "Learn", "Only what you need for the next step — focused theory through guided missions, not textbook chapters."),
+        ("02", "Build", "Build something real from wire to firmware. Every project ends with a working circuit you fully understand."),
+        ("03", "Ship", "Go beyond the breadboard — publish data to the web, add a display, and grow toward connected devices."),
+    ]
+    pillar_html = "".join(
+        f'<div class="v3-roadmap-pillar">'
+        f'<p class="v3-roadmap-pillar-num">{num}</p>'
+        f'<h3 class="v3-roadmap-pillar-title">{title}</h3>'
+        f'<p class="v3-roadmap-pillar-desc">{esc(desc)}</p>'
+        f'</div>'
+        for num, title, desc in PILLARS
+    )
+
+    arc_nodes = []
+    milestone_positions = {1, 4, 8, 12}
+    for i in range(1, 13):
+        is_live = i <= len(ordered)
+        is_milestone = i in milestone_positions
+        label = f"Mission {i:02d}"
+        if is_live:
+            guide = ordered[i - 1]
+            slug = guide["slug"]
+            headline = (guide.get("headline") or guide.get("title", "")).split("|")[0].strip()
+            href = site_href(f"guides/{slug}.html")
+            arc_nodes.append(
+                f'<a class="v3-arc-node is-live" href="{esc(href)}" title="{esc(headline)}">'
+                f'<span class="v3-arc-dot"></span>'
+                f'<span class="v3-arc-node-label">{esc(label)}</span>'
+                f'</a>'
+            )
+        elif is_milestone:
+            arc_nodes.append(
+                f'<span class="v3-arc-node">'
+                f'<span class="v3-arc-dot"></span>'
+                f'<span class="v3-arc-node-label">{esc(label)}</span>'
+                f'</span>'
+            )
+        else:
+            arc_nodes.append('<span class="v3-arc-node"><span class="v3-arc-dot"></span></span>')
+
+    cta_arrow = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    return f"""<section class="v3-roadmap reveal" aria-labelledby="v3-roadmap-heading">
+  <div class="wrap">
+    <p class="v3-roadmap-eyebrow">The Method</p>
+    <h2 id="v3-roadmap-heading" class="v3-roadmap-heading">Learn. Build. Ship.</h2>
+    <p class="v3-roadmap-sub">Every project on ESP32 Engine follows a three-phase progression — from understanding the parts to shipping something real.</p>
+    <div class="v3-roadmap-pillars">{pillar_html}</div>
+    <div class="v3-roadmap-separator"></div>
+    <div class="v3-roadmap-arc-header">
+      <span class="v3-roadmap-arc-title">Mission Track — 12 missions planned</span>
+      <a class="v3-roadmap-arc-cta" href="/guides.html">Explore all guides {cta_arrow}</a>
+    </div>
+    <div class="v3-arc-track">
+      <div class="v3-arc-spine" aria-hidden="true"></div>
+      {"".join(arc_nodes)}
+    </div>
+  </div>
+</section>"""
+
+
+def home_v3_mission_feature(guides: list) -> str:
+    """Section 5 — Homepage v3: Featured Mission (Mission 01 spotlight). Blue-teal gradient bg."""
+    mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
+    ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))
+    featured = ordered[0] if ordered else None
+    slug = featured["slug"] if featured else "blink-led-esp32"
+    headline = (featured.get("headline") or featured.get("title", "Blink an LED with ESP32")).split("|")[0].strip() if featured else "Blink an LED with ESP32"
+    lead = (featured.get("lead") or "Your first real ESP32 project — one LED, a few wires, and code you write yourself.") if featured else "Your first real ESP32 project — one LED, a few wires, and code you write yourself."
+    time_label = (featured.get("reading_time") or "10–15 min") if featured else "10–15 min"
+    href = site_href(f"guides/{slug}.html")
+    BUILD_POINTS = [
+        "A working LED circuit on a breadboard",
+        "A blink program you write and fully understand",
+        "The confidence and habits to tackle the next mission",
+    ]
+    build_items = "".join(f'<li class="v3-mission-build-item">{esc(b)}</li>' for b in BUILD_POINTS)
+    arrow = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    return f"""<section class="v3-mission-feature reveal" aria-labelledby="v3-mission-feature-heading">
+  <div class="wrap v3-mission-feature-inner">
+    <div class="v3-mission-content">
+      <div class="v3-mission-badges">
+        <span class="v3-mission-pill v3-mission-pill-accent">Mission 01</span>
+        <span class="v3-mission-pill">Beginner</span>
+        <span class="v3-mission-pill">{esc(time_label)}</span>
+      </div>
+      <h2 id="v3-mission-feature-heading" class="v3-mission-feature-heading">{esc(headline)}</h2>
+      <p class="v3-mission-feature-desc">{esc(lead)}</p>
+      <ul class="v3-mission-build-list">{build_items}</ul>
+      <a class="v3-btn-mission" href="{esc(href)}">Start Mission 01 {arrow}</a>
+    </div>
+    <div class="v3-mission-visual" aria-hidden="true">
+      <div class="v3-mission-visual-frame">{_V3_LED_SVG}</div>
+    </div>
+  </div>
+</section>"""
+
+
+def home_v3_component_feature() -> str:
+    """Section 6 — Homepage v3: Featured Component (DHT22 spotlight). White bg."""
+    SPECS = [
+        ("Measures", "Air temperature and humidity"),
+        ("Voltage", "3.3 V — direct ESP32 compatible"),
+        ("Best for", "Weather stations, room monitors"),
+    ]
+    spec_items = "".join(
+        f'<li class="v3-spec-item">'
+        f'<span class="v3-spec-label">{esc(label)}</span>'
+        f'<span class="v3-spec-value">{esc(val)}</span>'
+        f'</li>'
+        for label, val in SPECS
+    )
+    arrow = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    return f"""<section class="v3-component-feature reveal" aria-label="Featured Component: DHT22">
+  <div class="wrap v3-component-feature-inner">
+    <div class="v3-component-image-panel">
+      <img src="https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg"
+           alt="DHT22 Temperature and Humidity Sensor"
+           loading="lazy" width="200" height="200"/>
+    </div>
+    <div class="v3-component-content">
+      <p class="v3-component-eyebrow">Featured Component</p>
+      <h2 class="v3-component-name">DHT22 Temperature &amp; Humidity Sensor</h2>
+      <p class="v3-component-summary">The most popular sensor for ESP32 weather projects. Three wires — power, ground, data — and you’re reading live temperature in minutes.</p>
+      <ul class="v3-spec-list">{spec_items}</ul>
+      <a class="v3-btn-component" href="/components/dht22.html">Learn about DHT22 {arrow}</a>
+    </div>
+  </div>
+</section>"""
+
+
+def home_v3_project_feature() -> str:
+    """Section 7 — Homepage v3: Featured Project (Weather Station spotlight). Dark bg."""
+    LEVELS = [("Beginner", "is-beginner"), ("Intermediate", "is-intermediate"), ("Advanced", "is-advanced")]
+    PARTS = ["ESP32 DevKit", "DHT22 Sensor", "220 Ω Resistor"]
+    level_chips = "".join(
+        f'<span class="v3-project-level-chip {cls}">{esc(lv)}</span>'
+        for lv, cls in LEVELS
+    )
+    part_chips = "".join(
+        f'<span class="v3-project-part">{esc(part)}</span>'
+        for part in PARTS
+    )
+    arrow = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    return f"""<section class="v3-project-feature reveal" aria-label="Featured Project: ESP32 Weather Station">
+  <div class="wrap v3-project-feature-inner">
+    <div class="v3-project-visual" aria-hidden="true">
+      <div class="v3-project-visual-frame">{_V2_SVG_WEATHER}</div>
+    </div>
+    <div class="v3-project-content">
+      <p class="v3-project-eyebrow">Featured Project</p>
+      <h2 class="v3-project-name">ESP32 Mini Weather Station</h2>
+      <p class="v3-project-desc">Build a sensor that reads temperature and humidity — then displays live data on your screen. The same circuit used in classroom weather stations.</p>
+      <div class="v3-project-levels">{level_chips}</div>
+      <p style="font-size:0.8125rem;color:rgba(230,237,243,0.4);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Parts you’ll use</p>
+      <div class="v3-project-parts">{part_chips}</div>
+      <a class="v3-btn-project" href="/projects/esp32-iot-weather-station.html">Start this project {arrow}</a>
+    </div>
+  </div>
+</section>"""
+
+
+def home_v3_why() -> str:
+    """Section 8 — Homepage v3: Why ESP32 Engine (statement rows, not icon cards). White bg."""
+    REASONS = [
+        ("Open forever", "No paywalls. No login required. No premium tier. Every guide, project, and component page is free."),
+        ("Three levels every time", "Every project has Beginner, Intermediate, and Advanced stages — so you’re never stuck and never bored."),
+        ("Built for parents", "Safety notes, simple explanations, and age-appropriate language. Designed for supervised learning from age 10+."),
+        ("Ready for classrooms", "Structured missions, printable notes, and content aligned to hands-on STEM learning standards."),
+        ("Works on any device", "Every page is mobile-first — follow a guide on your phone while you build at the bench."),
+        ("Made for real making", "Every guide has wiring tables, copy-paste Arduino code, a troubleshooting section, and a real working output."),
+    ]
+    rows = "".join(
+        f'<li class="v3-why-row">'
+        f'<p class="v3-why-statement">{esc(stmt)}</p>'
+        f'<p class="v3-why-detail">{esc(detail)}</p>'
+        f'</li>'
+        for stmt, detail in REASONS
+    )
+    return f"""<section class="v3-why reveal" aria-labelledby="v3-why-heading">
+  <div class="wrap">
+    <header class="v3-why-header">
+      <p class="v3-why-eyebrow">Why ESP32 Engine</p>
+      <h2 id="v3-why-heading" class="v3-why-heading">Built differently.<br>On purpose.</h2>
+    </header>
+    <ul class="v3-why-list">{rows}</ul>
+  </div>
+</section>"""
+
+
+def home_v3_progress(project_count: int = 15, guide_count: int = 5) -> str:
+    """Section 9 — Homepage v3: Community Progress (large stat numbers). Deep dark bg."""
+    STATS = [
+        (str(project_count), "Projects"),
+        (str(guide_count), "Missions"),
+        ("6", "Components"),
+        ("100%", "Free"),
+    ]
+    stats_html = "".join(
+        f'<div class="v3-progress-stat">'
+        f'<span class="v3-progress-num">{num}</span>'
+        f'<span class="v3-progress-label">{esc(label)}</span>'
+        f'</div>'
+        for num, label in STATS
+    )
+    return f"""<section class="v3-progress reveal" aria-label="Platform Progress">
+  <div class="wrap v3-progress-inner">
+    <p class="v3-progress-eyebrow">Platform Today</p>
+    <div class="v3-progress-grid">{stats_html}</div>
+    <div class="v3-progress-divider"></div>
+    <p class="v3-progress-note">More missions, projects, and components added every month.</p>
+  </div>
+</section>"""
+
+
 def footer_html(base: str = "") -> str:
     return f"""<footer class="site-footer">
   <div class="wrap footer-grid">
