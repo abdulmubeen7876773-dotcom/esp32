@@ -138,6 +138,8 @@ python tools/build_all.py
 git auto-commit generated artifacts
 ```
 
+Generated output must be deterministic: re-running the build with unchanged source must not modify committed artifacts. Feed dates come from project YAML (`date_modified`, then `date_published`). Generated JSON uses sorted keys.
+
 **Hosting:** GitHub Pages from repo root  
 **Domain:** `CNAME` → `esp32engine.com`
 

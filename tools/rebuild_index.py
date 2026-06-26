@@ -239,11 +239,11 @@ def write_project_icons_js(projects: list) -> None:
         cats.add(p["category"])
     icons = {"__default__": pick_icon("ESP32")}
     thumbs = {}
-    for cat in cats:
+    for cat in sorted(cats, key=str.casefold):
         icons[cat] = pick_icon(cat)
         thumbs[cat] = icon_thumb_class(cat)
-    body = "window.PROJECT_ICONS=" + json.dumps(icons, ensure_ascii=False, separators=(",", ":")) + ";\n"
-    body += "window.PROJECT_THUMBS=" + json.dumps(thumbs, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    body = "window.PROJECT_ICONS=" + json.dumps(icons, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + ";\n"
+    body += "window.PROJECT_THUMBS=" + json.dumps(thumbs, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + ";\n"
     PROJECT_ICONS_JS_OUT.write_text(body, encoding="utf-8")
 
 
