@@ -1,29 +1,145 @@
+format: golden
 slug: esp32-iot-weather-station
-title: ESP32 IoT Weather Station
+title: ESP32 Mini Weather Station
 category: IoT Projects
-description: Build a connected weather station — log temperature and humidity locally, then publish readings
-  to a web dashboard.
+description: Build a mini weather station that reads temperature and humidity, then shows the numbers on your computer.
 source_base: esp32-iot-weather-station-with-web-dashboard
-sensor: BME280 sensor
-output: OLED display
-featured: false
+sensor: DHT22 sensor
+output: Serial Monitor
+featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-18'
+date_modified: '2026-06-27'
+
 hardware:
-  sensor_pin: GPIO21
-  output_pin: GPIO22
-  sensor_name: Bme280 Sensor signal
-  output_name: Cloud Dashboard control
+  sensor_pin: GPIO4
+  output_pin: GPIO4
+  sensor_name: DHT22 data
+  output_name: Serial Monitor
   wiring:
-  - component: Bme280 Sensor signal
-    pin: GPIO21
-  - component: Cloud Dashboard control
-    pin: GPIO22
-  - component: Status Led SDA
-    pin: GPIO21
-  - component: SCL
-    pin: GPIO22
-  - component: VCC
-    pin: 3.3V/5V
-  - component: GND
-    pin: GND
+    - component: DHT22 VCC
+      pin: 3.3V
+    - component: DHT22 GND
+      pin: GND
+    - component: DHT22 DATA
+      pin: GPIO4
+
+project:
+  icon: "🌤"
+  mission_title: Build Your Mini Weather Station
+  difficulty: Beginner
+  age: Ages 10+
+  estimated_time: 45–60 min
+  budget: Under $20
+  story: |
+    Your desk needs a weather reporter. Not a phone app — a real sensor you wired yourself.
+
+    In this project you connect a DHT22 to your ESP32 and watch live temperature and humidity numbers appear on your screen. That's the same building block used in classroom weather stations and greenhouse monitors.
+  eli12: |
+    The DHT22 feels the air — how warm it is and how damp it feels. Your ESP32 reads those numbers and sends them to your laptop through the USB cable, like a tiny weather text message every two seconds.
+  parent_safety: |
+    This project uses 3.3 V USB power only — no mains electricity. Children should have an adult nearby for USB connections and breadboard wiring. Unplug before changing wires.
+  what_you_build: |
+    A breadboard circuit with a DHT22 sensor and ESP32. Your code reads temperature (°C) and humidity (%) every two seconds and prints them to Serial Monitor.
+  components:
+    - item: ESP32 DevKit board
+      note: Any board with USB port
+      link: /components/esp32-devkit.html
+      icon: "🖥"
+    - item: DHT22 sensor module
+      note: 3-pin module with built-in pull-up resistor
+      link: /components/dht22.html
+      icon: "🌡"
+    - item: Breadboard
+      note: Half-size is fine
+      icon: "🧩"
+    - item: Jumper wires
+      note: Male-to-male, at least 4
+      icon: "🔗"
+    - item: USB cable
+      note: Data-capable, not charge-only
+      icon: "🔌"
+  wiring:
+    illustration_alt: DHT22 module connected to ESP32 — VCC to 3.3 V, GND to GND, DATA to GPIO4
+    summary: Use a 3-pin DHT22 module. Match each wire before plugging in USB.
+    steps:
+      - "Unplug USB. Place the ESP32 and DHT22 module on your breadboard."
+      - "Connect VCC on the module to 3.3 V on the ESP32."
+      - "Connect GND on the module to GND on the ESP32."
+      - "Connect DATA on the module to GPIO4 on the ESP32."
+      - "Double-check all three wires, then plug in USB."
+  code:
+    filename: mini_weather_station.ino
+    content: |
+      #include "DHT.h"
+
+      #define DHTPIN 4
+      #define DHTTYPE DHT22
+
+      DHT dht(DHTPIN, DHTTYPE);
+
+      void setup() {
+        Serial.begin(115200);
+        dht.begin();
+        Serial.println("Mini Weather Station ready!");
+      }
+
+      void loop() {
+        float temp = dht.readTemperature();
+        float humidity = dht.readHumidity();
+
+        if (isnan(temp) || isnan(humidity)) {
+          Serial.println("Read failed — check wiring");
+        } else {
+          Serial.print("Temperature: ");
+          Serial.print(temp);
+          Serial.print(" C  |  Humidity: ");
+          Serial.print(humidity);
+          Serial.println(" %");
+        }
+
+        delay(2000);
+      }
+  expected_output: |
+    Open Serial Monitor at 115200 baud. Every 2 seconds you should see:
+
+    Temperature: 24.3 C  |  Humidity: 55 %
+
+    Breathe on the sensor or hold it near a window — the numbers should change.
+  common_mistakes:
+    - text: Reading faster than every 2 seconds — the DHT22 needs a pause between reads.
+    - text: DATA wire on the wrong GPIO pin compared to your code.
+    - text: Using a charge-only USB cable that cannot upload code.
+    - text: Loose breadboard connections that look connected but are not.
+  troubleshooting:
+    - problem: Serial shows Read failed
+      fix: Check VCC, GND, and DATA wiring. Confirm GPIO4 in code matches your wire.
+    - problem: No output in Serial Monitor
+      fix: Set baud rate to 115200 and select the correct COM port for your ESP32.
+    - problem: Numbers look wrong
+      fix: Wait 30 seconds after power-on. Keep the sensor away from your breath for a stable reading.
+  upgrade_ideas:
+    - Add an OLED display to show readings without a laptop
+    - Log readings to SD card every minute
+    - Send data to a web dashboard over Wi-Fi (Advanced)
+    - Trigger a fan when humidity goes above 70%
+  related_guides:
+    - title: Read Temperature with DHT22
+      href: /guides/read-temperature-dht22.html
+      description: Step-by-step mission — wire, code, quiz, and challenge.
+    - title: Connect an OLED Display
+      href: /guides/connect-oled-esp32.html
+      description: Show sensor readings on a tiny screen.
+  related_projects:
+    - title: ESP32 Home Climate Automation
+      href: /projects/esp32-home-climate-automation.html
+      description: Use sensor data to control devices automatically.
+    - title: ESP32 Smart Irrigation System
+      href: /projects/esp32-smart-irrigation-system.html
+      description: Water plants when soil gets dry.
+  complete:
+    summary: |
+      You built a real weather station! You connected a sensor, wrote code, and read live data from the physical world. That's IoT — and you're already doing it.
+    skills:
+      - Wire a DHT22 sensor to ESP32 GPIO4
+      - Read temperature and humidity in Arduino
+      - Use Serial Monitor to debug live sensor data

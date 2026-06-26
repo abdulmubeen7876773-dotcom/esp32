@@ -5,12 +5,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS, PARENT_BY_SLUG
+from project_page import is_golden_project, render_golden_project_page
 from staged_content import LEVELS, LEVEL_LABELS, build_all_levels
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from rebuild_projects import parse_project, esc
-from staged_content import build_all_levels
 from site_layout import (
     footer_html,
+    head_html,
     header_html,
     related_cards_html,
     short_category,
@@ -19,6 +20,8 @@ from site_layout import (
     SITE_DOMAIN,
     OG_IMAGE,
     ORG_NAME,
+    breadcrumb_schema,
+    organization_schema,
     json_ld_script,
     social_meta,
     analytics_config_script,
@@ -27,6 +30,7 @@ from site_layout import (
     font_links_html,
     head_extras_html,
     site_href,
+    webpage_schema,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -297,6 +301,28 @@ def render_difficulty_content(level: dict, parent: dict) -> str:
     )
 
 
+def render_golden_parent(parent: dict) -> str:
+    slug = parent["slug"]
+    path = f"projects/{slug}.html"
+    title = f"{parent['title']} | {SITE_NAME}"
+    desc = parent["description"]
+    crumbs = breadcrumb_schema(
+        [
+            ("Home", "/"),
+            ("Projects", "projects.html"),
+            (parent["title"], path),
+        ]
+    )
+    schema = organization_schema() + webpage_schema(title, desc, path) + crumbs
+    head = head_html("", title, desc, canonical_path=path, og_type="article", extra_schema=schema)
+    return render_golden_project_page(
+        parent,
+        head=head,
+        header=header_html("projects"),
+        footer=footer_html(),
+    )
+
+
 def render_page(parent: dict, hardware: dict, related: list) -> str:
     levels = build_all_levels(parent, hardware)
     cat = parent["category"]
@@ -451,14 +477,21 @@ def archive_legacy_pages() -> int:
 def main():
     moved = archive_legacy_pages()
     written = []
+    golden = 0
+    staged = 0
     for parent in PARENTS:
-        hardware = load_hardware(parent)
-        related = build_related(PARENTS, parent)
         out = PROJECTS / f"{parent['slug']}.html"
-        out.write_text(render_page(parent, hardware, related), encoding="utf-8")
+        if is_golden_project(parent):
+            out.write_text(render_golden_parent(parent), encoding="utf-8")
+            golden += 1
+        else:
+            hardware = load_hardware(parent)
+            related = build_related(PARENTS, parent)
+            out.write_text(render_page(parent, hardware, related), encoding="utf-8")
+            staged += 1
         written.append(parent["slug"])
     print(f"Archived {moved} legacy variant pages to projects/_archive/")
-    print(f"Wrote {len(written)} parent project pages with 3 difficulty stages each")
+    print(f"Wrote {len(written)} parent project pages ({golden} golden, {staged} staged)")
 
 
 if __name__ == "__main__":
