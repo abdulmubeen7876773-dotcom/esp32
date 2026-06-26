@@ -23,7 +23,7 @@ OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
 OG_IMAGE_WIDTH = int(_cfg.get("og_image_width", 1200))
 OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
 
-HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#0099FF"/><stop offset="1" stop-color="#00C896"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(0,153,255,.1)" stroke="rgba(0,153,255,.3)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#0099FF" stroke-width="2.5" stroke-linecap="round" opacity=".6"/><circle cx="140" cy="130" r="10" fill="#00C896"/><circle cx="140" cy="130" r="20" stroke="#0099FF" stroke-width="1.5" opacity=".4"/><text x="140" y="136" text-anchor="middle" fill="#007ACC" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#FFD54F" opacity=".9"/><circle cx="70" cy="220" r="5" fill="#FF6B6B" opacity=".8"/><path d="M200 220l20-16 12 20" stroke="#00C896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>"""
+HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#2563EB"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(37,99,235,.08)" stroke="rgba(37,99,235,.28)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="140" cy="130" r="10" fill="#2563EB"/><circle cx="140" cy="130" r="20" stroke="#2563EB" stroke-width="1.5" opacity=".35"/><text x="140" y="136" text-anchor="middle" fill="#1D4ED8" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#FBBF24" opacity=".9"/><circle cx="70" cy="220" r="5" fill="#EF4444" opacity=".75"/><path d="M200 220l20-16 12 20" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>"""
 
 SIDEBAR_CATEGORIES = [
     ("ESP32 Basics", "guides/what-is-esp32.html", "basics"),
@@ -354,7 +354,7 @@ def head_html(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
-<meta name="theme-color" content="#0099FF">
+<meta name="theme-color" content="#2563EB">
 <meta name="robots" content="{esc(robots)}">
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -485,6 +485,14 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 """
 
 
+def hero_title_html(title: str) -> str:
+    marker = "ESP32"
+    idx = title.find(marker)
+    if idx == -1:
+        return esc(title)
+    return f'{esc(title[:idx])}<span class="hero-highlight">{marker}</span>{esc(title[idx + len(marker):])}'
+
+
 def hero_html(latest_items: str = "") -> str:
     home = load_home()
     eyebrow = home.get("hero_eyebrow", "Your ESP32 Adventure Starts Here")
@@ -497,7 +505,7 @@ def hero_html(latest_items: str = "") -> str:
   <div class="wrap hero-home-inner">
     <div class="hero-home-content">
       <p class="hero-eyebrow">{esc(eyebrow)}</p>
-      <h1 id="hero-heading">{esc(heading)}</h1>
+      <h1 id="hero-heading">{hero_title_html(heading)}</h1>
       <p class="hero-sub">{esc(sub)}</p>
       <div class="hero-actions">
         <a class="btn btn-primary btn-lg" href="{site_href('learning.html')}">Start Learning</a>

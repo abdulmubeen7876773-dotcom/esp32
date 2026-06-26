@@ -15,7 +15,7 @@
       }
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) {
-        meta.setAttribute('content', theme === 'dark' ? '#0B1220' : '#0088EE');
+        meta.setAttribute('content', theme === 'dark' ? '#0F172A' : '#2563EB');
       }
     }
     function currentTheme() {

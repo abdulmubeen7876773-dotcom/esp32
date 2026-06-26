@@ -19,7 +19,7 @@ DEFAULT_SITE = {
     "gsc_verification": "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI",
     "pinterest_verification": "f71bc8cce0ff2c76eeea8b5cf86dc70b",
     "indexnow_key": "esp32engineindex20260618",
-    "css_version": "20260627-uiux-v1",
+    "css_version": "20260627-brand-v3",
     "site_tagline": "Learn · Build · Explore",
     "youtube_url": "https://www.youtube.com/@ESP32Engine",
     "projects_page_size": 50,
