@@ -9,14 +9,30 @@
     return (s || '').toLowerCase().trim();
   }
 
+  function haystack(item) {
+    return [
+      item.title,
+      item.desc,
+      item.type,
+      item.category,
+      item.slug
+    ].map(normalize).join(' ');
+  }
+
   function search(q, limit) {
     var term = normalize(q);
     if (!term || !index) return [];
+    var terms = term.split(/\s+/).filter(Boolean);
     return index.filter(function (item) {
-      return normalize(item.title).indexOf(term) !== -1 ||
-        normalize(item.desc).indexOf(term) !== -1 ||
-        normalize(item.type).indexOf(term) !== -1;
+      var text = haystack(item);
+      return terms.every(function (t) { return text.indexOf(t) !== -1; });
     }).slice(0, limit || 8);
+  }
+
+  function snippet(text, max) {
+    if (!text) return '';
+    var clean = text.replace(/\s+/g, ' ').trim();
+    return clean.length <= max ? clean : clean.substring(0, max - 1).trim() + '…';
   }
 
   function renderResults(container, results) {
@@ -27,10 +43,13 @@
       return;
     }
     container.innerHTML = results.map(function (item) {
+      var cat = item.category ? '<span class="search-result-cat">' + item.category + '</span>' : '';
       return '<a class="search-result-item" href="' + item.href + '">' +
-        '<span class="search-result-type">' + item.type + '</span> ' +
-        '<strong>' + item.title + '</strong>' +
-        (item.desc ? '<br><span class="meta">' + item.desc.substring(0, 90) + '</span>' : '') +
+        '<span class="search-result-head">' +
+        '<span class="search-result-type">' + item.type + '</span>' + cat +
+        '</span>' +
+        '<strong class="search-result-title">' + item.title + '</strong>' +
+        (item.desc ? '<span class="search-result-desc">' + snippet(item.desc, 120) + '</span>' : '') +
         '</a>';
     }).join('');
     container.hidden = false;

@@ -113,6 +113,44 @@ def card_thumb_html(category: str, cls: str = "post-thumb") -> str:
     return f'<div class="{cls} {tc}">{pick_icon(category)}</div>'
 
 
+def card_media_html(
+    category: str,
+    slug: str = "",
+    featured_image: str = "",
+) -> str:
+    tc = thumb_class(category)
+    icon = pick_icon(category)
+    label = short_category(category)
+    if featured_image and not str(featured_image).startswith("TODO"):
+        return (
+            f'<div class="card-media card-media--has-image">'
+            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" loading="lazy" decoding="async" '
+            f'onerror="this.closest(&#39;.card-media&#39;).classList.add(&#39;is-fallback&#39;)">'
+            f'<div class="card-media-fallback {tc}">{icon}</div>'
+            f"</div>"
+        )
+    return (
+        f'<div class="card-media card-media--placeholder {tc}">'
+        f'<span class="card-media-icon" aria-hidden="true">{icon}</span>'
+        f'<span class="card-media-label">{esc(label)}</span>'
+        f"</div>"
+    )
+
+
+TOP_PROJECT_SLUGS = [
+    "esp32-iot-weather-station",
+    "esp32-smart-thermostat",
+    "esp32-line-following-robot",
+]
+TOP_GUIDE_SLUGS = ["blink-led-esp32", "read-temperature-dht22", "what-is-esp32"]
+TOP_COMPONENT_SLUGS = ["dht22", "bme280", "esp32-devkit"]
+
+
+def _pick_by_slug(items: list, slugs: list[str], key: str = "slug") -> list:
+    by_slug = {i.get(key, ""): i for i in items}
+    return [by_slug[s] for s in slugs if s in by_slug]
+
+
 def modern_card(
     p: dict,
     card_class: str = "post-card",
@@ -132,7 +170,8 @@ def modern_card(
         desc_html = f'<p class="card-desc">{esc(short)}</p>'
     rt = read_time_label(diff, slug)
     feat_badge = '<span class="badge badge-featured">Featured</span>' if p.get("featured") else ""
-    return f"""<a class="{card_class} modern-card project-card-item" href="{esc(link)}"{extra_attrs}><div class="card-media">{card_thumb_html(cat, thumb_cls)}</div><div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
+    media = card_media_html(cat, slug, p.get("featured_image") or p.get("image") or "")
+    return f"""<a class="{card_class} modern-card project-card-item" href="{esc(link)}"{extra_attrs}><div class="card-media-wrap">{media}</div><div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
 def site_href(path: str = "") -> str:
@@ -400,7 +439,29 @@ def search_overlay_html() -> str:
 </div>"""
 
 
-def header_html(active: str = "home", base: str = ""):
+def nav_spotlight_html(project_count: int = 50) -> str:
+    links = [
+        ("Smart Thermostat", "projects/esp32-smart-thermostat.html"),
+        ("BME280 Sensor", "components/bme280.html"),
+        ("Line Following Robot", "projects/esp32-line-following-robot.html"),
+        (f"{project_count} Projects", "projects.html"),
+    ]
+    items = "".join(
+        f'<a class="nav-spotlight-link" href="{site_href(href)}">{esc(label)}</a>'
+        for label, href in links
+    )
+    return f"""<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    {items}
+  </div>
+</div>"""
+
+
+def header_html(active: str = "home", base: str = "", project_count: int | None = None):
+    if project_count is None:
+        from content_store import get_content_store
+        project_count = len(get_content_store().projects())
     nav_links = []
     for key, label, href in NAV_ITEMS:
         cls = ' class="active"' if active == key else ""
@@ -418,6 +479,7 @@ def header_html(active: str = "home", base: str = ""):
     <a class="icon-btn" href="{esc(YOUTUBE_URL)}" rel="noopener noreferrer" target="_blank" aria-label="YouTube">{ICON_YOUTUBE}</a>
   </div>
 </div></header>
+{nav_spotlight_html(project_count)}
 </div>
 {search_overlay_html()}"""
 
@@ -866,21 +928,22 @@ def home_v2_declaration() -> str:
 
 
 def home_v2_proof() -> str:
-    """Section 2 — Homepage v2: Proof of Possibility (full-bleed showcase)."""
+    """Section 2 — Homepage v2: Proof of Possibility (full-bleed showcase, links to live projects)."""
     panels = [
-        ("v2-panel-weather",    _V2_SVG_WEATHER,    "Weather Station — ESP32 + DHT22 + OLED"),
-        ("v2-panel-irrigation", _V2_SVG_IRRIGATION, "Smart Irrigation — ESP32 + Soil Sensor + Relay"),
-        ("v2-panel-security",   _V2_SVG_SECURITY,   "Motion Security Alert — ESP32 + PIR + SMS"),
-        ("v2-panel-climate",    _V2_SVG_CLIMATE,    "Home Climate Automation — ESP32 + WiFi + Cloud"),
+        ("v2-panel-weather", _V2_SVG_WEATHER, "esp32-iot-weather-station", "Weather Station — ESP32 + DHT22"),
+        ("v2-panel-irrigation", _V2_SVG_IRRIGATION, "esp32-smart-irrigation-system", "Smart Irrigation — Soil Sensor + Relay"),
+        ("v2-panel-security", _V2_SVG_SECURITY, "esp32-motion-security-alert", "Motion Security — ESP32 + PIR"),
+        ("v2-panel-climate", _V2_SVG_CLIMATE, "esp32-smart-thermostat", "Smart Thermostat — DHT22 + Relay"),
     ]
     panel_html = ""
-    for cls, svg, tag in panels:
+    for cls, svg, slug, tag in panels:
+        href = site_href(f"projects/{slug}.html")
         panel_html += (
-            f'<div class="{cls} v2-showcase-panel" role="group" aria-label="{esc(tag)}">'
+            f'<a class="{cls} v2-showcase-panel v2-showcase-link" href="{esc(href)}" role="group" aria-label="{esc(tag)}">'
             f'<div class="v2-showcase-glow" aria-hidden="true"></div>'
             f'<div class="v2-showcase-illustration" aria-hidden="true">{svg}</div>'
             f'<div class="v2-showcase-info"><span class="v2-showcase-tag">{esc(tag)}</span></div>'
-            f'</div>'
+            f"</a>"
         )
     dots = "".join(
         f'<button class="v2-showcase-dot{" is-active" if i == 0 else ""}" '
@@ -1045,8 +1108,8 @@ def home_v3_journey() -> str:
         {
             "num": "02", "level": "Builder", "cls": "intermediate",
             "title": "Real Projects",
-            "desc": "Combine sensors and components into useful, working devices you can actually use and show off.",
-            "meta": "15 projects · 3 difficulty levels each",
+            "desc": "Build weather stations, robots, access control, and IoT dashboards with wiring tables and Arduino code.",
+            "meta": "50 projects · 3 difficulty levels",
             "href": "projects.html",
         },
         {
@@ -1143,6 +1206,93 @@ def home_v3_roadmap(guides: list) -> str:
     <div class="v3-arc-track">
       <div class="v3-arc-spine" aria-hidden="true"></div>
       {"".join(arc_nodes)}
+    </div>
+  </div>
+</section>"""
+
+
+def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
+    """Section — Top 3 projects, guides, and components from live catalog."""
+    arrow = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
+    def project_rows():
+        rows = []
+        for p in _pick_by_slug(projects, TOP_PROJECT_SLUGS):
+            desc = p.get("description") or p.get("desc") or ""
+            if len(desc) > 88:
+                desc = desc[:85].rstrip() + "…"
+            feat = '<span class="v3-pick-badge">Featured</span>' if p.get("featured") else ""
+            rows.append(
+                f'<a class="v3-pick-row" href="{site_href(f"projects/{p["slug"]}.html")}">'
+                f'<span class="v3-pick-row-main">'
+                f'{feat}<strong>{esc(p["title"])}</strong>'
+                f'<span class="v3-pick-row-desc">{esc(desc)}</span>'
+                f"</span>"
+                f'<span class="v3-pick-row-meta">{esc(short_category(p.get("category", "")))} {arrow}</span>'
+                f"</a>"
+            )
+        return "".join(rows)
+
+    def guide_rows():
+        rows = []
+        for g in _pick_by_slug(guides, TOP_GUIDE_SLUGS):
+            title = (g.get("headline") or g.get("title", "")).split("|")[0].strip()
+            desc = g.get("lead") or g.get("meta_description") or ""
+            if len(desc) > 88:
+                desc = desc[:85].rstrip() + "…"
+            mission = ""
+            if g.get("format") == "mission" or g.get("mission"):
+                num = g.get("mission_number") or g.get("sort_order") or ""
+                mission = f'<span class="v3-pick-badge">Mission {num}</span>' if num else '<span class="v3-pick-badge">Mission</span>'
+            rows.append(
+                f'<a class="v3-pick-row" href="{site_href(f"guides/{g["slug"]}.html")}">'
+                f'<span class="v3-pick-row-main">'
+                f'{mission}<strong>{esc(title)}</strong>'
+                f'<span class="v3-pick-row-desc">{esc(desc)}</span>'
+                f"</span>"
+                f'<span class="v3-pick-row-meta">Guide {arrow}</span>'
+                f"</a>"
+            )
+        return "".join(rows)
+
+    def component_rows():
+        rows = []
+        for c in _pick_by_slug(components, TOP_COMPONENT_SLUGS):
+            summary = c.get("summary") or ""
+            if len(summary) > 88:
+                summary = summary[:85].rstrip() + "…"
+            rows.append(
+                f'<a class="v3-pick-row" href="{site_href(f"components/{c["slug"]}.html")}">'
+                f'<span class="v3-pick-row-main">'
+                f'<strong>{esc(c.get("name", c["slug"]))}</strong>'
+                f'<span class="v3-pick-row-desc">{esc(summary)}</span>'
+                f"</span>"
+                f'<span class="v3-pick-row-meta">{esc(c.get("category", "Component"))} {arrow}</span>'
+                f"</a>"
+            )
+        return "".join(rows)
+
+    return f"""<section class="v3-top-picks reveal" aria-labelledby="v3-top-picks-heading">
+  <div class="wrap">
+    <p class="v3-top-picks-eyebrow">Launch picks</p>
+    <h2 id="v3-top-picks-heading" class="v3-top-picks-heading">Top projects, guides, and components</h2>
+    <p class="v3-top-picks-sub">Hand-picked from the live catalog — start with any row below.</p>
+    <div class="v3-top-picks-grid">
+      <div class="v3-top-picks-col">
+        <h3 class="v3-top-picks-col-title">Projects</h3>
+        <div class="v3-pick-list">{project_rows()}</div>
+        <a class="v3-top-picks-more" href="{site_href("projects.html")}">All projects {arrow}</a>
+      </div>
+      <div class="v3-top-picks-col">
+        <h3 class="v3-top-picks-col-title">Guides</h3>
+        <div class="v3-pick-list">{guide_rows()}</div>
+        <a class="v3-top-picks-more" href="{site_href("guides.html")}">All guides {arrow}</a>
+      </div>
+      <div class="v3-top-picks-col">
+        <h3 class="v3-top-picks-col-title">Components</h3>
+        <div class="v3-pick-list">{component_rows()}</div>
+        <a class="v3-top-picks-more" href="{site_href("components.html")}">All components {arrow}</a>
+      </div>
     </div>
   </div>
 </section>"""

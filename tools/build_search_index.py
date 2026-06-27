@@ -10,20 +10,53 @@ INDEX_OUT = ROOT / "search-index.json"
 SEARCH_PAGE = ROOT / "search.html"
 
 
-def entry(type_label: str, title: str, desc: str, href: str) -> dict:
-    return {"type": type_label, "title": title, "desc": desc, "href": href}
+def entry(type_label: str, title: str, desc: str, href: str, **extra) -> dict:
+    row = {"type": type_label, "title": title, "desc": desc, "href": href}
+    row.update(extra)
+    return row
 
 
 def build_index() -> list:
     store = get_content_store()
     items = []
     for c in store.components():
-        items.append(entry("Component", c["name"], c.get("summary", ""), f"/components/{c['slug']}.html"))
+        items.append(
+            entry(
+                "Component",
+                c["name"],
+                c.get("summary", ""),
+                f"/components/{c['slug']}.html",
+                slug=c["slug"],
+                category=c.get("category", ""),
+            )
+        )
     for g in store.guides():
         title = g.get("headline") or g.get("title", "").split("|")[0].strip()
-        items.append(entry("Guide", title, g.get("lead", g.get("meta_description", "")), f"/guides/{g['slug']}.html"))
+        desc = g.get("lead") or g.get("meta_description", "")
+        items.append(
+            entry(
+                "Guide",
+                title,
+                desc,
+                f"/guides/{g['slug']}.html",
+                slug=g["slug"],
+                category=g.get("phase", "Guide"),
+            )
+        )
     for p in store.projects():
-        items.append(entry("Project", p["title"], p.get("description", p.get("desc", "")), f"/projects/{p['slug']}.html"))
+        cat = p.get("category", "")
+        desc = p.get("description", p.get("desc", ""))
+        snippet = f"{cat} · {desc}" if cat and desc else (desc or cat)
+        items.append(
+            entry(
+                "Project",
+                p["title"],
+                snippet,
+                f"/projects/{p['slug']}.html",
+                slug=p["slug"],
+                category=cat,
+            )
+        )
     for slug, page in store.pages().items():
         title = page.get("title", slug).split("|")[0].strip()
         desc = page.get("meta_description", "")

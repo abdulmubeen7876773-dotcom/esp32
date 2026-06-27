@@ -32,11 +32,11 @@ from site_layout import (
     home_v2_proof,
     home_v2_invitation,
     home_v2_showcase_js,
+    card_media_html,
     home_v3_journey,
     home_v3_roadmap,
     home_v3_mission_feature,
-    home_v3_component_feature,
-    home_v3_project_feature,
+    home_v3_top_picks,
     home_v3_why,
     home_v3_progress,
     PROJECTS_PAGE_SIZE,
@@ -179,9 +179,11 @@ def parent_listing_record(parent: dict) -> dict:
         "href": f"projects/{parent['slug']}.html",
         "title": parent["title"],
         "desc": desc,
+        "description": parent.get("description", desc),
         "category": parent["category"],
         "slug": parent["slug"],
         "featured": bool(parent.get("featured")),
+        "featured_image": parent.get("featured_image") or parent.get("image") or "",
         "levels": LEVELS,
         "readMin": 12,
     }
@@ -212,11 +214,16 @@ def parent_grid_card(p: dict) -> str:
     )
     tc = icon_thumb_class(p["category"])
     icon = pick_icon(p["category"])
+    media = card_media_html(
+        p["category"],
+        p.get("slug", ""),
+        p.get("featured_image") or p.get("image") or "",
+    )
     desc = esc(p.get("desc", ""))
     rt = esc(read_time_label("Beginner", p.get("slug", "")))
     feat = '<span class="badge badge-featured">Featured</span>' if p.get("featured") else ""
     return f"""<a class="card project-card modern-card project-card-item" href="{esc(p['href'])}"{attrs}>
-<div class="card-media"><div class="card-thumb {tc}">{icon}</div></div>
+<div class="card-media-wrap">{media}</div>
 <div class="card-body"><div class="card-badges">{feat}<span class="badge badge-cat">{esc(short_category(p['category']))}</span>{levels_html}<span class="badge badge-time">{rt}</span></div>
 <h3>{esc(p['title'])}</h3>
 <p class="card-desc">{desc}</p>
@@ -277,6 +284,7 @@ def home_html(projects):
     schema = organization_schema() + website_schema()
     guides = store.guides()
     components = store.components()
+    catalog = store.projects()
     project_count = len(projects)
     guide_count = len(guides)
     component_count = len(components)
@@ -287,14 +295,13 @@ def home_html(projects):
 </head>
 <body class="home-page">
 <main>
-{header_html("home")}
+{header_html("home", project_count=project_count)}
 {home_v2_declaration()}
 {home_v2_proof()}
 {home_v3_journey()}
 {home_v3_roadmap(guides)}
+{home_v3_top_picks(catalog, guides, components)}
 {home_v3_mission_feature(guides)}
-{home_v3_component_feature()}
-{home_v3_project_feature()}
 {home_v3_why()}
 {home_v3_progress(project_count, guide_count, component_count)}
 {home_v2_invitation()}
@@ -335,7 +342,7 @@ def projects_listing_html(
         "ESP32 Project Library",
         f"Browse {total_count} hands-on ESP32 tutorials with wiring diagrams, Arduino code, and Beginner, Intermediate, and Advanced build stages.",
         "IoT Projects",
-        '<span class="badge badge-light">15 Categories</span><span class="badge badge-light">3 Levels Each</span><span class="badge badge-light">Free &amp; Open</span>',
+        f'<span class="badge badge-light">{total_count} Projects</span><span class="badge badge-light">3 Levels Each</span><span class="badge badge-light">Free &amp; Open</span>',
     )
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -345,7 +352,7 @@ def projects_listing_html(
 </head>
 <body class="projects-page">
 <main>
-{header_html("projects")}
+{header_html("projects", project_count=total_count)}
 {hero}
 <div class="layout-with-sidebar wrap">
   {sidebar_categories_html("projects")}
