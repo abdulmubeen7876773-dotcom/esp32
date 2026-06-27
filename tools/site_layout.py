@@ -41,6 +41,13 @@ ICON_YOUTUBE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentCol
 ICON_SEARCH = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg>'
 ICON_THEME = '<span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span>'
 
+LOGO_MARK_HTML = (
+    '<span class="logo-mark" aria-hidden="true">'
+    '<img class="logo-img logo-img-light" src="/assets/visuals/brand/logo-light.svg" alt="" width="40" height="40" decoding="async">'
+    '<img class="logo-img logo-img-dark" src="/assets/visuals/brand/logo-dark.svg" alt="" width="40" height="40" decoding="async">'
+    '</span>'
+)
+
 HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
 <div class="hero-float-card hero-float-card-a"><span class="hero-float-label">🌡 Temperature</span><strong>24°C</strong><span class="hero-float-sub">DHT22 Sensor</span></div>
 <div class="hero-float-card hero-float-card-b"><span class="hero-float-label">📡 Wi-Fi</span><strong>Connected!</strong><span class="hero-float-sub">Your project is live</span></div>
@@ -402,7 +409,7 @@ def head_html(
 {pinterest}
 {gsc}
 {redirect}
-<script>(function(){{try{{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){{document.documentElement.setAttribute("data-theme",t);return;}}if(window.matchMedia("(prefers-color-scheme: dark)").matches){{document.documentElement.setAttribute("data-theme","dark");}}}}catch(e){{}}}})();</script>
+<script>(function(){{try{{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){{document.documentElement.setAttribute("data-theme",t);return;}}if(window.matchMedia("(prefers-color-scheme: dark)").matches){{document.documentElement.setAttribute("data-theme","dark");return;}}document.documentElement.setAttribute("data-theme","light");}}catch(e){{document.documentElement.setAttribute("data-theme","light");}}}})();</script>
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 {font_links_html()}
@@ -449,13 +456,15 @@ def nav_spotlight_html(project_count: int = 50) -> str:
         (f"{project_count} Projects", "projects.html"),
     ]
     items = "".join(
-        f'<a class="nav-spotlight-link" href="{site_href(href)}">{esc(label)}</a>'
+        f'<a class="nav-spotlight-link{" nav-spotlight-badge" if label.endswith("Projects") else ""}" href="{site_href(href)}">{esc(label)}</a>'
         for label, href in links
     )
     return f"""<div class="nav-spotlight" aria-label="New and popular content">
-  <div class="wrap nav-spotlight-inner">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
     <span class="nav-spotlight-label">Explore</span>
     {items}
+    </div>
   </div>
 </div>"""
 
@@ -470,7 +479,7 @@ def header_html(active: str = "home", base: str = "", project_count: int | None 
         nav_links.append(f'<a href="{site_href(href)}"{cls}>{esc(label)}</a>')
     return f"""<div class="site-nav-sticky">
 <header class="site-header"><div class="wrap header-inner">
-  <a class="site-logo" href="{site_href()}"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">{esc(SITE_TAGLINE)}</span></a>
+  <a class="site-logo" href="{site_href()}">{LOGO_MARK_HTML}<span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">{esc(SITE_TAGLINE)}</span></a>
   <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   <nav class="top-nav" aria-label="Main">
     {"".join(nav_links)}
