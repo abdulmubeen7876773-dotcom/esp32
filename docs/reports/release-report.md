@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-06-26T21:52:47Z
+Generated: 2026-06-27T01:58:14Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: PASS
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 18
-- INFO: 302
-- Total findings: 320
+- WARNING: 21
+- INFO: 301
+- Total findings: 322
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 18
+Count: 21
 
 ### missing_illustrations (3)
 
@@ -54,8 +54,9 @@ Count: 18
 - guides/connect-oled-esp32.yaml: missing concept illustration (guides/connect-oled-esp32.yaml)
 - guides/read-temperature-dht22.yaml: missing concept illustration (guides/read-temperature-dht22.yaml)
 
-### missing_photos (6)
+### missing_photos (7)
 
+- components/bme280.yaml: no local component photo in /assets/visuals/ (https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg)
 - components/dht22.yaml: no local component photo in /assets/visuals/ (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
 - components/esp32-devkit.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
 - components/hc-sr04.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg)
@@ -63,14 +64,16 @@ Count: 18
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
 
-### missing_wiring_diagrams (3)
+### missing_wiring_diagrams (4)
 
 - guides/connect-oled-esp32.yaml: missing wiring diagram file (guides/connect-oled-esp32.yaml)
 - guides/read-temperature-dht22.yaml: missing wiring diagram file (guides/read-temperature-dht22.yaml)
+- components/bme280.yaml: missing wiring diagram file (components/bme280.yaml)
 - components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
 
-### placeholder_images (6)
+### placeholder_images (7)
 
+- components/bme280.yaml: external CDN URL (https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg)
 - components/dht22.yaml: external CDN URL (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
 - components/esp32-devkit.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
 - components/hc-sr04.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg)
@@ -80,9 +83,9 @@ Count: 18
 
 ## INFO
 
-Count: 302
+Count: 301
 
-### coming_soon_content (299)
+### coming_soon_content (298)
 
 - Guide mission coming soon: Blink Two LEDs in Pattern
 - Guide mission coming soon: Button Controls an LED
@@ -109,10 +112,10 @@ Count: 302
 - Guide mission coming soon: OLED Sensor Dashboard
 - Guide mission coming soon: Hello World on LCD 16x2
 - Guide mission coming soon: TM1637 Counter Display
-- … and 274 more
+- … and 273 more
 
 ### incomplete_roadmap_items (3)
 
 - Guides roadmap: 5/100 complete (95 remaining)
-- Components roadmap: 6/210 complete (204 remaining)
-- Projects portfolio: 15 golden projects published
+- Components roadmap: 7/210 complete (203 remaining)
+- Projects portfolio: 50 golden projects published

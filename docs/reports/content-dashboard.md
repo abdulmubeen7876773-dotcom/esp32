@@ -1,10 +1,10 @@
 # Content Dashboard
 
-Generated: 2026-06-26T21:52:41Z
+Generated: 2026-06-27T01:58:12Z
 
 ## Components
 
-- Complete: 6
+- Complete: 7
 - Planned: 210
 
 ## Guides
@@ -14,8 +14,8 @@ Generated: 2026-06-26T21:52:41Z
 
 ## Projects
 
-- Complete: 15
-- Planned: 15
+- Complete: 50
+- Planned: 50
 
 ## Mission Count
 
@@ -35,10 +35,11 @@ Missing items:
 ## Photos
 
 - Complete: 0
-- Missing: 6
+- Missing: 7
 
 Missing items:
 
+- components/bme280: photo
 - components/dht22: photo
 - components/esp32-devkit: photo
 - components/hc-sr04: photo
@@ -48,7 +49,7 @@ Missing items:
 
 ## Pinouts
 
-- Complete: 1
+- Complete: 2
 - Missing: 5
 
 Missing items:
@@ -62,10 +63,11 @@ Missing items:
 ## Wiring
 
 - Complete: 1
-- Missing: 3
+- Missing: 4
 
 Missing items:
 
 - guides/connect-oled-esp32: wiring diagram
 - guides/read-temperature-dht22: wiring diagram
+- components/bme280: wiring diagram
 - components/dht22: wiring diagram

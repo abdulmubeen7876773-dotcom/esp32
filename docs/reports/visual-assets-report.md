@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-06-26T21:52:47Z
+Generated: 2026-06-27T01:58:15Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
@@ -18,17 +18,17 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 
 | Type | Total | Complete | Missing | Placeholder |
 |------|-------|----------|---------|-------------|
-| component_illustration | 6 | 0 | 0 | 6 |
-| component_photo | 6 | 0 | 0 | 6 |
-| component_pinout | 6 | 0 | 0 | 6 |
-| component_wiring | 1 | 0 | 0 | 1 |
+| component_illustration | 7 | 0 | 0 | 7 |
+| component_photo | 7 | 0 | 0 | 7 |
+| component_pinout | 7 | 0 | 0 | 7 |
+| component_wiring | 2 | 0 | 0 | 2 |
 | concept_illustration | 3 | 0 | 0 | 3 |
 | guide_output | 3 | 0 | 0 | 3 |
 | icon | 15 | 0 | 0 | 15 |
-| project_hero | 2 | 0 | 0 | 2 |
-| project_illustration | 2 | 0 | 0 | 2 |
-| project_output | 2 | 0 | 0 | 2 |
-| project_wiring | 2 | 0 | 0 | 2 |
+| project_hero | 1 | 0 | 0 | 1 |
+| project_illustration | 1 | 0 | 0 | 1 |
+| project_output | 1 | 0 | 0 | 1 |
+| project_wiring | 1 | 0 | 0 | 1 |
 | wiring_diagram | 3 | 1 | 0 | 2 |
 
 ## Validation
@@ -41,6 +41,10 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 
 ## Placeholder assets
 
+- `components/bme280:illustration` — component_illustration (/components/bme280.html)
+- `components/bme280:photo` — component_photo (/components/bme280.html)
+- `components/bme280:pinout` — component_pinout (/components/bme280.html)
+- `components/bme280:wiring` — component_wiring (/components/bme280.html)
 - `components/dht22:illustration` — component_illustration (/components/dht22.html)
 - `components/dht22:photo` — component_photo (/components/dht22.html)
 - `components/dht22:pinout` — component_pinout (/components/dht22.html)
@@ -67,8 +71,4 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 - `guides/connect-oled-esp32:wiring` — wiring_diagram (/guides/connect-oled-esp32.html)
 - `guides/read-temperature-dht22:concept` — concept_illustration (/guides/read-temperature-dht22.html)
 - `guides/read-temperature-dht22:output` — guide_output (/guides/read-temperature-dht22.html)
-- `guides/read-temperature-dht22:wiring` — wiring_diagram (/guides/read-temperature-dht22.html)
-- `icons/categories:agriculture` — icon (/projects.html)
-- `icons/categories:ai-projects` — icon (/projects.html)
-- `icons/categories:education` — icon (/projects.html)
 - … and 20 more
