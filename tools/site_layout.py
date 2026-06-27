@@ -45,8 +45,8 @@ ICON_SEARCH = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" strok
 ICON_THEME = '<span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span>'
 
 LOGO_HTML = (
-    '<img class="site-logo-img" src="/assets/visuals/brand/esp32-engine-logo.png" '
-    'alt="ESP32 Engine" width="168" height="40" decoding="async">'
+    '<img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" '
+    'alt="ESP32 Engine" width="132" height="56" decoding="async">'
 )
 
 HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
