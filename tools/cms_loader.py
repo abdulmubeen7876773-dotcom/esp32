@@ -19,7 +19,7 @@ DEFAULT_SITE = {
     "gsc_verification": "Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI",
     "pinterest_verification": "f71bc8cce0ff2c76eeea8b5cf86dc70b",
     "indexnow_key": "esp32engineindex20260618",
-    "css_version": "20260626-learn-v2",
+    "css_version": "20260627-brand-v3",
     "site_tagline": "Learn · Build · Explore",
     "youtube_url": "https://www.youtube.com/@ESP32Engine",
     "projects_page_size": 50,
@@ -69,7 +69,10 @@ def load_projects() -> list[dict]:
     if not PROJECTS_DIR.exists():
         return []
     projects = []
+    skip = {"project-template.yaml"}
     for path in sorted(PROJECTS_DIR.glob("*.yaml")):
+        if path.name in skip:
+            continue
         data = load_yaml(path)
         if not isinstance(data, dict):
             continue
@@ -99,7 +102,10 @@ def load_guides() -> list[dict]:
     if not GUIDES_DIR.exists():
         return []
     guides = []
+    skip = {"guide-template.yaml"}
     for path in sorted(GUIDES_DIR.glob("*.yaml")):
+        if path.name in skip:
+            continue
         data = load_yaml(path)
         if not isinstance(data, dict):
             continue
@@ -112,7 +118,10 @@ def load_components() -> list[dict]:
     if not COMPONENTS_DIR.exists():
         return []
     components = []
+    skip = {"component-template.yaml"}
     for path in sorted(COMPONENTS_DIR.glob("*.yaml")):
+        if path.name in skip:
+            continue
         data = load_yaml(path)
         if not isinstance(data, dict):
             continue

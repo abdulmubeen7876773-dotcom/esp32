@@ -1,4 +1,4 @@
-name: Build Static Site
+name: Build and Deploy Static Site
 
 on:
   push:
@@ -6,6 +6,8 @@ on:
     paths:
       - content/**
       - tools/**
+      - assets/**
+      - docs/reports/**
       - static.config.yaml
       - style.css
       - ui.js
@@ -13,16 +15,28 @@ on:
       - mission-guide.js
       - projects.js
       - project.js
+      - amplify.yml
+      - CNAME
+      - requirements.txt
+      - .github/workflows/**
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-build-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -43,6 +57,20 @@ jobs:
             *.xml
             *.json
             *.js
+            build-report.json
+            content-dashboard.json
+            release-report.json
+            guide-quality-report.json
+            project-quality-report.json
+            component-quality-report.json
+            docs/reports/latest-build.md
+            docs/reports/content-dashboard.md
+            docs/reports/release-report.md
+            docs/reports/guide-quality-report.md
+            docs/reports/project-quality-report.md
+            docs/reports/visual-assets-report.md
+            assets/visuals/manifest.json
+            assets/visuals/**
             category/**
             guides/**
             components/**
@@ -50,3 +78,67 @@ jobs:
             sitemap.*
             feed.xml
             esp32engineindex*.txt
+
+      - name: Push main and sync staging branch
+        run: |
+          git push origin HEAD:refs/heads/main
+          git push origin HEAD:refs/heads/staging --force
+
+      - name: Upload built site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-site
+          path: .
+          if-no-files-found: error
+
+      - name: Check staging DNS target
+        continue-on-error: true
+        run: python tools/check_staging_dns.py
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://esp32engine.com
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: static-site
+          path: site
+
+      - uses: actions/configure-pages@v4
+
+      - name: Upload production GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy production to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://stg.esp32engine.com
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: static-site
+          path: site
+
+      - name: Set staging custom domain in artifact
+        run: echo "stg.esp32engine.com" > site/CNAME
+
+      - uses: actions/configure-pages@v4
+
+      - name: Upload staging GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy staging to GitHub Pages
+        uses: actions/deploy-pages@v4

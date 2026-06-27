@@ -23,7 +23,7 @@ OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
 OG_IMAGE_WIDTH = int(_cfg.get("og_image_width", 1200))
 OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
 
-HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#0099FF"/><stop offset="1" stop-color="#00C896"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(0,153,255,.1)" stroke="rgba(0,153,255,.3)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#0099FF" stroke-width="2.5" stroke-linecap="round" opacity=".6"/><circle cx="140" cy="130" r="10" fill="#00C896"/><circle cx="140" cy="130" r="20" stroke="#0099FF" stroke-width="1.5" opacity=".4"/><text x="140" y="136" text-anchor="middle" fill="#007ACC" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#FFD54F" opacity=".9"/><circle cx="70" cy="220" r="5" fill="#FF6B6B" opacity=".8"/><path d="M200 220l20-16 12 20" stroke="#00C896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>"""
+HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#2563EB"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(37,99,235,.08)" stroke="rgba(37,99,235,.28)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="140" cy="130" r="10" fill="#2563EB"/><circle cx="140" cy="130" r="20" stroke="#2563EB" stroke-width="1.5" opacity=".35"/><text x="140" y="136" text-anchor="middle" fill="#1D4ED8" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#FBBF24" opacity=".9"/><circle cx="70" cy="220" r="5" fill="#EF4444" opacity=".75"/><path d="M200 220l20-16 12 20" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>"""
 
 SIDEBAR_CATEGORIES = [
     ("ESP32 Basics", "guides/what-is-esp32.html", "basics"),
@@ -39,6 +39,7 @@ SIDEBAR_CATEGORIES = [
 ICON_GITHUB = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>'
 ICON_YOUTUBE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>'
 ICON_SEARCH = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg>'
+ICON_THEME = '<span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span>'
 
 HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
 <div class="hero-float-card hero-float-card-a"><span class="hero-float-label">🌡 Temperature</span><strong>24°C</strong><span class="hero-float-sub">DHT22 Sensor</span></div>
@@ -392,7 +393,7 @@ def head_html(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
-<meta name="theme-color" content="#0099FF">
+<meta name="theme-color" content="#2563EB">
 <meta name="robots" content="{esc(robots)}">
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -401,6 +402,7 @@ def head_html(
 {pinterest}
 {gsc}
 {redirect}
+<script>(function(){{try{{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){{document.documentElement.setAttribute("data-theme",t);return;}}if(window.matchMedia("(prefers-color-scheme: dark)").matches){{document.documentElement.setAttribute("data-theme","dark");}}}}catch(e){{}}}})();</script>
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 {font_links_html()}
@@ -474,6 +476,7 @@ def header_html(active: str = "home", base: str = "", project_count: int | None 
     {"".join(nav_links)}
   </nav>
   <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode">{ICON_THEME}</button>
     <button type="button" class="icon-btn" id="search-open" aria-label="Search">{ICON_SEARCH}</button>
     <a class="icon-btn" href="{esc(GITHUB_URL)}" rel="noopener noreferrer" target="_blank" aria-label="GitHub">{ICON_GITHUB}</a>
     <a class="icon-btn" href="{esc(YOUTUBE_URL)}" rel="noopener noreferrer" target="_blank" aria-label="YouTube">{ICON_YOUTUBE}</a>
@@ -544,6 +547,14 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 """
 
 
+def hero_title_html(title: str) -> str:
+    marker = "ESP32"
+    idx = title.find(marker)
+    if idx == -1:
+        return esc(title)
+    return f'{esc(title[:idx])}<span class="hero-highlight">{marker}</span>{esc(title[idx + len(marker):])}'
+
+
 def hero_html(latest_items: str = "") -> str:
     home = load_home()
     eyebrow = home.get("hero_eyebrow", "Your ESP32 Adventure Starts Here")
@@ -556,7 +567,7 @@ def hero_html(latest_items: str = "") -> str:
   <div class="wrap hero-home-inner">
     <div class="hero-home-content">
       <p class="hero-eyebrow">{esc(eyebrow)}</p>
-      <h1 id="hero-heading">{esc(heading)}</h1>
+      <h1 id="hero-heading">{hero_title_html(heading)}</h1>
       <p class="hero-sub">{esc(sub)}</p>
       <div class="hero-actions">
         <a class="btn btn-primary btn-lg" href="{site_href('learning.html')}">Start Learning</a>
