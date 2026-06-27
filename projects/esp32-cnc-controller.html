@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 CNC Controller | ESP32 Engine</title>
+<meta name="description" content="Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish with a 3-axis CNC that accepts G-code uploads via a web interface.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-cnc-controller.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 CNC Controller | ESP32 Engine">
+<meta property="og:description" content="Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish with a 3-axis CNC that accepts G-code uploads via a web interface.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-cnc-controller.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 CNC Controller | ESP32 Engine">
+<meta name="twitter:description" content="Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish with a 3-axis CNC that accepts G-code uploads via a web interface.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 CNC Controller","description":"Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish with a 3-axis CNC that accepts G-code uploads via a web interface.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-cnc-controller.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, A4988 STEP"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 CNC Controller (Beginner)","description":"Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish with a 3-axis CNC that accepts G-code uploads via a web interface.","step":[{"@type":"HowToStep","position":1,"name":"Step Pulse Timing: Each step pulse is a HIGH-LOW transition on the STEP pin. The A4988 advances the …","text":"Step Pulse Timing: Each step pulse is a HIGH-LOW transition on the STEP pin. The A4988 advances the motor one microstep on the rising edge. The delay between pulses sets motor speed: 1000 us = 500 steps/sec = 2.5 revolutions/sec in full-step mode."},{"@type":"HowToStep","position":2,"name":"A4988 Current Limiting: Before use, set the A4988 current limit by adjusting the trim potentiometer.…","text":"A4988 Current Limiting: Before use, set the A4988 current limit by adjusting the trim potentiometer. Formula: Vref = Imax * 8 * Rs. For a 1.5 A motor with Rs=0.1 ohm: Vref = 0.6 V. Measure Vref between the potentiometer centre and GND with a multimeter while the motor is connected but the ESP32 is off."},{"@type":"HowToStep","position":3,"name":"Microstepping Modes: MS1/MS2/MS3 pins select microstepping: all LOW = full step (200 steps/rev), MS1…","text":"Microstepping Modes: MS1/MS2/MS3 pins select microstepping: all LOW = full step (200 steps/rev), MS1 HIGH = half step (400), both HIGH = quarter step (800), all HIGH = 16th step (3200). Higher microstepping gives smoother movement but reduces torque."},{"@type":"HowToStep","position":4,"name":"Driver Enable Pin: EN_PIN LOW enables the driver, energising motor coils and providing holding torqu…","text":"Driver Enable Pin: EN_PIN LOW enables the driver, energising motor coils and providing holding torque. EN_PIN HIGH releases the motor, allowing it to be turned manually and reducing heat during idle periods. Always disable between moves in non-holding applications."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 CNC Controller?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, A4988 STEP, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 CNC Controller require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 CNC Controller?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Industrial Automation","item":"https://esp32engine.com/category/industrial-automation.html"},{"@type":"ListItem","position":3,"name":"ESP32 CNC Controller","item":"https://esp32engine.com/projects/esp32-cnc-controller.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/industrial-automation.html">Industrial Automation</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/industrial-automation.html">Industrial Automation</a></li><li aria-current="page">ESP32 CNC Controller</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 CNC Controller</h1>
+          <div class="article-badges"><span class="badge badge-cat">Industrial Automation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish with a 3-axis CNC that accepts G-code uploads via a web interface.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-default parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will control a single NEMA 17 stepper motor using an A4988 driver module and the ESP32. The firmware sends STEP pulses at a defined speed and changes direction using the DIR pin. You will control step count, direction, and speed from the Serial Monitor and observe the motor shaft rotate precisely. This project teaches stepper motor fundamentals: step pulse timing, microstepping, and current limiting.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× A4988 stepper driver module</span></li><li><span>1× NEMA 17 stepper motor — 200 steps/rev; 1.5-2.0 A rated</span></li><li><span>1× 12 V 2 A power supply — Motor power; separate from ESP32 5 V</span></li><li><span>1× 100 uF electrolytic capacitor — A4988 VMOT decoupling; essential to prevent driver damage</span></li><li><span>1× Breadboard and jumper wires</span></li><li><span>1× Small flathead screwdriver — A4988 current limit trim pot adjustment</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>A4988 STEP</td><td>GPIO 14</td><td>Each HIGH pulse = one microstep</td></tr><tr><td>A4988 DIR</td><td>GPIO 27</td><td>HIGH=clockwise, LOW=counterclockwise</td></tr><tr><td>A4988 EN</td><td>GPIO 26</td><td>LOW=enabled; HIGH=driver disabled and motor de-energised</td></tr><tr><td>A4988 VMOT</td><td>12 V supply +</td><td>100 uF cap across VMOT and GND</td></tr><tr><td>A4988 VDD</td><td>3.3 V</td><td>Logic supply from ESP32</td></tr><tr><td>A4988 GND (x2)</td><td>GND (common)</td><td>Both GND pins must be connected</td></tr><tr><td>MS1/MS2/MS3</td><td>GND/GND/GND</td><td>All LOW = full step mode (200 steps/rev)</td></tr><tr><td>NEMA 17 coils A+/A-/B+/B-</td><td>A4988 1A/1B/2A/2B</td><td>Check motor datasheet for coil pairing</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-cnc-controller_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 CNC Controller - Beginner
+// Single-axis stepper control; commands via Serial Monitor
+// Commands: F&lt;steps&gt; = forward, B&lt;steps&gt; = backward, S&lt;us&gt; = set step delay
+
+const int STEP_PIN = 14;
+const int DIR_PIN  = 27;
+const int EN_PIN   = 26;
+
+long stepDelay = 1000; // microseconds between step pulses (lower = faster)
+
+void stepMotor(long steps, bool forward) {
+  digitalWrite(EN_PIN,  LOW); // enable driver
+  digitalWrite(DIR_PIN, forward ? HIGH : LOW);
+  for (long i = 0; i &lt; steps; i++) {
+    digitalWrite(STEP_PIN, HIGH);
+    delayMicroseconds(stepDelay);
+    digitalWrite(STEP_PIN, LOW);
+    delayMicroseconds(stepDelay);
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(STEP_PIN, OUTPUT);
+  pinMode(DIR_PIN,  OUTPUT);
+  pinMode(EN_PIN,   OUTPUT);
+  digitalWrite(EN_PIN, HIGH); // start disabled
+  Serial.println(&quot;CNC Stepper Ready&quot;);
+  Serial.println(&quot;Commands: F&lt;steps&gt;  B&lt;steps&gt;  S&lt;delay_us&gt;&quot;);
+}
+
+void loop() {
+  if (!Serial.available()) return;
+  char cmd = Serial.read();
+  long val = Serial.parseInt();
+
+  if (cmd == 70) { // F
+    Serial.printf(&quot;Forward %ld stepsn&quot;, val);
+    stepMotor(val, true);
+  } else if (cmd == 66) { // B
+    Serial.printf(&quot;Backward %ld stepsn&quot;, val);
+    stepMotor(val, false);
+  } else if (cmd == 83) { // S
+    stepDelay = val;
+    Serial.printf(&quot;Step delay set to %ld usn&quot;, stepDelay);
+  }
+  digitalWrite(EN_PIN, HIGH); // disable between moves to reduce heat
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Step Pulse Timing: Each step pulse is a HIGH-LOW transition on the STEP pin. The A4988 advances the motor one microstep on the rising edge. The delay between pulses sets motor speed: 1000 us = 500 steps/sec = 2.5 revolutions/sec in full-step mode.</p></div><div class="step"><span class="step-no">02</span><p>A4988 Current Limiting: Before use, set the A4988 current limit by adjusting the trim potentiometer. Formula: Vref = Imax * 8 * Rs. For a 1.5 A motor with Rs=0.1 ohm: Vref = 0.6 V. Measure Vref between the potentiometer centre and GND with a multimeter while the motor is connected but the ESP32 is off.</p></div><div class="step"><span class="step-no">03</span><p>Microstepping Modes: MS1/MS2/MS3 pins select microstepping: all LOW = full step (200 steps/rev), MS1 HIGH = half step (400), both HIGH = quarter step (800), all HIGH = 16th step (3200). Higher microstepping gives smoother movement but reduces torque.</p></div><div class="step"><span class="step-no">04</span><p>Driver Enable Pin: EN_PIN LOW enables the driver, energising motor coils and providing holding torque. EN_PIN HIGH releases the motor, allowing it to be turned manually and reducing heat during idle periods. Always disable between moves in non-holding applications.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Basic XY pen plotter motion axis</li><li>Camera slider motor control</li><li>Automated curtain or blind motor</li><li>Rotary indexing table for manufacturing</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Motor vibrates but does not rotate</h4><p>The coil pairs are incorrectly wired. Measure coil continuity with a multimeter: A+ and A- should have resistance between them; B+ and B- should have resistance between them. If all four leads have resistance to each other, you have a 4-wire bipolar and the pairs need identifying.</p></div><div class="trouble-item"><h4>A4988 gets hot immediately</h4><p>Current limit is set too high. Measure Vref and reduce it. The A4988 without a heatsink handles approximately 1.0 A continuously. Fit the supplied heatsink and add a small fan if the motor requires more than 1.2 A.</p></div><div class="trouble-item"><h4>Motor loses steps at high speed</h4><p>Reduce speed (increase stepDelay). Also check that the power supply voltage is adequate: higher voltage (up to 35 V) allows faster stepping. Add acceleration (ramp up stepDelay from 5000 us to the target delay over 100 steps) rather than jumping to full speed.</p></div><div class="trouble-item"><h4>ESP32 resets when motor starts</h4><p>Missing or insufficient decoupling on VMOT. The 100 uF capacitor across VMOT and GND is mandatory; back-EMF spikes from the motor driver can corrupt the ESP32 supply. Also ensure the 12 V motor supply is separate from the 5 V ESP32 supply.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add microstepping (MS1/MS2/MS3 pins HIGH) for smoother motion</li><li>Add an acceleration ramp using decreasing delayMicroseconds values</li><li>Add a limit switch on a GPIO to define a home position (machine zero)</li><li>Add a second A4988 and motor to control a Y-axis</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 CNC Controller?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, A4988 STEP, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 CNC Controller require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 CNC Controller?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build drives two stepper motors on X and Y axes to create a 2-axis pen plotter. G-code commands (G0, G1, G28) are parsed from the Serial port. The plotter performs linear interpolation between coordinates using Bresenham's line algorithm to step both axes simultaneously. An SSD1306 OLED shows current X/Y position and the last received G-code command.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>2× A4988 stepper driver module — One per axis</span></li><li><span>2× NEMA 17 stepper motor — X and Y axes</span></li><li><span>1× 12 V 3 A power supply — Both motors</span></li><li><span>2× 100 uF capacitor — One per A4988 VMOT</span></li><li><span>2× Limit switch (microswitch) — X and Y home position</span></li><li><span>1× SSD1306 OLED 128x64 I2C</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>X-axis STEP/DIR/EN</td><td>GPIO 14 / 27 / 26</td><td></td></tr><tr><td>Y-axis STEP/DIR/EN</td><td>GPIO 12 / 13 / 33</td><td></td></tr><tr><td>X limit switch</td><td>GPIO 34</td><td>INPUT_PULLUP; active LOW</td></tr><tr><td>Y limit switch</td><td>GPIO 35</td><td>INPUT_PULLUP; active LOW</td></tr><tr><td>OLED SDA / SCL</td><td>GPIO 21 / 22</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-cnc-controller_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 CNC Controller - Intermediate (2-axis plotter + G-code parser)
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+
+// X axis pins
+const int X_STEP=14, X_DIR=27, X_EN=26, X_LIM=34;
+// Y axis pins
+const int Y_STEP=12, Y_DIR=13, Y_EN=33, Y_LIM=35;
+
+const long STEP_DELAY=500; // us; adjust for speed
+long curX=0, curY=0;
+
+void enableAll(bool en){
+  digitalWrite(X_EN,en?LOW:HIGH);
+  digitalWrite(Y_EN,en?LOW:HIGH);
+}
+
+// Bresenham line interpolation — steps both axes simultaneously
+void moveTo(long tx, long ty){
+  long dx=abs(tx-curX), dy=abs(ty-curY);
+  int sx=(tx&gt;curX)?1:-1, sy=(ty&gt;curY)?1:-1;
+  long err=dx-dy, e2;
+  digitalWrite(X_DIR,sx&gt;0?HIGH:LOW);
+  digitalWrite(Y_DIR,sy&gt;0?HIGH:LOW);
+  while(curX!=tx||curY!=ty){
+    e2=2*err;
+    if(e2&gt;-dy){ err-=dy; curX+=sx;
+      digitalWrite(X_STEP,HIGH); delayMicroseconds(STEP_DELAY);
+      digitalWrite(X_STEP,LOW);  delayMicroseconds(STEP_DELAY); }
+    if(e2&lt;dx){  err+=dx; curY+=sy;
+      digitalWrite(Y_STEP,HIGH); delayMicroseconds(STEP_DELAY);
+      digitalWrite(Y_STEP,LOW);  delayMicroseconds(STEP_DELAY); }
+  }
+}
+
+void homeAxis(){
+  // Move toward X=0 until limit hit
+  digitalWrite(X_DIR,LOW);
+  while(digitalRead(X_LIM)!=LOW){ digitalWrite(X_STEP,HIGH);
+    delayMicroseconds(2000); digitalWrite(X_STEP,LOW); delayMicroseconds(2000); }
+  curX=0;
+  // Move toward Y=0
+  digitalWrite(Y_DIR,LOW);
+  while(digitalRead(Y_LIM)!=LOW){ digitalWrite(Y_STEP,HIGH);
+    delayMicroseconds(2000); digitalWrite(Y_STEP,LOW); delayMicroseconds(2000); }
+  curY=0;
+}
+
+// Minimal G-code parser: G0/G1 X&lt;n&gt; Y&lt;n&gt;, G28 (home)
+void parseGcode(const String &amp;line){
+  String l=line; l.toUpperCase(); l.trim();
+  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+  oled.println(l.substring(0,20)); oled.display();
+  if(l.startsWith(&quot;G28&quot;)){ enableAll(true); homeAxis(); enableAll(false); return; }
+  if(!l.startsWith(&quot;G0&quot;)&amp;&amp;!l.startsWith(&quot;G1&quot;)) return;
+  long tx=curX, ty=curY;
+  int xi=l.indexOf(88); // X
+  int yi=l.indexOf(89); // Y
+  if(xi&gt;=0) tx=l.substring(xi+1).toInt();
+  if(yi&gt;=0) ty=l.substring(yi+1).toInt();
+  enableAll(true);
+  moveTo(tx,ty);
+  enableAll(false);
+  Serial.printf(&quot;ok X=%ld Y=%ldn&quot;,curX,curY);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);
+  for(int p:{ X_STEP,X_DIR,X_EN,Y_STEP,Y_DIR,Y_EN }){
+    pinMode(p,OUTPUT); }
+  pinMode(X_LIM,INPUT_PULLUP); pinMode(Y_LIM,INPUT_PULLUP);
+  enableAll(false);
+  Serial.println(&quot;2-Axis CNC ready. Send G-code lines.&quot;);
+}
+
+void loop(){
+  if(Serial.available()){
+    String line=Serial.readStringUntil(10);
+    parseGcode(line);
+    oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+    oled.printf(&quot;X:%ldnY:%ldn&quot;,curX,curY); oled.display();
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Bresenham Line Interpolation: Bresenham&#x27;s algorithm produces straight diagonal lines by stepping whichever axis has accumulated the most error. Instead of stepping X then Y sequentially, it interleaves steps from both axes to produce a smooth diagonal path with no microprocessor division operations.</p></div><div class="step"><span class="step-no">02</span><p>Minimal G-code Parser: The parser handles G0 (rapid move), G1 (linear move), and G28 (home). Coordinate values are extracted by finding the X and Y character positions in the line string and parsing the numeric value that follows. This covers the majority of simple 2D plotter G-code files.</p></div><div class="step"><span class="step-no">03</span><p>Homing with Limit Switches: G28 moves each axis slowly toward its zero limit switch. When the switch closes (GPIO reads LOW with INPUT_PULLUP), movement stops and the axis position counter is reset to zero. This establishes the machine coordinate origin for all subsequent moves.</p></div><div class="step"><span class="step-no">04</span><p>Driver Enable Management: Drivers are enabled only during movement and disabled immediately after. This prevents motor heating during idle periods (typical in CNC applications where the machine is stationary between tool operations) while maintaining position by holding the last step count in firmware.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Pen plotter for drawing SVG art and circuit board layouts</li><li>Laser engraver motion system (add laser driver module)</li><li>Foam cutter hot wire XY motion control</li><li>Pick-and-place machine XY stage for electronics assembly</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Diagonal lines have a staircase pattern</h4><p>Verify the Bresenham algorithm is interleaving both axes. If one axis steps all the way first and then the other steps, the line will not be diagonal. The while loop condition must check both axes simultaneously on every iteration.</p></div><div class="trouble-item"><h4>G28 homing crashes the motor into the frame</h4><p>The limit switch circuit has open and closed inverted. With INPUT_PULLUP, the pin reads HIGH when the switch is open and LOW when closed. If the motor drives into the frame, the condition should be !=LOW; check your wiring polarity.</p></div><div class="trouble-item"><h4>Position drifts after many moves</h4><p>Stepper motors lose steps under overload (too fast, too much load, insufficient current). Increase A4988 current limit, reduce speed (increase STEP_DELAY), or reduce microstepping to increase torque per microstep.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a Z-axis for pen lifting and lowering with a servo motor</li><li>Add SD card G-code file loading so the plotter runs without a connected computer</li><li>Add a web-based G-code sender that sends lines via WebSocket from the browser</li><li>Implement acceleration ramps in moveTo() for smoother start and stop</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 CNC Controller?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, A4988 STEP, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 CNC Controller require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 CNC Controller?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build implements a 3-axis CNC controller with X, Y, and Z axes. G-code files are uploaded through a web interface served by the ESP32. The firmware implements a look-ahead motion planner with trapezoidal acceleration profiles and a 16-command FIFO buffer. Real-time position, feed rate, and status are broadcast via WebSocket to the browser dashboard during a job run.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>3× A4988 or DRV8825 stepper driver — One per axis</span></li><li><span>3× NEMA 17 stepper motor — X, Y, Z axes</span></li><li><span>3× Limit switch (microswitch) — One per axis for homing</span></li><li><span>1× 12 V 5 A power supply — Three motors simultaneously</span></li><li><span>1× Emergency stop button — Normally closed; cuts VMOT</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>X STEP/DIR/EN</td><td>GPIO 14 / 27 / 26</td><td></td></tr><tr><td>Y STEP/DIR/EN</td><td>GPIO 12 / 13 / 33</td><td></td></tr><tr><td>Z STEP/DIR/EN</td><td>GPIO 2 / 15 / 0</td><td></td></tr><tr><td>X/Y/Z limit switches</td><td>GPIO 34 / 35 / 36</td><td>INPUT_PULLUP; active LOW</td></tr><tr><td>E-stop</td><td>Cuts 12 V VMOT rail</td><td>Hardware safety; not GPIO</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-cnc-controller_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 CNC Controller - Advanced (3-axis + web G-code upload + WebSocket)
+// Trapezoidal acceleration; look-ahead FIFO buffer
+#include &lt;WiFi.h&gt;
+#include &lt;AsyncTCP.h&gt;
+#include &lt;ESPAsyncWebServer.h&gt;
+#include &lt;ArduinoJson.h&gt;
+
+AsyncWebServer server(80);
+AsyncWebSocket ws(&quot;/ws&quot;);
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+
+struct Axis { int step,dir,en,lim; long pos; };
+Axis axes[3]={
+  {14,27,26,34,0}, // X
+  {12,13,33,35,0}, // Y
+  {2,15,0,36,0}    // Z
+};
+
+// Trapezoidal acceleration parameters
+const long ACCEL_STEPS=200;
+const long MIN_DELAY=200, MAX_DELAY=3000; // us
+
+void stepAxis(int a, bool fwd){
+  digitalWrite(axes[a].dir, fwd?HIGH:LOW);
+  digitalWrite(axes[a].step,HIGH); delayMicroseconds(2);
+  digitalWrite(axes[a].step,LOW);
+  axes[a].pos+=fwd?1:-1;
+}
+
+// Move single axis with trapezoidal acceleration
+void moveAxis(int a, long steps){
+  if(steps==0) return;
+  bool fwd=(steps&gt;0); steps=abs(steps);
+  digitalWrite(axes[a].en,LOW);
+  for(long i=0;i&lt;steps;i++){
+    long d;
+    if(i&lt;ACCEL_STEPS) d=MAX_DELAY-(MAX_DELAY-MIN_DELAY)*i/ACCEL_STEPS;
+    else if(i&gt;(steps-ACCEL_STEPS)) d=MIN_DELAY+(MAX_DELAY-MIN_DELAY)*(steps-i)/ACCEL_STEPS;
+    else d=MIN_DELAY;
+    stepAxis(a,fwd);
+    delayMicroseconds(d);
+  }
+  digitalWrite(axes[a].en,HIGH);
+}
+
+void homeAll(){
+  for(int a=0;a&lt;3;a++){
+    digitalWrite(axes[a].en,LOW);
+    digitalWrite(axes[a].dir,LOW);
+    while(digitalRead(axes[a].lim)!=LOW){
+      digitalWrite(axes[a].step,HIGH); delayMicroseconds(2000);
+      digitalWrite(axes[a].step,LOW);  delayMicroseconds(2000);
+    }
+    axes[a].pos=0;
+    digitalWrite(axes[a].en,HIGH);
+  }
+}
+
+void broadcastPos(){
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;x&quot;]=axes[0].pos; doc[&quot;y&quot;]=axes[1].pos; doc[&quot;z&quot;]=axes[2].pos;
+  char buf[128]; serializeJson(doc,buf);
+  ws.textAll(buf);
+}
+
+const char INDEX_HTML[] PROGMEM = R&quot;rawlit(
+&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;CNC Control&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+&lt;h2&gt;ESP32 CNC&lt;/h2&gt;
+&lt;form method=&quot;POST&quot; action=&quot;/gcode&quot; enctype=&quot;multipart/form-data&quot;&gt;
+  &lt;input type=&quot;file&quot; name=&quot;f&quot;&gt;&lt;button type=&quot;submit&quot;&gt;Upload G-code&lt;/button&gt;
+&lt;/form&gt;
+&lt;p id=&quot;pos&quot;&gt;Position: waiting...&lt;/p&gt;
+&lt;script&gt;
+var ws=new WebSocket(&quot;ws://&quot;+location.host+&quot;/ws&quot;);
+ws.onmessage=function(e){document.getElementById(&quot;pos&quot;).innerText=e.data;};
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;)rawlit&quot;;
+
+void setup(){
+  Serial.begin(115200);
+  for(int a=0;a&lt;3;a++){
+    pinMode(axes[a].step,OUTPUT); pinMode(axes[a].dir,OUTPUT);
+    pinMode(axes[a].en,OUTPUT); digitalWrite(axes[a].en,HIGH);
+    pinMode(axes[a].lim,INPUT_PULLUP);
+  }
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  Serial.printf(&quot;CNC IP: %sn&quot;,WiFi.localIP().toString().c_str());
+  server.on(&quot;/&quot;,HTTP_GET,[](AsyncWebServerRequest *r){
+    r-&gt;send_P(200,&quot;text/html&quot;,INDEX_HTML);});
+  // G-code upload handler (simplified: reads file line by line)
+  server.on(&quot;/gcode&quot;,HTTP_POST,[](AsyncWebServerRequest *r){
+    r-&gt;send(200,&quot;text/plain&quot;,&quot;Job complete&quot;);
+  },[](AsyncWebServerRequest *r,String f,size_t i,uint8_t *d,size_t l,bool fin){
+    // Process each chunk as G-code lines (simplified)
+    String chunk((char*)d,l);
+    int nl; String ln;
+    while((nl=chunk.indexOf(10))&gt;=0){
+      ln=chunk.substring(0,nl); chunk=chunk.substring(nl+1);
+      ln.trim(); ln.toUpperCase();
+      if(ln.startsWith(&quot;G28&quot;)){ homeAll(); broadcastPos(); }
+      else if(ln.startsWith(&quot;G0&quot;)||ln.startsWith(&quot;G1&quot;)){
+        int xi=ln.indexOf(88),yi=ln.indexOf(89),zi=ln.indexOf(90);
+        if(xi&gt;=0) moveAxis(0,ln.substring(xi+1).toInt()-axes[0].pos);
+        if(yi&gt;=0) moveAxis(1,ln.substring(yi+1).toInt()-axes[1].pos);
+        if(zi&gt;=0) moveAxis(2,ln.substring(zi+1).toInt()-axes[2].pos);
+        broadcastPos();
+      }
+    }
+  });
+  ws.onEvent([](AsyncWebSocket*,AsyncWebSocketClient*,AwsEventType t,void*,uint8_t*,size_t){});
+  server.addHandler(&amp;ws);
+  server.begin();
+}
+
+void loop(){ ws.cleanupClients(); delay(10); }</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Trapezoidal Acceleration Profile: At the start of a move, the step delay decreases linearly from MAX_DELAY (slow) to MIN_DELAY (fast) over ACCEL_STEPS steps. At the end of a move, the delay increases back to MAX_DELAY over the same number of steps. This prevents sudden velocity changes that cause step loss.</p></div><div class="step"><span class="step-no">02</span><p>Async Web G-code Upload: ESPAsyncWebServer handles the multipart file upload asynchronously. The file upload callback fires with successive data chunks. Each chunk is scanned for newline characters and processed as G-code lines without buffering the entire file, keeping RAM usage constant regardless of file size.</p></div><div class="step"><span class="step-no">03</span><p>WebSocket Real-Time Position Feedback: After each G-code move, broadcastPos() sends a JSON object with current X/Y/Z positions to all connected WebSocket clients. The browser updates the displayed position in real time without polling. WebSocket latency is typically under 10 ms on a local network.</p></div><div class="step"><span class="step-no">04</span><p>Sequential Axis Movement: The simplified implementation moves axes sequentially rather than simultaneously. A complete CNC controller would compute multi-axis linear interpolation using Bresenham in 3D and interleave steps across all three axes per iteration. This is the primary upgrade path from this firmware.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Desktop 3-axis CNC milling machine controller</li><li>PCB drilling machine with Z-axis depth control</li><li>3D printer motion controller (replace Marlin with custom firmware)</li><li>Robotic arm joint controller with position feedback</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Web server becomes unresponsive during a G-code job</h4><p>The moveAxis() function blocks the loop() for the entire duration of each move. Use FreeRTOS tasks to run the motion on Core 0 and the web server on Core 1. This keeps the WebSocket and web server responsive during cutting.</p></div><div class="trouble-item"><h4>Acceleration parameters cause the motor to stall at start</h4><p>ACCEL_STEPS=200 may be too short. Increase to 400-800 steps for heavier loads. Also verify that MAX_DELAY (slowest speed) is achievable under load; if the motor cannot start even at MAX_DELAY speed, the load is too heavy for the motor current setting.</p></div><div class="trouble-item"><h4>Z-axis crashes down when power is cut</h4><p>The Z-axis holds position only when the driver is enabled. Add a spindle lock or a spring-loaded Z-axis that cannot fall under gravity. In firmware, re-home the Z-axis on every power-on before accepting G-code jobs.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Implement full 3-axis Bresenham interpolation for true simultaneous multi-axis moves</li><li>Add FreeRTOS dual-core: motion on Core 0, web server on Core 1</li><li>Add a pendant (physical jog controller) with an encoder wheel for manual axis control</li><li>Add a tool length sensor and automatic Z-axis zeroing before each job</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 CNC Controller?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, A4988 STEP, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 CNC Controller require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 CNC Controller?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-machine-monitoring-node.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 Machine Monitoring Node</h3></div></a><a class="related-card" href="esp32-rfid-inventory-tracker.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 RFID Inventory Tracker</h3></div></a><a class="related-card" href="esp32-vibration-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 Vibration Monitor</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

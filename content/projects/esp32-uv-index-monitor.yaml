@@ -1,0 +1,272 @@
+slug: esp32-uv-index-monitor
+title: ESP32 UV Index Monitor
+category: Environmental
+description: Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display
+  the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via
+  Telegram when outdoor UV exposure reaches dangerous levels.
+meta_description: Build an ESP32 UV index monitor with the VEML6075 sensor. Measure UVA and UVB radiation,
+  display the WHO UV risk level, accumulate daily UV dose, and send Telegram sunburn alerts.
+source_base: esp32-uv-index-monitor-legacy-import
+sensor: 'TODO: sensor'
+output: RGB LED R/G/B
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 3
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 25/26/27
+  sensor_name: 'TODO: sensor'
+  output_name: RGB LED R/G/B
+  wiring:
+  - component: VEML6075 SDA/SCL
+    pin: GPIO 21/22
+  - component: OLED SDA/SCL
+    pin: GPIO 21/22
+  - component: RGB LED R/G/B
+    pin: GPIO 25/26/27
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will connect a VEML6075 UVA/UVB sensor to the ESP32
+      via I2C and display the calculated UV index and WHO risk level on an SSD1306 OLED. An RGB LED changes
+      colour from green (low) through yellow (moderate) and orange (high) to red (very high) based on
+      the current UV index value. Readings update every 5 seconds.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× VEML6075 UVA/UVB sensor module — I2C; 3.3 V; UV index 0-11+ range
+    - 1× SSD1306 OLED 128x64 I2C
+    - 1× Common-cathode RGB LED — UV risk level colour indicator
+    - 3× 220 ohm resistor — One per LED channel
+    wiring:
+    - - VEML6075 SDA/SCL
+      - GPIO 21/22
+      - I2C; 3.3 V; address 0x10
+    - - OLED SDA/SCL
+      - GPIO 21/22
+      - Shared I2C bus; address 0x3C
+    - - RGB LED R/G/B
+      - GPIO 25/26/27
+      - 220 ohm series resistors
+    how:
+    - 'VEML6075 Dual-Channel UV Detection: The VEML6075 contains two photodiodes with spectral filters:
+      one passes UVA (315-400 nm) and one passes UVB (280-315 nm). A third visible-light compensation
+      channel corrects for infrared and visible light leaking through the UV filters. The I2C registers
+      return calibrated UVA and UVB counts in digital units.'
+    - 'UV Index Calculation: The WHO UV index is a dimensionless scale representing biologically effective
+      UV dose rate. The VEML6075 library calculates it from compensated UVA and UVB counts using calibration
+      coefficients provided by Vishay: UVI = (UVAcomp * UVA_RESP + UVBcomp * UVB_RESP) * AS_SCALAR. Values
+      above 11 indicate extreme UV radiation.'
+    - 'Five-Level Risk Classification: WHO defines five UV risk categories: Low (0-2), Moderate (3-5),
+      High (6-7), Very High (8-10), and Extreme (11+). The classify() function scans the LEVELS array
+      in reverse order and returns the first entry whose minimum threshold the current UVI exceeds, giving
+      the correct risk category.'
+    - 'RGB Colour Coding: analogWrite() drives each LED channel with 8-bit PWM for colour mixing. Green
+      for low risk, yellow for moderate, orange for high, red for very high, and purple for extreme. These
+      match the standard WHO UV risk colour scheme used by meteorological agencies worldwide.'
+    apps:
+    - Outdoor UV exposure alert for gardeners and athletes
+    - Beach or pool side UV index display for sunburn prevention
+    - Kindergarten outdoor UV safety monitor for teachers
+    - Research instrument for measuring UV intensity variation through the day
+    troubleshooting:
+    - - UVI reads zero or very low indoors
+      - The VEML6075 measures UV radiation; ordinary window glass blocks over 99 percent of UVB and most
+        UVA. The sensor must be placed outdoors in direct sunlight for meaningful readings. Indoors, expect
+        near-zero values even near windows.
+    - - VEML6075 not found error at startup
+      - Verify the I2C address is 0x10. Check SDA on GPIO 21 and SCL on GPIO 22. Confirm the module is
+        powered at 3.3 V; the VEML6075 is not 5 V tolerant on its logic pins. Add 4.7 kohm pull-up resistors
+        to SDA and SCL if the I2C bus has no other pull-ups.
+    - - RGB LED shows wrong colours
+      - 'Confirm the LED is common-cathode (shared GND). For common-anode LEDs, invert the PWM values:
+        setLED(255-r, 255-g, 255-b). Check each channel with analogWrite(pin, 255) individually to confirm
+        correct wiring before testing colour mixing.'
+    upgrades:
+    - Add a buzzer that beeps when UV index exceeds a configurable alert threshold
+    - Add a push button to cycle through the SPF recommendation table for different skin types
+    - Add an e-paper display for an always-on outdoor UV station that is readable in sunlight
+    - Add Wi-Fi to log hourly UV index to a Google Sheet via HTTP POST
+    code: "// ESP32 UV Index Monitor - Beginner\n// VEML6075 UVA/UVB -> WHO UV index display on OLED +\
+      \ RGB LED\n// Library: Adafruit VEML6075 in Library Manager\n\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <Adafruit_VEML6075.h>\n\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\nAdafruit_VEML6075\
+      \ uv;\n\nconst int LED_R=25, LED_G=26, LED_B=27;\n\n// WHO UV index risk levels\nstruct UVLevel\
+      \ { float min; const char* label; uint8_t r,g,b; };\nconst UVLevel LEVELS[] = {\n  {0,  \"LOW\"\
+      ,       0,   255, 0  },\n  {3,  \"MODERATE\",  255, 200, 0  },\n  {6,  \"HIGH\",      255, 100,\
+      \ 0  },\n  {8,  \"VERY HIGH\", 255, 0,   0  },\n  {11, \"EXTREME\",   150, 0,   255},\n};\nconst\
+      \ int NUM_LEVELS = 5;\n\nconst UVLevel& classify(float uvi){\n  for(int i=NUM_LEVELS-1; i>=0; i--)\n\
+      \    if(uvi >= LEVELS[i].min) return LEVELS[i];\n  return LEVELS[0];\n}\n\nvoid setLED(uint8_t r,\
+      \ uint8_t g, uint8_t b){\n  analogWrite(LED_R, r); analogWrite(LED_G, g); analogWrite(LED_B, b);\n\
+      }\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,\
+      \ 0x3C); oled.setTextColor(WHITE);\n  if(!uv.begin()){ Serial.println(\"VEML6075 not found\"); while(1);\
+      \ }\n  pinMode(LED_R,OUTPUT); pinMode(LED_G,OUTPUT); pinMode(LED_B,OUTPUT);\n  Serial.println(\"\
+      UV Index Monitor ready.\");\n}\n\nvoid loop(){\n  float uva = uv.readUVA();\n  float uvb = uv.readUVB();\n\
+      \  float uvi = uv.readUVI();\n  const UVLevel& lv = classify(uvi);\n\n  Serial.printf(\"UVA: %.1f\
+      \  UVB: %.1f  UVI: %.1f  Risk: %sn\",\n    uva, uvb, uvi, lv.label);\n  setLED(lv.r, lv.g, lv.b);\n\
+      \n  oled.clearDisplay(); oled.setCursor(0,0);\n  oled.setTextSize(2); oled.printf(\"UVI: %.1fn\"\
+      , uvi);\n  oled.setTextSize(1); oled.println(lv.label);\n  oled.printf(\"UVA: %.1f  UVB: %.1f\"\
+      , uva, uvb);\n  oled.display();\n  delay(5000);\n}"
+    code_filename: esp32-uv-index-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build accumulates a personal daily UV dose in standard erythemal
+      dose (SED) units and sends a Telegram alert when the dose for a selected skin type is approaching
+      the safe daily limit. An OLED shows current UVI, accumulated dose percentage, and a countdown to
+      the next safe outdoor time. Hourly UV peaks are logged to NVS for trend review.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× VEML6075 sensor
+    - 1× SSD1306 OLED
+    - 1× Wi-Fi router — NTP + Telegram
+    wiring:
+    - - VEML6075 + OLED SDA/SCL
+      - GPIO 21/22
+      - Shared I2C
+    how:
+    - 'Standard Erythemal Dose: SED (Standard Erythemal Dose) is a unit of biologically effective UV exposure.
+      1 SED equals 100 J/m2 of erythemally weighted irradiance. Each UV index unit corresponds to approximately
+      0.025 W/m2 of erythemal irradiance. Multiplying by elapsed seconds gives joules, which convert to
+      SED by dividing by 100.'
+    - 'Fitzpatrick Skin Type MED: The Fitzpatrick scale classifies skin into six types (I-VI) based on
+      UV sensitivity. Type I (very fair, always burns) has a Minimal Erythema Dose of 2 SED; Type VI (dark,
+      never burns) has a MED of 8 SED. Tracking what fraction of the MED has been accumulated tells the
+      user when they are approaching their personal sunburn threshold.'
+    - 'Daily Reset with Day Tracking: The accumulated dose resets at midnight. The current calendar day
+      (ti.tm_mday) is compared to lastDay on each loop iteration. When the day changes, dailyDose_SED
+      and alertSent reset. NVS stores the dose so a power cut during the day does not reset the accumulated
+      exposure.'
+    - '80 Percent Alert Threshold: The Telegram alert fires at 80 percent of MED rather than 100 percent
+      to give the user time to seek shade before reaching the sunburn threshold. A single alert per day
+      (alertSent flag) prevents message flooding from continuous outdoor exposure.'
+    apps:
+    - Personal UV dose tracker for outdoor workers, hikers, and cyclists
+    - Dermatology patient UV exposure monitor post skin cancer treatment
+    - Sports training UV management for athletes training in direct sunlight
+    - Child outdoor activity UV safety monitor for schools and playgrounds
+    troubleshooting:
+    - - Daily dose keeps accumulating indoors
+      - 'The UVI reading indoors near a window may not be exactly zero due to sensor offset. Add a minimum
+        UVI threshold before accumulating dose: only add to dailyDose_SED when uvi > 0.5.'
+    - - Telegram alert fires in the middle of the night
+      - The dose from the previous day was persisted in NVS and not reset correctly. Verify the NTP time
+        is synced before the first daily reset check runs. Add a Serial.printf of ti.tm_mday and lastDay
+        to confirm the reset logic is triggering correctly.
+    - - Dose percentage exceeds 100 percent with no alert
+      - The alertSent flag was not cleared on the daily reset. Confirm alertSent=false is inside the if(ti.tm_mday!=lastDay)
+        block alongside the dose reset.
+    upgrades:
+    - Add a skin type selector button to switch between Fitzpatrick types I-VI at runtime
+    - Add an hourly UV peak log in NVS to visualise the daily UV curve
+    - Add a UV-B only dose mode for vitamin D synthesis tracking (separate from sunburn dose)
+    - Add an e-ink display for outdoor readability in bright sunlight
+    code: "// ESP32 UV Index Monitor - Intermediate (SED dose accumulator + Telegram alert)\n// SED =\
+      \ Standard Erythemal Dose; 1 SED = 100 J/m2 erythemally weighted UV\n#include <Wire.h>\n#include\
+      \ <Adafruit_SSD1306.h>\n#include <Adafruit_VEML6075.h>\n#include <WiFi.h>\n#include <WiFiClientSecure.h>\n\
+      #include <Preferences.h>\n#include <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nAdafruit_VEML6075\
+      \ uv;\nPreferences prefs;\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"\
+      YOUR_BOT_TOKEN\";\nconst char* CHAT_ID=\"YOUR_CHAT_ID\";\n\n// Skin type MED (Minimal Erythema Dose)\
+      \ in SED — Fitzpatrick scale I-VI\n// Lower MED = more UV-sensitive skin\nconst float MED_SED[]\
+      \ = {2.0f, 2.5f, 3.5f, 4.5f, 6.0f, 8.0f};\nconst int SKIN_TYPE = 2; // 0=type I (very fair), 5=type\
+      \ VI (dark)\nfloat dailyDose_SED = 0;\nbool alertSent = false;\nint lastDay = -1;\n\nfloat sedPerSecond(float\
+      \ uvi){\n  // Approximate: 1 UV Index unit ~ 0.025 W/m2 erythemal irradiance\n  // 1 SED = 100 J/m2;\
+      \ so dose rate in SED/s = uvi*0.025/100\n  return uvi * 0.00025f;\n}\n\nvoid sendTelegram(const\
+      \ String &msg){\n  WiFiClientSecure c; c.setInsecure();\n  if(!c.connect(\"api.telegram.org\",443))\
+      \ return;\n  String body=\"chat_id=\"+String(CHAT_ID)+\"&text=\"+msg;\n  c.printf(\"POST /bot%s/sendMessage\
+      \ HTTP/1.1rnHost: api.telegram.orgrn\"\n    \"Content-Type: application/x-www-form-urlencodedrnContent-Length:\
+      \ %drnrn%s\",\n    BOT_TOKEN,(int)body.length(),body.c_str());\n  delay(1000); c.stop();\n}\n\n\
+      void setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\
+      \ oled.setTextColor(WHITE);\n  uv.begin();\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
+      \ delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  prefs.begin(\"uv\",false);\n  dailyDose_SED=prefs.getFloat(\"\
+      dose\",0);\n  prefs.end();\n}\n\nunsigned long lastMs=0;\nvoid loop(){\n  struct tm ti; getLocalTime(&ti);\n\
+      \  if(ti.tm_mday!=lastDay){ dailyDose_SED=0; alertSent=false; lastDay=ti.tm_mday; }\n\n  unsigned\
+      \ long now=millis();\n  float dt=(now-lastMs)/1000.0f; lastMs=now;\n  float uvi=uv.readUVI();\n\
+      \  if(uvi>0) dailyDose_SED += sedPerSecond(uvi)*dt;\n\n  float med=MED_SED[SKIN_TYPE];\n  float\
+      \ pct=dailyDose_SED/med*100.0f;\n  Serial.printf(\"UVI: %.1f  Dose: %.3f SED  MED: %.0f%%n\",uvi,dailyDose_SED,pct);\n\
+      \n  if(pct>=80&&!alertSent){\n    sendTelegram(\"UV ALERT: \"+String((int)pct)+\"% of daily safe\
+      \ dose reached! UVI=\"+String(uvi,1));\n    alertSent=true;\n  }\n\n  prefs.begin(\"uv\",false);\
+      \ prefs.putFloat(\"dose\",dailyDose_SED); prefs.end();\n\n  oled.clearDisplay(); oled.setCursor(0,0);\
+      \ oled.setTextSize(1);\n  oled.printf(\"UVI: %.1fn\",uvi);\n  oled.printf(\"Dose: %.2f / %.1f SEDn\"\
+      ,dailyDose_SED,med);\n  oled.printf(\"MED used: %.0f%%n\",pct);\n  oled.println(pct>=100?\"STAY\
+      \ INDOORS\":pct>=80?\"SEEK SHADE\":\"Safe\");\n  oled.display();\n  delay(5000);\n}"
+    code_filename: esp32-uv-index-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build fetches hourly UV index forecasts from the OpenUV API and compares
+      them to live VEML6075 readings. Measured and forecast UV data are published to MQTT. A Grafana dashboard
+      shows today's UV curve, cumulative SED dose by skin type, forecast vs measured comparison, and a
+      daily UV exposure calendar heatmap built from NVS-stored historical peaks.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× VEML6075 sensor
+    - 1× MQTT broker + Grafana + InfluxDB — Local server
+    - 1× OpenUV API key (free tier) — 50 calls/day free
+    wiring:
+    - - VEML6075 SDA/SCL
+      - GPIO 21/22
+      - ''
+    how:
+    - 'OpenUV Real-Time Forecast API: The OpenUV API returns the current UV index and hourly forecast
+      for any GPS coordinate. The free tier provides 50 API calls per day. Fetching once per hour uses
+      24 calls per day, staying within the limit. The x-access-token header authenticates the request.'
+    - 'Measured vs Forecast Comparison: Publishing both measured and forecast UV index to separate MQTT
+      fields enables Grafana to overlay them on one chart. Divergence between measured and forecast indicates
+      cloud cover (measured lower than forecast) or unusual atmospheric transparency (measured higher).
+      The comparison validates the sensor calibration.'
+    - 'MQTT to InfluxDB via Telegraf: Telegraf subscribes to uv/monitor and writes each JSON field as
+      an InfluxDB measurement. Grafana queries InfluxDB for today''s UV readings and renders a time-series
+      chart showing the daily UV bell curve. Historical data enables a calendar heatmap panel showing
+      peak UV day by day.'
+    - 'Five-Second Dose Accumulation: The loop runs every 5 seconds. Each iteration adds measured UVI
+      multiplied by 0.00025 (SED per second per UVI unit) multiplied by 5 seconds to the cumulative SED
+      total. This piecewise integration approximates total erythemal dose over the day with sufficient
+      accuracy for personal safety guidance.'
+    apps:
+    - UV research station comparing local measurements to satellite-derived UV forecasts
+    - Beach resort UV safety information kiosk with live and forecast data
+    - Agricultural UV stress monitoring for photosensitive crops under polytunnels
+    - Personal health dashboard tracking sun exposure across days and seasons
+    troubleshooting:
+    - - OpenUV API returns 403 Forbidden
+      - Verify the API key in the x-access-token header is correct and the free tier daily quota has not
+        been exhausted. The free plan resets at midnight UTC. Use Serial to print the full HTTP response
+        body to see the error message from the API.
+    - - Measured UV is consistently 20 percent higher than forecast
+      - The VEML6075 factory calibration uses a flat horizontal surface. If the sensor is mounted at an
+        angle or elevated, it intercepts more direct UV. Also check that no reflective surfaces (white
+        walls, water) are near the sensor, as reflections increase effective UV intensity.
+    - - Grafana shows gaps in the UV time series at night
+      - The sensor publishes readings continuously including at night when UVI is 0. Gaps in Grafana indicate
+        Wi-Fi dropouts or MQTT broker restarts. Add MQTT reconnect logic and consider publishing a heartbeat
+        value every 60 seconds even when UVI is zero to verify connectivity.
+    upgrades:
+    - Add a GPS module to auto-detect latitude and longitude for the OpenUV API call
+    - Add a vitamin D synthesis calculator alongside the erythemal dose tracker
+    - Add a Home Assistant sensor entity publishing UV risk level for automation rules
+    - Add a public Grafana UV dashboard for a neighbourhood shared UV monitoring network
+    code: "// ESP32 UV Index Monitor - Advanced (OpenUV forecast + MQTT + InfluxDB)\n#include <Wire.h>\n\
+      #include <Adafruit_VEML6075.h>\n#include <WiFi.h>\n#include <HTTPClient.h>\n#include <ArduinoJson.h>\n\
+      #include <PubSubClient.h>\n#include <time.h>\n\nAdafruit_VEML6075 uv;\nWiFiClient wc; PubSubClient\
+      \ mqtt(wc);\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\"\
+      ;\nconst char* OPENUV_KEY=\"YOUR_OPENUV_KEY\";\nconst float LAT=51.5f, LON=-0.1f; // your location\n\
+      \nfloat forecastUVI=0;\nfloat dailySED=0;\n\nfloat fetchForecastUVI(){\n  HTTPClient http;\n  char\
+      \ url[128];\n  snprintf(url,sizeof(url),\n    \"https://api.openuv.io/api/v1/uv?lat=%.4f&lng=%.4f\"\
+      ,LAT,LON);\n  http.begin(url);\n  http.addHeader(\"x-access-token\",OPENUV_KEY);\n  if(http.GET()!=200){\
+      \ http.end(); return -1; }\n  DynamicJsonDocument doc(512);\n  deserializeJson(doc,http.getString());\n\
+      \  http.end();\n  return doc[\"result\"][\"uv\"]|0.0f;\n}\n\nvoid publishReading(float measured,\
+      \ float forecast, float sed){\n  StaticJsonDocument<128> doc;\n  doc[\"uvi_measured\"]=measured;\n\
+      \  doc[\"uvi_forecast\"]=forecast;\n  doc[\"daily_sed\"]=sed;\n  char buf[128]; serializeJson(doc,buf);\n\
+      \  mqtt.publish(\"uv/monitor\",buf);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n\
+      \  uv.begin();\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"\
+      pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n  forecastUVI=fetchForecastUVI();\n}\n\nint\
+      \ lastHour=-1;\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"UVMonitor\");\n  mqtt.loop();\n\
+      \  struct tm ti; getLocalTime(&ti);\n  if(ti.tm_hour!=lastHour){ forecastUVI=fetchForecastUVI();\
+      \ lastHour=ti.tm_hour; }\n  float measured=uv.readUVI();\n  if(measured>0.5f) dailySED+=measured*0.00025f*5.0f;\
+      \ // 5-second interval\n  publishReading(measured,forecastUVI,dailySED);\n  Serial.printf(\"Measured:\
+      \ %.1f  Forecast: %.1f  SED: %.3fn\",\n    measured,forecastUVI,dailySED);\n  delay(5000);\n}"
+    code_filename: esp32-uv-index-advanced.ino
+related_slugs:
+- esp32-iot-weather-station
+- esp32-oled-weather-clock

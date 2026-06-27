@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 Digital Piano | ESP32 Engine</title>
+<meta name="description" content="Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-digital-piano.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Digital Piano | ESP32 Engine">
+<meta property="og:description" content="Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-digital-piano.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Digital Piano | ESP32 Engine">
+<meta name="twitter:description" content="Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 Digital Piano","description":"Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-digital-piano.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, Buzzer +/-"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 Digital Piano (Beginner)","description":"Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.","step":[{"@type":"HowToStep","position":1,"name":"ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped to s…","text":"ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped to specific GPIO numbers). touchRead() measures the capacitance of the pad: in air, values are typically 60-80; touching a conductive pad lowers the reading to 10-30. A threshold of 40 reliably distinguishes touch from no-touch with copper foil pads."},{"@type":"HowToStep","position":2,"name":"LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching the…","text":"LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching the desired audio frequency. ledcChangeFrequency() changes the LEDC channel frequency without reconfiguring the timer, enabling fast frequency changes between notes. A 50 percent duty cycle (128/256) maximises acoustic output."},{"@type":"HowToStep","position":3,"name":"Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive ca…","text":"Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive capacitive touch keys. Cut strips approximately 5x2 cm, arrange them in piano key layout on cardboard or wood, and connect each to a touch GPIO pin with a short wire. The human finger's capacitance coupled through the foil is sufficient to trigger touchRead() reliably."},{"@type":"HowToStep","position":4,"name":"Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch, ign…","text":"Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch, ignoring subsequent touches. This gives the lowest key (leftmost copper pad) priority in a monophonic instrument. For a two-finger chord, the lower key wins. This is the same monophonic priority scheme used in early analogue synthesisers."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 Digital Piano?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, Buzzer +/-, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 Digital Piano require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 Digital Piano?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Education. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Education","item":"https://esp32engine.com/category/education.html"},{"@type":"ListItem","position":3,"name":"ESP32 Digital Piano","item":"https://esp32engine.com/projects/esp32-digital-piano.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/education.html">Education</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/education.html">Education</a></li><li aria-current="page">ESP32 Digital Piano</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 Digital Piano</h1>
+          <div class="article-badges"><span class="badge badge-cat">Education</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-default parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M14 14H34C40 14 44 18 44 24V50C40 46 36 44 30 44H14V14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M50 14H30C24 14 20 18 20 24V50C24 46 28 44 34 44H50V14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will use the ESP32 built-in capacitive touch sensor on pins T0-T8 to detect finger touches and generate musical notes through a passive buzzer using the LEDC PWM peripheral. Eight touch pins map to one octave (C4 to C5). Touching a pin plays that note; releasing stops it. No external keyboard hardware is needed — your fingertips are the keys.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1 — Must have capacitive touch pins T0-T8</span></li><li><span>1× Passive piezo buzzer — PWM-driven; 3-5 V; NOT active buzzer</span></li><li><span>8× Copper foil tape strips (5 x 2 cm) — Touch key pads; connect to touch pins</span></li><li><span>8× Jumper wires — Touch pin to copper pad</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Touch keys C4/D4/E4/F4</td><td>T0(4)/T3(15)/T4(13)/T5(12)</td><td>Copper foil pads</td></tr><tr><td>Touch keys G4/A4/B4/C5</td><td>T6(14)/T7(27)/T8(33)/T9(32)</td><td></td></tr><tr><td>Buzzer +/-</td><td>GPIO 25 / GND</td><td>LEDC PWM output</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-digital-piano_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Digital Piano - Beginner
+// Capacitive touch -&gt; LEDC buzzer piano (one octave C4-C5)
+
+// Note frequencies in Hz (C4 to C5)
+const int NOTES[8]  = {262, 294, 330, 349, 392, 440, 494, 523};
+const char NAMES[8][3] = {&quot;C4&quot;,&quot;D4&quot;,&quot;E4&quot;,&quot;F4&quot;,&quot;G4&quot;,&quot;A4&quot;,&quot;B4&quot;,&quot;C5&quot;};
+// ESP32 touch-capable GPIO pins (T-pin number maps to GPIO)
+const int TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};
+const int BUZZER = 25;
+const int TOUCH_THRESHOLD = 40; // lower value = touch detected
+
+void setup() {
+  Serial.begin(115200);
+  ledcSetup(0, 262, 8); // channel 0, initial freq, 8-bit res
+  ledcAttachPin(BUZZER, 0);
+  ledcWrite(0, 0); // start silent
+  Serial.println(&quot;Touch the copper pads to play notes!&quot;);
+}
+
+void loop() {
+  int played = -1;
+  for (int i = 0; i &lt; 8; i++) {
+    if (touchRead(TOUCH_PINS[i]) &lt; TOUCH_THRESHOLD) {
+      played = i;
+      break; // play first touched key only
+    }
+  }
+  if (played &gt;= 0) {
+    ledcChangeFrequency(0, NOTES[played], 8);
+    ledcWrite(0, 128); // 50% duty = square wave
+    Serial.printf(&quot;Playing: %s (%d Hz)n&quot;, NAMES[played], NOTES[played]);
+  } else {
+    ledcWrite(0, 0); // silence
+  }
+  delay(10);
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped to specific GPIO numbers). touchRead() measures the capacitance of the pad: in air, values are typically 60-80; touching a conductive pad lowers the reading to 10-30. A threshold of 40 reliably distinguishes touch from no-touch with copper foil pads.</p></div><div class="step"><span class="step-no">02</span><p>LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching the desired audio frequency. ledcChangeFrequency() changes the LEDC channel frequency without reconfiguring the timer, enabling fast frequency changes between notes. A 50 percent duty cycle (128/256) maximises acoustic output.</p></div><div class="step"><span class="step-no">03</span><p>Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive capacitive touch keys. Cut strips approximately 5x2 cm, arrange them in piano key layout on cardboard or wood, and connect each to a touch GPIO pin with a short wire. The human finger&#x27;s capacitance coupled through the foil is sufficient to trigger touchRead() reliably.</p></div><div class="step"><span class="step-no">04</span><p>Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch, ignoring subsequent touches. This gives the lowest key (leftmost copper pad) priority in a monophonic instrument. For a two-finger chord, the lower key wins. This is the same monophonic priority scheme used in early analogue synthesisers.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Educational musical instrument for learning note positions and ear training</li><li>Interactive exhibit keyboard for science museum displays</li><li>Accessible instrument for users who cannot operate physical keys</li><li>Halloween or sound-effects trigger board with note-mapped sounds</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Buzzer plays continuously even without touching keys</h4><p>The TOUCH_THRESHOLD may be too high. Print touchRead() values for each pin with no touch and set TOUCH_THRESHOLD 10-15 counts below the minimum untouched reading. Ambient humidity and long wire leads increase baseline capacitance, lowering untouched readings.</p></div><div class="trouble-item"><h4>Touch is not detected even when pressing firmly on the pad</h4><p>Ensure the copper foil pad connects to the GPIO pin with a short direct wire. Long wires add stray capacitance that reduces the relative touch signal. Reduce wire length to under 10 cm or add a 1 Mohm series resistor between the wire and the touch pin.</p></div><div class="trouble-item"><h4>Buzzer is silent even though notes show in Serial Monitor</h4><p>Verify the passive buzzer is connected (not an active buzzer). An active buzzer has a built-in oscillator and only needs DC voltage; it does not respond to PWM frequency changes. A passive buzzer is essentially a piezo element that vibrates at the driven PWM frequency.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add an I2S DAC (PCM5102) for clean sine-wave audio instead of buzzer square waves</li><li>Add a second octave using T0-T8 on a second ESP32 connected via I2C to the first</li><li>Add NeoPixel LEDs under each key that light up when the key is pressed</li><li>Add note-name labels displayed on an OLED when each key is touched</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Digital Piano?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Buzzer +/-, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Digital Piano require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Digital Piano?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Education. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build replaces the buzzer with an I2S DAC (PCM5102A) for high-quality audio output. Notes are generated using pre-computed sine wave tables at the correct frequencies. Multiple touches are handled simultaneously for two-note chords (polyphony-2). An OLED displays the note names being played and the waveform type (sine, square, triangle) switchable via a button.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× PCM5102A I2S DAC module — 32-bit; 3.5 mm stereo output; 3.3 V</span></li><li><span>1× Small stereo speaker or headphones — Via PCM5102A 3.5 mm jack</span></li><li><span>1× SSD1306 OLED</span></li><li><span>8× Copper foil touch pads</span></li><li><span>1× Push button — Waveform switch</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>PCM5102A BCK/LCK/DIN</td><td>GPIO 26 / 25 / 22</td><td>I2S bit clock / word select / data</td></tr><tr><td>PCM5102A VCC/GND</td><td>3.3 V / GND</td><td></td></tr><tr><td>Touch pads</td><td>Same as beginner</td><td></td></tr><tr><td>Waveform button</td><td>GPIO 0 (boot button)</td><td>INPUT_PULLUP</td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/23</td><td>Different I2C pins to free GPIO 22</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-digital-piano_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Digital Piano - Intermediate (I2S DAC + sine wave + 2-note polyphony)
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &quot;driver/i2s.h&quot;
+#include &lt;math.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+const int TOUCH_PINS[8]={4,15,13,12,14,27,33,32};
+const float FREQS[8]={261.63f,293.66f,329.63f,349.23f,392.0f,440.0f,493.88f,523.25f};
+const char NAMES[8][3]={&quot;C4&quot;,&quot;D4&quot;,&quot;E4&quot;,&quot;F4&quot;,&quot;G4&quot;,&quot;A4&quot;,&quot;B4&quot;,&quot;C5&quot;};
+const int TOUCH_THRESH=40;
+
+// Waveform types
+enum Wave { SINE, SQUARE, TRIANGLE }; Wave waveType=SINE;
+float phase[8]={0};
+const int SAMPLE_RATE=22050;
+const int I2S_NUM=0;
+
+void initI2S(){
+  i2s_config_t cfg={
+    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_TX),
+    .sample_rate=SAMPLE_RATE, .bits_per_sample=I2S_BITS_PER_SAMPLE_16BIT,
+    .channel_format=I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format=I2S_COMM_FORMAT_I2S,
+    .intr_alloc_flags=ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count=4, .dma_buf_len=512, .use_apll=false
+  };
+  i2s_pin_config_t pins={
+    .bck_io_num=26,.ws_io_num=25,.data_out_num=22,.data_in_num=I2S_PIN_NO_CHANGE
+  };
+  i2s_driver_install((i2s_port_t)I2S_NUM,&amp;cfg,0,NULL);
+  i2s_set_pin((i2s_port_t)I2S_NUM,&amp;pins);
+}
+
+float getSample(int idx){
+  float p=phase[idx];
+  switch(waveType){
+    case SINE:     return sinf(p);
+    case SQUARE:   return (p&lt;M_PI)?1.0f:-1.0f;
+    case TRIANGLE: return (p&lt;M_PI)?(p/M_PI*2-1):(3-p/M_PI*2-1);
+    default:       return 0;
+  }
+}
+
+void audioTask(void*){
+  int16_t buf[512];
+  while(1){
+    bool active[8]; int activeCount=0;
+    for(int i=0;i&lt;8;i++){
+      active[i]=(touchRead(TOUCH_PINS[i])&lt;TOUCH_THRESH);
+      if(active[i]) activeCount++;
+    }
+    for(int s=0;s&lt;256;s++){
+      float L=0;
+      for(int i=0;i&lt;8;i++){
+        if(active[i]){
+          L+=getSample(i)*16000.0f/(activeCount&gt;0?activeCount:1);
+          phase[i]+=2.0f*M_PI*FREQS[i]/SAMPLE_RATE;
+          if(phase[i]&gt;2.0f*M_PI) phase[i]-=2.0f*M_PI;
+        } else { phase[i]=0; }
+      }
+      int16_t s16=(int16_t)constrain((int)L,-32767,32767);
+      buf[s*2]=s16; buf[s*2+1]=s16;
+    }
+    size_t written;
+    i2s_write((i2s_port_t)I2S_NUM,buf,sizeof(buf),&amp;written,portMAX_DELAY);
+  }
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,23);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);
+  pinMode(0,INPUT_PULLUP);
+  initI2S();
+  xTaskCreatePinnedToCore(audioTask,&quot;audio&quot;,4096,NULL,5,NULL,0);
+}
+
+int waveBtn=0;
+void loop(){
+  bool btnNow=digitalRead(0);
+  if(!btnNow&amp;&amp;waveBtn){ waveType=(Wave)((waveType+1)%3); delay(200); }
+  waveBtn=btnNow;
+  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+  const char* wNames[]={&quot;SINE&quot;,&quot;SQUARE&quot;,&quot;TRIANGLE&quot;};
+  oled.printf(&quot;Wave: %sn&quot;,wNames[waveType]);
+  oled.println(&quot;Playing:&quot;);
+  for(int i=0;i&lt;8;i++) if(touchRead(TOUCH_PINS[i])&lt;TOUCH_THRESH) oled.printf(&quot;%s &quot;,NAMES[i]);
+  oled.display();
+  delay(50);
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>I2S PCM5102A Audio Output: The PCM5102A is a 32-bit stereo I2S DAC with a built-in headphone amplifier. The ESP32 I2S peripheral sends 16-bit stereo PCM samples at 22050 Hz. The DAC converts these to an analog voltage driving the 3.5 mm headphone output. Audio quality is substantially better than PWM buzzer output with a noise floor of approximately 100 dB.</p></div><div class="step"><span class="step-no">02</span><p>Sine Wave Table Generation: Each active note advances its phase accumulator by 2*pi*frequency/sample_rate radians per sample. sinf(phase) computes the instantaneous sample value. Multiple active notes are summed and divided by the count to prevent clipping. The phase resets to zero when a key is released, preventing clicks from mid-cycle discontinuities.</p></div><div class="step"><span class="step-no">03</span><p>FreeRTOS Audio Task: The audio synthesis runs in a dedicated FreeRTOS task pinned to Core 0 with priority 5. This ensures uninterrupted audio sample generation even when the main loop updates the OLED or reads touch pins. i2s_write() blocks until the DMA buffer has space, naturally pacing the synthesis at the correct sample rate.</p></div><div class="step"><span class="step-no">04</span><p>Waveform Selection: The waveType enum selects between sine (smooth pure tone), square (harsh, rich in odd harmonics), and triangle (softer than square, even-order harmonics suppressed). All three are computed from the same phase accumulator on each sample, allowing real-time switching without audio interruption.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Educational synthesiser for music theory and acoustics learning</li><li>Interactive museum exhibit on sound wave shapes and timbre</li><li>Accessible music instrument for children with physical limitations</li><li>Prototype for a commercial IoT musical toy product</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Audio has constant background hiss or buzz</h4><p>The PCM5102A is sensitive to power supply noise. Power the module from a dedicated 3.3 V LDO regulator, not from the ESP32 onboard regulator which carries switching noise. Add 100 uF and 100 nF decoupling capacitors on the PCM5102A VCC pin.</p></div><div class="trouble-item"><h4>Notes produce clicks when starting or stopping</h4><p>Clicks occur when the phase is non-zero at note release (discontinuous waveform cutoff). Reset phase[i] to zero on key release is the correct approach but causes a click at the discontinuity. For click-free audio, fade the amplitude to zero over 5-10 ms before clearing the active flag.</p></div><div class="trouble-item"><h4>I2S driver install returns ESP_ERR_INVALID_ARG</h4><p>Verify the I2S pin numbers do not conflict with other peripherals. GPIO 25 (WS) and GPIO 26 (BCK) are commonly used for I2S. If GPIO 22 is used for I2C SDA elsewhere, assign I2S DATA to a different GPIO such as GPIO 5 or GPIO 17.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add ADSR envelope shaping (attack, decay, sustain, release) for piano-like note dynamics</li><li>Add a reverb effect using a circular delay buffer for spatial depth</li><li>Add a third octave by connecting a second ESP32 and merging audio over I2S in slave mode</li><li>Add MIDI output via USB serial to control DAW software on a computer</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Digital Piano?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Buzzer +/-, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Digital Piano require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Digital Piano?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Education. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build adds full 8-note polyphony, ADSR envelope shaping for realistic piano dynamics, and MIDI output over USB serial (compatible with GarageBand, Ableton, and FL Studio). Velocity sensitivity is estimated from touch capacitance change rate. An OLED shows the active notes on a mini piano keyboard graphic. Waveform, octave, and envelope parameters are adjustable from a web interface.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× PCM5102A I2S DAC</span></li><li><span>1× USB-MIDI adapter or built-in USB (ESP32-S2/S3) — ESP32-S2/S3 supports native USB MIDI</span></li><li><span>1× SSD1306 OLED</span></li><li><span>8× Copper foil touch pads</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>PCM5102A and touch pads</td><td>Same as intermediate</td><td></td></tr><tr><td>USB (ESP32-S2/S3)</td><td>D+ / D- native USB</td><td>For USB MIDI; standard ESP32 uses UART</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-digital-piano_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Digital Piano - Advanced (8-voice polyphony + ADSR + MIDI serial)
+// MIDI output via Serial at 31250 baud (connect to MIDI DIN socket or USB-MIDI)
+// For native USB MIDI use ESP32-S2/S3 with USB_MIDI library
+#include &quot;driver/i2s.h&quot;
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;math.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+
+const int TOUCH_PINS[8]={4,15,13,12,14,27,33,32};
+const float FREQS[8]={261.63f,293.66f,329.63f,349.23f,392.0f,440.0f,493.88f,523.25f};
+const int MIDI_NOTES[8]={60,62,64,65,67,69,71,72}; // C4-C5
+const int SAMPLE_RATE=22050, I2S_NUM=0;
+const int TOUCH_THRESH=40;
+
+struct Voice {
+  float phase,freq,amp;
+  int state; // 0=off 1=attack 2=decay 3=sustain 4=release
+  float env;
+};
+Voice voices[8]={};
+
+// ADSR times in samples
+const float ATTACK_S=0.01f, DECAY_S=0.05f, SUSTAIN_L=0.7f, RELEASE_S=0.1f;
+
+void midiNoteOn(int note, int vel){ Serial1.write(0x90); Serial1.write(note); Serial1.write(vel); }
+void midiNoteOff(int note){        Serial1.write(0x80); Serial1.write(note); Serial1.write(0); }
+
+void processEnv(Voice &amp;v, float dt){
+  switch(v.state){
+    case 1: v.env+=dt/ATTACK_S; if(v.env&gt;=1){v.env=1;v.state=2;} break;
+    case 2: v.env-=dt*(1-SUSTAIN_L)/DECAY_S; if(v.env&lt;=SUSTAIN_L){v.env=SUSTAIN_L;v.state=3;} break;
+    case 3: break;
+    case 4: v.env-=dt/RELEASE_S; if(v.env&lt;=0){v.env=0;v.state=0;} break;
+  }
+}
+
+void audioTask(void*){
+  int16_t buf[512];
+  const float dt=1.0f/SAMPLE_RATE;
+  while(1){
+    for(int s=0;s&lt;256;s++){
+      float L=0;
+      for(int i=0;i&lt;8;i++){
+        if(voices[i].state==0) continue;
+        processEnv(voices[i],dt);
+        float samp=sinf(voices[i].phase)*voices[i].env*voices[i].amp;
+        L+=samp;
+        voices[i].phase+=2.0f*M_PI*voices[i].freq*dt;
+        if(voices[i].phase&gt;2.0f*M_PI) voices[i].phase-=2.0f*M_PI;
+      }
+      int16_t s16=(int16_t)constrain((int)(L*8000),-32767,32767);
+      buf[s*2]=s16; buf[s*2+1]=s16;
+    }
+    size_t w; i2s_write((i2s_port_t)I2S_NUM,buf,sizeof(buf),&amp;w,portMAX_DELAY);
+  }
+}
+
+void initI2S(){
+  i2s_config_t cfg={
+    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_TX),
+    .sample_rate=SAMPLE_RATE,.bits_per_sample=I2S_BITS_PER_SAMPLE_16BIT,
+    .channel_format=I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format=I2S_COMM_FORMAT_I2S,
+    .intr_alloc_flags=0,.dma_buf_count=4,.dma_buf_len=512,.use_apll=false
+  };
+  i2s_pin_config_t pins={.bck_io_num=26,.ws_io_num=25,.data_out_num=22,.data_in_num=-1};
+  i2s_driver_install((i2s_port_t)I2S_NUM,&amp;cfg,0,NULL);
+  i2s_set_pin((i2s_port_t)I2S_NUM,&amp;pins);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Serial1.begin(31250,SERIAL_8N1,16,17); // MIDI baud rate on Serial1
+  Wire.begin(21,23); oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);
+  initI2S();
+  xTaskCreatePinnedToCore(audioTask,&quot;audio&quot;,4096,NULL,5,NULL,0);
+}
+
+bool wasDown[8]={};
+void loop(){
+  for(int i=0;i&lt;8;i++){
+    bool down=(touchRead(TOUCH_PINS[i])&lt;TOUCH_THRESH);
+    if(down&amp;&amp;!wasDown[i]){ // key press
+      voices[i]={0,FREQS[i],1.0f,1,0};
+      midiNoteOn(MIDI_NOTES[i],100);
+    }
+    if(!down&amp;&amp;wasDown[i]){ // key release
+      if(voices[i].state&gt;0&amp;&amp;voices[i].state&lt;4) voices[i].state=4;
+      midiNoteOff(MIDI_NOTES[i]);
+    }
+    wasDown[i]=down;
+  }
+  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+  oled.print(&quot;Active: &quot;);
+  for(int i=0;i&lt;8;i++) if(voices[i].state&gt;0) oled.printf(&quot;%d &quot;,i+1);
+  oled.display();
+  delay(10);
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>ADSR Envelope Shaping: Each voice has an envelope state machine: Attack (amplitude ramps from 0 to 1 over ATTACK_S seconds), Decay (falls from 1 to SUSTAIN_L over DECAY_S seconds), Sustain (held at SUSTAIN_L while key is pressed), Release (falls from SUSTAIN_L to 0 over RELEASE_S seconds after key release). This produces natural note onset and decay, eliminating the abrupt start/stop of simple oscillators.</p></div><div class="step"><span class="step-no">02</span><p>8-Voice Polyphony: All 8 voices run simultaneously in the audioTask loop. Each voice independently advances its phase accumulator and applies its envelope. The mixed output sums all active voice samples and divides by 8 to prevent clipping. True 8-voice polyphony allows any combination of the 8 keys to sound simultaneously.</p></div><div class="step"><span class="step-no">03</span><p>MIDI Serial Output: MIDI protocol transmits three-byte messages at 31250 baud. Note On is 0x90 (channel 1), MIDI note number, velocity (0-127). Note Off is 0x80, note number, 0. Serial1 on pins 16/17 drives a MIDI DIN-5 output via a 220 ohm series resistor. A USB-MIDI adapter converts this serial MIDI stream to USB MIDI for DAW software.</p></div><div class="step"><span class="step-no">04</span><p>Touch Key-Press Edge Detection: The wasDown[] array tracks the previous touch state per key. A note-on event fires only on the transition from not-touched to touched (rising edge). Note-off fires only on the falling edge (release). This edge detection prevents repeated note-on events while a key is held and ensures MIDI Note Off is sent exactly once per key release.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Standalone polyphonic synthesiser for music composition and performance</li><li>MIDI controller for professional DAW software (GarageBand, Ableton Live)</li><li>Educational tool demonstrating ADSR synthesis and MIDI protocol</li><li>Low-cost MIDI input device for music production studios</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>MIDI notes sustain forever in DAW even after releasing touch</h4><p>Verify midiNoteOff() is called on the wasDown falling edge. If the ESP32 resets during a held note, the DAW receives no Note Off and the note hangs. Many DAW software has an &quot;All Notes Off&quot; panic button (usually Shift+Space or a MIDI Panic menu item) to clear stuck notes.</p></div><div class="trouble-item"><h4>ADSR envelope clicks at end of release</h4><p>A very short RELEASE_S (under 0.05 seconds) causes the envelope to reach zero abruptly mid-sample. Increase RELEASE_S to at least 0.05 seconds. Also check that the envelope value starts decaying from the correct sustain level; if the state machine transitions are wrong, the release may start from an unexpected level.</p></div><div class="trouble-item"><h4>All 8 voices playing simultaneously cause distortion</h4><p>Reduce the per-voice amplitude from 8000 to 4000 in the audioTask sample calculation. With 8 voices each at amplitude 1.0, the sum can reach 8.0, exceeding the int16 range. Normalise by active voice count or apply a soft limiter (tanh function) to the mixed output before writing to I2S.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a 4-operator FM synthesis engine for metallic and bell-like timbres</li><li>Add WAV sample playback from SD card for realistic piano, guitar, and drum sounds</li><li>Add a chord mode button that automatically adds third and fifth intervals to each played note</li><li>Add a Bluetooth MIDI mode using ESP32 BLE MIDI for wireless connection to an iPad or MacBook</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Digital Piano?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Buzzer +/-, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Digital Piano require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Digital Piano?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Education. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-learning-trainer.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M14 14H34C40 14 44 18 44 24V50C40 46 36 44 30 44H14V14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M50 14H30C24 14 20 18 20 24V50C24 46 28 44 34 44H50V14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Education</span><h3>ESP32 Learning Trainer Board</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a><a class="related-card" href="esp32-ai-object-detector.html"><div class="related-thumb t-ai"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="18" y="18" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="currentColor" opacity=".2"/><path d="M18 26H12M18 32H12M18 38H12M46 26H52M46 32H52M46 38H52M26 18V12M32 18V12M38 18V12M26 46V52M32 46V52M38 46V52" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">AI</span><h3>ESP32 AI Object Detector</h3></div></a><a class="related-card" href="esp32-air-quality-monitor.html"><div class="related-thumb t-agriculture"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Environmental</span><h3>ESP32 Air Quality Monitor</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

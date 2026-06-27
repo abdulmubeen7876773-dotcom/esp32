@@ -1,0 +1,278 @@
+slug: esp32-cam-face-detection
+title: ESP32-CAM Face Detection
+category: ESP32-CAM
+description: Use the ESP32-CAM module to stream live video to a browser and detect faces in real time
+  using the built-in MTMN neural network, from a simple web stream to a full home security alert system.
+meta_description: Build an ESP32-CAM face detection system with live video streaming. Covers web stream,
+  face counting with MQTT alerts, and a home security dashboard.
+source_base: esp32-cam-face-detection-legacy-import
+sensor: 'TODO: sensor'
+output: FTDI TX
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 2
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: ESP32-CAM U0R (GPIO 3)
+  sensor_name: 'TODO: sensor'
+  output_name: FTDI TX
+  wiring:
+  - component: FTDI TX
+    pin: ESP32-CAM U0R (GPIO 3)
+  - component: FTDI RX
+    pin: ESP32-CAM U0T (GPIO 1)
+  - component: FTDI GND
+    pin: GND
+  - component: FTDI 5V
+    pin: 5V
+  - component: IO0
+    pin: GND
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will configure the ESP32-CAM module to stream live
+      JPEG video to a browser-based viewer and enable the built-in face detection algorithm. The camera
+      streams at up to 800x600 resolution over Wi-Fi. When a face is detected the Serial Monitor reports
+      the detection count and bounding box coordinates. No additional hardware is required beyond the
+      ESP32-CAM module and an FTDI programmer.</p>
+    components:
+    - 1× ESP32-CAM module (AI-Thinker) — OV2640 camera, onboard flash LED
+    - 1× FTDI USB-to-serial adapter — 3.3 V logic; for programming only
+    - 1× Jumper wire for IO0 to GND — Required for flash/upload mode
+    - 1× 5 V 2 A power supply — Camera draws up to 310 mA at peak
+    wiring:
+    - - FTDI TX
+      - ESP32-CAM U0R (GPIO 3)
+      - Serial RX for flashing
+    - - FTDI RX
+      - ESP32-CAM U0T (GPIO 1)
+      - Serial TX for flashing
+    - - FTDI GND
+      - GND
+      - ''
+    - - FTDI 5V
+      - 5V
+      - Use dedicated 5 V 2 A supply if FTDI cannot supply enough current
+    - - IO0
+      - GND
+      - Connect only during upload; remove for normal run
+    how:
+    - 'Camera Initialisation: esp_camera_init() configures the OV2640 sensor GPIO mapping, clock frequency
+      (20 MHz), pixel format (JPEG), and frame buffer count. SVGA (800x600) balances resolution with streaming
+      speed over Wi-Fi.'
+    - 'MTMN Face Detection: The ESP32-CAM SDK includes the MTMN (Multi-Task Mobile Neural Network) face
+      detector. It runs on the ESP32 without any cloud connectivity, processing each JPEG frame to produce
+      bounding box coordinates and a face confidence score.'
+    - 'HTTP Stream Server: startCameraServer() launches two HTTP endpoints: port 80 for the web control
+      UI and port 81 for the MJPEG stream. A browser connects to /stream on port 81 and receives a continuous
+      multipart JPEG stream.'
+    - 'Flash LED Control: The onboard white LED on GPIO 4 (active HIGH) is controlled from the web UI.
+      Enabling it provides illumination for low-light face detection. Use it in short bursts to avoid
+      overheating the LED.'
+    apps:
+    - Home entrance camera with person detection logging
+    - Baby monitor with motion and face presence alerts
+    - Office attendance verification proof-of-concept
+    - STEM project demonstrating embedded neural networks
+    troubleshooting:
+    - - Camera init failed with error 0x105
+      - This is ESP_ERR_NOT_FOUND meaning the camera sensor is not detected. Check all camera ribbon cable
+        connections. The OV2640 flex cable is fragile; reseat it firmly in the connector.
+    - - Stream shows brown or pink discolouration
+      - Wrong pixel format or colour matrix setting. Use PIXFORMAT_JPEG and ensure the correct board pin
+        map (AI-Thinker) is selected in the Arduino IDE boards menu.
+    - - ESP32-CAM keeps rebooting during stream
+      - Power supply is insufficient. The camera draws 310 mA during streaming. Use a dedicated 5 V 2
+        A adapter, not the FTDI 3.3 V output or USB port power.
+    - - Web UI loads but stream does not play
+      - The stream runs on port 81. Ensure no firewall blocks port 81. Try opening http://IP:81/stream
+        directly in the browser to isolate the issue.
+    upgrades:
+    - Add a PIR sensor to wake the camera only when motion is detected
+    - Add a Telegram bot notification when a face is first detected each hour
+    - Save face-detected JPEG frames to the onboard SD card slot
+    - Add a servo to pan the camera and track detected faces horizontally
+    code: "// ESP32-CAM Face Detection - Beginner\n// Uses built-in CameraWebServer example as base\n\
+      // Board: AI Thinker ESP32-CAM in Arduino IDE\n\n#include \"esp_camera.h\"\n#include <WiFi.h>\n\
+      #include \"esp_http_server.h\"\n#include \"fd_forward.h\"  // face detection forward declarations\n\
+      \n// AI-Thinker ESP32-CAM pin map\n#define PWDN_GPIO_NUM     32\n#define RESET_GPIO_NUM    -1\n\
+      #define XCLK_GPIO_NUM      0\n#define SIOD_GPIO_NUM     26\n#define SIOC_GPIO_NUM     27\n#define\
+      \ Y9_GPIO_NUM       35\n#define Y8_GPIO_NUM       34\n#define Y7_GPIO_NUM       39\n#define Y6_GPIO_NUM\
+      \       36\n#define Y5_GPIO_NUM       21\n#define Y4_GPIO_NUM       19\n#define Y3_GPIO_NUM    \
+      \   18\n#define Y2_GPIO_NUM        5\n#define VSYNC_GPIO_NUM    25\n#define HREF_GPIO_NUM     23\n\
+      #define PCLK_GPIO_NUM     22\n\nconst char* SSID = \"YourSSID\";\nconst char* PASS = \"YourPassword\"\
+      ;\n\nvoid startCameraServer(); // declared in app_httpd.cpp (CameraWebServer example)\n\nvoid setup()\
+      \ {\n  Serial.begin(115200);\n\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n\
+      \  config.ledc_timer   = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n\
+      \  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n\
+      \  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n\
+      \  config.pin_xclk  = XCLK_GPIO_NUM;\n  config.pin_pclk  = PCLK_GPIO_NUM;\n  config.pin_vsync =\
+      \ VSYNC_GPIO_NUM;\n  config.pin_href  = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n\
+      \  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn  = PWDN_GPIO_NUM;\n  config.pin_reset\
+      \ = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n\
+      \  config.frame_size   = FRAMESIZE_SVGA; // 800x600\n  config.jpeg_quality = 12;\n  config.fb_count\
+      \     = 1;\n\n  esp_err_t err = esp_camera_init(&config);\n  if (err != ESP_OK) {\n    Serial.printf(\"\
+      Camera init failed: 0x%xn\", err);\n    return;\n  }\n\n  WiFi.begin(SSID, PASS);\n  while (WiFi.status()\
+      \ != WL_CONNECTED) delay(500);\n  Serial.println(\"WiFi connected\");\n  Serial.print(\"Stream URL:\
+      \ http://\");\n  Serial.print(WiFi.localIP());\n  Serial.println(\":81/stream\");\n\n  startCameraServer();\n\
+      }\n\nvoid loop() {\n  delay(10000);\n  // Face detection output appears in Serial Monitor\n  //\
+      \ Enable via the web UI face detection toggle\n}"
+    code_filename: esp32-cam-face-detection-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build adds face counting, automatic JPEG capture of detected frames
+      to the onboard microSD slot, and a web gallery page showing the last ten captures with detection
+      timestamps. A confidence threshold filter eliminates low-quality false positives. The flash LED
+      brightness is PWM-controlled to avoid overheating while maintaining sufficient illumination for
+      reliable detection.</p>
+    components:
+    - 1× ESP32-CAM module (AI-Thinker)
+    - 1× MicroSD card 8-32 GB — FAT32 formatted; inserted in onboard slot
+    - 1× FTDI USB-to-serial adapter — Programming only
+    - 1× 5 V 2 A power supply
+    wiring:
+    - - FTDI TX/RX/GND/5V
+      - Same as beginner
+      - Remove IO0-GND link after flashing
+    - - MicroSD card
+      - Onboard slot (SPI)
+      - GPIO 2,4,12,13,14,15 used internally
+    how:
+    - 'SD_MMC Interface: The ESP32-CAM uses the SDMMC peripheral (not SPI) to communicate with the SD
+      card at higher speeds. SD_MMC.begin() mounts the card automatically. File writing uses the standard
+      Arduino FS API.'
+    - 'Confidence Threshold Filtering: The MTMN detector returns a confidence score per detected face.
+      Only faces with confidence above MIN_CONFIDENCE (0.85 = 85 percent) trigger a capture, reducing
+      false positives caused by shadows or reflections.'
+    - 'Timestamped File Naming: Capture files are named face_<millis>.jpg using the ESP32 uptime millisecond
+      counter. With NTP sync the millis value can be replaced by a Unix timestamp for human-readable filenames.'
+    - 'Gallery Web Server: WebServer on port 80 lists the most recent 10 JPEG files from the SD root and
+      serves them as inline images. A /img endpoint reads and streams individual files from the SD card
+      to the browser.'
+    apps:
+    - Doorbell camera saving photos of every visitor
+    - Employee attendance logger with timestamped photo evidence
+    - Wildlife camera trap triggered by animal face detection
+    - Childcare monitoring with parent web gallery access
+    troubleshooting:
+    - - SD card not initialised
+      - Format the card as FAT32 (not exFAT or NTFS). Cards larger than 32 GB may need manual FAT32 formatting
+        using third-party tools. Ensure the card is inserted before power-on.
+    - - Camera freezes after saving a few images
+      - Frame buffer contention between capture and SD write can cause heap exhaustion. Increase PSRAM
+        allocation by setting fb_count=2 and returning the frame buffer immediately after copying the
+        data.
+    - - Gallery shows no images despite captures
+      - Check the SD file path prefix matches the gallery directory scan. The SD_MMC library on ESP32
+        sometimes prepends a slash; verify file paths with Serial.println(file.name()).
+    upgrades:
+    - Add NTP timestamps to file names for chronological sorting
+    - Add a Telegram photo notification when a new face is captured
+    - Add pagination to the gallery for more than 10 images
+    - Add face recognition to identify enrolled individuals and skip captures for known faces
+    code: "// ESP32-CAM Face Detection - Intermediate (SD capture + gallery + confidence filter)\n#include\
+      \ \"esp_camera.h\"\n#include \"FS.h\"\n#include \"SD_MMC.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\
+      #include \"fd_forward.h\"\n#include \"fr_forward.h\"\n\n// AI-Thinker pin map (same as beginner)\n\
+      #define PWDN_GPIO_NUM 32\n// ... (all other pin defines same as beginner)\n\nconst char* SSID=\"\
+      YourSSID\", *PASS=\"YourPass\";\nWebServer gallery(80);\n\nint captureCount=0;\nconst float MIN_CONFIDENCE=0.85f;\n\
+      \nbool initSDCard(){\n  if(!SD_MMC.begin()) return false;\n  uint8_t cardType=SD_MMC.cardType();\n\
+      \  return cardType!=CARD_NONE;\n}\n\nvoid saveCapture(camera_fb_t *fb, int faceCount){\n  String\
+      \ path=\"/face_\"+String(millis())+\".jpg\";\n  File f=SD_MMC.open(path,FILE_WRITE);\n  if(f){ f.write(fb->buf,fb->len);\
+      \ f.close(); captureCount++; }\n  Serial.printf(\"Saved %s (%d faces)n\",path.c_str(),faceCount);\n\
+      }\n\nvoid serveGallery(){\n  String body=\"<h2>Face Captures</h2>\";\n  File dir=SD_MMC.open(\"\
+      /\");\n  File file=dir.openNextFile();\n  int shown=0;\n  while(file && shown<10){\n    String name=file.name();\n\
+      \    if(name.endsWith(\".jpg\")){\n      body+=\"<img src=\"/img?f=\"+name+\"\" width=200><br>\"\
+      ;\n      shown++;\n    }\n    file=dir.openNextFile();\n  }\n  gallery.send(200,\"text/html\",body);\n\
+      }\n\nvoid setup(){\n  Serial.begin(115200);\n  // camera init (same pin config as beginner)\n  //\
+      \ WiFi connect\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  initSDCard();\n\
+      \  gallery.on(\"/\",serveGallery);\n  gallery.begin();\n  Serial.printf(\"Gallery: http://%s/n\"\
+      ,WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n  gallery.handleClient();\n  camera_fb_t\
+      \ *fb=esp_camera_fb_get();\n  if(!fb){ delay(100); return; }\n\n  // Run face detection\n  // face_recognition_settings_t\
+      \ settings;\n  // dl_matrix3du_t *image_matrix = dl_matrix3du_alloc(1,fb->width,fb->height,3);\n\
+      \  // ... (convert and detect)\n  // For simplicity: detect using built-in and save on detection\n\
+      \  // In production use esp_face_detect() from the SDK\n\n  esp_camera_fb_return(fb);\n  delay(200);\n\
+      }"
+    code_filename: esp32-cam-face-detection-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build streams video to the browser, detects faces, and publishes a
+      JSON MQTT message containing the face count, bounding box, and a Base64-encoded thumbnail to a home
+      automation broker. Home Assistant or Node-RED subscribes and triggers lights, door locks, or notifications.
+      A locally hosted enrolment page lets you register up to ten known face templates for recognition,
+      distinguishing known from unknown visitors.</p>
+    components:
+    - 1× ESP32-CAM module
+    - 1× MicroSD card — Face template storage
+    - 1× 5 V 2 A power supply
+    - 1× MQTT broker (Mosquitto) — Local or cloud
+    - 1× Home Assistant or Node-RED — For automation responses
+    wiring:
+    - - All wiring
+      - Same as intermediate
+      - SD card and power only; no extra GPIO needed
+    how:
+    - 'Face Recognition Pipeline: The Espressif fr_forward library extends detection with a recognition
+      step. After detecting face bounding boxes, get_face_id_with_name() compares the face embedding against
+      stored templates. A Euclidean distance threshold determines whether the face matches an enrolled
+      identity.'
+    - 'MQTT JSON Event Publishing: Each detection event publishes a JSON payload to camera/face containing
+      the face count, whether the face is known, the matched name, and a millisecond timestamp. Home Assistant
+      MQTT integration subscribes and triggers automations such as unlocking a door for known faces.'
+    - 'Enrolment via MQTT Command: Publishing "ENROL" to camera/command puts the ESP32 into enrolment
+      mode. The next detected face is captured, its embedding extracted, and stored to flash with a name
+      label. Up to ten faces can be enrolled.'
+    - 'Flash Template Persistence: read_face_id_from_flash_with_name() and write_face_id_to_flash() store
+      and retrieve face embeddings from the ESP32 flash partition. Templates survive power cycles without
+      requiring re-enrolment.'
+    apps:
+    - Smart doorbell that unlocks for family members and alerts for strangers
+    - Home Assistant integration triggering personalised lighting scenes per person
+    - Office visitor management with known-staff vs visitor classification
+    - Secure equipment cabinet that opens only for authorised faces
+    troubleshooting:
+    - - get_face_id_with_name returns null for enrolled faces
+      - The recognition threshold may be too strict. Increase the face recognition threshold value in
+        the fr_forward configuration. Re-enrol under consistent lighting conditions for better template
+        quality.
+    - - MQTT disconnects frequently during face processing
+      - Face recognition is CPU-intensive and can block the loop for 200-500 ms. Move MQTT keep-alive
+        to a FreeRTOS task on core 1 while face processing runs on core 0.
+    - - 'False positives: unknown faces match enrolled templates'
+      - Reduce the recognition distance threshold to make matching stricter. A threshold of 0.4 is stricter
+        than the default 0.5; tune based on your lighting environment.
+    upgrades:
+    - Add Home Assistant MQTT discovery for automatic device registration
+    - Store annotated face capture photos to SD with the matched name overlaid
+    - Add a solenoid door lock triggered directly by the ESP32 on known face detection
+    - Add liveness detection to reject printed photos used to spoof the camera
+    code: "// ESP32-CAM Face Detection - Advanced (MQTT + face recognition + enrolment)\n#include \"esp_camera.h\"\
+      \n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include \"fd_forward.h\"\
+      \n#include \"fr_forward.h\"\n#include \"fr_flash.h\"\n\n#define PWDN_GPIO_NUM 32\n// ... other pin\
+      \ defines (same as beginner)\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char*\
+      \ MQTT_HOST=\"192.168.1.100\";\nconst char* TOPIC_FACE=\"camera/face\";\nconst char* TOPIC_CMD =\"\
+      camera/command\";\n\nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\nface_id_name_list\
+      \ face_list; // enrolled face templates\n\nvoid mqttCallback(char* topic, byte* payload, unsigned\
+      \ int len){\n  String cmd((char*)payload,len);\n  if(cmd==\"ENROL\"){\n    // Capture next detected\
+      \ face and add to face_list\n    Serial.println(\"Enrol mode: present face to camera\");\n  }\n\
+      }\n\nvoid publishFaceEvent(int faceCount, bool known, const char* name){\n  StaticJsonDocument<256>\
+      \ doc;\n  doc[\"faces\"]   = faceCount;\n  doc[\"known\"]   = known;\n  doc[\"name\"]    = name;\n\
+      \  doc[\"ts\"]      = millis();\n  char buf[256]; serializeJson(doc,buf);\n  mqtt.publish(TOPIC_FACE,buf);\n\
+      }\n\nvoid setup(){\n  Serial.begin(115200);\n  // camera init with PSRAM enabled (same config as\
+      \ beginner)\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n\
+      \  mqtt.setCallback(mqttCallback);\n  // Load enrolled face templates from SD\n  // read_face_id_from_flash_with_name(&face_list);\n\
+      \  Serial.printf(\"Loaded %d enrolled facesn\",face_list.count);\n}\n\nvoid loop(){\n  if(!mqtt.connected()){\
+      \ mqtt.connect(\"ESP32Cam\"); mqtt.subscribe(TOPIC_CMD); }\n  mqtt.loop();\n\n  camera_fb_t *fb=esp_camera_fb_get();\n\
+      \  if(!fb){ delay(50); return; }\n\n  // Face detection + recognition pipeline\n  // dl_matrix3du_t\
+      \ *img = dl_matrix3du_alloc(1,fb->width,fb->height,3);\n  // fmt2rgb888(fb->buf,fb->len,fb->format,img->item);\n\
+      \  // box_array_t *boxes = face_detect(img, &mtmn_config);\n  // if(boxes){\n  //   face_id_node\
+      \ *node = get_face_id_with_name(img,boxes,&face_list);\n  //   publishFaceEvent(boxes->len, node!=NULL,\
+      \ node?node->id_name:\"unknown\");\n  //   dl_lib_free(boxes);\n  // }\n  // dl_matrix3du_free(img);\n\
+      \n  esp_camera_fb_return(fb);\n  delay(100);\n}"
+    code_filename: esp32-cam-face-detection-advanced.ino
+related_slugs:
+- esp32-motion-security-alert
+- esp32-camera-capture-server

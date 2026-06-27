@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 AC Power Monitor | ESP32 Engine</title>
+<meta name="description" content="Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish results to an MQTT energy dashboard.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-ac-power-monitor.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 AC Power Monitor | ESP32 Engine">
+<meta property="og:description" content="Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish results to an MQTT energy dashboard.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-ac-power-monitor.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 AC Power Monitor | ESP32 Engine">
+<meta name="twitter:description" content="Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish results to an MQTT energy dashboard.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 AC Power Monitor","description":"Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish results to an MQTT energy dashboard.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-ac-power-monitor.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, SCT-013 output (via 3.5 mm jack tip)"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 AC Power Monitor (Beginner)","description":"Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish results to an MQTT energy dashboard.","step":[{"@type":"HowToStep","position":1,"name":"Current Transformer Principle: The SCT-013 clamp is a split-core current transformer. The mains live…","text":"Current Transformer Principle: The SCT-013 clamp is a split-core current transformer. The mains live wire passes through the core acting as a single-turn primary winding. The secondary coil (typically 2000 turns) induces a proportional current. The built-in 62 ohm burden resistor converts this to a voltage: at 30 A primary, the output is approximately 1 V peak AC."},{"@type":"HowToStep","position":2,"name":"AC Coupling and Bias: The ESP32 ADC cannot measure negative voltages. The 10 uF capacitor blocks the…","text":"AC Coupling and Bias: The ESP32 ADC cannot measure negative voltages. The 10 uF capacitor blocks the DC component and the 10k+10k voltage divider biases the ADC input to 1.65 V (half of 3.3 V). The AC current signal then swings symmetrically around this midpoint, staying within the 0-3.3 V ADC range."},{"@type":"HowToStep","position":3,"name":"RMS Calculation via Emonlib: Emonlib calculates Irms = sqrt(mean(i^2)) over 1480 samples. It automat…","text":"RMS Calculation via Emonlib: Emonlib calculates Irms = sqrt(mean(i^2)) over 1480 samples. It automatically subtracts the DC bias (midpoint) from each sample before squaring. 1480 samples at the ESP32 ADC rate covers approximately one mains cycle at 50 Hz, capturing a complete AC waveform."},{"@type":"HowToStep","position":4,"name":"Calibration Constant: The ICAL constant converts ADC counts to amps. For the SCT-013-030 with 1 V ou…","text":"Calibration Constant: The ICAL constant converts ADC counts to amps. For the SCT-013-030 with 1 V output at 30 A: ICAL = 30.0. Tune by clamping the SCT-013 on a circuit with a known current (measured by a calibrated clamp meter) and adjusting ICAL until readings match."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 AC Power Monitor?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, SCT-013 output (via 3.5 mm jack tip), a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 AC Power Monitor require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 AC Power Monitor?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Energy Monitoring. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Energy Monitoring","item":"https://esp32engine.com/category/energy-monitoring.html"},{"@type":"ListItem","position":3,"name":"ESP32 AC Power Monitor","item":"https://esp32engine.com/projects/esp32-ac-power-monitor.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/energy-monitoring.html">Energy Monitoring</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/energy-monitoring.html">Energy Monitoring</a></li><li aria-current="page">ESP32 AC Power Monitor</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 AC Power Monitor</h1>
+          <div class="article-badges"><span class="badge badge-cat">Energy Monitoring</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish results to an MQTT energy dashboard.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-default parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect an SCT-013 current transformer clamp around the live wire of a mains circuit and read the alternating current output using the ESP32 ADC. The Emonlib library computes the RMS current value from 1480 ADC samples (approximately one mains cycle at 50 Hz). The current in amps and estimated power in watts (assuming 230 V mains) are printed to the Serial Monitor every 5 seconds.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× SCT-013-030 current transformer clamp — 30 A max; built-in burden resistor; 1 V output</span></li><li><span>2× 10 kohm resistor — Voltage divider bias for ADC midpoint</span></li><li><span>1× 10 uF electrolytic capacitor — AC coupling capacitor</span></li><li><span>1× 3.5 mm stereo socket — Matches SCT-013 jack plug</span></li><li><span>1× Breadboard and jumper wires</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>SCT-013 output (via 3.5 mm jack tip)</td><td>GPIO 34 via 10uF cap</td><td>AC coupled; 10k+10k voltage divider to set midpoint at 1.65 V</td></tr><tr><td>SCT-013 output (jack sleeve)</td><td>GND</td><td></td></tr><tr><td>10k + 10k voltage divider midpoint</td><td>GPIO 34</td><td>Biases ADC input to 1.65 V mid-rail</td></tr><tr><td>Divider top to 3.3 V, bottom to GND</td><td>3.3 V / GND</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ac-power-monitor_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 AC Power Monitor - Beginner
+// SCT-013 current clamp + Emonlib for RMS current calculation
+// Install: EmonLib by OpenEnergyMonitor in Arduino Library Manager
+
+#include &quot;EmonLib.h&quot;
+
+EnergyMonitor emon;
+const int CT_PIN = 34;
+const float ICAL = 29.0;  // Calibration: SCT-013-030 with 1V burden = 30A / 1V / (ADC 3.3V range)
+                           // Tune by comparing to a calibrated clamp meter
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);
+  emon.current(CT_PIN, ICAL);
+}
+
+void loop() {
+  double irms = emon.calcIrms(1480); // 1480 samples = ~1 mains cycle at 50 Hz
+  double power = irms * 230.0;       // Apparent power assuming 230 V
+  Serial.printf(&quot;Irms: %.3f A  Apparent Power: %.1f VAn&quot;, irms, power);
+  delay(5000);
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Current Transformer Principle: The SCT-013 clamp is a split-core current transformer. The mains live wire passes through the core acting as a single-turn primary winding. The secondary coil (typically 2000 turns) induces a proportional current. The built-in 62 ohm burden resistor converts this to a voltage: at 30 A primary, the output is approximately 1 V peak AC.</p></div><div class="step"><span class="step-no">02</span><p>AC Coupling and Bias: The ESP32 ADC cannot measure negative voltages. The 10 uF capacitor blocks the DC component and the 10k+10k voltage divider biases the ADC input to 1.65 V (half of 3.3 V). The AC current signal then swings symmetrically around this midpoint, staying within the 0-3.3 V ADC range.</p></div><div class="step"><span class="step-no">03</span><p>RMS Calculation via Emonlib: Emonlib calculates Irms = sqrt(mean(i^2)) over 1480 samples. It automatically subtracts the DC bias (midpoint) from each sample before squaring. 1480 samples at the ESP32 ADC rate covers approximately one mains cycle at 50 Hz, capturing a complete AC waveform.</p></div><div class="step"><span class="step-no">04</span><p>Calibration Constant: The ICAL constant converts ADC counts to amps. For the SCT-013-030 with 1 V output at 30 A: ICAL = 30.0. Tune by clamping the SCT-013 on a circuit with a known current (measured by a calibrated clamp meter) and adjusting ICAL until readings match.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Whole-home electricity consumption monitor</li><li>Individual appliance power profiling</li><li>Solar panel production monitoring on the grid tie inverter output</li><li>Tenant electricity sub-metering for cost allocation</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Current reads non-zero with no load on the circuit</h4><p>This is standby current from always-on appliances (routers, TVs on standby, smart meters). To measure zero baseline, remove all loads from the monitored circuit. Emonlib&#x27;s DC offset subtraction handles the bias voltage automatically.</p></div><div class="trouble-item"><h4>Current reads far from actual value</h4><p>Adjust ICAL. Compare the ESP32 reading against a reference clamp meter on the same wire. If the ESP32 reads 15 A and the clamp meter reads 10 A, multiply ICAL by 10/15 = 0.67. Repeat until readings match within 2 percent.</p></div><div class="trouble-item"><h4>ADC reads 0 or 4095 continuously</h4><p>The voltage divider midpoint is not connected or the capacitor is short-circuited. Measure the voltage at GPIO 34 with a multimeter: it should be approximately 1.65 V at idle. If it reads 0 V or 3.3 V, check the divider and capacitor connections.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a ZMPT101B voltage transformer to measure Vrms and compute true real power</li><li>Add an OLED display showing live current, power, and estimated daily cost</li><li>Add Wi-Fi and publish readings to a Google Sheets spreadsheet</li><li>Add a second SCT-013 clamp to monitor a second circuit (solar vs grid)</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 AC Power Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, SCT-013 output (via 3.5 mm jack tip), a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 AC Power Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 AC Power Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Energy Monitoring. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build adds a ZMPT101B voltage transformer to measure true mains Vrms alongside the SCT-013 current measurement. The phase angle between voltage and current waveforms is used to compute real power (W) and power factor. An SSD1306 OLED displays Vrms, Irms, real power, and power factor. Readings are updated every 5 seconds and the daily kWh accumulator is displayed alongside the estimated electricity cost.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× SCT-013-030 current transformer</span></li><li><span>1× ZMPT101B AC voltage transformer module — Isolated mains voltage measurement; 230 V or 120 V model</span></li><li><span>1× SSD1306 OLED 128x64 I2C</span></li><li><span>1× 10 kohm resistors and 10 uF capacitors — Bias and coupling for both ADC inputs</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>SCT-013 output</td><td>GPIO 34 (via cap + divider)</td><td></td></tr><tr><td>ZMPT101B output</td><td>GPIO 35 (via cap + divider)</td><td>ZMPT101B module includes isolation and conditioning</td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ac-power-monitor_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 AC Power Monitor - Intermediate (Vrms + Irms + real power + kWh)
+#include &quot;EmonLib.h&quot;
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+EnergyMonitor emon;
+
+const int CT_PIN=34, VT_PIN=35;
+const float ICAL=29.0;   // Current calibration (tune with clamp meter)
+const float VCAL=234.0;  // Voltage calibration (tune with multimeter)
+const float PHASE=1.7;   // Phase lead correction in degrees (tune per installation)
+const float TARIFF=0.28f; // Cost per kWh in local currency
+float dailyKwh=0.0f;
+unsigned long lastCalc=0;
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);
+  analogReadResolution(12);
+  emon.voltage(VT_PIN,VCAL,PHASE);
+  emon.current(CT_PIN,ICAL);
+}
+
+void loop(){
+  emon.calcVI(20,2000); // 20 half-cycles, 2 s timeout
+  float vrms=emon.Vrms;
+  float irms=emon.Irms;
+  float realP=emon.realPower;
+  float appar=emon.apparentPower;
+  float pf=emon.powerFactor;
+
+  // Accumulate kWh
+  unsigned long now=millis();
+  if(lastCalc&gt;0){
+    float hours=(now-lastCalc)/3600000.0f;
+    dailyKwh+=realP/1000.0f*hours;
+  }
+  lastCalc=now;
+
+  Serial.printf(&quot;V:%.1f I:%.3f P:%.1fW PF:%.2f kWh:%.4fn&quot;,
+    vrms,irms,realP,pf,dailyKwh);
+
+  oled.clearDisplay(); oled.setTextSize(1); oled.setCursor(0,0);
+  oled.printf(&quot;Vrms: %.1f Vn&quot;,vrms);
+  oled.printf(&quot;Irms: %.3f An&quot;,irms);
+  oled.printf(&quot;Power:%.1f Wn&quot;,realP);
+  oled.printf(&quot;PF:   %.2fn&quot;,pf);
+  oled.printf(&quot;kWh:  %.4fn&quot;,dailyKwh);
+  oled.printf(&quot;Cost: %.4fn&quot;,dailyKwh*TARIFF);
+  oled.display();
+  delay(5000);
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>ZMPT101B Voltage Measurement: The ZMPT101B is a precision single-phase voltage transformer that provides galvanic isolation between the mains circuit and the ESP32. The module conditions the mains sine wave to a safe 0-3.3 V range. VCAL converts ADC counts to volts: 234.0 is a typical starting point for 230 V mains; calibrate against a multimeter.</p></div><div class="step"><span class="step-no">02</span><p>Phase Correction: The CT (current transformer) and VT (voltage transformer) introduce small, different phase shifts. The PHASE parameter (in degrees) corrects for this difference in Emonlib&#x27;s calcVI() function. Without correction, the computed power factor and real power will be inaccurate even for purely resistive loads.</p></div><div class="step"><span class="step-no">03</span><p>Real Power vs Apparent Power: Emonlib computes real power by multiplying instantaneous voltage and current samples before averaging: P = mean(v*i). Apparent power is Vrms * Irms. Power factor = real power / apparent power. Real power represents the energy actually consumed; apparent power includes the reactive component that does no useful work.</p></div><div class="step"><span class="step-no">04</span><p>kWh Accumulation: kWh is accumulated using trapezoidal integration: each reading adds (realPower_W / 1000) * (elapsed_hours) to the accumulator. The accumulator resets each day at midnight or on power-on. Daily cost is kWh multiplied by the electricity tariff per unit.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Home energy audit identifying high-consumption appliances</li><li>Electricity bill prediction with daily kWh tracking</li><li>Power factor correction monitoring for industrial equipment</li><li>Solar self-consumption analysis (compare generation vs consumption)</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Power factor reads above 1.0 or below -1.0</h4><p>The PHASE calibration is too large or the CT and VT have opposite polarity. Try PHASE=0 and compare real vs apparent power. Adjust PHASE until real power for a known resistive load (e.g. 1000 W kettle) matches the rated wattage within 5 percent.</p></div><div class="trouble-item"><h4>Vrms reads 0 with ZMPT101B connected</h4><p>The ZMPT101B module requires the mains circuit to be live. Verify the module AC input is connected to the live and neutral terminals. Check the output voltage at the module output pins with a multimeter for approximately 1.5 V AC RMS.</p></div><div class="trouble-item"><h4>kWh accumulates when no load is connected</h4><p>Stray coupling between the ZMPT101B output and CT input can create phantom power readings. Ensure CT and VT signal cables are separated and shielded. Set a minimum real-power threshold (e.g. 5 W) below which kWh accumulation pauses.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add NTP time sync and reset the kWh accumulator automatically at midnight</li><li>Add an SD card to log per-minute power readings for trend analysis</li><li>Add a TFT display with a real-time power trend chart</li><li>Add MQTT publishing for Home Assistant energy integration</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 AC Power Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, SCT-013 output (via 3.5 mm jack tip), a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 AC Power Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 AC Power Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Energy Monitoring. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build publishes all power metrics to MQTT every 30 seconds and integrates with Home Assistant energy dashboard as a custom energy sensor. Hourly kWh readings are stored in NVS for a 7-day consumption history. An overvoltage alert (above 250 V) and undervoltage alert (below 200 V) publish MQTT warnings. A web dashboard serves a 24-hour power trend chart using Chart.js populated via a JSON API endpoint on the ESP32.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× SCT-013-030 current transformer</span></li><li><span>1× ZMPT101B voltage transformer</span></li><li><span>1× MQTT broker (Mosquitto)</span></li><li><span>1× Home Assistant — Energy dashboard integration</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>CT and VT connections</td><td>Same as intermediate</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ac-power-monitor_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 AC Power Monitor - Advanced (MQTT + HA energy + 7-day NVS history)
+#include &quot;EmonLib.h&quot;
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;Preferences.h&gt;
+#include &lt;time.h&gt;
+
+EnergyMonitor emon;
+WebServer server(80);
+WiFiClient wifiClient; PubSubClient mqtt(wifiClient);
+Preferences prefs;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const int CT_PIN=34, VT_PIN=35;
+const float ICAL=29.0, VCAL=234.0, PHASE=1.7;
+const float V_MAX=250.0f, V_MIN=200.0f;
+float totalKwh=0.0f;
+int hourlyKwh[168]={0}; // 7 days x 24 hours
+unsigned long lastCalc=0;
+int lastHour=-1;
+
+void publishMetrics(float v,float i,float p,float pf,float kwh){
+  StaticJsonDocument&lt;192&gt; doc;
+  doc[&quot;vrms&quot;]=v; doc[&quot;irms&quot;]=i; doc[&quot;power&quot;]=p;
+  doc[&quot;pf&quot;]=pf; doc[&quot;kwh&quot;]=kwh;
+  char buf[192]; serializeJson(doc,buf);
+  mqtt.publish(&quot;energy/meter&quot;,buf);
+  if(v&gt;V_MAX) mqtt.publish(&quot;energy/alert&quot;,&quot;OVERVOLTAGE&quot;);
+  if(v&lt;V_MIN &amp;&amp; v&gt;10.0f) mqtt.publish(&quot;energy/alert&quot;,&quot;UNDERVOLTAGE&quot;);
+}
+
+void serveChart(){
+  String json=&quot;[&quot;;
+  for(int i=0;i&lt;168;i++){
+    json+=String(hourlyKwh[i]);
+    if(i&lt;167) json+=&quot;,&quot;;
+  }
+  json+=&quot;]&quot;;
+  server.send(200,&quot;application/json&quot;,json);
+}
+
+void setup(){
+  Serial.begin(115200);
+  analogReadResolution(12);
+  emon.voltage(VT_PIN,VCAL,PHASE);
+  emon.current(CT_PIN,ICAL);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  mqtt.setServer(MQTT_HOST,1883);
+  // Load 7-day history from NVS
+  prefs.begin(&quot;energy&quot;,true);
+  totalKwh=prefs.getFloat(&quot;total&quot;,0);
+  for(int h=0;h&lt;168;h++) hourlyKwh[h]=prefs.getInt(String(h).c_str(),0);
+  prefs.end();
+  server.on(&quot;/data&quot;,serveChart);
+  server.begin();
+}
+
+void loop(){
+  if(!mqtt.connected()) mqtt.connect(&quot;PowerMonitor&quot;);
+  mqtt.loop();
+  server.handleClient();
+
+  static unsigned long last=0;
+  if(millis()-last&gt;30000){
+    last=millis();
+    emon.calcVI(20,2000);
+    float v=emon.Vrms,i=emon.Irms,p=emon.realPower,pf=emon.powerFactor;
+    unsigned long now=millis();
+    if(lastCalc&gt;0) totalKwh+=p/1000.0f*(now-lastCalc)/3600000.0f;
+    lastCalc=now;
+    publishMetrics(v,i,p,pf,totalKwh);
+    // Hourly bucket
+    struct tm ti; getLocalTime(&amp;ti);
+    int h=ti.tm_wday*24+ti.tm_hour; // 0-167
+    if(ti.tm_hour!=lastHour){
+      lastHour=ti.tm_hour;
+      hourlyKwh[h]=(int)(totalKwh*10); // store in 0.1 kWh units
+      prefs.begin(&quot;energy&quot;,false);
+      prefs.putFloat(&quot;total&quot;,totalKwh);
+      prefs.putInt(String(h).c_str(),hourlyKwh[h]);
+      prefs.end();
+    }
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Home Assistant Energy Integration: HA energy dashboard requires a sensor publishing cumulative kWh (not incremental) in the utility_meter or sensor format. The totalKwh value is published every 30 seconds. In HA, add an MQTT sensor with state_topic energy/meter, value_template {{ value_json.kwh }}, device_class energy, and unit_of_measurement kWh.</p></div><div class="step"><span class="step-no">02</span><p>7-Day Hourly History in NVS: An integer array of 168 slots (7 days x 24 hours) stores hourly kWh readings in 0.1 kWh units. tm_wday (0-6) and tm_hour (0-23) index the slot. The array is persisted to NVS on each hourly update and loaded at startup, providing a continuous 7-day consumption history across power cycles.</p></div><div class="step"><span class="step-no">03</span><p>Voltage Limit Alerts: After each 30-second measurement, Vrms is compared against overvoltage (250 V) and undervoltage (200 V) limits. Alerts publish to energy/alert topic. HA automation rules trigger notifications to the homeowner&#x27;s phone. The 10 V minimum (v &gt; 10.0f) prevents false undervoltage alerts when the mains is genuinely off.</p></div><div class="step"><span class="step-no">04</span><p>Chart.js JSON API: The /data endpoint returns a JSON array of 168 hourly kWh values. A web page served separately (or from SPIFFS) uses Chart.js with the fetch() API to retrieve this data and render a 7-day bar chart. The chart updates every time the page is loaded or refreshed.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Home energy management system with 7-day consumption history</li><li>Electricity tariff optimisation: identify peak usage hours to shift to off-peak rates</li><li>Photovoltaic self-consumption monitoring: compare solar generation vs grid import</li><li>Carbon footprint tracking: convert kWh to CO2 emissions using grid carbon intensity</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Home Assistant energy dashboard shows flat line</h4><p>HA energy dashboard requires the sensor state_class to be total_increasing and the value to be cumulative (never decreasing). Ensure totalKwh is never reset to zero during a session. Use a separate daily accumulator that resets, while totalKwh only ever increases.</p></div><div class="trouble-item"><h4>NVS history data is lost after firmware update</h4><p>By default, the Arduino IDE erases the NVS partition when flashing new firmware. In the ESP32 board manager partition scheme, select a scheme that preserves NVS (e.g. Default with OTA). Use OTA updates rather than serial flashing to preserve NVS data.</p></div><div class="trouble-item"><h4>MQTT broker disconnects frequently during calcVI</h4><p>calcVI(20, 2000) blocks for up to 2 seconds. MQTT keepalive packets may be missed during this period. Increase the MQTT keepalive interval to 60 seconds with mqtt.setKeepAlive(60) or move the calcVI call to a separate FreeRTOS task.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a tariff schedule: calculate cost differently for peak (07:00-21:00) and off-peak hours</li><li>Add a carbon intensity API call to calculate real-time CO2 per kWh for your grid region</li><li>Add export metering: if solar generation exceeds consumption, publish negative power values</li><li>Add a GSM module to send monthly kWh totals by SMS when internet is unavailable</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 AC Power Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, SCT-013 output (via 3.5 mm jack tip), a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 AC Power Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 AC Power Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Energy Monitoring. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-smart-energy-meter.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 Smart Energy Meter</h3></div></a><a class="related-card" href="esp32-ai-object-detector.html"><div class="related-thumb t-ai"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="18" y="18" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="currentColor" opacity=".2"/><path d="M18 26H12M18 32H12M18 38H12M46 26H52M46 32H52M46 38H52M26 18V12M32 18V12M38 18V12M26 46V52M32 46V52M38 46V52" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">AI</span><h3>ESP32 AI Object Detector</h3></div></a><a class="related-card" href="esp32-air-quality-monitor.html"><div class="related-thumb t-agriculture"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Environmental</span><h3>ESP32 Air Quality Monitor</h3></div></a><a class="related-card" href="esp32-ble-beacon.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 BLE Beacon</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

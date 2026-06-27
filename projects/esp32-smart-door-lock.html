@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 Smart Door Lock | ESP32 Engine</title>
+<meta name="description" content="Create a keypad-controlled door lock with an ESP32 and servo motor, starting from a single-PIN beginner build through RFID and MQTT-connected multi-user access control.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-smart-door-lock.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Smart Door Lock | ESP32 Engine">
+<meta property="og:description" content="Create a keypad-controlled door lock with an ESP32 and servo motor, starting from a single-PIN beginner build through RFID and MQTT-connected multi-user access control.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-smart-door-lock.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Smart Door Lock | ESP32 Engine">
+<meta name="twitter:description" content="Create a keypad-controlled door lock with an ESP32 and servo motor, starting from a single-PIN beginner build through RFID and MQTT-connected multi-user access control.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 Smart Door Lock","description":"Create a keypad-controlled door lock with an ESP32 and servo motor, starting from a single-PIN beginner build through RFID and MQTT-connected multi-user access control.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-smart-door-lock.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, Keypad rows R1-R4"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 Smart Door Lock (Beginner)","description":"Create a keypad-controlled door lock with an ESP32 and servo motor, starting from a single-PIN beginner build through RFID and MQTT-connected multi-user access control.","step":[{"@type":"HowToStep","position":1,"name":"Matrix Keypad Scanning: The Keypad library drives each row pin LOW in turn and reads the four column…","text":"Matrix Keypad Scanning: The Keypad library drives each row pin LOW in turn and reads the four column pins. When a key is pressed, the row and column intersection identifies which key was pressed."},{"@type":"HowToStep","position":2,"name":"PIN Accumulation: Each digit is appended to a String variable. Pressing # submits the PIN for compar…","text":"PIN Accumulation: Each digit is appended to a String variable. Pressing # submits the PIN for comparison. Pressing * clears the buffer so the user can retype from scratch."},{"@type":"HowToStep","position":3,"name":"Servo Lock Control: The servo sits at 0 degrees in the locked position. A correct PIN rotates it to …","text":"Servo Lock Control: The servo sits at 0 degrees in the locked position. A correct PIN rotates it to 90 degrees to retract the latch. After 3 seconds it returns to 0 degrees and locks automatically."},{"@type":"HowToStep","position":4,"name":"LED and Buzzer Feedback: A correct PIN lights the green LED for 3 seconds. A wrong PIN lights the re…","text":"LED and Buzzer Feedback: A correct PIN lights the green LED for 3 seconds. A wrong PIN lights the red LED and activates the buzzer for 1 second, providing clear physical feedback without any display."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 Smart Door Lock?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, Keypad rows R1-R4, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 Smart Door Lock require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 Smart Door Lock?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Home Automation","item":"https://esp32engine.com/category/home-automation.html"},{"@type":"ListItem","position":3,"name":"ESP32 Smart Door Lock","item":"https://esp32engine.com/projects/esp32-smart-door-lock.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/home-automation.html">Home Automation</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/home-automation.html">Home Automation</a></li><li aria-current="page">ESP32 Smart Door Lock</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 Smart Door Lock</h1>
+          <div class="article-badges"><span class="badge badge-cat">Smart Home</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Create a keypad-controlled door lock with an ESP32 and servo motor, starting from a single-PIN beginner build through RFID and MQTT-connected multi-user access control.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-home parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner build you will wire a 4x4 matrix keypad and a servo motor to an ESP32 to create a PIN-code door lock. Entering the correct four-digit code rotates the servo to the unlock position and lights a green LED. A wrong PIN lights a red LED and activates a buzzer. The project teaches matrix keypad scanning, servo PWM control, and basic string comparison without any cloud connectivity.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× 4x4 matrix keypad membrane — 16-key, 8-pin ribbon cable</span></li><li><span>1× SG90 servo motor — 180-degree rotation, 5 V</span></li><li><span>1× Green LED 5 mm — Unlock indicator</span></li><li><span>1× Red LED 5 mm — Wrong PIN indicator</span></li><li><span>1× Active buzzer 5 V — Error alert</span></li><li><span>2× 220 ohm resistor — Current limiting for LEDs</span></li><li><span>1× Breadboard and jumper wires</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Keypad rows R1-R4</td><td>GPIO 13,12,14,27</td><td>Row pins driven LOW during scan</td></tr><tr><td>Keypad cols C1-C4</td><td>GPIO 26,25,33,32</td><td>Column pins with pull-up</td></tr><tr><td>Servo signal wire</td><td>GPIO 18</td><td>PWM; yellow wire on servo</td></tr><tr><td>Servo power</td><td>Vin (5 V)</td><td>Servo draws up to 250 mA</td></tr><tr><td>Green LED anode</td><td>GPIO 4</td><td>Through 220 ohm resistor</td></tr><tr><td>Red LED anode</td><td>GPIO 2</td><td>Through 220 ohm resistor</td></tr><tr><td>Buzzer +</td><td>GPIO 15</td><td>Active buzzer; drive HIGH to sound</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-smart-door-lock_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Smart Door Lock - Beginner
+// 4x4 Keypad + SG90 servo + LED feedback
+#include &lt;Keypad.h&gt;
+#include &lt;ESP32Servo.h&gt;
+
+const char* CORRECT_PIN = &quot;1234&quot;;
+const byte ROWS=4, COLS=4;
+char keys[4][4]={{&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;A&quot;},{&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;B&quot;},
+                  {&quot;7&quot;,&quot;8&quot;,&quot;9&quot;,&quot;C&quot;},{&quot;*&quot;,&quot;0&quot;,&quot;#&quot;,&quot;D&quot;}};
+byte rowPins[4]={13,12,14,27};
+byte colPins[4]={26,25,33,32};
+Keypad kpad=Keypad(makeKeymap(keys),rowPins,colPins,ROWS,COLS);
+
+Servo lockServo;
+const int LED_G=4, LED_R=2, BUZ=15, SERVO_PIN=18;
+String entered=&quot;&quot;;
+
+void unlock(){
+  lockServo.write(90);
+  digitalWrite(LED_G,HIGH);
+  Serial.println(&quot;UNLOCKED&quot;);
+  delay(3000);
+  lockServo.write(0);
+  digitalWrite(LED_G,LOW);
+}
+
+void deny(){
+  digitalWrite(LED_R,HIGH);
+  digitalWrite(BUZ,HIGH);
+  delay(1000);
+  digitalWrite(LED_R,LOW);
+  digitalWrite(BUZ,LOW);
+}
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(LED_G,OUTPUT);
+  pinMode(LED_R,OUTPUT);
+  pinMode(BUZ,OUTPUT);
+  lockServo.attach(SERVO_PIN);
+  lockServo.write(0);
+}
+
+void loop(){
+  char k=kpad.getKey();
+  if(!k) return;
+  if(k==&quot;#&quot;){
+    if(entered==CORRECT_PIN) unlock();
+    else deny();
+    entered=&quot;&quot;;
+  } else if(k==&quot;*&quot;){
+    entered=&quot;&quot;;
+  } else {
+    entered+=k;
+    Serial.print(&quot;*&quot;);
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Matrix Keypad Scanning: The Keypad library drives each row pin LOW in turn and reads the four column pins. When a key is pressed, the row and column intersection identifies which key was pressed.</p></div><div class="step"><span class="step-no">02</span><p>PIN Accumulation: Each digit is appended to a String variable. Pressing # submits the PIN for comparison. Pressing * clears the buffer so the user can retype from scratch.</p></div><div class="step"><span class="step-no">03</span><p>Servo Lock Control: The servo sits at 0 degrees in the locked position. A correct PIN rotates it to 90 degrees to retract the latch. After 3 seconds it returns to 0 degrees and locks automatically.</p></div><div class="step"><span class="step-no">04</span><p>LED and Buzzer Feedback: A correct PIN lights the green LED for 3 seconds. A wrong PIN lights the red LED and activates the buzzer for 1 second, providing clear physical feedback without any display.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Home office door lock with PIN code entry</li><li>Cabinet lock for storing electronics components</li><li>Safe box release mechanism for workshops</li><li>STEM demonstration of electromechanical security</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Keypad registers phantom key presses</h4><p>Check that all 8 ribbon cable wires are fully seated. The Keypad library enables internal pull-ups on column pins automatically; verify no external resistors are conflicting.</p></div><div class="trouble-item"><h4>Servo jitters or does not hold position</h4><p>Power the servo from the Vin 5 V pin, not 3.3 V. Add a 10 uF capacitor between servo power and GND to absorb inrush current spikes.</p></div><div class="trouble-item"><h4>PIN comparison always fails</h4><p>Print the entered String to Serial Monitor and verify the characters. Check that the # key is mapped correctly in the keys[][] array definition.</p></div><div class="trouble-item"><h4>Green LED does not light on correct PIN</h4><p>Check LED polarity (flat side = cathode = GND). Verify the 220 ohm resistor is on the anode side between GPIO 4 and the LED.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Store the PIN in NVS flash so it survives power loss</li><li>Add an OLED display to show entry prompts and remaining attempts</li><li>Add a reed switch to detect if the door is open after unlocking</li><li>Add a second PIN slot for a family member using a different code</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Smart Door Lock?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Keypad rows R1-R4, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Smart Door Lock require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Smart Door Lock?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build supports up to ten user PINs stored in ESP32 NVS flash, an OLED display for prompts and unlock history, a tamper lockout after three consecutive wrong attempts, and a local web page to add or delete PINs. All access events are timestamped using NTP and logged to Serial for a simple audit trail.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× 4x4 matrix keypad</span></li><li><span>1× SG90 servo motor</span></li><li><span>1× SSD1306 OLED 128x64 I2C — Shows prompts and last event</span></li><li><span>1× Active buzzer — Tamper alert</span></li><li><span>1× Green and red LED</span></li><li><span>1× Wi-Fi router or access point — For NTP and web admin</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Keypad rows and cols</td><td>Same as beginner</td><td></td></tr><tr><td>Servo signal</td><td>GPIO 18</td><td></td></tr><tr><td>OLED SDA</td><td>GPIO 21</td><td></td></tr><tr><td>OLED SCL</td><td>GPIO 22</td><td></td></tr><tr><td>Green LED</td><td>GPIO 4</td><td>220 ohm resistor</td></tr><tr><td>Red LED</td><td>GPIO 2</td><td>220 ohm resistor</td></tr><tr><td>Buzzer</td><td>GPIO 15</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-smart-door-lock_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Smart Door Lock - Intermediate
+// Multi-PIN NVS + OLED + tamper lockout + web admin
+#include &lt;Keypad.h&gt;
+#include &lt;ESP32Servo.h&gt;
+#include &lt;Preferences.h&gt;
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;time.h&gt;
+
+const char* SSID=&quot;YourSSID&quot;;
+const char* PASS=&quot;YourPassword&quot;;
+
+Preferences prefs;
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+WebServer server(80);
+Servo lockServo;
+
+const byte ROWS=4,COLS=4;
+char keys[4][4]={{&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;A&quot;},{&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;B&quot;},
+                  {&quot;7&quot;,&quot;8&quot;,&quot;9&quot;,&quot;C&quot;},{&quot;*&quot;,&quot;0&quot;,&quot;#&quot;,&quot;D&quot;}};
+byte rp[4]={13,12,14,27}, cp[4]={26,25,33,32};
+Keypad kpad=Keypad(makeKeymap(keys),rp,cp,ROWS,COLS);
+
+String entered=&quot;&quot;;
+int wrongCount=0;
+bool lockedOut=false;
+unsigned long lockEnd=0;
+
+bool checkPIN(const String &amp;pin){
+  prefs.begin(&quot;pins&quot;,true);
+  int n=prefs.getInt(&quot;count&quot;,0);
+  for(int i=0;i&lt;n;i++){
+    if(prefs.getString(String(i).c_str(),&quot;&quot;)==pin){
+      prefs.end(); return true;
+    }
+  }
+  prefs.end(); return false;
+}
+
+void logEvent(const String &amp;msg){
+  time_t now=time(nullptr);
+  String ts=ctime(&amp;now); ts.trim();
+  oled.clearDisplay(); oled.setCursor(0,0);
+  oled.println(msg); oled.println(ts); oled.display();
+  Serial.println(msg+&quot; &quot;+ts);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  oled.setTextSize(1); oled.setTextColor(WHITE);
+  lockServo.attach(18); lockServo.write(0);
+  pinMode(4,OUTPUT);pinMode(2,OUTPUT);pinMode(15,OUTPUT);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  server.on(&quot;/&quot;,[](){
+    server.send(200,&quot;text/html&quot;,
+      &quot;&lt;h2&gt;Lock Admin&lt;/h2&gt;&quot;
+      &quot;&lt;form method=POST action=/add&gt;&lt;input name=pin&gt;&lt;button&gt;Add&lt;/button&gt;&lt;/form&gt;&quot;
+      &quot;&lt;form method=POST action=/del&gt;&lt;input name=pin&gt;&lt;button&gt;Del&lt;/button&gt;&lt;/form&gt;&quot;);
+  });
+  server.begin();
+  oled.clearDisplay(); oled.setCursor(0,0);
+  oled.print(&quot;IP: &quot;); oled.println(WiFi.localIP()); oled.display();
+}
+
+void loop(){
+  server.handleClient();
+  if(lockedOut){
+    if(millis()&lt;lockEnd) return;
+    lockedOut=false; wrongCount=0;
+  }
+  char k=kpad.getKey();
+  if(!k) return;
+  if(k==&quot;#&quot;){
+    if(checkPIN(entered)){
+      wrongCount=0;
+      logEvent(&quot;UNLOCKED&quot;);
+      digitalWrite(4,HIGH); lockServo.write(90);
+      delay(3000); lockServo.write(0); digitalWrite(4,LOW);
+    } else {
+      wrongCount++;
+      logEvent(&quot;DENIED #&quot;+String(wrongCount));
+      digitalWrite(2,HIGH);digitalWrite(15,HIGH);
+      delay(800); digitalWrite(2,LOW);digitalWrite(15,LOW);
+      if(wrongCount&gt;=3){ lockedOut=true; lockEnd=millis()+30000; }
+    }
+    entered=&quot;&quot;;
+  } else if(k==&quot;*&quot;){ entered=&quot;&quot;; }
+  else { entered+=k; }
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>NVS Multi-PIN Storage: PINs are stored as indexed keys (0, 1, 2...) in an NVS namespace &quot;pins&quot;. The web admin page provides POST endpoints to add or delete PINs, updating a count key that controls the search loop.</p></div><div class="step"><span class="step-no">02</span><p>NTP Timestamp Logging: configTime() syncs the ESP32 clock to pool.ntp.org over Wi-Fi. Each access event calls ctime() to format a human-readable timestamp that appears on the OLED and Serial log.</p></div><div class="step"><span class="step-no">03</span><p>Tamper Lockout: After three wrong PINs the lockedOut flag is set and lockEnd is recorded 30 seconds ahead. The main loop skips keypad input until millis() passes lockEnd, then resets the wrong-count counter.</p></div><div class="step"><span class="step-no">04</span><p>Web Admin Interface: WebServer on port 80 serves a minimal HTML form. Submitting a PIN to /add appends it to NVS. Submitting to /del searches NVS and removes the matching entry. The device IP is shown on the OLED at boot.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Rental property with per-guest PIN code management</li><li>Small office shared by multiple staff members</li><li>Home lab cabinet with an audit log of who accessed it</li><li>School storeroom with teacher-controlled PIN access</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>NVS PIN count resets unexpectedly</h4><p>Confirm that prefs.begin() and prefs.end() are called in matching pairs everywhere PINs are read or written. Use the same namespace string &quot;pins&quot; in all calls.</p></div><div class="trouble-item"><h4>Web admin page fails to load</h4><p>Verify the ESP32 IP from the OLED and that the browser is on the same Wi-Fi subnet. Ensure WiFi.status()==WL_CONNECTED before starting the server.</p></div><div class="trouble-item"><h4>NTP time shows 1970 epoch</h4><p>Wait 5-10 seconds after Wi-Fi connects for NTP sync. Add a check: while(time(nullptr)&lt;1000000000UL) delay(500); before logging events.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a DS3231 RTC for timekeeping when Wi-Fi is unavailable</li><li>Send a Telegram message on each unlock or lockout event</li><li>Add a door contact sensor and alert if the door stays open over 30 seconds</li><li>Implement HTTPS for the web admin page using a self-signed certificate</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Smart Door Lock?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Keypad rows R1-R4, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Smart Door Lock require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Smart Door Lock?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build adds an MFRC522 RFID reader alongside the keypad, supporting both card and PIN authentication. Access schedules restrict which cards are active during specific hours. All events are published to an MQTT broker for integration with Home Assistant or Node-RED. Remote lock and unlock commands are received on a dedicated MQTT topic, enabling app-based door control from anywhere on the local network.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× MFRC522 RFID reader module — SPI interface, 3.3 V logic only</span></li><li><span>1× 4x4 matrix keypad</span></li><li><span>1× MG996R servo motor — 11 kg/cm for heavier latches</span></li><li><span>2× MIFARE Classic 1K RFID cards — 13.56 MHz, fixed 4-byte UID</span></li><li><span>1× SSD1306 OLED 128x64</span></li><li><span>1× Mosquitto MQTT broker — On Raspberry Pi or local server</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>MFRC522 SDA/CS</td><td>GPIO 5</td><td>SPI chip select</td></tr><tr><td>MFRC522 SCK</td><td>GPIO 18</td><td>SPI clock</td></tr><tr><td>MFRC522 MOSI</td><td>GPIO 23</td><td>SPI data out</td></tr><tr><td>MFRC522 MISO</td><td>GPIO 19</td><td>SPI data in</td></tr><tr><td>MFRC522 RST</td><td>GPIO 27</td><td>Reset pin</td></tr><tr><td>MFRC522 3.3 V</td><td>3V3 only</td><td>Never connect to 5 V</td></tr><tr><td>Keypad + servo + OLED</td><td>Same as intermediate</td><td>GPIOs 18/19/23 shared with RFID SPI</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-smart-door-lock_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Smart Door Lock - Advanced (RFID + MQTT + schedules)
+#include &lt;SPI.h&gt;
+#include &lt;MFRC522.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;Preferences.h&gt;
+#include &lt;time.h&gt;
+
+MFRC522 rfid(5, 27); // SS=5, RST=27
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const char* TOPIC_EVT=&quot;door/events&quot;;
+const char* TOPIC_CMD=&quot;door/commands&quot;;
+
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
+Preferences prefs;
+bool remoteCmd=false;
+bool remoteUnlock=false;
+
+void publishEvent(const char* type, const char* id){
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;type&quot;]=type; doc[&quot;id&quot;]=id; doc[&quot;ts&quot;]=(long)time(nullptr);
+  char buf[128]; serializeJson(doc,buf);
+  mqtt.publish(TOPIC_EVT,buf);
+}
+
+void mqttCallback(char* topic, byte* payload, unsigned int len){
+  String msg((char*)payload,len);
+  remoteCmd=true;
+  remoteUnlock=(msg==&quot;UNLOCK&quot;);
+}
+
+bool cardAllowed(const String &amp;uid){
+  prefs.begin(&quot;rfid&quot;,true);
+  int n=prefs.getInt(&quot;count&quot;,0);
+  for(int i=0;i&lt;n;i++){
+    if(prefs.getString(String(i).c_str(),&quot;&quot;)==uid){
+      prefs.end(); return true;
+    }
+  }
+  prefs.end(); return false;
+}
+
+void actuateServo(bool open){
+  // servo.write(open ? 90 : 0);
+  Serial.println(open ? &quot;UNLOCK&quot; : &quot;LOCK&quot;);
+}
+
+void setup(){
+  Serial.begin(115200);
+  SPI.begin(); rfid.PCD_Init();
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  mqtt.setServer(MQTT_HOST,1883);
+  mqtt.setCallback(mqttCallback);
+}
+
+void loop(){
+  if(!mqtt.connected()){
+    mqtt.connect(&quot;ESP32DoorLock&quot;);
+    mqtt.subscribe(TOPIC_CMD);
+  }
+  mqtt.loop();
+
+  if(remoteCmd){
+    actuateServo(remoteUnlock);
+    publishEvent(remoteUnlock?&quot;REMOTE_UNLOCK&quot;:&quot;REMOTE_LOCK&quot;,&quot;app&quot;);
+    remoteCmd=false;
+  }
+
+  if(rfid.PICC_IsNewCardPresent() &amp;&amp; rfid.PICC_ReadCardSerial()){
+    String uid=&quot;&quot;;
+    for(byte i=0;i&lt;rfid.uid.size;i++) uid+=String(rfid.uid.uidByte[i],HEX);
+    rfid.PICC_HaltA();
+    if(cardAllowed(uid)){
+      actuateServo(true);
+      publishEvent(&quot;RFID_UNLOCK&quot;,uid.c_str());
+      delay(3000);
+      actuateServo(false);
+    } else {
+      publishEvent(&quot;RFID_DENY&quot;,uid.c_str());
+    }
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>RFID UID Reading: The MFRC522 communicates over SPI. PICC_IsNewCardPresent() detects a card in range and PICC_ReadCardSerial() fills rfid.uid.uidByte with the 4-7 byte unique identifier. The UID bytes are hex-formatted into a String for NVS lookup.</p></div><div class="step"><span class="step-no">02</span><p>Allowed Card Registry: Authorised card UIDs are stored in NVS under namespace &quot;rfid&quot;. cardAllowed() iterates through stored UIDs and returns true on a match. UIDs are added via a web endpoint or a registration mode triggered by a physical button.</p></div><div class="step"><span class="step-no">03</span><p>MQTT Event Publishing: Every access attempt publishes a JSON payload to door/events containing the event type (RFID_UNLOCK, RFID_DENY, REMOTE_UNLOCK), credential ID, and Unix timestamp. Home Assistant or Node-RED can subscribe to trigger automations.</p></div><div class="step"><span class="step-no">04</span><p>Remote Lock Commands: The ESP32 subscribes to door/commands. Receiving &quot;UNLOCK&quot; sets remoteCmd and remoteUnlock flags. The main loop calls actuateServo(true) and publishes a REMOTE_UNLOCK event for the audit log.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Smart home integration with Home Assistant MQTT</li><li>Airbnb property with per-stay RFID card provisioning</li><li>Office server room with employee badge access and logging</li><li>School lab with time-restricted student card schedules</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>RFID reader detects no card</h4><p>Confirm 3.3 V supply (never 5 V). Verify SPI wiring: SCK=18, MOSI=23, MISO=19, SS=5, RST=27. Run the MFRC522 DumpInfo example to confirm the reader initialises.</p></div><div class="trouble-item"><h4>MQTT connection drops repeatedly</h4><p>Call mqtt.setKeepAlive(60) and ensure mqtt.loop() runs every loop iteration. Add a 30-second heartbeat publish to prevent broker-side idle disconnection.</p></div><div class="trouble-item"><h4>Same card returns a different UID each tap</h4><p>Some cards use UID randomisation. Use MIFARE Classic 1K cards with a fixed 4-byte UID for reliable registration.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add an AS608 fingerprint sensor as a third authentication method</li><li>Integrate with Home Assistant via MQTT auto-discovery</li><li>Send a photo via Telegram on each access attempt using an ESP32-CAM</li><li>Implement time-of-day schedules to restrict certain cards to business hours only</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Smart Door Lock?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Keypad rows R1-R4, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Smart Door Lock require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Smart Door Lock?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-home-climate-automation.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Home Climate Automation</h3></div></a><a class="related-card" href="esp32-ir-remote-control.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 IR Remote Control</h3></div></a><a class="related-card" href="esp32-smart-power-strip.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Smart Power Strip</h3></div></a><a class="related-card" href="esp32-smart-thermostat.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Smart Thermostat</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

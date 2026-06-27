@@ -1,0 +1,299 @@
+slug: esp32-gps-tracker
+title: ESP32 GPS Tracker
+category: Sensor Projects
+description: Connect a NEO-6M GPS module to the ESP32 to parse real-time coordinates, display them on
+  an OLED, log tracks to an SD card, and transmit live location to ThingSpeak via MQTT.
+meta_description: Build an ESP32 GPS tracker with NEO-6M module. From beginner serial coordinate parsing
+  to OLED display, SD logging, and MQTT ThingSpeak geofencing.
+source_base: esp32-gps-tracker-legacy-import
+sensor: 'TODO: sensor'
+output: NEO-6M TX
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 2
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 16 (RX2)
+  sensor_name: 'TODO: sensor'
+  output_name: NEO-6M TX
+  wiring:
+  - component: NEO-6M TX
+    pin: GPIO 16 (RX2)
+  - component: NEO-6M RX
+    pin: GPIO 17 (TX2)
+  - component: NEO-6M VCC
+    pin: 3V3 or 5 V
+  - component: NEO-6M GND
+    pin: GND
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will connect a NEO-6M GPS module to the ESP32 over
+      UART and parse the NMEA sentences it outputs to extract latitude, longitude, speed, and satellite
+      count. All data is printed to the Serial Monitor. This project teaches hardware serial communication,
+      NMEA sentence parsing, and working with the TinyGPS++ library, which converts raw GPS strings into
+      usable floating-point values with a single library call.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× NEO-6M GPS module with antenna — UART interface, 3.3-5 V compatible
+    - 1× External GPS antenna (optional) — SMA connector; improves indoor lock time
+    - 1× Breadboard and jumper wires
+    wiring:
+    - - NEO-6M TX
+      - GPIO 16 (RX2)
+      - GPS TX to ESP32 RX
+    - - NEO-6M RX
+      - GPIO 17 (TX2)
+      - GPS RX to ESP32 TX (optional)
+    - - NEO-6M VCC
+      - 3V3 or 5 V
+      - Module has onboard regulator
+    - - NEO-6M GND
+      - GND
+      - ''
+    how:
+    - 'NMEA Sentence Output: The NEO-6M outputs NMEA 0183 sentences at 9600 baud including GPRMC (position,
+      speed, time) and GPGGA (altitude, satellites, HDOP). Each sentence is a comma-delimited ASCII string
+      starting with a dollar sign.'
+    - 'TinyGPS++ Parsing: gps.encode() is called for every byte received from the GPS UART. TinyGPS++
+      accumulates bytes and parses complete sentences internally. gps.location.isUpdated() returns true
+      when a fresh fix with valid coordinates has been decoded.'
+    - 'Fix Quality Indicators: gps.satellites.value() shows how many satellites are locked (4+ needed
+      for reliable 3D fix). gps.hdop.hdop() is the horizontal dilution of precision; below 2.0 is excellent,
+      above 10 is poor.'
+    - 'No-Data Detection: If gps.charsProcessed() is still below 10 after 10 seconds, the wiring is likely
+      wrong or the antenna has no sky view. Move to an outdoor location or a window for the initial cold-start
+      fix which can take 1-3 minutes.'
+    apps:
+    - Vehicle location logging for fleet management prototypes
+    - Hiking trail tracker saving coordinates to SD card
+    - Drone ground station displaying live position
+    - STEM project teaching satellite navigation concepts
+    troubleshooting:
+    - - No GPS data after 10 seconds
+      - Check that NEO-6M TX is wired to GPIO 16 (not GPIO 17). The GPS module outputs data even without
+        a fix; if no characters are received the UART wiring is wrong.
+    - - GPS locks satellites but location does not update
+      - The NEO-6M needs a clear sky view. Indoors or near tall buildings the signal is too weak for a
+        position fix. A patch antenna improves indoor performance slightly.
+    - - Latitude shows 0.000000
+      - The module has no fix yet. Wait 1-3 minutes outdoors. The blue LED on the NEO-6M module blinks
+        once per second when a fix is obtained.
+    - - Speed reads as a negative value
+      - TinyGPS++ speed is always non-negative. A negative value means the NMEA RMC sentence is being
+        parsed incorrectly. Verify baud rate is 9600 and check for wiring noise on the UART line.
+    upgrades:
+    - Add an OLED display to show coordinates and speed without a computer
+    - Add an SD card module and log fixes to a CSV file for track replay
+    - Calculate and display distance from a saved home waypoint
+    - Add a push button to mark a waypoint and save it to NVS
+    code: "// ESP32 GPS Tracker - Beginner\n// NEO-6M via UART2 + TinyGPS++ library\n#include <TinyGPS++.h>\n\
+      \nTinyGPSPlus gps;\nHardwareSerial gpsSerial(2); // UART2: RX=16, TX=17\n\nvoid setup(){\n  Serial.begin(115200);\n\
+      \  gpsSerial.begin(9600, SERIAL_8N1, 16, 17);\n  Serial.println(\"GPS Tracker starting...\");\n\
+      }\n\nvoid loop(){\n  while(gpsSerial.available()){\n    gps.encode(gpsSerial.read());\n  }\n\n \
+      \ if(gps.location.isUpdated()){\n    Serial.print(\"Lat: \");  Serial.println(gps.location.lat(),\
+      \ 6);\n    Serial.print(\"Lon: \");  Serial.println(gps.location.lng(), 6);\n    Serial.print(\"\
+      Speed (km/h): \"); Serial.println(gps.speed.kmph(), 1);\n    Serial.print(\"Altitude (m): \"); Serial.println(gps.altitude.meters(),\
+      \ 1);\n    Serial.print(\"Satellites: \");   Serial.println(gps.satellites.value());\n    Serial.print(\"\
+      HDOP: \");         Serial.println(gps.hdop.hdop(), 2);\n    Serial.println(\"---\");\n  }\n\n  if(millis()\
+      \ > 10000 && gps.charsProcessed() < 10){\n    Serial.println(\"No GPS data — check wiring and antenna\"\
+      );\n  }\n}"
+    code_filename: esp32-gps-tracker-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build adds a 128x64 OLED display showing live latitude, longitude,
+      speed, altitude, satellite count, and elapsed distance from the start point. GPS tracks are logged
+      to a microSD card as CSV files named by date. An SD-based waypoint file lets you preload destination
+      coordinates and the display shows bearing and distance to the active waypoint.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× NEO-6M GPS module
+    - 1× SSD1306 OLED 128x64 I2C
+    - 1× MicroSD SPI module — 3.3 V logic; FAT32 formatted card
+    - 1× Push button — Cycle display pages
+    - 1× CR2032 battery holder — For NEO-6M backup RAM
+    - 1× Breadboard and wires
+    wiring:
+    - - NEO-6M TX
+      - GPIO 16
+      - ''
+    - - OLED SDA
+      - GPIO 21
+      - ''
+    - - OLED SCL
+      - GPIO 22
+      - ''
+    - - SD MOSI
+      - GPIO 23
+      - SPI
+    - - SD MISO
+      - GPIO 19
+      - SPI
+    - - SD SCK
+      - GPIO 18
+      - SPI
+    - - SD CS
+      - GPIO 5
+      - SPI chip select
+    - - Page button
+      - GPIO 0
+      - Internal pull-up
+    how:
+    - 'Dual-Page OLED Display: A button toggles between page 0 (lat, lon, speed, altitude) and page 1
+      (satellites, HDOP, distance from start, SD log status). The XOR operation page^=1 flips between
+      0 and 1 efficiently.'
+    - 'Haversine Distance Calculation: distKm() uses the Haversine formula to compute the great-circle
+      distance between the start coordinates and the current fix in kilometres. This gives accumulated
+      straight-line displacement, not total path length.'
+    - 'SD Card CSV Logging: A new CSV file is created at startup with a timestamp-based name. Each valid
+      GPS fix appends a row with lat, lon, speed, altitude, and satellite count. logFile.flush() writes
+      the buffer to the card immediately to prevent data loss if power is cut.'
+    - 'NEO-6M Backup Battery: A CR2032 coin cell connected to the VBAT pin of the NEO-6M keeps the real-time
+      clock and almanac alive when main power is off. This reduces warm-start lock time from 1-3 minutes
+      to 10-30 seconds.'
+    apps:
+    - Hiking and cycling route recording for GPX export
+    - Vehicle tracking with SD card log retrieval
+    - Geo-tagged photo location logger using a camera
+    - Agricultural field mapping with equipment attachment
+    troubleshooting:
+    - - SD card not detected
+      - Format the card as FAT32 (not exFAT). Verify SPI wiring and that the SD module operates at 3.3
+        V logic. Some SD modules need a 3.3 V logic level on MOSI; add a level shifter if using 5 V.
+    - - OLED shows corrupted characters
+      - I2C bus conflict can occur if the SD SPI CS line floats. Make sure GPIO 5 is driven HIGH when
+        the SD is idle so it does not interfere with the I2C OLED on the shared bus.
+    - - Distance reads 0.00 km always
+      - The started flag is set on the first valid fix. If the GPS has not locked yet when you check the
+        display, startLat and startLng are 0. Move outdoors to get an initial fix first.
+    upgrades:
+    - Add a DS3231 RTC to timestamp log entries with real date and time
+    - Generate GPX track files directly on the SD card for Google Maps import
+    - Add a buzzer that alerts when you travel more than 500 m from start
+    - Add Wi-Fi hotspot support to download the SD log over HTTP without removing the card
+    code: "// ESP32 GPS Tracker - Intermediate (OLED + SD logging + waypoints)\n#include <TinyGPS++.h>\n\
+      #include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <SD.h>\n#include <SPI.h>\n\nTinyGPSPlus\
+      \ gps;\nHardwareSerial gpsSerial(2);\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\nconst int SD_CS=5,\
+      \ BTN=0;\nint page=0;\ndouble startLat=0, startLng=0;\nbool started=false;\n\nFile logFile;\nString\
+      \ filename;\n\nvoid createLog(){\n  // Name file by satellite count as proxy for date (NTP not available\
+      \ without WiFi)\n  filename=\"/track_\"+String(millis()/1000)+\".csv\";\n  logFile=SD.open(filename,FILE_WRITE);\n\
+      \  if(logFile) logFile.println(\"lat,lon,speed_kmh,alt_m,sats\");\n}\n\nvoid logFix(){\n  if(!logFile)\
+      \ return;\n  logFile.print(gps.location.lat(),6); logFile.print(\",\");\n  logFile.print(gps.location.lng(),6);\
+      \ logFile.print(\",\");\n  logFile.print(gps.speed.kmph(),1);   logFile.print(\",\");\n  logFile.print(gps.altitude.meters(),1);\
+      \ logFile.print(\",\");\n  logFile.println(gps.satellites.value());\n  logFile.flush();\n}\n\ndouble\
+      \ distKm(double la1,double lo1,double la2,double lo2){\n  // Haversine formula\n  double R=6371.0;\n\
+      \  double dLat=(la2-la1)*DEG_TO_RAD;\n  double dLon=(lo2-lo1)*DEG_TO_RAD;\n  double a=sin(dLat/2)*sin(dLat/2)+\n\
+      \           cos(la1*DEG_TO_RAD)*cos(la2*DEG_TO_RAD)*\n           sin(dLon/2)*sin(dLon/2);\n  return\
+      \ R*2*atan2(sqrt(a),sqrt(1-a));\n}\n\nvoid showPage(){\n  oled.clearDisplay(); oled.setCursor(0,0);\n\
+      \  if(page==0){\n    oled.printf(\"Lat: %.5fn\", gps.location.lat());\n    oled.printf(\"Lon: %.5fn\"\
+      , gps.location.lng());\n    oled.printf(\"Spd: %.1f km/hn\", gps.speed.kmph());\n    oled.printf(\"\
+      Alt: %.0f mn\",    gps.altitude.meters());\n  } else {\n    oled.printf(\"Sats: %dn\", gps.satellites.value());\n\
+      \    oled.printf(\"HDOP: %.1fn\", gps.hdop.hdop());\n    if(started)\n      oled.printf(\"Dist:\
+      \ %.2f kmn\",\n        distKm(startLat,startLng,gps.location.lat(),gps.location.lng()));\n    oled.printf(\"\
+      Log: %sn\", SD.exists(filename)?\"OK\":\"--\");\n  }\n  oled.display();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
+      \  gpsSerial.begin(9600,SERIAL_8N1,16,17);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n\
+      \  oled.setTextSize(1); oled.setTextColor(WHITE);\n  SD.begin(SD_CS);\n  createLog();\n  pinMode(BTN,INPUT_PULLUP);\n\
+      }\n\nvoid loop(){\n  while(gpsSerial.available()) gps.encode(gpsSerial.read());\n\n  if(digitalRead(BTN)==LOW){\
+      \ page^=1; delay(200); }\n\n  if(gps.location.isUpdated()){\n    if(!started){ startLat=gps.location.lat();\
+      \ startLng=gps.location.lng(); started=true; }\n    logFix();\n  }\n  showPage();\n  delay(500);\n\
+      }"
+    code_filename: esp32-gps-tracker-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build publishes GPS coordinates to ThingSpeak via MQTT every 30 seconds
+      for live map tracking. A geofencing algorithm compares the current position against a saved home
+      radius and triggers an alert (buzzer and MQTT message) if the tracked device leaves the zone. A
+      web portal on the ESP32 shows the current position as a Google Maps link and lets you update the
+      geofence centre and radius over Wi-Fi.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× NEO-6M GPS module
+    - 1× SSD1306 OLED 128x64
+    - 1× Active buzzer — Geofence breach alert
+    - 1× MicroSD module — Offline log backup
+    - 1× ThingSpeak account — Free tier; 4 fields per channel
+    - 1× Wi-Fi access point — For MQTT and web portal
+    wiring:
+    - - NEO-6M TX
+      - GPIO 16
+      - ''
+    - - OLED SDA/SCL
+      - GPIO 21/22
+      - ''
+    - - SD SPI
+      - GPIO 5,18,19,23
+      - CS,SCK,MISO,MOSI
+    - - Buzzer
+      - GPIO 4
+      - Geofence alert
+    how:
+    - 'ThingSpeak MQTT Publishing: ThingSpeak accepts MQTT publishes to a channels/<id>/publish topic
+      with field1=value&field2=value format. Authentication uses the channel write API key as the MQTT
+      password. The free tier allows one update every 15 seconds per channel.'
+    - 'Geofence Algorithm: haversineKm() computes the great-circle distance between the geofence centre
+      (geoLat, geoLon) and the current GPS fix. If the distance exceeds geoRadius the inFence flag transitions
+      from true to false, triggering a buzzer beep and an MQTT alert exactly once at the boundary crossing.'
+    - 'Web Portal Map Link: The embedded web server dynamically builds a Google Maps URL using the latest
+      GPS coordinates. Clicking the link in any browser on the local network opens the current position
+      on Google Maps without any mobile app.'
+    - 'NVS Geofence Storage: The geofence centre and radius are stored in NVS so they survive power cycles.
+      A web form at /setfence accepts new lat, lon, and radius values and writes them to NVS with Preferences,
+      taking effect immediately.'
+    apps:
+    - Pet tracker sending live location to ThingSpeak dashboard
+    - Vehicle geofencing alert for company fleet management
+    - School bus tracking with parent web portal access
+    - 'Asset monitoring: alert if equipment leaves a job site'
+    troubleshooting:
+    - - ThingSpeak MQTT authentication fails
+      - Use the channel Write API Key as the MQTT password and your ThingSpeak username as the user. Ensure
+        the MQTT client ID is unique per device; duplicate client IDs cause immediate disconnection.
+    - - Geofence triggers repeatedly while stationary
+      - 'GPS position jitter can oscillate around the fence boundary. Add a 100 m hysteresis band: only
+        trigger the exit alert when distance exceeds geoRadius + 0.1 km, and re-enter only when below
+        geoRadius - 0.1 km.'
+    - - Web server becomes unresponsive under GPS load
+      - Move GPS encoding and MQTT to a dedicated FreeRTOS task on core 0 and run the web server on core
+        1 using xTaskCreatePinnedToCore() to prevent blocking.
+    upgrades:
+    - Add a SIM800L GSM module for tracking without Wi-Fi coverage
+    - Send WhatsApp alerts via Twilio API on geofence breach
+    - Build a Node-RED dashboard showing the live track on an embedded map
+    - Add power saving with GPS sleep mode between fixes for battery operation
+    code: "// ESP32 GPS Tracker - Advanced (ThingSpeak MQTT + geofencing)\n#include <TinyGPS++.h>\n#include\
+      \ <WiFi.h>\n#include <PubSubClient.h>\n#include <WebServer.h>\n#include <Preferences.h>\n#include\
+      \ <math.h>\n\nTinyGPSPlus gps;\nHardwareSerial gpsSerial(2);\nWiFiClient wifiClient;\nPubSubClient\
+      \ mqtt(wifiClient);\nWebServer server(80);\nPreferences prefs;\n\nconst char* SSID=\"YourSSID\"\
+      , *PASS=\"YourPass\";\nconst char* TS_HOST=\"mqtt3.thingspeak.com\";\nconst int   TS_PORT=1883;\n\
+      const char* TS_USER=\"YourTSUser\";\nconst char* TS_PASS=\"YourTSApiKey\";\nconst char* TS_CLIENT=\"\
+      ESP32GPS\";\n// Channel write topic format: channels/<channelID>/publish\nconst char* TS_TOPIC=\"\
+      channels/YOUR_CHANNEL_ID/publish\";\n\ndouble geoLat, geoLon, geoRadius; // geofence centre and\
+      \ radius in km\nbool inFence=true;\nunsigned long lastPublish=0;\n\ndouble haversineKm(double la1,double\
+      \ lo1,double la2,double lo2){\n  double R=6371.0, dLa=(la2-la1)*DEG_TO_RAD, dLo=(lo2-lo1)*DEG_TO_RAD;\n\
+      \  double a=sin(dLa/2)*sin(dLa/2)+cos(la1*DEG_TO_RAD)*cos(la2*DEG_TO_RAD)*sin(dLo/2)*sin(dLo/2);\n\
+      \  return R*2*atan2(sqrt(a),sqrt(1-a));\n}\n\nvoid publishTS(){\n  char payload[128];\n  snprintf(payload,sizeof(payload),\n\
+      \    \"field1=%.6f&field2=%.6f&field3=%.1f&field4=%d\",\n    gps.location.lat(), gps.location.lng(),\n\
+      \    gps.speed.kmph(), (int)gps.satellites.value());\n  mqtt.publish(TS_TOPIC, payload);\n}\n\n\
+      void checkGeofence(){\n  double dist=haversineKm(geoLat,geoLon,gps.location.lat(),gps.location.lng());\n\
+      \  bool inside=(dist<=geoRadius);\n  if(inFence && !inside){\n    digitalWrite(4,HIGH); delay(200);\
+      \ digitalWrite(4,LOW);\n    mqtt.publish(\"gps/alert\",\"GEOFENCE_BREACH\");\n  }\n  inFence=inside;\n\
+      }\n\nvoid setup(){\n  Serial.begin(115200);\n  gpsSerial.begin(9600,SERIAL_8N1,16,17);\n  pinMode(4,OUTPUT);\n\
+      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\n  prefs.begin(\"\
+      geo\",true);\n  geoLat=prefs.getDouble(\"lat\",0.0);\n  geoLon=prefs.getDouble(\"lon\",0.0);\n \
+      \ geoRadius=prefs.getDouble(\"r\",0.5);\n  prefs.end();\n\n  mqtt.setServer(TS_HOST,TS_PORT);\n\
+      \  server.on(\"/\",[](){\n    String body=\"<h2>GPS Tracker</h2>\";\n    body+=\"<p>Lat: \"+String(gps.location.lat(),6)+\"\
+      </p>\";\n    body+=\"<p>Lon: \"+String(gps.location.lng(),6)+\"</p>\";\n    body+=\"<p><a href=\"\
+      https://maps.google.com/?q=\"+\n          String(gps.location.lat(),6)+\",\"+String(gps.location.lng(),6)+\n\
+      \          \"\">Open in Google Maps</a></p>\";\n    server.send(200,\"text/html\",body);\n  });\n\
+      \  server.begin();\n}\n\nvoid loop(){\n  while(gpsSerial.available()) gps.encode(gpsSerial.read());\n\
+      \  server.handleClient();\n\n  if(!mqtt.connected()){\n    mqtt.connect(TS_CLIENT,TS_USER,TS_PASS);\n\
+      \  }\n  mqtt.loop();\n\n  if(gps.location.isValid() && millis()-lastPublish>30000){\n    publishTS();\n\
+      \    checkGeofence();\n    lastPublish=millis();\n  }\n}"
+    code_filename: esp32-gps-tracker-advanced.ino
+related_slugs:
+- esp32-iot-weather-station
+- esp32-machine-monitoring-node

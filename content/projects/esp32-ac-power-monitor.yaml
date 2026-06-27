@@ -1,0 +1,275 @@
+slug: esp32-ac-power-monitor
+title: ESP32 AC Power Monitor
+category: Energy Monitoring
+description: Measure real AC mains power consumption with an ESP32, ZMPT101B voltage transformer, and
+  SCT-013 current transformer. Calculate Vrms, Irms, true power, power factor, and daily kWh, then publish
+  results to an MQTT energy dashboard.
+meta_description: Build an ESP32 AC power monitor using a ZMPT101B voltage transformer and SCT-013 current
+  transformer. Measure Vrms, Irms, real power, power factor, and daily kWh consumption.
+source_base: esp32-ac-power-monitor-legacy-import
+sensor: 'TODO: sensor'
+output: SCT-013 output (via 3.5 mm jack tip)
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 3
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 34 via 10uF cap
+  sensor_name: 'TODO: sensor'
+  output_name: SCT-013 output (via 3.5 mm jack tip)
+  wiring:
+  - component: SCT-013 output (via 3.5 mm jack tip)
+    pin: GPIO 34 via 10uF cap
+  - component: SCT-013 output (jack sleeve)
+    pin: GND
+  - component: 10k + 10k voltage divider midpoint
+    pin: GPIO 34
+  - component: Divider top to 3.3 V, bottom to GND
+    pin: 3.3 V / GND
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will connect an SCT-013 current transformer clamp around
+      the live wire of a mains circuit and read the alternating current output using the ESP32 ADC. The
+      Emonlib library computes the RMS current value from 1480 ADC samples (approximately one mains cycle
+      at 50 Hz). The current in amps and estimated power in watts (assuming 230 V mains) are printed to
+      the Serial Monitor every 5 seconds.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× SCT-013-030 current transformer clamp — 30 A max; built-in burden resistor; 1 V output
+    - 2× 10 kohm resistor — Voltage divider bias for ADC midpoint
+    - 1× 10 uF electrolytic capacitor — AC coupling capacitor
+    - 1× 3.5 mm stereo socket — Matches SCT-013 jack plug
+    - 1× Breadboard and jumper wires
+    wiring:
+    - - SCT-013 output (via 3.5 mm jack tip)
+      - GPIO 34 via 10uF cap
+      - AC coupled; 10k+10k voltage divider to set midpoint at 1.65 V
+    - - SCT-013 output (jack sleeve)
+      - GND
+      - ''
+    - - 10k + 10k voltage divider midpoint
+      - GPIO 34
+      - Biases ADC input to 1.65 V mid-rail
+    - - Divider top to 3.3 V, bottom to GND
+      - 3.3 V / GND
+      - ''
+    how:
+    - 'Current Transformer Principle: The SCT-013 clamp is a split-core current transformer. The mains
+      live wire passes through the core acting as a single-turn primary winding. The secondary coil (typically
+      2000 turns) induces a proportional current. The built-in 62 ohm burden resistor converts this to
+      a voltage: at 30 A primary, the output is approximately 1 V peak AC.'
+    - 'AC Coupling and Bias: The ESP32 ADC cannot measure negative voltages. The 10 uF capacitor blocks
+      the DC component and the 10k+10k voltage divider biases the ADC input to 1.65 V (half of 3.3 V).
+      The AC current signal then swings symmetrically around this midpoint, staying within the 0-3.3 V
+      ADC range.'
+    - 'RMS Calculation via Emonlib: Emonlib calculates Irms = sqrt(mean(i^2)) over 1480 samples. It automatically
+      subtracts the DC bias (midpoint) from each sample before squaring. 1480 samples at the ESP32 ADC
+      rate covers approximately one mains cycle at 50 Hz, capturing a complete AC waveform.'
+    - 'Calibration Constant: The ICAL constant converts ADC counts to amps. For the SCT-013-030 with 1
+      V output at 30 A: ICAL = 30.0. Tune by clamping the SCT-013 on a circuit with a known current (measured
+      by a calibrated clamp meter) and adjusting ICAL until readings match.'
+    apps:
+    - Whole-home electricity consumption monitor
+    - Individual appliance power profiling
+    - Solar panel production monitoring on the grid tie inverter output
+    - Tenant electricity sub-metering for cost allocation
+    troubleshooting:
+    - - Current reads non-zero with no load on the circuit
+      - This is standby current from always-on appliances (routers, TVs on standby, smart meters). To
+        measure zero baseline, remove all loads from the monitored circuit. Emonlib's DC offset subtraction
+        handles the bias voltage automatically.
+    - - Current reads far from actual value
+      - Adjust ICAL. Compare the ESP32 reading against a reference clamp meter on the same wire. If the
+        ESP32 reads 15 A and the clamp meter reads 10 A, multiply ICAL by 10/15 = 0.67. Repeat until readings
+        match within 2 percent.
+    - - ADC reads 0 or 4095 continuously
+      - 'The voltage divider midpoint is not connected or the capacitor is short-circuited. Measure the
+        voltage at GPIO 34 with a multimeter: it should be approximately 1.65 V at idle. If it reads 0
+        V or 3.3 V, check the divider and capacitor connections.'
+    upgrades:
+    - Add a ZMPT101B voltage transformer to measure Vrms and compute true real power
+    - Add an OLED display showing live current, power, and estimated daily cost
+    - Add Wi-Fi and publish readings to a Google Sheets spreadsheet
+    - Add a second SCT-013 clamp to monitor a second circuit (solar vs grid)
+    code: "// ESP32 AC Power Monitor - Beginner\n// SCT-013 current clamp + Emonlib for RMS current calculation\n\
+      // Install: EmonLib by OpenEnergyMonitor in Arduino Library Manager\n\n#include \"EmonLib.h\"\n\n\
+      EnergyMonitor emon;\nconst int CT_PIN = 34;\nconst float ICAL = 29.0;  // Calibration: SCT-013-030\
+      \ with 1V burden = 30A / 1V / (ADC 3.3V range)\n                           // Tune by comparing\
+      \ to a calibrated clamp meter\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  emon.current(CT_PIN, ICAL);\n}\n\nvoid loop() {\n  double irms = emon.calcIrms(1480); // 1480\
+      \ samples = ~1 mains cycle at 50 Hz\n  double power = irms * 230.0;       // Apparent power assuming\
+      \ 230 V\n  Serial.printf(\"Irms: %.3f A  Apparent Power: %.1f VAn\", irms, power);\n  delay(5000);\n\
+      }"
+    code_filename: esp32-ac-power-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build adds a ZMPT101B voltage transformer to measure true mains
+      Vrms alongside the SCT-013 current measurement. The phase angle between voltage and current waveforms
+      is used to compute real power (W) and power factor. An SSD1306 OLED displays Vrms, Irms, real power,
+      and power factor. Readings are updated every 5 seconds and the daily kWh accumulator is displayed
+      alongside the estimated electricity cost.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× SCT-013-030 current transformer
+    - 1× ZMPT101B AC voltage transformer module — Isolated mains voltage measurement; 230 V or 120 V model
+    - 1× SSD1306 OLED 128x64 I2C
+    - 1× 10 kohm resistors and 10 uF capacitors — Bias and coupling for both ADC inputs
+    wiring:
+    - - SCT-013 output
+      - GPIO 34 (via cap + divider)
+      - ''
+    - - ZMPT101B output
+      - GPIO 35 (via cap + divider)
+      - ZMPT101B module includes isolation and conditioning
+    - - OLED SDA/SCL
+      - GPIO 21/22
+      - ''
+    how:
+    - 'ZMPT101B Voltage Measurement: The ZMPT101B is a precision single-phase voltage transformer that
+      provides galvanic isolation between the mains circuit and the ESP32. The module conditions the mains
+      sine wave to a safe 0-3.3 V range. VCAL converts ADC counts to volts: 234.0 is a typical starting
+      point for 230 V mains; calibrate against a multimeter.'
+    - 'Phase Correction: The CT (current transformer) and VT (voltage transformer) introduce small, different
+      phase shifts. The PHASE parameter (in degrees) corrects for this difference in Emonlib''s calcVI()
+      function. Without correction, the computed power factor and real power will be inaccurate even for
+      purely resistive loads.'
+    - 'Real Power vs Apparent Power: Emonlib computes real power by multiplying instantaneous voltage
+      and current samples before averaging: P = mean(v*i). Apparent power is Vrms * Irms. Power factor
+      = real power / apparent power. Real power represents the energy actually consumed; apparent power
+      includes the reactive component that does no useful work.'
+    - 'kWh Accumulation: kWh is accumulated using trapezoidal integration: each reading adds (realPower_W
+      / 1000) * (elapsed_hours) to the accumulator. The accumulator resets each day at midnight or on
+      power-on. Daily cost is kWh multiplied by the electricity tariff per unit.'
+    apps:
+    - Home energy audit identifying high-consumption appliances
+    - Electricity bill prediction with daily kWh tracking
+    - Power factor correction monitoring for industrial equipment
+    - Solar self-consumption analysis (compare generation vs consumption)
+    troubleshooting:
+    - - Power factor reads above 1.0 or below -1.0
+      - The PHASE calibration is too large or the CT and VT have opposite polarity. Try PHASE=0 and compare
+        real vs apparent power. Adjust PHASE until real power for a known resistive load (e.g. 1000 W
+        kettle) matches the rated wattage within 5 percent.
+    - - Vrms reads 0 with ZMPT101B connected
+      - The ZMPT101B module requires the mains circuit to be live. Verify the module AC input is connected
+        to the live and neutral terminals. Check the output voltage at the module output pins with a multimeter
+        for approximately 1.5 V AC RMS.
+    - - kWh accumulates when no load is connected
+      - Stray coupling between the ZMPT101B output and CT input can create phantom power readings. Ensure
+        CT and VT signal cables are separated and shielded. Set a minimum real-power threshold (e.g. 5
+        W) below which kWh accumulation pauses.
+    upgrades:
+    - Add NTP time sync and reset the kWh accumulator automatically at midnight
+    - Add an SD card to log per-minute power readings for trend analysis
+    - Add a TFT display with a real-time power trend chart
+    - Add MQTT publishing for Home Assistant energy integration
+    code: "// ESP32 AC Power Monitor - Intermediate (Vrms + Irms + real power + kWh)\n#include \"EmonLib.h\"\
+      \n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\
+      EnergyMonitor emon;\n\nconst int CT_PIN=34, VT_PIN=35;\nconst float ICAL=29.0;   // Current calibration\
+      \ (tune with clamp meter)\nconst float VCAL=234.0;  // Voltage calibration (tune with multimeter)\n\
+      const float PHASE=1.7;   // Phase lead correction in degrees (tune per installation)\nconst float\
+      \ TARIFF=0.28f; // Cost per kWh in local currency\nfloat dailyKwh=0.0f;\nunsigned long lastCalc=0;\n\
+      \nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\
+      \ oled.setTextColor(WHITE);\n  analogReadResolution(12);\n  emon.voltage(VT_PIN,VCAL,PHASE);\n \
+      \ emon.current(CT_PIN,ICAL);\n}\n\nvoid loop(){\n  emon.calcVI(20,2000); // 20 half-cycles, 2 s\
+      \ timeout\n  float vrms=emon.Vrms;\n  float irms=emon.Irms;\n  float realP=emon.realPower;\n  float\
+      \ appar=emon.apparentPower;\n  float pf=emon.powerFactor;\n\n  // Accumulate kWh\n  unsigned long\
+      \ now=millis();\n  if(lastCalc>0){\n    float hours=(now-lastCalc)/3600000.0f;\n    dailyKwh+=realP/1000.0f*hours;\n\
+      \  }\n  lastCalc=now;\n\n  Serial.printf(\"V:%.1f I:%.3f P:%.1fW PF:%.2f kWh:%.4fn\",\n    vrms,irms,realP,pf,dailyKwh);\n\
+      \n  oled.clearDisplay(); oled.setTextSize(1); oled.setCursor(0,0);\n  oled.printf(\"Vrms: %.1f Vn\"\
+      ,vrms);\n  oled.printf(\"Irms: %.3f An\",irms);\n  oled.printf(\"Power:%.1f Wn\",realP);\n  oled.printf(\"\
+      PF:   %.2fn\",pf);\n  oled.printf(\"kWh:  %.4fn\",dailyKwh);\n  oled.printf(\"Cost: %.4fn\",dailyKwh*TARIFF);\n\
+      \  oled.display();\n  delay(5000);\n}"
+    code_filename: esp32-ac-power-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build publishes all power metrics to MQTT every 30 seconds and integrates
+      with Home Assistant energy dashboard as a custom energy sensor. Hourly kWh readings are stored in
+      NVS for a 7-day consumption history. An overvoltage alert (above 250 V) and undervoltage alert (below
+      200 V) publish MQTT warnings. A web dashboard serves a 24-hour power trend chart using Chart.js
+      populated via a JSON API endpoint on the ESP32.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× SCT-013-030 current transformer
+    - 1× ZMPT101B voltage transformer
+    - 1× MQTT broker (Mosquitto)
+    - 1× Home Assistant — Energy dashboard integration
+    wiring:
+    - - CT and VT connections
+      - Same as intermediate
+      - ''
+    how:
+    - 'Home Assistant Energy Integration: HA energy dashboard requires a sensor publishing cumulative
+      kWh (not incremental) in the utility_meter or sensor format. The totalKwh value is published every
+      30 seconds. In HA, add an MQTT sensor with state_topic energy/meter, value_template {{ value_json.kwh
+      }}, device_class energy, and unit_of_measurement kWh.'
+    - '7-Day Hourly History in NVS: An integer array of 168 slots (7 days x 24 hours) stores hourly kWh
+      readings in 0.1 kWh units. tm_wday (0-6) and tm_hour (0-23) index the slot. The array is persisted
+      to NVS on each hourly update and loaded at startup, providing a continuous 7-day consumption history
+      across power cycles.'
+    - 'Voltage Limit Alerts: After each 30-second measurement, Vrms is compared against overvoltage (250
+      V) and undervoltage (200 V) limits. Alerts publish to energy/alert topic. HA automation rules trigger
+      notifications to the homeowner''s phone. The 10 V minimum (v > 10.0f) prevents false undervoltage
+      alerts when the mains is genuinely off.'
+    - 'Chart.js JSON API: The /data endpoint returns a JSON array of 168 hourly kWh values. A web page
+      served separately (or from SPIFFS) uses Chart.js with the fetch() API to retrieve this data and
+      render a 7-day bar chart. The chart updates every time the page is loaded or refreshed.'
+    apps:
+    - Home energy management system with 7-day consumption history
+    - 'Electricity tariff optimisation: identify peak usage hours to shift to off-peak rates'
+    - 'Photovoltaic self-consumption monitoring: compare solar generation vs grid import'
+    - 'Carbon footprint tracking: convert kWh to CO2 emissions using grid carbon intensity'
+    troubleshooting:
+    - - Home Assistant energy dashboard shows flat line
+      - HA energy dashboard requires the sensor state_class to be total_increasing and the value to be
+        cumulative (never decreasing). Ensure totalKwh is never reset to zero during a session. Use a
+        separate daily accumulator that resets, while totalKwh only ever increases.
+    - - NVS history data is lost after firmware update
+      - By default, the Arduino IDE erases the NVS partition when flashing new firmware. In the ESP32
+        board manager partition scheme, select a scheme that preserves NVS (e.g. Default with OTA). Use
+        OTA updates rather than serial flashing to preserve NVS data.
+    - - MQTT broker disconnects frequently during calcVI
+      - calcVI(20, 2000) blocks for up to 2 seconds. MQTT keepalive packets may be missed during this
+        period. Increase the MQTT keepalive interval to 60 seconds with mqtt.setKeepAlive(60) or move
+        the calcVI call to a separate FreeRTOS task.
+    upgrades:
+    - 'Add a tariff schedule: calculate cost differently for peak (07:00-21:00) and off-peak hours'
+    - Add a carbon intensity API call to calculate real-time CO2 per kWh for your grid region
+    - 'Add export metering: if solar generation exceeds consumption, publish negative power values'
+    - Add a GSM module to send monthly kWh totals by SMS when internet is unavailable
+    code: "// ESP32 AC Power Monitor - Advanced (MQTT + HA energy + 7-day NVS history)\n#include \"EmonLib.h\"\
+      \n#include <WiFi.h>\n#include <WebServer.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n\
+      #include <Preferences.h>\n#include <time.h>\n\nEnergyMonitor emon;\nWebServer server(80);\nWiFiClient\
+      \ wifiClient; PubSubClient mqtt(wifiClient);\nPreferences prefs;\n\nconst char* SSID=\"YourSSID\"\
+      , *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst int CT_PIN=34, VT_PIN=35;\n\
+      const float ICAL=29.0, VCAL=234.0, PHASE=1.7;\nconst float V_MAX=250.0f, V_MIN=200.0f;\nfloat totalKwh=0.0f;\n\
+      int hourlyKwh[168]={0}; // 7 days x 24 hours\nunsigned long lastCalc=0;\nint lastHour=-1;\n\nvoid\
+      \ publishMetrics(float v,float i,float p,float pf,float kwh){\n  StaticJsonDocument<192> doc;\n\
+      \  doc[\"vrms\"]=v; doc[\"irms\"]=i; doc[\"power\"]=p;\n  doc[\"pf\"]=pf; doc[\"kwh\"]=kwh;\n  char\
+      \ buf[192]; serializeJson(doc,buf);\n  mqtt.publish(\"energy/meter\",buf);\n  if(v>V_MAX) mqtt.publish(\"\
+      energy/alert\",\"OVERVOLTAGE\");\n  if(v<V_MIN && v>10.0f) mqtt.publish(\"energy/alert\",\"UNDERVOLTAGE\"\
+      );\n}\n\nvoid serveChart(){\n  String json=\"[\";\n  for(int i=0;i<168;i++){\n    json+=String(hourlyKwh[i]);\n\
+      \    if(i<167) json+=\",\";\n  }\n  json+=\"]\";\n  server.send(200,\"application/json\",json);\n\
+      }\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n  emon.voltage(VT_PIN,VCAL,PHASE);\n\
+      \  emon.current(CT_PIN,ICAL);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
+      \  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n  // Load 7-day history\
+      \ from NVS\n  prefs.begin(\"energy\",true);\n  totalKwh=prefs.getFloat(\"total\",0);\n  for(int\
+      \ h=0;h<168;h++) hourlyKwh[h]=prefs.getInt(String(h).c_str(),0);\n  prefs.end();\n  server.on(\"\
+      /data\",serveChart);\n  server.begin();\n}\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"\
+      PowerMonitor\");\n  mqtt.loop();\n  server.handleClient();\n\n  static unsigned long last=0;\n \
+      \ if(millis()-last>30000){\n    last=millis();\n    emon.calcVI(20,2000);\n    float v=emon.Vrms,i=emon.Irms,p=emon.realPower,pf=emon.powerFactor;\n\
+      \    unsigned long now=millis();\n    if(lastCalc>0) totalKwh+=p/1000.0f*(now-lastCalc)/3600000.0f;\n\
+      \    lastCalc=now;\n    publishMetrics(v,i,p,pf,totalKwh);\n    // Hourly bucket\n    struct tm\
+      \ ti; getLocalTime(&ti);\n    int h=ti.tm_wday*24+ti.tm_hour; // 0-167\n    if(ti.tm_hour!=lastHour){\n\
+      \      lastHour=ti.tm_hour;\n      hourlyKwh[h]=(int)(totalKwh*10); // store in 0.1 kWh units\n\
+      \      prefs.begin(\"energy\",false);\n      prefs.putFloat(\"total\",totalKwh);\n      prefs.putInt(String(h).c_str(),hourlyKwh[h]);\n\
+      \      prefs.end();\n    }\n  }\n}"
+    code_filename: esp32-ac-power-advanced.ino
+related_slugs:
+- esp32-smart-power-strip
+- esp32-mqtt-sensor-dashboard

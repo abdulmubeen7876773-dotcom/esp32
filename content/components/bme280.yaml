@@ -1,0 +1,126 @@
+slug: bme280
+name: BME280 Environmental Sensor
+category: Sensors
+difficulty: Beginner
+icon: 🌤
+image: https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg
+summary: Measures temperature, humidity, and air pressure on one tiny I2C chip. Ideal for weather stations
+  and altitude projects.
+eli12: 'The BME280 is like a pocket weather station on a chip. It tells your ESP32 how warm the air is,
+  how damp it feels, and how hard the air is pushing down — the same kind of pressure reading pilots and
+  meteorologists use to guess the weather.
+
+  '
+quick_facts:
+- label: Measures
+  value: Temperature, humidity, and barometric pressure
+- label: Pins
+  value: 4 wires — power, ground, SDA, SCL
+- label: Best for
+  value: Weather stations, altitude tracking, climate monitors
+- label: Update speed
+  value: New reading about every second
+specs:
+- 'Temperature range: −40°C to 85°C'
+- 'Humidity range: 0–100% RH'
+- 'Pressure range: 300–1100 hPa'
+- 'Operating voltage: 3.3 V (recommended for ESP32)'
+- 'Interface: I2C (address 0x76 or 0x77)'
+- 'Sampling rate: up to 1 Hz in normal mode'
+pinout:
+- pin: VCC
+  role: Power
+  connects: ESP32 3.3 V
+  note: Use 3.3 V for direct ESP32 wiring
+- pin: GND
+  role: Ground
+  connects: ESP32 GND
+  note: Common ground with the ESP32
+- pin: SDA
+  role: I2C data
+  connects: ESP32 GPIO21
+  note: Data line — do not swap with SCL
+- pin: SCL
+  role: I2C clock
+  connects: ESP32 GPIO22
+  note: Clock line — many breakout boards include pull-up resistors
+wiring:
+  illustration_alt: BME280 breakout — VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22 on ESP32
+  summary: A four-pin BME280 breakout connects over I2C. Match each pin to the ESP32 as shown below.
+  steps:
+  - Unplug USB. Place the BME280 breakout on your breadboard.
+  - Connect VCC on the module to 3.3 V on the ESP32.
+  - Connect GND on the module to GND on the ESP32.
+  - Connect SDA on the module to GPIO21 on the ESP32.
+  - Connect SCL on the module to GPIO22 on the ESP32.
+  - Double-check — VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22.
+  - Plug in USB. Your code must use the correct I2C address for your module.
+library: Adafruit BME280 Library + Adafruit Unified Sensor
+code:
+  filename: bme280_read.ino
+  content: "#include <Wire.h>\n#include <Adafruit_Sensor.h>\n#include <Adafruit_BME280.h>\n\nAdafruit_BME280\
+    \ bme;\n\nvoid setup() {\n  Serial.begin(115200);\n  if (!bme.begin(0x76)) {\n    Serial.println(\"\
+    BME280 not found at 0x76 — try 0x77 or check wiring\");\n    while (1) delay(10);\n  }\n}\n\nvoid\
+    \ loop() {\n  float temp = bme.readTemperature();\n  float humidity = bme.readHumidity();\n  float\
+    \ pressure = bme.readPressure() / 100.0F;\n\n  if (isnan(temp) || isnan(humidity) || isnan(pressure))\
+    \ {\n    Serial.println(\"Read failed — check wiring\");\n  } else {\n    Serial.printf(\"Temp: %.1f\
+    \ C  Humidity: %.0f%%  Pressure: %.0f hPa\\n\",\n                  temp, humidity, pressure);\n  }\n\
+    \n  delay(1000);\n}\n"
+output: 'Open Serial Monitor at 115200 baud. Every second you should see a line like:
+
+
+  Temp: 23.8 C  Humidity: 52%  Pressure: 1013 hPa
+
+
+  Breathe on the sensor and humidity rises. Move it near a window and temperature shifts. Pressure changes
+  slowly — useful for weather trend tracking.
+
+  '
+common_mistakes:
+- text: Swapping SDA and SCL — I2C will not respond until the data and clock lines match the code pins.
+- text: Using the wrong I2C address — many modules use 0x76, but some use 0x77 depending on the SDO pin.
+- text: Powering a bare sensor at 5 V when your ESP32 expects 3.3 V logic on I2C lines.
+- text: Sharing the I2C bus without a common GND between the ESP32 and the sensor.
+troubleshooting:
+- problem: Serial shows BME280 not found
+  fix: Check VCC, GND, SDA, and SCL wiring. Try address 0x77 if 0x76 fails. Confirm GPIO21 and GPIO22
+    in your board pinout.
+- problem: Readings show NaN or Read failed
+  fix: Reseat jumper wires, verify 3.3 V at VCC, and power-cycle after fixing connections.
+- problem: Pressure looks wrong indoors
+  fix: Pressure varies with altitude and weather. Compare trends over time rather than expecting an exact
+    room number.
+related_guides:
+- title: Read Temperature with DHT22
+  href: /guides/read-temperature-dht22.html
+  description: Compare a single-wire humidity sensor with the BME280 I2C approach.
+- title: Connect OLED Display with ESP32
+  href: /guides/connect-oled-esp32.html
+  description: Show BME280 readings on a small screen using the same I2C bus.
+- title: What Is ESP32?
+  href: /guides/what-is-esp32.html
+  description: Background on the board that runs your sensor code.
+related_projects:
+- title: ESP32 IoT Weather Station
+  href: /projects/esp32-iot-weather-station.html
+  description: Build a connected weather display with live sensor readings.
+- title: ESP32 Air Quality Monitor
+  href: /projects/esp32-air-quality-monitor.html
+  description: Combine environmental sensing with alerts and logging.
+- title: ESP32 Home Climate Automation
+  href: /projects/esp32-home-climate-automation.html
+  description: Use sensor data to control fans or alerts automatically.
+datasheet_url: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
+datasheet_note: Official Bosch BME280 datasheet (PDF) — helpful for teachers and advanced builders.
+faqs:
+- question: BME280 vs DHT22 — which should I use?
+  answer: DHT22 is simpler to wire with one data pin. BME280 adds barometric pressure and uses I2C, so
+    it fits well when you already have other I2C devices on the bus.
+- question: Why do I get sensor not found?
+  answer: Check SDA and SCL wiring, confirm 3.3 V power, and try both I2C addresses 0x76 and 0x77 in your
+    code.
+- question: Can I connect BME280 and an OLED on the same I2C bus?
+  answer: Yes. Share VCC, GND, SDA, and SCL. Each device needs a unique I2C address — the OLED is usually
+    0x3C while the BME280 is 0x76 or 0x77.
+quality_status: legacy_import
+status: needs_polish

@@ -1,0 +1,310 @@
+slug: esp32-line-following-robot
+title: ESP32 Line Following Robot
+category: Robotics
+description: Program an ESP32-powered two-wheel robot that autonomously follows a black tape line using
+  infrared sensors, from basic threshold logic up to smooth PID control with Bluetooth override.
+meta_description: 'Build an ESP32 line following robot with IR sensors and L298N motor driver. Three levels:
+  threshold logic, PID speed control, and BLE remote override.'
+source_base: esp32-line-following-robot-legacy-import
+sensor: 'TODO: sensor'
+output: L298N IN1
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 2
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 25
+  sensor_name: 'TODO: sensor'
+  output_name: L298N IN1
+  wiring:
+  - component: L298N IN1
+    pin: GPIO 25
+  - component: L298N IN2
+    pin: GPIO 26
+  - component: L298N IN3
+    pin: GPIO 27
+  - component: L298N IN4
+    pin: GPIO 14
+  - component: Left IR OUT
+    pin: GPIO 34
+  - component: Right IR OUT
+    pin: GPIO 35
+  - component: L298N ENA
+    pin: 5 V jumper
+  - component: L298N ENB
+    pin: 5 V jumper
+  - component: L298N 12 V terminal
+    pin: Battery +
+  - component: L298N GND
+    pin: Common GND
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will build a two-wheel robot car that follows a black
+      tape line on a white floor. Two infrared proximity sensors detect the line position, and an L298N
+      dual H-bridge module drives two DC motors. When both sensors detect white the robot drives forward.
+      When one sensor detects black it turns to re-centre on the line. This project teaches GPIO digital
+      reads, motor direction control, and simple conditional logic with no external libraries required.</p>
+    components:
+    - 1× ESP32 DevKit V1 — 30-pin or 38-pin
+    - 1× L298N dual H-bridge motor driver module — Onboard 5 V regulator
+    - 2× TCRT5000 IR line sensor module — With sensitivity potentiometer
+    - 2× TT DC gear motor with wheel — 3-6 V, 200 RPM
+    - 1× 2WD robot chassis — Acrylic or 3D-printed
+    - 1× 7.4 V 1200 mAh Li-Po battery — Powers motors and ESP32
+    - 1× Breadboard and jumper wires — M-M and M-F
+    wiring:
+    - - L298N IN1
+      - GPIO 25
+      - Left motor direction A
+    - - L298N IN2
+      - GPIO 26
+      - Left motor direction B
+    - - L298N IN3
+      - GPIO 27
+      - Right motor direction A
+    - - L298N IN4
+      - GPIO 14
+      - Right motor direction B
+    - - Left IR OUT
+      - GPIO 34
+      - Input-only; LOW = black detected
+    - - Right IR OUT
+      - GPIO 35
+      - Input-only; LOW = black detected
+    - - L298N ENA
+      - 5 V jumper
+      - Keep jumper for full speed
+    - - L298N ENB
+      - 5 V jumper
+      - Keep jumper for full speed
+    - - L298N 12 V terminal
+      - Battery +
+      - Li-Po 7.4 V
+    - - L298N GND
+      - Common GND
+      - Shared with ESP32 GND
+    how:
+    - 'IR Reflection Principle: Each TCRT5000 emits infrared light downward. Black tape absorbs IR so
+      the receiver sees less light and the OUT pin goes LOW. White surface reflects strongly, keeping
+      OUT HIGH.'
+    - 'Conditional Direction Logic: The ESP32 reads both sensor pins every 10 ms. Four conditions map
+      to forward, left-turn, right-turn, and stop, covering every sensor combination.'
+    - 'H-Bridge Motor Control: The L298N H-bridge reverses polarity to each motor pair by toggling IN1/IN2
+      and IN3/IN4. HIGH on IN1 and LOW on IN2 spins the left motor forward; swapping reverses it.'
+    - 'Sensitivity Adjustment: The potentiometer on each IR module sets the detection threshold. Turn
+      it until the onboard LED lights on white and extinguishes on the black tape at operating height.'
+    apps:
+    - Warehouse floor logistics following tape guides
+    - Classroom STEM robotics demonstrations
+    - Automated conveyor routing prototype
+    - Entry-level robotics competition platform
+    troubleshooting:
+    - - Robot ignores the line and drives straight
+      - Adjust the IR sensor potentiometers. The onboard LED must be ON over white and OFF over black
+        tape at the actual mounting height (10-15 mm).
+    - - Motors spin but chassis does not move
+      - Verify ENA and ENB jumpers are installed on the L298N. Check that motor wires are firmly inserted
+        in the terminal block with correct polarity.
+    - - Robot oscillates back and forth on the line
+      - Widen the sensor spacing or reduce motor speed by adding a short delay after each turn command.
+        The intermediate level adds PID for smooth correction.
+    - - ESP32 resets when motors start
+      - Motor inrush current causes a voltage dip. Add a 100 uF capacitor across the 5 V rail and power
+        the ESP32 from the L298N 5 V output, not directly from the battery.
+    upgrades:
+    - Remove ENA/ENB jumpers and add PWM pins for variable speed control
+    - Add an HC-SR04 ultrasonic sensor for obstacle avoidance
+    - Add an OLED to display current direction and sensor states
+    - Add a push button to start or stop the robot without power cycling
+    code: "// ESP32 Line Following Robot - Beginner\n// Two IR sensors + L298N motor driver, no libraries\
+      \ needed\n\nconst int IN1 = 25, IN2 = 26; // left motor\nconst int IN3 = 27, IN4 = 14; // right\
+      \ motor\nconst int IR_L = 34, IR_R = 35;\n\nvoid forward()   { digitalWrite(IN1,HIGH);digitalWrite(IN2,LOW);\n\
+      \                   digitalWrite(IN3,HIGH);digitalWrite(IN4,LOW); }\nvoid turnLeft()  { digitalWrite(IN1,LOW);\
+      \ digitalWrite(IN2,HIGH);\n                   digitalWrite(IN3,HIGH);digitalWrite(IN4,LOW); }\n\
+      void turnRight() { digitalWrite(IN1,HIGH);digitalWrite(IN2,LOW);\n                   digitalWrite(IN3,LOW);\
+      \ digitalWrite(IN4,HIGH); }\nvoid stopAll()   { digitalWrite(IN1,LOW);digitalWrite(IN2,LOW);\n \
+      \                  digitalWrite(IN3,LOW);digitalWrite(IN4,LOW); }\n\nvoid setup() {\n  pinMode(IN1,OUTPUT);pinMode(IN2,OUTPUT);\n\
+      \  pinMode(IN3,OUTPUT);pinMode(IN4,OUTPUT);\n  pinMode(IR_L,INPUT);\n  pinMode(IR_R,INPUT);\n  Serial.begin(115200);\n\
+      }\n\nvoid loop() {\n  int L = digitalRead(IR_L);\n  int R = digitalRead(IR_R);\n  // HIGH = white\
+      \ surface, LOW = black line\n  if (L == HIGH && R == HIGH) { forward();   }\n  else if (L == LOW\
+      \  && R == HIGH) { turnLeft();  }\n  else if (L == HIGH && R == LOW)  { turnRight(); }\n  else \
+      \                            { stopAll();   }\n  delay(10);\n}"
+    code_filename: esp32-line-following-robot-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build replaces the two-sensor binary system with a five-sensor
+      analog array and a PID controller that produces smooth, proportional speed corrections. LEDC PWM
+      on ENA and ENB allows variable speed so the robot accelerates on straights and automatically slows
+      through curves. Calibrated thresholds are stored in NVS flash so the robot adapts to different lighting
+      environments without reflashing.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× 5-element TCRT5000 sensor array — Pre-assembled bar module
+    - 1× L298N motor driver — ENA/ENB will be PWM-driven
+    - 2× DC gear motor 6 V 200 RPM — Higher torque TT-motors
+    - 1× 7.4 V 2000 mAh Li-Po
+    - 1× SSD1306 OLED 128x64 I2C — Shows mode and PID error
+    - 1× Tactile push button — Calibration trigger
+    wiring:
+    - - Sensor S0-S4 (analog)
+      - GPIO 36,39,34,35,32
+      - ADC-capable input-only pins
+    - - L298N IN1-IN4
+      - GPIO 25,26,27,14
+      - Same as beginner level
+    - - L298N ENA (PWM)
+      - GPIO 33
+      - Remove ENA jumper first
+    - - L298N ENB (PWM)
+      - GPIO 19
+      - Remove ENB jumper first
+    - - OLED SDA
+      - GPIO 21
+      - I2C default
+    - - OLED SCL
+      - GPIO 22
+      - I2C default
+    - - Calibration button
+      - GPIO 0
+      - Internal pull-up; active LOW
+    how:
+    - 'Weighted-Average Position: Each sensor returns 1 if its analog reading exceeds the calibrated threshold
+      (line detected). A weighted sum of active indices divided by total active sensors gives a position
+      from 0 (far left) to 4000 (far right), with 2000 being centre.'
+    - 'PID Correction: Error = position - 2000. The proportional term gives immediate correction, the
+      derivative term damps overshoot, and the integral term removes steady-state offset. Tune Kp first
+      with Ki and Kd at zero.'
+    - 'LEDC PWM Speed: ledcSetup() configures two 8-bit 5 kHz PWM channels on ENA and ENB pins. ledcWrite()
+      adjusts duty cycle 0-255 so the robot slows automatically on curves where PID correction is large.'
+    - 'NVS Calibration Storage: A 3-second calibration spin sweeps all sensors over both white and black
+      surfaces. Min and max analog values are recorded per sensor and midpoint thresholds are stored in
+      NVS flash using the Preferences library, surviving power cycles.'
+    apps:
+    - Competitive line-following robot events
+    - Automated guided vehicle prototyping in maker labs
+    - Teaching PID control theory to engineering students
+    - Warehouse cart following floor tape paths
+    troubleshooting:
+    - - PID causes violent oscillation
+      - Set Ki and Kd to zero and reduce Kp to 5. Increase Kp slowly until the robot tracks, then add
+        Kd in small increments to reduce overshoot.
+    - - Calibration does not capture full range
+      - Make sure the robot is positioned at the edge of the line before pressing the calibration button.
+        Increase the spin time from 3 s to 5 s if sensors do not fully sweep.
+    - - Robot loses line on sharp turns at high speed
+      - Reduce BASE speed constant from 180 to 120. The outer wheel needs more time to complete tight
+        turns at lower speeds.
+    upgrades:
+    - Add rotary encoders on both wheels for closed-loop speed matching
+    - Display lap time on the OLED and save best lap to NVS
+    - Add BLE serial to tune Kp, Ki, Kd from a smartphone without reflashing
+    - Log position and correction data to an SD card for offline PID analysis
+    code: "// ESP32 Line Following Robot - Intermediate (5-sensor PID)\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <Preferences.h>\n\n#define N 5\nconst int S[N] = {36,39,34,35,32};\nconst int IN1=25,IN2=26,IN3=27,IN4=14;\n\
+      const int ENA_CH=0, ENB_CH=1, ENA_PIN=33, ENB_PIN=19;\n\nfloat Kp=25.0, Ki=0.0, Kd=15.0;\nconst\
+      \ int BASE=180;\nfloat lastErr=0, integral=0;\nint thr[N];\n\nPreferences prefs;\nAdafruit_SSD1306\
+      \ oled(128,64,&Wire,-1);\n\nvoid setupPWM(){\n  ledcSetup(ENA_CH,5000,8); ledcAttachPin(ENA_PIN,ENA_CH);\n\
+      \  ledcSetup(ENB_CH,5000,8); ledcAttachPin(ENB_PIN,ENB_CH);\n}\n\nvoid drive(int l, int r){\n  l=constrain(l,-255,255);\
+      \ r=constrain(r,-255,255);\n  if(l>=0){digitalWrite(IN1,HIGH);digitalWrite(IN2,LOW);}\n  else  \
+      \  {digitalWrite(IN1,LOW); digitalWrite(IN2,HIGH);l=-l;}\n  if(r>=0){digitalWrite(IN3,HIGH);digitalWrite(IN4,LOW);}\n\
+      \  else    {digitalWrite(IN3,LOW); digitalWrite(IN4,HIGH);r=-r;}\n  ledcWrite(ENA_CH,l); ledcWrite(ENB_CH,r);\n\
+      }\n\nvoid calibrate(){\n  int mn[N],mx[N];\n  for(int i=0;i<N;i++){mn[i]=4095;mx[i]=0;}\n  drive(150,-150);\n\
+      \  unsigned long t=millis();\n  while(millis()-t<3000){\n    for(int i=0;i<N;i++){\n      int v=analogRead(S[i]);\n\
+      \      if(v<mn[i])mn[i]=v;\n      if(v>mx[i])mx[i]=v;\n    }\n  }\n  drive(0,0);\n  prefs.begin(\"\
+      lfr\",false);\n  for(int i=0;i<N;i++){\n    thr[i]=(mn[i]+mx[i])/2;\n    prefs.putInt(String(i).c_str(),thr[i]);\n\
+      \  }\n  prefs.end();\n}\n\nfloat position(){\n  int sum=0,wsum=0;\n  for(int i=0;i<N;i++){\n   \
+      \ int on=(analogRead(S[i])>thr[i])?1:0;\n    wsum+=on*i*1000; sum+=on;\n  }\n  if(sum==0) return\
+      \ lastErr>0?4000:0;\n  return (float)wsum/sum;\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  int\
+      \ pins[]={IN1,IN2,IN3,IN4};\n  for(int p:pins) pinMode(p,OUTPUT);\n  setupPWM();\n  Wire.begin(21,22);\n\
+      \  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextSize(1); oled.setTextColor(WHITE);\n  prefs.begin(\"\
+      lfr\",true);\n  for(int i=0;i<N;i++) thr[i]=prefs.getInt(String(i).c_str(),2048);\n  prefs.end();\n\
+      \  pinMode(0,INPUT_PULLUP);\n  if(digitalRead(0)==LOW) calibrate();\n}\n\nvoid loop(){\n  float\
+      \ pos=position();\n  float err=pos-2000.0f;\n  integral+=err;\n  float corr=Kp*err+Ki*integral+Kd*(err-lastErr);\n\
+      \  lastErr=err;\n  drive(BASE+(int)corr, BASE-(int)corr);\n  delay(5);\n}"
+    code_filename: esp32-line-following-robot-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: '<p>The advanced build adds dual-mode operation: the PID line-follower can be overridden
+      in real time by a smartphone via BLE UART. Wheel encoders provide closed-loop speed matching so
+      both motors run at equal velocity regardless of battery voltage sag. A left-hand rule state machine
+      allows the robot to solve simple mazes at junctions automatically, while live PID gains can be updated
+      over BLE without reflashing the firmware.</p>'
+    components:
+    - 1× ESP32 DevKit V1 — Built-in BLE 4.2
+    - 2× Hall-effect wheel encoder disc + sensor — 20-slot disc per wheel
+    - 1× 5-element IR sensor array — Same as intermediate
+    - 1× L298N motor driver
+    - 2× DC gear motor 12 V with encoder shaft — 150 RPM
+    - 1× 11.1 V 3S Li-Po 1500 mAh — Matches 12 V motors
+    - 1× SSD1306 OLED 128x64 — Shows mode and speed
+    wiring:
+    - - Left encoder signal
+      - GPIO 18
+      - Interrupt-capable; 3.3 V logic
+    - - Right encoder signal
+      - GPIO 23
+      - Interrupt-capable
+    - - Sensor array + motors
+      - Same as intermediate
+      - ''
+    - - Mode status LED
+      - GPIO 2
+      - ON = BLE manual mode
+    how:
+    - 'BLE UART Service: The Nordic UART Service (NUS) UUID pair over BLE 4.2 lets any BLE terminal app
+      (Serial Bluetooth Terminal on Android, LightBlue on iOS) send single-character commands. Compound
+      commands like "P:30:0:20" update Kp, Ki, Kd at runtime without reflashing.'
+    - 'Encoder Interrupt Counting: Hall-effect sensors trigger IRAM-resident ISRs on each rising edge.
+      The main loop reads and resets counters every 5 ms, comparing left vs right pulse counts to detect
+      and correct speed mismatch caused by motor tolerance.'
+    - 'Dual-Mode Switching: The autoMode flag selects between PID line-following and BLE manual control.
+      Switching from manual back to auto resets the PID integral accumulator to zero to prevent windup
+      that accumulated during manual driving.'
+    - 'Left-Hand Maze Rule: At a junction where multiple sensors detect the line, the robot prioritises
+      left turn, then straight, then right turn, then reverse. This deterministic rule guarantees escape
+      from any simply-connected maze in finite steps.'
+    apps:
+    - RoboCup Junior Rescue Line competition entries
+    - Research platform for navigation algorithm testing
+    - Bluetooth-controlled demonstration at maker fairs
+    - University-level control systems lab project
+    troubleshooting:
+    - - BLE drops connection when motors start
+      - Add 100 nF ceramic capacitors across motor terminals and a 10 uF electrolytic on the 3.3 V rail.
+        Ferrite beads on motor leads reduce high-frequency EMI that disrupts the BLE radio.
+    - - Encoder ISR misses pulses at high RPM
+      - Move the PID computation to a hardware timer ISR running at 200 Hz so loop() latency does not
+        cause missed encoder edges at speed.
+    - - Maze solver enters an infinite loop
+      - The left-hand rule only works for simply-connected mazes. Add a visited-junction map using encoder
+        odometry coordinates to detect revisits and break out.
+    upgrades:
+    - Replace BLE with ESP-NOW for latency-free multi-robot swarm control
+    - Add a camera module for visual line detection using colour blob tracking
+    - Implement dead-reckoning SLAM using encoder odometry and an MPU6050 IMU
+    - Add a colour sensor to read intersection markers for dynamic route selection
+    code: "// ESP32 Line Following Robot - Advanced (BLE + encoders + maze solver)\n#include <BLEDevice.h>\n\
+      #include <BLEServer.h>\n#include <BLE2902.h>\n\n#define SVC_UUID  \"6E400001-B5A3-F393-E0A9-E50E24DCCA9E\"\
+      \n#define RX_UUID   \"6E400002-B5A3-F393-E0A9-E50E24DCCA9E\"\n#define TX_UUID   \"6E400003-B5A3-F393-E0A9-E50E24DCCA9E\"\
+      \n\nvolatile long encL=0, encR=0;\nvoid IRAM_ATTR iL(){ encL++; }\nvoid IRAM_ATTR iR(){ encR++;\
+      \ }\n\nbool autoMode=true;\nString cmd=\"\";\nBLECharacteristic *pTx;\n\nclass RxCB: public BLECharacteristicCallbacks\
+      \ {\n  void onWrite(BLECharacteristic *c) override {\n    cmd = c->getValue().c_str();\n  }\n};\n\
+      \n// PID and motor functions from intermediate level included here\n// ...\n\nvoid setup(){\n  Serial.begin(115200);\n\
+      \  attachInterrupt(18,iL,RISING);\n  attachInterrupt(23,iR,RISING);\n\n  BLEDevice::init(\"ESP32-LineBot\"\
+      );\n  BLEServer *srv = BLEDevice::createServer();\n  BLEService *svc = srv->createService(SVC_UUID);\n\
+      \  pTx = svc->createCharacteristic(TX_UUID, BLECharacteristic::PROPERTY_NOTIFY);\n  pTx->addDescriptor(new\
+      \ BLE2902());\n  BLECharacteristic *rx = svc->createCharacteristic(RX_UUID, BLECharacteristic::PROPERTY_WRITE);\n\
+      \  rx->setCallbacks(new RxCB());\n  svc->start();\n  BLEDevice::getAdvertising()->start();\n}\n\n\
+      void loop(){\n  if(cmd.length()){\n    if(cmd==\"A\") autoMode=true;\n    else if(cmd==\"M\") autoMode=false;\n\
+      \    // F,B,L,R,S handled in manual drive function\n    cmd=\"\";\n  }\n  if(autoMode) runPID();\n\
+      \  else         runManual();\n\n  // Encoder speed balancing: compare encL vs encR\n  // and offset\
+      \ left/right PWM to match wheel speeds\n  encL=0; encR=0;\n  delay(5);\n}"
+    code_filename: esp32-line-following-robot-advanced.ino
+related_slugs:
+- esp32-wifi-robot-controller
+- esp32-machine-monitoring-node

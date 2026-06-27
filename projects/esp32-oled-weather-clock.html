@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 OLED Weather Clock | ESP32 Engine</title>
+<meta name="description" content="Display accurate NTP time and live OpenWeatherMap weather conditions on a 128x64 OLED screen, with a multi-page dashboard showing temperature, humidity, wind speed, and a 7-day forecast served from a local web page.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-oled-weather-clock.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 OLED Weather Clock | ESP32 Engine">
+<meta property="og:description" content="Display accurate NTP time and live OpenWeatherMap weather conditions on a 128x64 OLED screen, with a multi-page dashboard showing temperature, humidity, wind speed, and a 7-day forecast served from a local web page.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-oled-weather-clock.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 OLED Weather Clock | ESP32 Engine">
+<meta name="twitter:description" content="Display accurate NTP time and live OpenWeatherMap weather conditions on a 128x64 OLED screen, with a multi-page dashboard showing temperature, humidity, wind speed, and a 7-day forecast served from a local web page.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 OLED Weather Clock","description":"Display accurate NTP time and live OpenWeatherMap weather conditions on a 128x64 OLED screen, with a multi-page dashboard showing temperature, humidity, wind speed, and a 7-day forecast served from a local web page.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-oled-weather-clock.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, TODO: output"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 OLED Weather Clock (Beginner)","description":"Display accurate NTP time and live OpenWeatherMap weather conditions on a 128x64 OLED screen, with a multi-page dashboard showing temperature, humidity, wind speed, and a 7-day forecast served from a local web page.","step":[{"@type":"HowToStep","position":1,"name":"NTP Time Synchronisation: configTime() sets the ESP32 SNTP client with the UTC offset, daylight savi…","text":"NTP Time Synchronisation: configTime() sets the ESP32 SNTP client with the UTC offset, daylight saving offset, and NTP server address. The ESP32 sends a UDP request to pool.ntp.org which responds with a UTC timestamp accurate to within 50 ms over the internet."},{"@type":"HowToStep","position":2,"name":"getLocalTime() Struct Population: getLocalTime() populates a tm struct with local time fields: tm_ho…","text":"getLocalTime() Struct Population: getLocalTime() populates a tm struct with local time fields: tm_hour, tm_min, tm_sec, tm_mday, tm_mon (0-indexed), tm_year (years since 1900), and tm_wday (0=Sunday). Adding offsets converts these to the correct local display values."},{"@type":"HowToStep","position":3,"name":"Two-Size OLED Layout: setTextSize(2) doubles the character size to 12x16 pixels for the time, making…","text":"Two-Size OLED Layout: setTextSize(2) doubles the character size to 12x16 pixels for the time, making it readable at a glance. setTextSize(1) uses 6x8 pixel characters for the day, date, and week number below."},{"@type":"HowToStep","position":4,"name":"Week Number: strftime() with the %V format code computes the ISO 8601 week number (1-53). This is us…","text":"Week Number: strftime() with the %V format code computes the ISO 8601 week number (1-53). This is useful for planning calendars and is not available directly from the tm struct fields."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 OLED Weather Clock?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 OLED Weather Clock require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 OLED Weather Clock?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"IoT Projects","item":"https://esp32engine.com/category/iot-projects.html"},{"@type":"ListItem","position":3,"name":"ESP32 OLED Weather Clock","item":"https://esp32engine.com/projects/esp32-oled-weather-clock.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/iot-projects.html">IoT Projects</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/iot-projects.html">IoT Projects</a></li><li aria-current="page">ESP32 OLED Weather Clock</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 OLED Weather Clock</h1>
+          <div class="article-badges"><span class="badge badge-cat">IoT</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Display accurate NTP time and live OpenWeatherMap weather conditions on a 128x64 OLED screen, with a multi-page dashboard showing temperature, humidity, wind speed, and a 7-day forecast served from a local web page.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-iot parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect the ESP32 to Wi-Fi, synchronise its internal clock with an NTP server, and display the current time and date on a 128x64 SSD1306 OLED screen. The display updates every second showing hours, minutes, seconds, day of the week, and full date. No external RTC module is needed because NTP keeps the ESP32 clock accurate for the life of the Wi-Fi session.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× SSD1306 OLED 128x64 I2C — 0.96 inch; I2C address 0x3C</span></li><li><span>1× Wi-Fi router or hotspot — 2.4 GHz band</span></li><li><span>1× Breadboard and jumper wires</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>OLED SDA</td><td>GPIO 21</td><td>I2C data</td></tr><tr><td>OLED SCL</td><td>GPIO 22</td><td>I2C clock</td></tr><tr><td>OLED VCC</td><td>3V3</td><td></td></tr><tr><td>OLED GND</td><td>GND</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-oled-weather-clock_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 OLED Weather Clock - Beginner
+// NTP time on SSD1306 OLED
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;time.h&gt;
+
+const char* SSID=&quot;YourSSID&quot;;
+const char* PASS=&quot;YourPassword&quot;;
+const char* NTP=&quot;pool.ntp.org&quot;;
+const long  GMT_OFFSET=0;     // seconds east of UTC; adjust for your zone
+const int   DST_OFFSET=0;     // daylight saving offset in seconds
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+
+const char* DAYS[]={&quot;Sunday&quot;,&quot;Monday&quot;,&quot;Tuesday&quot;,&quot;Wednesday&quot;,&quot;Thursday&quot;,&quot;Friday&quot;,&quot;Saturday&quot;};
+const char* MONTHS[]={&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;,&quot;Apr&quot;,&quot;May&quot;,&quot;Jun&quot;,
+                       &quot;Jul&quot;,&quot;Aug&quot;,&quot;Sep&quot;,&quot;Oct&quot;,&quot;Nov&quot;,&quot;Dec&quot;};
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  oled.setTextColor(WHITE);
+
+  oled.clearDisplay(); oled.setTextSize(1);
+  oled.setCursor(0,0); oled.println(&quot;Connecting WiFi...&quot;);
+  oled.display();
+
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(GMT_OFFSET,DST_OFFSET,NTP);
+
+  // Wait for NTP sync
+  struct tm ti;
+  while(!getLocalTime(&amp;ti)) delay(500);
+  oled.clearDisplay(); oled.setCursor(0,0);
+  oled.println(&quot;NTP synced!&quot;);
+  oled.display(); delay(1000);
+}
+
+void loop(){
+  struct tm ti;
+  if(!getLocalTime(&amp;ti)) return;
+
+  oled.clearDisplay();
+
+  // Large time display
+  oled.setTextSize(2);
+  oled.setCursor(10,5);
+  oled.printf(&quot;%02d:%02d:%02d&quot;,ti.tm_hour,ti.tm_min,ti.tm_sec);
+
+  // Day and date
+  oled.setTextSize(1);
+  oled.setCursor(0,35);
+  oled.println(DAYS[ti.tm_wday]);
+  oled.setCursor(0,46);
+  oled.printf(&quot;%d %s %d&quot;,ti.tm_mday,MONTHS[ti.tm_mon],ti.tm_year+1900);
+
+  // Week number
+  oled.setCursor(0,57);
+  char week[12]; strftime(week,12,&quot;Week %V&quot;,&amp;ti);
+  oled.print(week);
+
+  oled.display();
+  delay(1000);
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>NTP Time Synchronisation: configTime() sets the ESP32 SNTP client with the UTC offset, daylight saving offset, and NTP server address. The ESP32 sends a UDP request to pool.ntp.org which responds with a UTC timestamp accurate to within 50 ms over the internet.</p></div><div class="step"><span class="step-no">02</span><p>getLocalTime() Struct Population: getLocalTime() populates a tm struct with local time fields: tm_hour, tm_min, tm_sec, tm_mday, tm_mon (0-indexed), tm_year (years since 1900), and tm_wday (0=Sunday). Adding offsets converts these to the correct local display values.</p></div><div class="step"><span class="step-no">03</span><p>Two-Size OLED Layout: setTextSize(2) doubles the character size to 12x16 pixels for the time, making it readable at a glance. setTextSize(1) uses 6x8 pixel characters for the day, date, and week number below.</p></div><div class="step"><span class="step-no">04</span><p>Week Number: strftime() with the %V format code computes the ISO 8601 week number (1-53). This is useful for planning calendars and is not available directly from the tm struct fields.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Desktop clock for maker desk or workshop</li><li>Time display for photography or video recording setups</li><li>Office clock showing day and week number for scheduling</li><li>Classroom clock with large readable time display</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>OLED stays blank after startup</h4><p>Check I2C address: run an I2C scanner sketch and confirm the OLED responds at 0x3C. Some OLED modules use 0x3D. Change the address in oled.begin() accordingly.</p></div><div class="trouble-item"><h4>Time shows 1970 or does not update</h4><p>The NTP sync is asynchronous. Wait at least 5 seconds after configTime() before calling getLocalTime(). Add a while(!getLocalTime(&amp;ti)) loop with a 500 ms delay.</p></div><div class="trouble-item"><h4>Time is off by several hours</h4><p>Adjust the GMT_OFFSET constant. For UTC+5 use 5*3600=18000. For UTC-5 use -5*3600=-18000. Set DST_OFFSET=3600 if daylight saving is currently active.</p></div><div class="trouble-item"><h4>Display flickers every second</h4><p>Call oled.clearDisplay() before drawing and oled.display() after. Do not call display() more than once per loop iteration. The flicker is from clearing the full screen buffer; use partial updates to reduce it.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a battery and RTC module (DS3231) to maintain time without Wi-Fi</li><li>Add a brightness control: dim the OLED at night using a photoresistor</li><li>Add a second time zone on the lower part of the display for remote teams</li><li>Add alarms stored in NVS that flash the OLED and sound a buzzer</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 OLED Weather Clock?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 OLED Weather Clock require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 OLED Weather Clock?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build adds real-time weather data from the OpenWeatherMap free API. The OLED cycles through two pages every 5 seconds: a clock page with time and date, and a weather page showing temperature, humidity, weather description, wind speed, and a sunrise/sunset indicator. A button lets you manually switch between pages. Data refreshes every 10 minutes to stay within the free API rate limit.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× SSD1306 OLED 128x64 I2C</span></li><li><span>1× Tactile push button — Manual page switch</span></li><li><span>1× Wi-Fi router — Internet access required</span></li><li><span>1× OpenWeatherMap API key — Free account at openweathermap.org</span></li><li><span>1× Breadboard and wires</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td></td></tr><tr><td>Page button</td><td>GPIO 0</td><td>Internal pull-up; active LOW</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-oled-weather-clock_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 OLED Weather Clock - Intermediate (OpenWeatherMap + auto-page)
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;time.h&gt;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* OWM_KEY=&quot;YourOpenWeatherMapKey&quot;;
+const char* CITY=&quot;London&quot;;
+const char* COUNTRY=&quot;GB&quot;;
+const long  GMT_OFFSET=0, DST_OFFSET=0;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+
+float   temp_c=0, humidity=0, wind_ms=0;
+String  description=&quot;--&quot;;
+long    sunrise=0, sunset=0;
+unsigned long lastWeather=0;
+int page=0;
+
+void fetchWeather(){
+  HTTPClient http;
+  String url=&quot;http://api.openweathermap.org/data/2.5/weather?q=&quot;;
+  url+=CITY; url+=&quot;,&quot;; url+=COUNTRY;
+  url+=&quot;&amp;units=metric&amp;appid=&quot;; url+=OWM_KEY;
+  http.begin(url);
+  if(http.GET()==200){
+    StaticJsonDocument&lt;1024&gt; doc;
+    deserializeJson(doc,http.getString());
+    temp_c    = doc[&quot;main&quot;][&quot;temp&quot;];
+    humidity  = doc[&quot;main&quot;][&quot;humidity&quot;];
+    wind_ms   = doc[&quot;wind&quot;][&quot;speed&quot;];
+    description=doc[&quot;weather&quot;][0][&quot;description&quot;].as&lt;String&gt;();
+    sunrise   = doc[&quot;sys&quot;][&quot;sunrise&quot;];
+    sunset    = doc[&quot;sys&quot;][&quot;sunset&quot;];
+  }
+  http.end();
+}
+
+void showClock(){
+  struct tm ti; getLocalTime(&amp;ti);
+  oled.clearDisplay();
+  oled.setTextSize(2); oled.setCursor(8,5);
+  oled.printf(&quot;%02d:%02d:%02d&quot;,ti.tm_hour,ti.tm_min,ti.tm_sec);
+  oled.setTextSize(1); oled.setCursor(0,35);
+  char buf[32]; strftime(buf,32,&quot;%A %d %b %Y&quot;,&amp;ti);
+  oled.println(buf);
+  oled.display();
+}
+
+void showWeather(){
+  oled.clearDisplay(); oled.setTextSize(1);
+  oled.setCursor(0,0);  oled.printf(&quot;%.1f C  Hum:%.0f%%n&quot;,temp_c,humidity);
+  oled.setCursor(0,10); oled.printf(&quot;Wind: %.1f m/sn&quot;,wind_ms);
+  oled.setCursor(0,20); oled.println(description.substring(0,20));
+
+  // Sunrise/sunset icons using ASCII blocks
+  oled.setCursor(0,35);
+  time_t sr=sunrise, ss=sunset;
+  struct tm *sr_tm=localtime(&amp;sr), *ss_tm=localtime(&amp;ss);
+  oled.printf(&quot;Rise %02d:%02d  Set %02d:%02d&quot;,
+    sr_tm-&gt;tm_hour,sr_tm-&gt;tm_min,
+    ss_tm-&gt;tm_hour,ss_tm-&gt;tm_min);
+
+  oled.setCursor(0,50);
+  oled.print(CITY);
+  oled.display();
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  oled.setTextColor(WHITE);
+  pinMode(0,INPUT_PULLUP);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(GMT_OFFSET,DST_OFFSET,&quot;pool.ntp.org&quot;);
+  struct tm ti; while(!getLocalTime(&amp;ti)) delay(500);
+  fetchWeather(); lastWeather=millis();
+}
+
+void loop(){
+  if(digitalRead(0)==LOW){ page^=1; delay(200); }
+  if(millis()-lastWeather&gt;600000){ fetchWeather(); lastWeather=millis(); }
+
+  // Auto-cycle every 5 seconds
+  static unsigned long lastSwitch=0;
+  if(millis()-lastSwitch&gt;5000){ page^=1; lastSwitch=millis(); }
+
+  if(page==0) showClock(); else showWeather();
+  delay(1000);
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>OpenWeatherMap HTTP Request: HTTPClient fetches the /data/2.5/weather endpoint with the city name, country code, metric units, and API key. The response is a JSON object with nested fields for temperature, humidity, wind, description, and Unix timestamps for sunrise and sunset.</p></div><div class="step"><span class="step-no">02</span><p>ArduinoJson Parsing: StaticJsonDocument&lt;1024&gt; allocates a fixed-size parse buffer on the stack. deserializeJson() parses the HTTP response and populates the document. Individual values are accessed with array-style notation: doc[&quot;main&quot;][&quot;temp&quot;].</p></div><div class="step"><span class="step-no">03</span><p>Dual-Page Auto-Cycle: The page variable toggles every 5 seconds using XOR (page^=1). A button press also toggles immediately. The showClock() and showWeather() functions each call oled.clearDisplay() and oled.display() to render their content atomically.</p></div><div class="step"><span class="step-no">04</span><p>Rate-Limited API Refresh: Weather data refreshes every 10 minutes (600,000 ms). The OpenWeatherMap free tier allows 60 calls per minute, so 10-minute intervals use just 144 calls per day, well within the 1000-call daily limit.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Smart home dashboard showing indoor time and outdoor weather</li><li>Desk accessory for remote workers checking local weather before commuting</li><li>Reception area display combining a clock and weather conditions</li><li>Weather station companion device for indoor OLED display</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>fetchWeather() always returns HTTP 401</h4><p>A 401 error means the API key is invalid or not yet activated. New API keys take up to 2 hours to activate on OpenWeatherMap. Check the key in your account dashboard.</p></div><div class="trouble-item"><h4>Temperature reads 0 after a successful fetch</h4><p>The city name or country code is incorrect, returning a valid HTTP 200 with an empty JSON body. Verify by printing the raw HTTP response to Serial and checking the city name spelling.</p></div><div class="trouble-item"><h4>OLED flickers on page auto-cycle</h4><p>Move the auto-cycle timer outside the 1-second delay loop. The page changes mid-draw if the timer triggers during rendering. Check the lastSwitch comparison independently of the 1-second delay.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a BME280 sensor to show both indoor and outdoor temperature side by side</li><li>Display a weather icon using bitmap_t arrays for sun, cloud, and rain symbols</li><li>Add a buzzer that chimes on the hour</li><li>Store the weather city name in NVS and allow changing it via a web config page</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 OLED Weather Clock?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 OLED Weather Clock require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 OLED Weather Clock?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build adds a three-page OLED dashboard (clock, current weather, forecast summary), a local web server serving a full 7-day forecast page with a JavaScript temperature chart, an MQTT sync channel so multiple ESP32 clocks in the same building share one weather fetch, and a Wi-Fi Manager captive portal so you can change Wi-Fi credentials without reflashing.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× SSD1306 OLED 128x64 I2C</span></li><li><span>1× Tactile push button — Page cycle</span></li><li><span>1× Wi-Fi router with internet</span></li><li><span>1× OpenWeatherMap account — Free API key</span></li><li><span>1× MQTT broker (optional) — For multi-device sync</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td></td></tr><tr><td>Page button</td><td>GPIO 0</td><td>Internal pull-up</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-oled-weather-clock_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 OLED Weather Clock - Advanced (3-page + web forecast + WiFiManager + MQTT)
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;WiFiManager.h&gt;
+#include &lt;HTTPClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;time.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
+WebServer server(80);
+
+const char* OWM_KEY=&quot;YourKey&quot;;
+const char* CITY=&quot;London,GB&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const char* MQTT_TOPIC=&quot;weather/shared&quot;;
+
+float temp=0,feels=0,humidity=0,wind=0;
+String desc=&quot;--&quot;;
+String forecastJson=&quot;{}&quot;;
+int page=0;
+unsigned long lastFetch=0;
+
+void fetchAll(){
+  HTTPClient http;
+  // Current weather
+  http.begin(String(&quot;http://api.openweathermap.org/data/2.5/weather?q=&quot;)+CITY+&quot;&amp;units=metric&amp;appid=&quot;+OWM_KEY);
+  if(http.GET()==200){
+    StaticJsonDocument&lt;1024&gt; doc;
+    deserializeJson(doc,http.getString());
+    temp=doc[&quot;main&quot;][&quot;temp&quot;]; feels=doc[&quot;main&quot;][&quot;feels_like&quot;];
+    humidity=doc[&quot;main&quot;][&quot;humidity&quot;]; wind=doc[&quot;wind&quot;][&quot;speed&quot;];
+    desc=doc[&quot;weather&quot;][0][&quot;description&quot;].as&lt;String&gt;();
+    // Share over MQTT
+    char buf[256]; serializeJson(doc,buf);
+    mqtt.publish(MQTT_TOPIC,buf);
+  }
+  http.end();
+  // 7-day forecast
+  http.begin(String(&quot;http://api.openweathermap.org/data/2.5/forecast?q=&quot;)+CITY+&quot;&amp;cnt=7&amp;units=metric&amp;appid=&quot;+OWM_KEY);
+  if(http.GET()==200) forecastJson=http.getString();
+  http.end();
+}
+
+void serveForecast(){
+  StaticJsonDocument&lt;2048&gt; doc;
+  deserializeJson(doc,forecastJson);
+  String body=&quot;&lt;h2&gt;7-Day Forecast&lt;/h2&gt;&lt;canvas id=c width=600 height=200&gt;&lt;/canvas&gt;&quot;
+    &quot;&lt;script&gt;var d=[&quot;;
+  for(auto&amp; item:doc[&quot;list&quot;].as&lt;JsonArray&gt;()){
+    body+=String((float)item[&quot;main&quot;][&quot;temp&quot;])+&quot;,&quot;;
+  }
+  body+=&quot;];&quot;
+    &quot;var ctx=document.getElementById(&quot;c&quot;).getContext(&quot;2d&quot;);&quot;
+    &quot;ctx.beginPath();&quot;
+    &quot;d.forEach((v,i)=&gt;ctx.lineTo(i*(600/d.length),200-v*3));&quot;
+    &quot;ctx.stroke();&lt;/script&gt;&quot;;
+  server.send(200,&quot;text/html&quot;,body);
+}
+
+void showPage(){
+  oled.clearDisplay(); oled.setTextSize(1);
+  if(page==0){
+    // Clock
+    struct tm ti; getLocalTime(&amp;ti);
+    oled.setTextSize(2); oled.setCursor(8,5);
+    oled.printf(&quot;%02d:%02d&quot;,ti.tm_hour,ti.tm_min);
+    oled.setTextSize(1); oled.setCursor(0,36);
+    char buf[24]; strftime(buf,24,&quot;%a %d %b %Y&quot;,&amp;ti); oled.println(buf);
+  } else if(page==1){
+    // Current weather
+    oled.printf(&quot;%.1fC (feels %.1fC)n&quot;,temp,feels);
+    oled.printf(&quot;Hum:%.0f%% Wind:%.1fm/sn&quot;,humidity,wind);
+    oled.println(desc.substring(0,21));
+  } else {
+    // Forecast hint
+    oled.println(&quot;Forecast at:&quot;);
+    oled.println(WiFi.localIP().toString());
+    oled.println(&quot;/forecast&quot;);
+  }
+  oled.display();
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  oled.setTextColor(WHITE);
+  oled.clearDisplay(); oled.setCursor(0,0);
+  oled.println(&quot;Starting...&quot;); oled.display();
+
+  WiFiManager wm;
+  wm.autoConnect(&quot;ESP32-WeatherClock&quot;);
+
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  struct tm ti; while(!getLocalTime(&amp;ti)) delay(500);
+
+  mqtt.setServer(MQTT_HOST,1883);
+  server.on(&quot;/forecast&quot;,serveForecast);
+  server.begin();
+
+  fetchAll(); lastFetch=millis();
+  pinMode(0,INPUT_PULLUP);
+}
+
+void loop(){
+  server.handleClient();
+  if(!mqtt.connected()) mqtt.connect(&quot;ESP32Clock&quot;);
+  mqtt.loop();
+  if(digitalRead(0)==LOW){ page=(page+1)%3; delay(200); }
+  static unsigned long ls=0;
+  if(millis()-ls&gt;5000){ page=(page+1)%3; ls=millis(); }
+  if(millis()-lastFetch&gt;600000){ fetchAll(); lastFetch=millis(); }
+  showPage();
+  delay(1000);
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>WiFiManager Captive Portal: WiFiManager creates a temporary access point named &quot;ESP32-WeatherClock&quot; if no saved credentials are found. A captive portal web page lets you enter the home Wi-Fi SSID and password from any smartphone without touching the code. Credentials are saved to NVS automatically.</p></div><div class="step"><span class="step-no">02</span><p>Three-Page OLED Cycle: Page 0 shows the NTP clock. Page 1 shows current weather from OpenWeatherMap. Page 2 shows the web forecast URL. Pages cycle every 5 seconds or on button press. The (page+1)%3 modulo arithmetic wraps from page 2 back to page 0.</p></div><div class="step"><span class="step-no">03</span><p>MQTT Weather Sharing: After each API fetch, the current weather JSON is published to weather/shared on the MQTT broker. A second ESP32 clock in the same building can subscribe to this topic and skip its own API fetch, reducing API call count and ensuring display consistency.</p></div><div class="step"><span class="step-no">04</span><p>7-Day Forecast Web Page: The /forecast endpoint parses the stored forecast JSON and renders a JavaScript canvas line chart of the next 7 temperature points. The chart is served as an inline HTML page accessible from any browser on the local network using the IP shown on the OLED page 2.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Smart home dashboard clock synced across multiple rooms</li><li>Office lobby display with live weather and 7-day forecast</li><li>Weather station OLED companion showing NTP-accurate time</li><li>IoT demonstration combining Wi-Fi, REST API, MQTT, and web server</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>WiFiManager portal does not appear after reset</h4><p>Hold the page button while powering on to force portal mode, or call wm.resetSettings() once in setup() to clear saved credentials and trigger the portal on every boot during development.</p></div><div class="trouble-item"><h4>Forecast page shows an empty chart</h4><p>The /data/2.5/forecast endpoint requires a valid city name and API key. Print forecastJson to Serial after fetching to confirm the response is not an error message.</p></div><div class="trouble-item"><h4>MQTT and web server conflict under load</h4><p>Move the MQTT loop and weather fetch to a FreeRTOS task on core 0. Run the web server on core 1. This prevents a heavy API response from blocking MQTT keep-alive packets.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a BME280 sensor and publish indoor temperature to the same MQTT topic</li><li>Use the OpenWeatherMap One Call 3.0 API for hourly precipitation probability</li><li>Add a second OLED for a room-by-room indoor vs outdoor temperature comparison</li><li>Implement deep sleep between display updates for battery-powered operation</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 OLED Weather Clock?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 OLED Weather Clock require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 OLED Weather Clock?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-ble-beacon.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 BLE Beacon</h3></div></a><a class="related-card" href="esp32-iot-weather-station.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 Mini Weather Station</h3></div></a><a class="related-card" href="esp32-lora-remote-sensor-node.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 LoRa Remote Sensor Node</h3></div></a><a class="related-card" href="esp32-mqtt-sensor-dashboard.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 MQTT Sensor Dashboard</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

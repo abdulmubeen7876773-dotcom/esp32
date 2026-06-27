@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 UV Index Monitor | ESP32 Engine</title>
+<meta name="description" content="Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via Telegram when outdoor UV exposure reaches dangerous levels.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-uv-index-monitor.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 UV Index Monitor | ESP32 Engine">
+<meta property="og:description" content="Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via Telegram when outdoor UV exposure reaches dangerous levels.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-uv-index-monitor.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 UV Index Monitor | ESP32 Engine">
+<meta name="twitter:description" content="Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via Telegram when outdoor UV exposure reaches dangerous levels.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 UV Index Monitor","description":"Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via Telegram when outdoor UV exposure reaches dangerous levels.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-uv-index-monitor.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, RGB LED R/G/B"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 UV Index Monitor (Beginner)","description":"Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via Telegram when outdoor UV exposure reaches dangerous levels.","step":[{"@type":"HowToStep","position":1,"name":"VEML6075 Dual-Channel UV Detection: The VEML6075 contains two photodiodes with spectral filters: one…","text":"VEML6075 Dual-Channel UV Detection: The VEML6075 contains two photodiodes with spectral filters: one passes UVA (315-400 nm) and one passes UVB (280-315 nm). A third visible-light compensation channel corrects for infrared and visible light leaking through the UV filters. The I2C registers return calibrated UVA and UVB counts in digital units."},{"@type":"HowToStep","position":2,"name":"UV Index Calculation: The WHO UV index is a dimensionless scale representing biologically effective …","text":"UV Index Calculation: The WHO UV index is a dimensionless scale representing biologically effective UV dose rate. The VEML6075 library calculates it from compensated UVA and UVB counts using calibration coefficients provided by Vishay: UVI = (UVAcomp * UVA_RESP + UVBcomp * UVB_RESP) * AS_SCALAR. Values above 11 indicate extreme UV radiation."},{"@type":"HowToStep","position":3,"name":"Five-Level Risk Classification: WHO defines five UV risk categories: Low (0-2), Moderate (3-5), High…","text":"Five-Level Risk Classification: WHO defines five UV risk categories: Low (0-2), Moderate (3-5), High (6-7), Very High (8-10), and Extreme (11+). The classify() function scans the LEVELS array in reverse order and returns the first entry whose minimum threshold the current UVI exceeds, giving the correct risk category."},{"@type":"HowToStep","position":4,"name":"RGB Colour Coding: analogWrite() drives each LED channel with 8-bit PWM for colour mixing. Green for…","text":"RGB Colour Coding: analogWrite() drives each LED channel with 8-bit PWM for colour mixing. Green for low risk, yellow for moderate, orange for high, red for very high, and purple for extreme. These match the standard WHO UV risk colour scheme used by meteorological agencies worldwide."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 UV Index Monitor?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, RGB LED R/G/B, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 UV Index Monitor require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 UV Index Monitor?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Environmental","item":"https://esp32engine.com/category/environmental.html"},{"@type":"ListItem","position":3,"name":"ESP32 UV Index Monitor","item":"https://esp32engine.com/projects/esp32-uv-index-monitor.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/environmental.html">Environmental</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/environmental.html">Environmental</a></li><li aria-current="page">ESP32 UV Index Monitor</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 UV Index Monitor</h1>
+          <div class="article-badges"><span class="badge badge-cat">Environmental</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Measure ultraviolet radiation intensity with the ESP32 and VEML6075 UVA/UVB sensor. Display the real-time WHO UV index and risk level on an OLED, accumulate personal daily UV dose, and alert via Telegram when outdoor UV exposure reaches dangerous levels.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-agriculture parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect a VEML6075 UVA/UVB sensor to the ESP32 via I2C and display the calculated UV index and WHO risk level on an SSD1306 OLED. An RGB LED changes colour from green (low) through yellow (moderate) and orange (high) to red (very high) based on the current UV index value. Readings update every 5 seconds.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× VEML6075 UVA/UVB sensor module — I2C; 3.3 V; UV index 0-11+ range</span></li><li><span>1× SSD1306 OLED 128x64 I2C</span></li><li><span>1× Common-cathode RGB LED — UV risk level colour indicator</span></li><li><span>3× 220 ohm resistor — One per LED channel</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>VEML6075 SDA/SCL</td><td>GPIO 21/22</td><td>I2C; 3.3 V; address 0x10</td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td>Shared I2C bus; address 0x3C</td></tr><tr><td>RGB LED R/G/B</td><td>GPIO 25/26/27</td><td>220 ohm series resistors</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-uv-index-monitor_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 UV Index Monitor - Beginner
+// VEML6075 UVA/UVB -&gt; WHO UV index display on OLED + RGB LED
+// Library: Adafruit VEML6075 in Library Manager
+
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;Adafruit_VEML6075.h&gt;
+
+Adafruit_SSD1306 oled(128, 64, &amp;Wire, -1);
+Adafruit_VEML6075 uv;
+
+const int LED_R=25, LED_G=26, LED_B=27;
+
+// WHO UV index risk levels
+struct UVLevel { float min; const char* label; uint8_t r,g,b; };
+const UVLevel LEVELS[] = {
+  {0,  &quot;LOW&quot;,       0,   255, 0  },
+  {3,  &quot;MODERATE&quot;,  255, 200, 0  },
+  {6,  &quot;HIGH&quot;,      255, 100, 0  },
+  {8,  &quot;VERY HIGH&quot;, 255, 0,   0  },
+  {11, &quot;EXTREME&quot;,   150, 0,   255},
+};
+const int NUM_LEVELS = 5;
+
+const UVLevel&amp; classify(float uvi){
+  for(int i=NUM_LEVELS-1; i&gt;=0; i--)
+    if(uvi &gt;= LEVELS[i].min) return LEVELS[i];
+  return LEVELS[0];
+}
+
+void setLED(uint8_t r, uint8_t g, uint8_t b){
+  analogWrite(LED_R, r); analogWrite(LED_G, g); analogWrite(LED_B, b);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); oled.setTextColor(WHITE);
+  if(!uv.begin()){ Serial.println(&quot;VEML6075 not found&quot;); while(1); }
+  pinMode(LED_R,OUTPUT); pinMode(LED_G,OUTPUT); pinMode(LED_B,OUTPUT);
+  Serial.println(&quot;UV Index Monitor ready.&quot;);
+}
+
+void loop(){
+  float uva = uv.readUVA();
+  float uvb = uv.readUVB();
+  float uvi = uv.readUVI();
+  const UVLevel&amp; lv = classify(uvi);
+
+  Serial.printf(&quot;UVA: %.1f  UVB: %.1f  UVI: %.1f  Risk: %sn&quot;,
+    uva, uvb, uvi, lv.label);
+  setLED(lv.r, lv.g, lv.b);
+
+  oled.clearDisplay(); oled.setCursor(0,0);
+  oled.setTextSize(2); oled.printf(&quot;UVI: %.1fn&quot;, uvi);
+  oled.setTextSize(1); oled.println(lv.label);
+  oled.printf(&quot;UVA: %.1f  UVB: %.1f&quot;, uva, uvb);
+  oled.display();
+  delay(5000);
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>VEML6075 Dual-Channel UV Detection: The VEML6075 contains two photodiodes with spectral filters: one passes UVA (315-400 nm) and one passes UVB (280-315 nm). A third visible-light compensation channel corrects for infrared and visible light leaking through the UV filters. The I2C registers return calibrated UVA and UVB counts in digital units.</p></div><div class="step"><span class="step-no">02</span><p>UV Index Calculation: The WHO UV index is a dimensionless scale representing biologically effective UV dose rate. The VEML6075 library calculates it from compensated UVA and UVB counts using calibration coefficients provided by Vishay: UVI = (UVAcomp * UVA_RESP + UVBcomp * UVB_RESP) * AS_SCALAR. Values above 11 indicate extreme UV radiation.</p></div><div class="step"><span class="step-no">03</span><p>Five-Level Risk Classification: WHO defines five UV risk categories: Low (0-2), Moderate (3-5), High (6-7), Very High (8-10), and Extreme (11+). The classify() function scans the LEVELS array in reverse order and returns the first entry whose minimum threshold the current UVI exceeds, giving the correct risk category.</p></div><div class="step"><span class="step-no">04</span><p>RGB Colour Coding: analogWrite() drives each LED channel with 8-bit PWM for colour mixing. Green for low risk, yellow for moderate, orange for high, red for very high, and purple for extreme. These match the standard WHO UV risk colour scheme used by meteorological agencies worldwide.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Outdoor UV exposure alert for gardeners and athletes</li><li>Beach or pool side UV index display for sunburn prevention</li><li>Kindergarten outdoor UV safety monitor for teachers</li><li>Research instrument for measuring UV intensity variation through the day</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>UVI reads zero or very low indoors</h4><p>The VEML6075 measures UV radiation; ordinary window glass blocks over 99 percent of UVB and most UVA. The sensor must be placed outdoors in direct sunlight for meaningful readings. Indoors, expect near-zero values even near windows.</p></div><div class="trouble-item"><h4>VEML6075 not found error at startup</h4><p>Verify the I2C address is 0x10. Check SDA on GPIO 21 and SCL on GPIO 22. Confirm the module is powered at 3.3 V; the VEML6075 is not 5 V tolerant on its logic pins. Add 4.7 kohm pull-up resistors to SDA and SCL if the I2C bus has no other pull-ups.</p></div><div class="trouble-item"><h4>RGB LED shows wrong colours</h4><p>Confirm the LED is common-cathode (shared GND). For common-anode LEDs, invert the PWM values: setLED(255-r, 255-g, 255-b). Check each channel with analogWrite(pin, 255) individually to confirm correct wiring before testing colour mixing.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a buzzer that beeps when UV index exceeds a configurable alert threshold</li><li>Add a push button to cycle through the SPF recommendation table for different skin types</li><li>Add an e-paper display for an always-on outdoor UV station that is readable in sunlight</li><li>Add Wi-Fi to log hourly UV index to a Google Sheet via HTTP POST</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 UV Index Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, RGB LED R/G/B, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 UV Index Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 UV Index Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build accumulates a personal daily UV dose in standard erythemal dose (SED) units and sends a Telegram alert when the dose for a selected skin type is approaching the safe daily limit. An OLED shows current UVI, accumulated dose percentage, and a countdown to the next safe outdoor time. Hourly UV peaks are logged to NVS for trend review.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× VEML6075 sensor</span></li><li><span>1× SSD1306 OLED</span></li><li><span>1× Wi-Fi router — NTP + Telegram</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>VEML6075 + OLED SDA/SCL</td><td>GPIO 21/22</td><td>Shared I2C</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-uv-index-monitor_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 UV Index Monitor - Intermediate (SED dose accumulator + Telegram alert)
+// SED = Standard Erythemal Dose; 1 SED = 100 J/m2 erythemally weighted UV
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;Adafruit_VEML6075.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WiFiClientSecure.h&gt;
+#include &lt;Preferences.h&gt;
+#include &lt;time.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+Adafruit_VEML6075 uv;
+Preferences prefs;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* BOT_TOKEN=&quot;YOUR_BOT_TOKEN&quot;;
+const char* CHAT_ID=&quot;YOUR_CHAT_ID&quot;;
+
+// Skin type MED (Minimal Erythema Dose) in SED — Fitzpatrick scale I-VI
+// Lower MED = more UV-sensitive skin
+const float MED_SED[] = {2.0f, 2.5f, 3.5f, 4.5f, 6.0f, 8.0f};
+const int SKIN_TYPE = 2; // 0=type I (very fair), 5=type VI (dark)
+float dailyDose_SED = 0;
+bool alertSent = false;
+int lastDay = -1;
+
+float sedPerSecond(float uvi){
+  // Approximate: 1 UV Index unit ~ 0.025 W/m2 erythemal irradiance
+  // 1 SED = 100 J/m2; so dose rate in SED/s = uvi*0.025/100
+  return uvi * 0.00025f;
+}
+
+void sendTelegram(const String &amp;msg){
+  WiFiClientSecure c; c.setInsecure();
+  if(!c.connect(&quot;api.telegram.org&quot;,443)) return;
+  String body=&quot;chat_id=&quot;+String(CHAT_ID)+&quot;&amp;text=&quot;+msg;
+  c.printf(&quot;POST /bot%s/sendMessage HTTP/1.1rnHost: api.telegram.orgrn&quot;
+    &quot;Content-Type: application/x-www-form-urlencodedrnContent-Length: %drnrn%s&quot;,
+    BOT_TOKEN,(int)body.length(),body.c_str());
+  delay(1000); c.stop();
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);
+  uv.begin();
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  prefs.begin(&quot;uv&quot;,false);
+  dailyDose_SED=prefs.getFloat(&quot;dose&quot;,0);
+  prefs.end();
+}
+
+unsigned long lastMs=0;
+void loop(){
+  struct tm ti; getLocalTime(&amp;ti);
+  if(ti.tm_mday!=lastDay){ dailyDose_SED=0; alertSent=false; lastDay=ti.tm_mday; }
+
+  unsigned long now=millis();
+  float dt=(now-lastMs)/1000.0f; lastMs=now;
+  float uvi=uv.readUVI();
+  if(uvi&gt;0) dailyDose_SED += sedPerSecond(uvi)*dt;
+
+  float med=MED_SED[SKIN_TYPE];
+  float pct=dailyDose_SED/med*100.0f;
+  Serial.printf(&quot;UVI: %.1f  Dose: %.3f SED  MED: %.0f%%n&quot;,uvi,dailyDose_SED,pct);
+
+  if(pct&gt;=80&amp;&amp;!alertSent){
+    sendTelegram(&quot;UV ALERT: &quot;+String((int)pct)+&quot;% of daily safe dose reached! UVI=&quot;+String(uvi,1));
+    alertSent=true;
+  }
+
+  prefs.begin(&quot;uv&quot;,false); prefs.putFloat(&quot;dose&quot;,dailyDose_SED); prefs.end();
+
+  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+  oled.printf(&quot;UVI: %.1fn&quot;,uvi);
+  oled.printf(&quot;Dose: %.2f / %.1f SEDn&quot;,dailyDose_SED,med);
+  oled.printf(&quot;MED used: %.0f%%n&quot;,pct);
+  oled.println(pct&gt;=100?&quot;STAY INDOORS&quot;:pct&gt;=80?&quot;SEEK SHADE&quot;:&quot;Safe&quot;);
+  oled.display();
+  delay(5000);
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Standard Erythemal Dose: SED (Standard Erythemal Dose) is a unit of biologically effective UV exposure. 1 SED equals 100 J/m2 of erythemally weighted irradiance. Each UV index unit corresponds to approximately 0.025 W/m2 of erythemal irradiance. Multiplying by elapsed seconds gives joules, which convert to SED by dividing by 100.</p></div><div class="step"><span class="step-no">02</span><p>Fitzpatrick Skin Type MED: The Fitzpatrick scale classifies skin into six types (I-VI) based on UV sensitivity. Type I (very fair, always burns) has a Minimal Erythema Dose of 2 SED; Type VI (dark, never burns) has a MED of 8 SED. Tracking what fraction of the MED has been accumulated tells the user when they are approaching their personal sunburn threshold.</p></div><div class="step"><span class="step-no">03</span><p>Daily Reset with Day Tracking: The accumulated dose resets at midnight. The current calendar day (ti.tm_mday) is compared to lastDay on each loop iteration. When the day changes, dailyDose_SED and alertSent reset. NVS stores the dose so a power cut during the day does not reset the accumulated exposure.</p></div><div class="step"><span class="step-no">04</span><p>80 Percent Alert Threshold: The Telegram alert fires at 80 percent of MED rather than 100 percent to give the user time to seek shade before reaching the sunburn threshold. A single alert per day (alertSent flag) prevents message flooding from continuous outdoor exposure.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Personal UV dose tracker for outdoor workers, hikers, and cyclists</li><li>Dermatology patient UV exposure monitor post skin cancer treatment</li><li>Sports training UV management for athletes training in direct sunlight</li><li>Child outdoor activity UV safety monitor for schools and playgrounds</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Daily dose keeps accumulating indoors</h4><p>The UVI reading indoors near a window may not be exactly zero due to sensor offset. Add a minimum UVI threshold before accumulating dose: only add to dailyDose_SED when uvi &gt; 0.5.</p></div><div class="trouble-item"><h4>Telegram alert fires in the middle of the night</h4><p>The dose from the previous day was persisted in NVS and not reset correctly. Verify the NTP time is synced before the first daily reset check runs. Add a Serial.printf of ti.tm_mday and lastDay to confirm the reset logic is triggering correctly.</p></div><div class="trouble-item"><h4>Dose percentage exceeds 100 percent with no alert</h4><p>The alertSent flag was not cleared on the daily reset. Confirm alertSent=false is inside the if(ti.tm_mday!=lastDay) block alongside the dose reset.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a skin type selector button to switch between Fitzpatrick types I-VI at runtime</li><li>Add an hourly UV peak log in NVS to visualise the daily UV curve</li><li>Add a UV-B only dose mode for vitamin D synthesis tracking (separate from sunburn dose)</li><li>Add an e-ink display for outdoor readability in bright sunlight</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 UV Index Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, RGB LED R/G/B, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 UV Index Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 UV Index Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build fetches hourly UV index forecasts from the OpenUV API and compares them to live VEML6075 readings. Measured and forecast UV data are published to MQTT. A Grafana dashboard shows today's UV curve, cumulative SED dose by skin type, forecast vs measured comparison, and a daily UV exposure calendar heatmap built from NVS-stored historical peaks.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× VEML6075 sensor</span></li><li><span>1× MQTT broker + Grafana + InfluxDB — Local server</span></li><li><span>1× OpenUV API key (free tier) — 50 calls/day free</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>VEML6075 SDA/SCL</td><td>GPIO 21/22</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-uv-index-monitor_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 UV Index Monitor - Advanced (OpenUV forecast + MQTT + InfluxDB)
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_VEML6075.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;time.h&gt;
+
+Adafruit_VEML6075 uv;
+WiFiClient wc; PubSubClient mqtt(wc);
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const char* OPENUV_KEY=&quot;YOUR_OPENUV_KEY&quot;;
+const float LAT=51.5f, LON=-0.1f; // your location
+
+float forecastUVI=0;
+float dailySED=0;
+
+float fetchForecastUVI(){
+  HTTPClient http;
+  char url[128];
+  snprintf(url,sizeof(url),
+    &quot;https://api.openuv.io/api/v1/uv?lat=%.4f&amp;lng=%.4f&quot;,LAT,LON);
+  http.begin(url);
+  http.addHeader(&quot;x-access-token&quot;,OPENUV_KEY);
+  if(http.GET()!=200){ http.end(); return -1; }
+  DynamicJsonDocument doc(512);
+  deserializeJson(doc,http.getString());
+  http.end();
+  return doc[&quot;result&quot;][&quot;uv&quot;]|0.0f;
+}
+
+void publishReading(float measured, float forecast, float sed){
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;uvi_measured&quot;]=measured;
+  doc[&quot;uvi_forecast&quot;]=forecast;
+  doc[&quot;daily_sed&quot;]=sed;
+  char buf[128]; serializeJson(doc,buf);
+  mqtt.publish(&quot;uv/monitor&quot;,buf);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  uv.begin();
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  mqtt.setServer(MQTT_HOST,1883);
+  forecastUVI=fetchForecastUVI();
+}
+
+int lastHour=-1;
+void loop(){
+  if(!mqtt.connected()) mqtt.connect(&quot;UVMonitor&quot;);
+  mqtt.loop();
+  struct tm ti; getLocalTime(&amp;ti);
+  if(ti.tm_hour!=lastHour){ forecastUVI=fetchForecastUVI(); lastHour=ti.tm_hour; }
+  float measured=uv.readUVI();
+  if(measured&gt;0.5f) dailySED+=measured*0.00025f*5.0f; // 5-second interval
+  publishReading(measured,forecastUVI,dailySED);
+  Serial.printf(&quot;Measured: %.1f  Forecast: %.1f  SED: %.3fn&quot;,
+    measured,forecastUVI,dailySED);
+  delay(5000);
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>OpenUV Real-Time Forecast API: The OpenUV API returns the current UV index and hourly forecast for any GPS coordinate. The free tier provides 50 API calls per day. Fetching once per hour uses 24 calls per day, staying within the limit. The x-access-token header authenticates the request.</p></div><div class="step"><span class="step-no">02</span><p>Measured vs Forecast Comparison: Publishing both measured and forecast UV index to separate MQTT fields enables Grafana to overlay them on one chart. Divergence between measured and forecast indicates cloud cover (measured lower than forecast) or unusual atmospheric transparency (measured higher). The comparison validates the sensor calibration.</p></div><div class="step"><span class="step-no">03</span><p>MQTT to InfluxDB via Telegraf: Telegraf subscribes to uv/monitor and writes each JSON field as an InfluxDB measurement. Grafana queries InfluxDB for today&#x27;s UV readings and renders a time-series chart showing the daily UV bell curve. Historical data enables a calendar heatmap panel showing peak UV day by day.</p></div><div class="step"><span class="step-no">04</span><p>Five-Second Dose Accumulation: The loop runs every 5 seconds. Each iteration adds measured UVI multiplied by 0.00025 (SED per second per UVI unit) multiplied by 5 seconds to the cumulative SED total. This piecewise integration approximates total erythemal dose over the day with sufficient accuracy for personal safety guidance.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>UV research station comparing local measurements to satellite-derived UV forecasts</li><li>Beach resort UV safety information kiosk with live and forecast data</li><li>Agricultural UV stress monitoring for photosensitive crops under polytunnels</li><li>Personal health dashboard tracking sun exposure across days and seasons</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>OpenUV API returns 403 Forbidden</h4><p>Verify the API key in the x-access-token header is correct and the free tier daily quota has not been exhausted. The free plan resets at midnight UTC. Use Serial to print the full HTTP response body to see the error message from the API.</p></div><div class="trouble-item"><h4>Measured UV is consistently 20 percent higher than forecast</h4><p>The VEML6075 factory calibration uses a flat horizontal surface. If the sensor is mounted at an angle or elevated, it intercepts more direct UV. Also check that no reflective surfaces (white walls, water) are near the sensor, as reflections increase effective UV intensity.</p></div><div class="trouble-item"><h4>Grafana shows gaps in the UV time series at night</h4><p>The sensor publishes readings continuously including at night when UVI is 0. Gaps in Grafana indicate Wi-Fi dropouts or MQTT broker restarts. Add MQTT reconnect logic and consider publishing a heartbeat value every 60 seconds even when UVI is zero to verify connectivity.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a GPS module to auto-detect latitude and longitude for the OpenUV API call</li><li>Add a vitamin D synthesis calculator alongside the erythemal dose tracker</li><li>Add a Home Assistant sensor entity publishing UV risk level for automation rules</li><li>Add a public Grafana UV dashboard for a neighbourhood shared UV monitoring network</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 UV Index Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, RGB LED R/G/B, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 UV Index Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 UV Index Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-air-quality-monitor.html"><div class="related-thumb t-agriculture"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Environmental</span><h3>ESP32 Air Quality Monitor</h3></div></a><a class="related-card" href="esp32-lightning-detector.html"><div class="related-thumb t-agriculture"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Environmental</span><h3>ESP32 Lightning Detector</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a><a class="related-card" href="esp32-ai-object-detector.html"><div class="related-thumb t-ai"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="18" y="18" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="currentColor" opacity=".2"/><path d="M18 26H12M18 32H12M18 38H12M46 26H52M46 32H52M46 38H52M26 18V12M32 18V12M38 18V12M26 46V52M32 46V52M38 46V52" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">AI</span><h3>ESP32 AI Object Detector</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

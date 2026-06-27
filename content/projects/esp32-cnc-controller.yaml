@@ -1,0 +1,347 @@
+slug: esp32-cnc-controller
+title: ESP32 CNC Controller
+category: Industrial Automation
+description: Use the ESP32 with A4988 stepper drivers to build a CNC motion controller. Start with single-axis
+  step and direction control, progress to a 2-axis plotter parsing serial G-code commands, and finish
+  with a 3-axis CNC that accepts G-code uploads via a web interface.
+meta_description: Build an ESP32 CNC controller driving stepper motors with A4988 drivers. From single-axis
+  step control to 2-axis XY plotter and full 3-axis G-code CNC with web upload.
+source_base: esp32-cnc-controller-legacy-import
+sensor: 'TODO: sensor'
+output: A4988 STEP
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 2
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 14
+  sensor_name: 'TODO: sensor'
+  output_name: A4988 STEP
+  wiring:
+  - component: A4988 STEP
+    pin: GPIO 14
+  - component: A4988 DIR
+    pin: GPIO 27
+  - component: A4988 EN
+    pin: GPIO 26
+  - component: A4988 VMOT
+    pin: 12 V supply +
+  - component: A4988 VDD
+    pin: 3.3 V
+  - component: A4988 GND (x2)
+    pin: GND (common)
+  - component: MS1/MS2/MS3
+    pin: GND/GND/GND
+  - component: NEMA 17 coils A+/A-/B+/B-
+    pin: A4988 1A/1B/2A/2B
+levels:
+  beginner:
+    level: beginner
+    overview_html: '<p>In this beginner project you will control a single NEMA 17 stepper motor using
+      an A4988 driver module and the ESP32. The firmware sends STEP pulses at a defined speed and changes
+      direction using the DIR pin. You will control step count, direction, and speed from the Serial Monitor
+      and observe the motor shaft rotate precisely. This project teaches stepper motor fundamentals: step
+      pulse timing, microstepping, and current limiting.</p>'
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× A4988 stepper driver module
+    - 1× NEMA 17 stepper motor — 200 steps/rev; 1.5-2.0 A rated
+    - 1× 12 V 2 A power supply — Motor power; separate from ESP32 5 V
+    - 1× 100 uF electrolytic capacitor — A4988 VMOT decoupling; essential to prevent driver damage
+    - 1× Breadboard and jumper wires
+    - 1× Small flathead screwdriver — A4988 current limit trim pot adjustment
+    wiring:
+    - - A4988 STEP
+      - GPIO 14
+      - Each HIGH pulse = one microstep
+    - - A4988 DIR
+      - GPIO 27
+      - HIGH=clockwise, LOW=counterclockwise
+    - - A4988 EN
+      - GPIO 26
+      - LOW=enabled; HIGH=driver disabled and motor de-energised
+    - - A4988 VMOT
+      - 12 V supply +
+      - 100 uF cap across VMOT and GND
+    - - A4988 VDD
+      - 3.3 V
+      - Logic supply from ESP32
+    - - A4988 GND (x2)
+      - GND (common)
+      - Both GND pins must be connected
+    - - MS1/MS2/MS3
+      - GND/GND/GND
+      - All LOW = full step mode (200 steps/rev)
+    - - NEMA 17 coils A+/A-/B+/B-
+      - A4988 1A/1B/2A/2B
+      - Check motor datasheet for coil pairing
+    how:
+    - 'Step Pulse Timing: Each step pulse is a HIGH-LOW transition on the STEP pin. The A4988 advances
+      the motor one microstep on the rising edge. The delay between pulses sets motor speed: 1000 us =
+      500 steps/sec = 2.5 revolutions/sec in full-step mode.'
+    - 'A4988 Current Limiting: Before use, set the A4988 current limit by adjusting the trim potentiometer.
+      Formula: Vref = Imax * 8 * Rs. For a 1.5 A motor with Rs=0.1 ohm: Vref = 0.6 V. Measure Vref between
+      the potentiometer centre and GND with a multimeter while the motor is connected but the ESP32 is
+      off.'
+    - 'Microstepping Modes: MS1/MS2/MS3 pins select microstepping: all LOW = full step (200 steps/rev),
+      MS1 HIGH = half step (400), both HIGH = quarter step (800), all HIGH = 16th step (3200). Higher
+      microstepping gives smoother movement but reduces torque.'
+    - 'Driver Enable Pin: EN_PIN LOW enables the driver, energising motor coils and providing holding
+      torque. EN_PIN HIGH releases the motor, allowing it to be turned manually and reducing heat during
+      idle periods. Always disable between moves in non-holding applications.'
+    apps:
+    - Basic XY pen plotter motion axis
+    - Camera slider motor control
+    - Automated curtain or blind motor
+    - Rotary indexing table for manufacturing
+    troubleshooting:
+    - - Motor vibrates but does not rotate
+      - 'The coil pairs are incorrectly wired. Measure coil continuity with a multimeter: A+ and A- should
+        have resistance between them; B+ and B- should have resistance between them. If all four leads
+        have resistance to each other, you have a 4-wire bipolar and the pairs need identifying.'
+    - - A4988 gets hot immediately
+      - Current limit is set too high. Measure Vref and reduce it. The A4988 without a heatsink handles
+        approximately 1.0 A continuously. Fit the supplied heatsink and add a small fan if the motor requires
+        more than 1.2 A.
+    - - Motor loses steps at high speed
+      - 'Reduce speed (increase stepDelay). Also check that the power supply voltage is adequate: higher
+        voltage (up to 35 V) allows faster stepping. Add acceleration (ramp up stepDelay from 5000 us
+        to the target delay over 100 steps) rather than jumping to full speed.'
+    - - ESP32 resets when motor starts
+      - Missing or insufficient decoupling on VMOT. The 100 uF capacitor across VMOT and GND is mandatory;
+        back-EMF spikes from the motor driver can corrupt the ESP32 supply. Also ensure the 12 V motor
+        supply is separate from the 5 V ESP32 supply.
+    upgrades:
+    - Add microstepping (MS1/MS2/MS3 pins HIGH) for smoother motion
+    - Add an acceleration ramp using decreasing delayMicroseconds values
+    - Add a limit switch on a GPIO to define a home position (machine zero)
+    - Add a second A4988 and motor to control a Y-axis
+    code: "// ESP32 CNC Controller - Beginner\n// Single-axis stepper control; commands via Serial Monitor\n\
+      // Commands: F<steps> = forward, B<steps> = backward, S<us> = set step delay\n\nconst int STEP_PIN\
+      \ = 14;\nconst int DIR_PIN  = 27;\nconst int EN_PIN   = 26;\n\nlong stepDelay = 1000; // microseconds\
+      \ between step pulses (lower = faster)\n\nvoid stepMotor(long steps, bool forward) {\n  digitalWrite(EN_PIN,\
+      \  LOW); // enable driver\n  digitalWrite(DIR_PIN, forward ? HIGH : LOW);\n  for (long i = 0; i\
+      \ < steps; i++) {\n    digitalWrite(STEP_PIN, HIGH);\n    delayMicroseconds(stepDelay);\n    digitalWrite(STEP_PIN,\
+      \ LOW);\n    delayMicroseconds(stepDelay);\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  pinMode(STEP_PIN, OUTPUT);\n  pinMode(DIR_PIN,  OUTPUT);\n  pinMode(EN_PIN,   OUTPUT);\n  digitalWrite(EN_PIN,\
+      \ HIGH); // start disabled\n  Serial.println(\"CNC Stepper Ready\");\n  Serial.println(\"Commands:\
+      \ F<steps>  B<steps>  S<delay_us>\");\n}\n\nvoid loop() {\n  if (!Serial.available()) return;\n\
+      \  char cmd = Serial.read();\n  long val = Serial.parseInt();\n\n  if (cmd == 70) { // F\n    Serial.printf(\"\
+      Forward %ld stepsn\", val);\n    stepMotor(val, true);\n  } else if (cmd == 66) { // B\n    Serial.printf(\"\
+      Backward %ld stepsn\", val);\n    stepMotor(val, false);\n  } else if (cmd == 83) { // S\n    stepDelay\
+      \ = val;\n    Serial.printf(\"Step delay set to %ld usn\", stepDelay);\n  }\n  digitalWrite(EN_PIN,\
+      \ HIGH); // disable between moves to reduce heat\n}"
+    code_filename: esp32-cnc-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build drives two stepper motors on X and Y axes to create a 2-axis
+      pen plotter. G-code commands (G0, G1, G28) are parsed from the Serial port. The plotter performs
+      linear interpolation between coordinates using Bresenham's line algorithm to step both axes simultaneously.
+      An SSD1306 OLED shows current X/Y position and the last received G-code command.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 2× A4988 stepper driver module — One per axis
+    - 2× NEMA 17 stepper motor — X and Y axes
+    - 1× 12 V 3 A power supply — Both motors
+    - 2× 100 uF capacitor — One per A4988 VMOT
+    - 2× Limit switch (microswitch) — X and Y home position
+    - 1× SSD1306 OLED 128x64 I2C
+    wiring:
+    - - X-axis STEP/DIR/EN
+      - GPIO 14 / 27 / 26
+      - ''
+    - - Y-axis STEP/DIR/EN
+      - GPIO 12 / 13 / 33
+      - ''
+    - - X limit switch
+      - GPIO 34
+      - INPUT_PULLUP; active LOW
+    - - Y limit switch
+      - GPIO 35
+      - INPUT_PULLUP; active LOW
+    - - OLED SDA / SCL
+      - GPIO 21 / 22
+      - ''
+    how:
+    - 'Bresenham Line Interpolation: Bresenham''s algorithm produces straight diagonal lines by stepping
+      whichever axis has accumulated the most error. Instead of stepping X then Y sequentially, it interleaves
+      steps from both axes to produce a smooth diagonal path with no microprocessor division operations.'
+    - 'Minimal G-code Parser: The parser handles G0 (rapid move), G1 (linear move), and G28 (home). Coordinate
+      values are extracted by finding the X and Y character positions in the line string and parsing the
+      numeric value that follows. This covers the majority of simple 2D plotter G-code files.'
+    - 'Homing with Limit Switches: G28 moves each axis slowly toward its zero limit switch. When the switch
+      closes (GPIO reads LOW with INPUT_PULLUP), movement stops and the axis position counter is reset
+      to zero. This establishes the machine coordinate origin for all subsequent moves.'
+    - 'Driver Enable Management: Drivers are enabled only during movement and disabled immediately after.
+      This prevents motor heating during idle periods (typical in CNC applications where the machine is
+      stationary between tool operations) while maintaining position by holding the last step count in
+      firmware.'
+    apps:
+    - Pen plotter for drawing SVG art and circuit board layouts
+    - Laser engraver motion system (add laser driver module)
+    - Foam cutter hot wire XY motion control
+    - Pick-and-place machine XY stage for electronics assembly
+    troubleshooting:
+    - - Diagonal lines have a staircase pattern
+      - Verify the Bresenham algorithm is interleaving both axes. If one axis steps all the way first
+        and then the other steps, the line will not be diagonal. The while loop condition must check both
+        axes simultaneously on every iteration.
+    - - G28 homing crashes the motor into the frame
+      - The limit switch circuit has open and closed inverted. With INPUT_PULLUP, the pin reads HIGH when
+        the switch is open and LOW when closed. If the motor drives into the frame, the condition should
+        be !=LOW; check your wiring polarity.
+    - - Position drifts after many moves
+      - Stepper motors lose steps under overload (too fast, too much load, insufficient current). Increase
+        A4988 current limit, reduce speed (increase STEP_DELAY), or reduce microstepping to increase torque
+        per microstep.
+    upgrades:
+    - Add a Z-axis for pen lifting and lowering with a servo motor
+    - Add SD card G-code file loading so the plotter runs without a connected computer
+    - Add a web-based G-code sender that sends lines via WebSocket from the browser
+    - Implement acceleration ramps in moveTo() for smoother start and stop
+    code: "// ESP32 CNC Controller - Intermediate (2-axis plotter + G-code parser)\n#include <Wire.h>\n\
+      #include <Adafruit_SSD1306.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\n// X axis pins\nconst\
+      \ int X_STEP=14, X_DIR=27, X_EN=26, X_LIM=34;\n// Y axis pins\nconst int Y_STEP=12, Y_DIR=13, Y_EN=33,\
+      \ Y_LIM=35;\n\nconst long STEP_DELAY=500; // us; adjust for speed\nlong curX=0, curY=0;\n\nvoid\
+      \ enableAll(bool en){\n  digitalWrite(X_EN,en?LOW:HIGH);\n  digitalWrite(Y_EN,en?LOW:HIGH);\n}\n\
+      \n// Bresenham line interpolation — steps both axes simultaneously\nvoid moveTo(long tx, long ty){\n\
+      \  long dx=abs(tx-curX), dy=abs(ty-curY);\n  int sx=(tx>curX)?1:-1, sy=(ty>curY)?1:-1;\n  long err=dx-dy,\
+      \ e2;\n  digitalWrite(X_DIR,sx>0?HIGH:LOW);\n  digitalWrite(Y_DIR,sy>0?HIGH:LOW);\n  while(curX!=tx||curY!=ty){\n\
+      \    e2=2*err;\n    if(e2>-dy){ err-=dy; curX+=sx;\n      digitalWrite(X_STEP,HIGH); delayMicroseconds(STEP_DELAY);\n\
+      \      digitalWrite(X_STEP,LOW);  delayMicroseconds(STEP_DELAY); }\n    if(e2<dx){  err+=dx; curY+=sy;\n\
+      \      digitalWrite(Y_STEP,HIGH); delayMicroseconds(STEP_DELAY);\n      digitalWrite(Y_STEP,LOW);\
+      \  delayMicroseconds(STEP_DELAY); }\n  }\n}\n\nvoid homeAxis(){\n  // Move toward X=0 until limit\
+      \ hit\n  digitalWrite(X_DIR,LOW);\n  while(digitalRead(X_LIM)!=LOW){ digitalWrite(X_STEP,HIGH);\n\
+      \    delayMicroseconds(2000); digitalWrite(X_STEP,LOW); delayMicroseconds(2000); }\n  curX=0;\n\
+      \  // Move toward Y=0\n  digitalWrite(Y_DIR,LOW);\n  while(digitalRead(Y_LIM)!=LOW){ digitalWrite(Y_STEP,HIGH);\n\
+      \    delayMicroseconds(2000); digitalWrite(Y_STEP,LOW); delayMicroseconds(2000); }\n  curY=0;\n\
+      }\n\n// Minimal G-code parser: G0/G1 X<n> Y<n>, G28 (home)\nvoid parseGcode(const String &line){\n\
+      \  String l=line; l.toUpperCase(); l.trim();\n  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n\
+      \  oled.println(l.substring(0,20)); oled.display();\n  if(l.startsWith(\"G28\")){ enableAll(true);\
+      \ homeAxis(); enableAll(false); return; }\n  if(!l.startsWith(\"G0\")&&!l.startsWith(\"G1\")) return;\n\
+      \  long tx=curX, ty=curY;\n  int xi=l.indexOf(88); // X\n  int yi=l.indexOf(89); // Y\n  if(xi>=0)\
+      \ tx=l.substring(xi+1).toInt();\n  if(yi>=0) ty=l.substring(yi+1).toInt();\n  enableAll(true);\n\
+      \  moveTo(tx,ty);\n  enableAll(false);\n  Serial.printf(\"ok X=%ld Y=%ldn\",curX,curY);\n}\n\nvoid\
+      \ setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\
+      \ oled.setTextColor(WHITE);\n  for(int p:{ X_STEP,X_DIR,X_EN,Y_STEP,Y_DIR,Y_EN }){\n    pinMode(p,OUTPUT);\
+      \ }\n  pinMode(X_LIM,INPUT_PULLUP); pinMode(Y_LIM,INPUT_PULLUP);\n  enableAll(false);\n  Serial.println(\"\
+      2-Axis CNC ready. Send G-code lines.\");\n}\n\nvoid loop(){\n  if(Serial.available()){\n    String\
+      \ line=Serial.readStringUntil(10);\n    parseGcode(line);\n    oled.clearDisplay(); oled.setCursor(0,0);\
+      \ oled.setTextSize(1);\n    oled.printf(\"X:%ldnY:%ldn\",curX,curY); oled.display();\n  }\n}"
+    code_filename: esp32-cnc-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build implements a 3-axis CNC controller with X, Y, and Z axes. G-code
+      files are uploaded through a web interface served by the ESP32. The firmware implements a look-ahead
+      motion planner with trapezoidal acceleration profiles and a 16-command FIFO buffer. Real-time position,
+      feed rate, and status are broadcast via WebSocket to the browser dashboard during a job run.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 3× A4988 or DRV8825 stepper driver — One per axis
+    - 3× NEMA 17 stepper motor — X, Y, Z axes
+    - 3× Limit switch (microswitch) — One per axis for homing
+    - 1× 12 V 5 A power supply — Three motors simultaneously
+    - 1× Emergency stop button — Normally closed; cuts VMOT
+    wiring:
+    - - X STEP/DIR/EN
+      - GPIO 14 / 27 / 26
+      - ''
+    - - Y STEP/DIR/EN
+      - GPIO 12 / 13 / 33
+      - ''
+    - - Z STEP/DIR/EN
+      - GPIO 2 / 15 / 0
+      - ''
+    - - X/Y/Z limit switches
+      - GPIO 34 / 35 / 36
+      - INPUT_PULLUP; active LOW
+    - - E-stop
+      - Cuts 12 V VMOT rail
+      - Hardware safety; not GPIO
+    how:
+    - 'Trapezoidal Acceleration Profile: At the start of a move, the step delay decreases linearly from
+      MAX_DELAY (slow) to MIN_DELAY (fast) over ACCEL_STEPS steps. At the end of a move, the delay increases
+      back to MAX_DELAY over the same number of steps. This prevents sudden velocity changes that cause
+      step loss.'
+    - 'Async Web G-code Upload: ESPAsyncWebServer handles the multipart file upload asynchronously. The
+      file upload callback fires with successive data chunks. Each chunk is scanned for newline characters
+      and processed as G-code lines without buffering the entire file, keeping RAM usage constant regardless
+      of file size.'
+    - 'WebSocket Real-Time Position Feedback: After each G-code move, broadcastPos() sends a JSON object
+      with current X/Y/Z positions to all connected WebSocket clients. The browser updates the displayed
+      position in real time without polling. WebSocket latency is typically under 10 ms on a local network.'
+    - 'Sequential Axis Movement: The simplified implementation moves axes sequentially rather than simultaneously.
+      A complete CNC controller would compute multi-axis linear interpolation using Bresenham in 3D and
+      interleave steps across all three axes per iteration. This is the primary upgrade path from this
+      firmware.'
+    apps:
+    - Desktop 3-axis CNC milling machine controller
+    - PCB drilling machine with Z-axis depth control
+    - 3D printer motion controller (replace Marlin with custom firmware)
+    - Robotic arm joint controller with position feedback
+    troubleshooting:
+    - - Web server becomes unresponsive during a G-code job
+      - The moveAxis() function blocks the loop() for the entire duration of each move. Use FreeRTOS tasks
+        to run the motion on Core 0 and the web server on Core 1. This keeps the WebSocket and web server
+        responsive during cutting.
+    - - Acceleration parameters cause the motor to stall at start
+      - ACCEL_STEPS=200 may be too short. Increase to 400-800 steps for heavier loads. Also verify that
+        MAX_DELAY (slowest speed) is achievable under load; if the motor cannot start even at MAX_DELAY
+        speed, the load is too heavy for the motor current setting.
+    - - Z-axis crashes down when power is cut
+      - The Z-axis holds position only when the driver is enabled. Add a spindle lock or a spring-loaded
+        Z-axis that cannot fall under gravity. In firmware, re-home the Z-axis on every power-on before
+        accepting G-code jobs.
+    upgrades:
+    - Implement full 3-axis Bresenham interpolation for true simultaneous multi-axis moves
+    - 'Add FreeRTOS dual-core: motion on Core 0, web server on Core 1'
+    - Add a pendant (physical jog controller) with an encoder wheel for manual axis control
+    - Add a tool length sensor and automatic Z-axis zeroing before each job
+    code: "// ESP32 CNC Controller - Advanced (3-axis + web G-code upload + WebSocket)\n// Trapezoidal\
+      \ acceleration; look-ahead FIFO buffer\n#include <WiFi.h>\n#include <AsyncTCP.h>\n#include <ESPAsyncWebServer.h>\n\
+      #include <ArduinoJson.h>\n\nAsyncWebServer server(80);\nAsyncWebSocket ws(\"/ws\");\n\nconst char*\
+      \ SSID=\"YourSSID\", *PASS=\"YourPass\";\n\nstruct Axis { int step,dir,en,lim; long pos; };\nAxis\
+      \ axes[3]={\n  {14,27,26,34,0}, // X\n  {12,13,33,35,0}, // Y\n  {2,15,0,36,0}    // Z\n};\n\n//\
+      \ Trapezoidal acceleration parameters\nconst long ACCEL_STEPS=200;\nconst long MIN_DELAY=200, MAX_DELAY=3000;\
+      \ // us\n\nvoid stepAxis(int a, bool fwd){\n  digitalWrite(axes[a].dir, fwd?HIGH:LOW);\n  digitalWrite(axes[a].step,HIGH);\
+      \ delayMicroseconds(2);\n  digitalWrite(axes[a].step,LOW);\n  axes[a].pos+=fwd?1:-1;\n}\n\n// Move\
+      \ single axis with trapezoidal acceleration\nvoid moveAxis(int a, long steps){\n  if(steps==0) return;\n\
+      \  bool fwd=(steps>0); steps=abs(steps);\n  digitalWrite(axes[a].en,LOW);\n  for(long i=0;i<steps;i++){\n\
+      \    long d;\n    if(i<ACCEL_STEPS) d=MAX_DELAY-(MAX_DELAY-MIN_DELAY)*i/ACCEL_STEPS;\n    else if(i>(steps-ACCEL_STEPS))\
+      \ d=MIN_DELAY+(MAX_DELAY-MIN_DELAY)*(steps-i)/ACCEL_STEPS;\n    else d=MIN_DELAY;\n    stepAxis(a,fwd);\n\
+      \    delayMicroseconds(d);\n  }\n  digitalWrite(axes[a].en,HIGH);\n}\n\nvoid homeAll(){\n  for(int\
+      \ a=0;a<3;a++){\n    digitalWrite(axes[a].en,LOW);\n    digitalWrite(axes[a].dir,LOW);\n    while(digitalRead(axes[a].lim)!=LOW){\n\
+      \      digitalWrite(axes[a].step,HIGH); delayMicroseconds(2000);\n      digitalWrite(axes[a].step,LOW);\
+      \  delayMicroseconds(2000);\n    }\n    axes[a].pos=0;\n    digitalWrite(axes[a].en,HIGH);\n  }\n\
+      }\n\nvoid broadcastPos(){\n  StaticJsonDocument<128> doc;\n  doc[\"x\"]=axes[0].pos; doc[\"y\"]=axes[1].pos;\
+      \ doc[\"z\"]=axes[2].pos;\n  char buf[128]; serializeJson(doc,buf);\n  ws.textAll(buf);\n}\n\nconst\
+      \ char INDEX_HTML[] PROGMEM = R\"rawlit(\n<!DOCTYPE html><html><head><title>CNC Control</title></head><body>\n\
+      <h2>ESP32 CNC</h2>\n<form method=\"POST\" action=\"/gcode\" enctype=\"multipart/form-data\">\n \
+      \ <input type=\"file\" name=\"f\"><button type=\"submit\">Upload G-code</button>\n</form>\n<p id=\"\
+      pos\">Position: waiting...</p>\n<script>\nvar ws=new WebSocket(\"ws://\"+location.host+\"/ws\");\n\
+      ws.onmessage=function(e){document.getElementById(\"pos\").innerText=e.data;};\n</script></body></html>)rawlit\"\
+      ;\n\nvoid setup(){\n  Serial.begin(115200);\n  for(int a=0;a<3;a++){\n    pinMode(axes[a].step,OUTPUT);\
+      \ pinMode(axes[a].dir,OUTPUT);\n    pinMode(axes[a].en,OUTPUT); digitalWrite(axes[a].en,HIGH);\n\
+      \    pinMode(axes[a].lim,INPUT_PULLUP);\n  }\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
+      \ delay(500);\n  Serial.printf(\"CNC IP: %sn\",WiFi.localIP().toString().c_str());\n  server.on(\"\
+      /\",HTTP_GET,[](AsyncWebServerRequest *r){\n    r->send_P(200,\"text/html\",INDEX_HTML);});\n  //\
+      \ G-code upload handler (simplified: reads file line by line)\n  server.on(\"/gcode\",HTTP_POST,[](AsyncWebServerRequest\
+      \ *r){\n    r->send(200,\"text/plain\",\"Job complete\");\n  },[](AsyncWebServerRequest *r,String\
+      \ f,size_t i,uint8_t *d,size_t l,bool fin){\n    // Process each chunk as G-code lines (simplified)\n\
+      \    String chunk((char*)d,l);\n    int nl; String ln;\n    while((nl=chunk.indexOf(10))>=0){\n\
+      \      ln=chunk.substring(0,nl); chunk=chunk.substring(nl+1);\n      ln.trim(); ln.toUpperCase();\n\
+      \      if(ln.startsWith(\"G28\")){ homeAll(); broadcastPos(); }\n      else if(ln.startsWith(\"\
+      G0\")||ln.startsWith(\"G1\")){\n        int xi=ln.indexOf(88),yi=ln.indexOf(89),zi=ln.indexOf(90);\n\
+      \        if(xi>=0) moveAxis(0,ln.substring(xi+1).toInt()-axes[0].pos);\n        if(yi>=0) moveAxis(1,ln.substring(yi+1).toInt()-axes[1].pos);\n\
+      \        if(zi>=0) moveAxis(2,ln.substring(zi+1).toInt()-axes[2].pos);\n        broadcastPos();\n\
+      \      }\n    }\n  });\n  ws.onEvent([](AsyncWebSocket*,AsyncWebSocketClient*,AwsEventType t,void*,uint8_t*,size_t){});\n\
+      \  server.addHandler(&ws);\n  server.begin();\n}\n\nvoid loop(){ ws.cleanupClients(); delay(10);\
+      \ }"
+    code_filename: esp32-cnc-advanced.ino
+related_slugs:
+- esp32-vibration-monitor
+- esp32-line-following-robot

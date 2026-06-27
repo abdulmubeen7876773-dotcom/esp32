@@ -27,3 +27,65 @@ hardware:
     pin: 3.3V/5V
   - component: GND
     pin: GND
+meta_description: Production-ready walkthrough — Current Sensor signal on GPIO35 drives Relay Output control
+  with a tuned threshold sketch you can deploy today.
+meta_title: ESP32 Machine Monitoring Node for Plant Floor with Cloud Sync
+levels:
+  beginner:
+    level: beginner
+    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
+      \      <p>Designed for Conveyor Belt: ESP32 watches Current Sensor signal and activates Relay Output\
+      \ control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n      \
+      \  <li>Current Sensor signal connects to GPIO35 (ADC input)</li><li>Threshold is set to 1606 in\
+      \ firmware (adjust after calibration)</li><li>Relay Output control is driven on GPIO19 when the\
+      \ condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
+      \      </section>"
+    components:
+    - ESP32 Dev Board
+    - Current Sensor
+    - Relay Output
+    - Alarm Led
+    - 5V Power Supply
+    wiring:
+    - - Current Sensor signal
+      - GPIO35
+      - ''
+    - - Relay Output control
+      - GPIO19
+      - ''
+    - - Alarm Led SDA
+      - GPIO21
+      - ''
+    - - SCL
+      - GPIO22
+      - ''
+    - - VCC
+      - 3.3V/5V
+      - ''
+    - - GND
+      - GND
+      - ''
+    how: []
+    apps:
+    - Conveyor Belt monitoring with Current Sensor signal
+    troubleshooting: []
+    upgrades:
+    - Publish readings to an MQTT broker or Home Assistant
+    code: "// ESP32 Machine Monitoring Node for Plant Floor with Cloud Sync\nconst int SENSOR_PIN = 35;\n\
+      const int OUTPUT_PIN = 19;\nconst int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid\
+      \ setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n\
+      \  Serial.println(\"Starting: machine monitoring node for plant floor with cloud sync\");\n  Serial.print(\"\
+      Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n\
+      \  Serial.print(\"Current Sensor signal: \");\n  Serial.println(reading);\n  bool active = reading\
+      \ < THRESHOLD;\n  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code_filename: ''
+  intermediate:
+    overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
+    code: ''
+  advanced:
+    overview_html: '<p>TODO: import advanced content from batch or WordPress</p>'
+    code: ''
+quality_status: legacy_import
+status: needs_polish
+import_tier: 1
+import_source: esp32-machine-monitoring-node-with-mobile-alerts-project-002.html

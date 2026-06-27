@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 IR Remote Control | ESP32 Engine</title>
+<meta name="description" content="Use the ESP32 with IRremote library to decode infrared signals from any remote control, store the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from a web-based universal remote dashboard.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-ir-remote-control.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 IR Remote Control | ESP32 Engine">
+<meta property="og:description" content="Use the ESP32 with IRremote library to decode infrared signals from any remote control, store the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from a web-based universal remote dashboard.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-ir-remote-control.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 IR Remote Control | ESP32 Engine">
+<meta name="twitter:description" content="Use the ESP32 with IRremote library to decode infrared signals from any remote control, store the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from a web-based universal remote dashboard.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 IR Remote Control","description":"Use the ESP32 with IRremote library to decode infrared signals from any remote control, store the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from a web-based universal remote dashboard.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-ir-remote-control.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, TSOP38238 OUT"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 IR Remote Control (Beginner)","description":"Use the ESP32 with IRremote library to decode infrared signals from any remote control, store the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from a web-based universal remote dashboard.","step":[{"@type":"HowToStep","position":1,"name":"IR Modulation and Demodulation: Infrared remotes transmit data by modulating an IR LED at 38 kHz. Th…","text":"IR Modulation and Demodulation: Infrared remotes transmit data by modulating an IR LED at 38 kHz. The TSOP38238 receiver contains a bandpass filter tuned to 38 kHz and a demodulator that strips the carrier, outputting a clean digital pulse pattern. The ESP32 measures pulse widths to decode the data."},{"@type":"HowToStep","position":2,"name":"IR Protocol Library: The IRremote library decodes over 40 IR protocols including NEC (most TVs), Sam…","text":"IR Protocol Library: The IRremote library decodes over 40 IR protocols including NEC (most TVs), Samsung, Sony SIRC, Philips RC5/RC6, and DAIKIN (air conditioners). IrReceiver.decode() returns true when a complete frame is received and fills the decodedIRData structure with protocol, address, and command."},{"@type":"HowToStep","position":3,"name":"Protocol, Address, Command Structure: Most IR protocols encode a device address (identifies the spec…","text":"Protocol, Address, Command Structure: Most IR protocols encode a device address (identifies the specific appliance model) and a command byte (identifies the button pressed). The NEC protocol uses 8-bit address and 8-bit command with inverted bytes for error checking. Recording these three values is sufficient to replay any button."},{"@type":"HowToStep","position":4,"name":"IrReceiver.resume(): After decoding a signal, the receiver is paused to prevent re-decoding the same…","text":"IrReceiver.resume(): After decoding a signal, the receiver is paused to prevent re-decoding the same transmission. resume() must be called to re-arm the receiver for the next signal. Forgetting this call causes the receiver to appear non-functional after the first press."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 IR Remote Control?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, TSOP38238 OUT, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 IR Remote Control require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 IR Remote Control?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Home Automation","item":"https://esp32engine.com/category/home-automation.html"},{"@type":"ListItem","position":3,"name":"ESP32 IR Remote Control","item":"https://esp32engine.com/projects/esp32-ir-remote-control.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/home-automation.html">Home Automation</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/home-automation.html">Home Automation</a></li><li aria-current="page">ESP32 IR Remote Control</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 IR Remote Control</h1>
+          <div class="article-badges"><span class="badge badge-cat">Smart Home</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Use the ESP32 with IRremote library to decode infrared signals from any remote control, store the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from a web-based universal remote dashboard.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-home parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect a TSOP38238 IR receiver to the ESP32 and use the IRremote library to decode infrared signals from any remote control. Pointing a TV remote at the receiver and pressing buttons prints the protocol name, address, and command code to the Serial Monitor. You will identify and record the codes for your specific remote model.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× TSOP38238 IR receiver module — 38 kHz carrier; 3-pin (OUT, GND, VCC)</span></li><li><span>1× IR LED (940 nm) — For transmitting IR codes</span></li><li><span>1× 100 ohm resistor — IR LED current limiting (5 V drive)</span></li><li><span>1× Breadboard and jumper wires</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>TSOP38238 OUT</td><td>GPIO 15</td><td>IR receiver data output</td></tr><tr><td>TSOP38238 VCC</td><td>3.3 V</td><td></td></tr><tr><td>TSOP38238 GND</td><td>GND</td><td></td></tr><tr><td>IR LED anode</td><td>GPIO 4</td><td>100 ohm resistor in series; cathode to GND</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ir-remote-control_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 IR Remote Control - Beginner
+// Decode any IR remote and print protocol, address, command
+
+#include &lt;IRremote.hpp&gt;
+
+const int IR_RECV_PIN = 15;
+const int IR_SEND_PIN = 4;
+
+void setup() {
+  Serial.begin(115200);
+  IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);
+  Serial.println(&quot;IR Receiver ready. Point remote and press any button.&quot;);
+}
+
+void loop() {
+  if (IrReceiver.decode()) {
+    Serial.println(&quot;===== IR SIGNAL RECEIVED =====&quot;);
+    Serial.printf(&quot;Protocol : %sn&quot;,
+      getProtocolString(IrReceiver.decodedIRData.protocol));
+    Serial.printf(&quot;Address  : 0x%04Xn&quot;,
+      IrReceiver.decodedIRData.address);
+    Serial.printf(&quot;Command  : 0x%02Xn&quot;,
+      IrReceiver.decodedIRData.command);
+    Serial.printf(&quot;Raw data : 0x%08lXn&quot;,
+      IrReceiver.decodedIRData.decodedRawData);
+    IrReceiver.printIRResultShort(&amp;Serial);
+    Serial.println();
+    IrReceiver.resume(); // ready for next signal
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>IR Modulation and Demodulation: Infrared remotes transmit data by modulating an IR LED at 38 kHz. The TSOP38238 receiver contains a bandpass filter tuned to 38 kHz and a demodulator that strips the carrier, outputting a clean digital pulse pattern. The ESP32 measures pulse widths to decode the data.</p></div><div class="step"><span class="step-no">02</span><p>IR Protocol Library: The IRremote library decodes over 40 IR protocols including NEC (most TVs), Samsung, Sony SIRC, Philips RC5/RC6, and DAIKIN (air conditioners). IrReceiver.decode() returns true when a complete frame is received and fills the decodedIRData structure with protocol, address, and command.</p></div><div class="step"><span class="step-no">03</span><p>Protocol, Address, Command Structure: Most IR protocols encode a device address (identifies the specific appliance model) and a command byte (identifies the button pressed). The NEC protocol uses 8-bit address and 8-bit command with inverted bytes for error checking. Recording these three values is sufficient to replay any button.</p></div><div class="step"><span class="step-no">04</span><p>IrReceiver.resume(): After decoding a signal, the receiver is paused to prevent re-decoding the same transmission. resume() must be called to re-arm the receiver for the next signal. Forgetting this call causes the receiver to appear non-functional after the first press.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Record unknown remote codes for documentation</li><li>Identify which IR protocol your TV uses before building a transmitter</li><li>Audit all button codes on an air conditioner remote for full control</li><li>Reverse-engineer IR codes for devices without publicly available documentation</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>No IR signal received even when pressing remote buttons</h4><p>Aim the remote directly at the TSOP38238 within 30 cm for initial testing. Check the receiver pinout; many TSOP modules have OUT on the left, GND in the middle, and VCC on the right when the flat face is toward you.</p></div><div class="trouble-item"><h4>Protocol shows UNKNOWN</h4><p>Some devices use non-standard or proprietary protocols. Print the raw pulse timing using IrReceiver.printIRResultRawFormatted() to see the raw on/off durations and manually decode the protocol structure.</p></div><div class="trouble-item"><h4>Same button decodes differently each press</h4><p>Some protocols (NEC, RC5) use toggle bits that alternate between presses to distinguish held keys from repeated presses. Mask the toggle bit when comparing codes; use only address and command fields.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add an IR LED and replay a recorded code using IrSender.sendNEC(address, command, repeats)</li><li>Store 10 codes in NVS keyed by button number and replay with a number pad</li><li>Add an OLED showing the last decoded protocol and command</li><li>Add a web page listing all stored codes as clickable buttons</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 IR Remote Control?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TSOP38238 OUT, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 IR Remote Control require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 IR Remote Control?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build creates a universal remote cloner. First, a learning mode captures up to 10 button codes from any existing remote and stores them in NVS. Then a web interface served by the ESP32 displays 10 buttons labelled with device names (TV Power, Vol Up, HDMI 1, etc.). Pressing a button on the web page transmits the stored IR code via the IR LED. A physical reset button erases NVS and enters learning mode again.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× TSOP38238 IR receiver</span></li><li><span>1× IR LED 940 nm</span></li><li><span>1× 2N2222 NPN transistor — IR LED current driver</span></li><li><span>1× 100 ohm resistor (base)</span></li><li><span>1× 10 ohm resistor (collector) — IR LED limits to ~150 mA peak</span></li><li><span>1× Tactile button — Reset / learn mode trigger</span></li><li><span>1× Wi-Fi router — Web dashboard access</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>TSOP38238 OUT</td><td>GPIO 15</td><td></td></tr><tr><td>IR LED via 2N2222</td><td>GPIO 4 (base via 100R)</td><td>Collector to IR LED anode; emitter to GND</td></tr><tr><td>Reset button</td><td>GPIO 0 to GND</td><td>Pull-up; hold 3 s to enter learn mode</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ir-remote-control_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Universal IR Remote Cloner - Intermediate
+#include &lt;IRremote.hpp&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;Preferences.h&gt;
+
+WebServer server(80);
+Preferences prefs;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const int IR_RECV=15, IR_SEND=4, BTN=0;
+const int MAX_CODES=10;
+
+struct IRCode { uint8_t protocol; uint16_t address; uint8_t command; };
+IRCode codes[MAX_CODES];
+String labels[MAX_CODES];
+int numCodes=0;
+bool learnMode=false;
+int learnIndex=0;
+
+void loadCodes(){
+  prefs.begin(&quot;ir&quot;,true);
+  numCodes=prefs.getInt(&quot;n&quot;,0);
+  for(int i=0;i&lt;numCodes;i++){
+    String k=String(i);
+    codes[i].protocol=prefs.getUChar((&quot;p&quot;+k).c_str(),0);
+    codes[i].address=prefs.getUShort((&quot;a&quot;+k).c_str(),0);
+    codes[i].command=prefs.getUChar((&quot;c&quot;+k).c_str(),0);
+    labels[i]=prefs.getString((&quot;l&quot;+k).c_str(),&quot;Button &quot;+k);
+  }
+  prefs.end();
+}
+
+void saveCodes(){
+  prefs.begin(&quot;ir&quot;,false);
+  prefs.putInt(&quot;n&quot;,numCodes);
+  for(int i=0;i&lt;numCodes;i++){
+    String k=String(i);
+    prefs.putUChar((&quot;p&quot;+k).c_str(),codes[i].protocol);
+    prefs.putUShort((&quot;a&quot;+k).c_str(),codes[i].address);
+    prefs.putUChar((&quot;c&quot;+k).c_str(),codes[i].command);
+    prefs.putString((&quot;l&quot;+k).c_str(),labels[i]);
+  }
+  prefs.end();
+}
+
+void serveRemote(){
+  String html=&quot;&lt;html&gt;&lt;body&gt;&lt;h2&gt;IR Remote&lt;/h2&gt;&quot;;
+  if(learnMode) html+=&quot;&lt;p style=&quot;color:red&quot;&gt;LEARN MODE: point remote at sensor&lt;/p&gt;&quot;;
+  for(int i=0;i&lt;numCodes;i++){
+    html+=&quot;&lt;form method=POST action=/send&gt;&quot;
+          &quot;&lt;input type=hidden name=i value=&quot;+String(i)+&quot;&gt;&quot;
+          &quot;&lt;button type=submit&gt;&quot;+labels[i]+&quot;&lt;/button&gt;&lt;/form&gt;&lt;br&gt;&quot;;
+  }
+  html+=&quot;&lt;/body&gt;&lt;/html&gt;&quot;;
+  server.send(200,&quot;text/html&quot;,html);
+}
+
+void handleSend(){
+  int idx=server.arg(&quot;i&quot;).toInt();
+  if(idx&lt;0||idx&gt;=numCodes){ server.send(400,&quot;text/plain&quot;,&quot;invalid&quot;); return; }
+  IrSender.sendNEC(codes[idx].address,codes[idx].command,2);
+  server.send(200,&quot;text/plain&quot;,&quot;Sent: &quot;+labels[idx]);
+}
+
+void setup(){
+  Serial.begin(115200);
+  loadCodes();
+  IrReceiver.begin(IR_RECV,DISABLE_LED_FEEDBACK);
+  IrSender.begin(IR_SEND);
+  pinMode(BTN,INPUT_PULLUP);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  server.on(&quot;/&quot;,serveRemote);
+  server.on(&quot;/send&quot;,HTTP_POST,handleSend);
+  server.begin();
+  Serial.printf(&quot;Remote dashboard: http://%s/n&quot;,WiFi.localIP().toString().c_str());
+}
+
+void loop(){
+  server.handleClient();
+  // Hold button for 3 s to enter learn mode
+  if(digitalRead(BTN)==LOW){
+    delay(3000);
+    if(digitalRead(BTN)==LOW){
+      learnMode=true; learnIndex=0; numCodes=0;
+      Serial.println(&quot;Learn mode: press button 1 on your remote&quot;);
+    }
+  }
+  if(learnMode &amp;&amp; IrReceiver.decode()){
+    codes[learnIndex]={
+      (uint8_t)IrReceiver.decodedIRData.protocol,
+      IrReceiver.decodedIRData.address,
+      (uint8_t)IrReceiver.decodedIRData.command
+    };
+    labels[learnIndex]=&quot;Button &quot;+String(learnIndex+1);
+    Serial.printf(&quot;Learned #%d: proto=%d addr=0x%04X cmd=0x%02Xn&quot;,
+      learnIndex+1,codes[learnIndex].protocol,
+      codes[learnIndex].address,codes[learnIndex].command);
+    learnIndex++;
+    numCodes=learnIndex;
+    IrReceiver.resume();
+    if(learnIndex&gt;=MAX_CODES){ learnMode=false; saveCodes();
+      Serial.println(&quot;Learning complete. Saved.&quot;); }
+    else Serial.printf(&quot;Press button %dn&quot;,learnIndex+1);
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Learning Mode Code Capture: Holding the physical button for 3 seconds enters learning mode. The ESP32 waits for IR signals and records each decoded protocol, address, and command into the codes[] array. After 10 presses the array is full and codes are saved to NVS. Labels default to &quot;Button N&quot; and can be renamed in NVS.</p></div><div class="step"><span class="step-no">02</span><p>NVS Code Storage: Each stored code occupies three NVS keys: protocol (1 byte), address (2 bytes), command (1 byte), plus a string label. 10 codes use approximately 400 bytes of NVS space, well within the 8 KB available in the default NVS partition.</p></div><div class="step"><span class="step-no">03</span><p>Transistor-Driven IR LED: The 2N2222 NPN transistor amplifies the 10-20 mA GPIO output to 150 mA through the IR LED, tripling the transmission power compared to direct GPIO drive. The base resistor (100 ohm) limits base current and the collector resistor (10 ohm) sets the LED peak current.</p></div><div class="step"><span class="step-no">04</span><p>Web-Based Button Panel: The web page renders one HTML form per stored code. Each form POST to /send includes the code index. The server handler calls IrSender.sendNEC() with the stored address and command. With repeats=2, the signal is sent twice to handle receivers that require repeated frames.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Universal remote for home entertainment system control</li><li>IR blaster for home automation hub controlling legacy devices</li><li>Shared TV remote backup accessible from any smartphone</li><li>Automated IR command sender for testing IR receiver devices</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Learned code does not control the device</h4><p>Some protocols (Samsung, LG) require the exact repeat count and timing of the original remote. Try increasing the repeats parameter in sendNEC() from 2 to 5. Also verify the protocol matches; Samsung uses a different protocol than NEC even though the timings look similar.</p></div><div class="trouble-item"><h4>Web page shows no buttons</h4><p>No codes have been learned yet. Enter learn mode, capture 10 button presses, then refresh the page. If codes were previously saved, check that loadCodes() reads the correct NVS namespace.</p></div><div class="trouble-item"><h4>Learn mode captures phantom presses</h4><p>Ambient IR from sunlight, fluorescent lights, or other IR remotes in the room can trigger false captures. Learn codes in a dark room away from direct sunlight and other remotes. Alternatively add a 10 us IrReceiver.isIdle() check before treating a signal as valid.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a /label endpoint to rename button labels via a web form without re-learning codes</li><li>Add support for multi-protocol: learn Samsung, Sony, and NEC codes on the same remote</li><li>Add a schedule: automatically send a code at a specific time (e.g. TV on at 19:00)</li><li>Add MQTT publishing so each button press is also logged to a home automation hub</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 IR Remote Control?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TSOP38238 OUT, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 IR Remote Control require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 IR Remote Control?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build is a Wi-Fi IR blaster controlled via MQTT. An MQTT message to ir/send with a JSON payload specifying protocol, address, and command triggers an IR transmission. Home Assistant and Node-RED can send IR commands to control any IR device as part of automated scenes and routines. A raw-code endpoint allows replaying pulse-duration arrays for non-standard protocols captured with a logic analyser.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× IR LED + 2N2222 driver</span></li><li><span>1× TSOP38238 IR receiver — For learning mode</span></li><li><span>1× MQTT broker (Mosquitto)</span></li><li><span>1× Home Assistant or Node-RED</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>IR LED via 2N2222</td><td>GPIO 4</td><td></td></tr><tr><td>TSOP38238 OUT</td><td>GPIO 15</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ir-remote-control_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 IR Blaster - Advanced (MQTT controlled)
+// MQTT topic: ir/send  Payload: {&quot;protocol&quot;:&quot;NEC&quot;,&quot;address&quot;:32,&quot;command&quot;:2}
+// MQTT topic: ir/learn Payload: &quot;start&quot; to enter learn mode
+#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;IRremote.hpp&gt;
+
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const int IR_RECV=15, IR_SEND=4;
+bool learnMode=false;
+
+void mqttCallback(char* topic, byte* payload, unsigned int len){
+  String t(topic), msg((char*)payload,len);
+  if(t==&quot;ir/learn&quot; &amp;&amp; msg==&quot;start&quot;){
+    learnMode=true;
+    IrReceiver.start();
+    mqtt.publish(&quot;ir/status&quot;,&quot;learn_mode&quot;);
+    return;
+  }
+  if(t==&quot;ir/send&quot;){
+    StaticJsonDocument&lt;128&gt; doc;
+    if(deserializeJson(doc,msg)) return;
+    uint16_t addr=doc[&quot;address&quot;]|0;
+    uint8_t  cmd =doc[&quot;command&quot;]|0;
+    String   proto=doc[&quot;protocol&quot;]|&quot;NEC&quot;;
+    if(proto==&quot;NEC&quot;)     IrSender.sendNEC(addr,cmd,2);
+    else if(proto==&quot;SAMSUNG&quot;) IrSender.sendSamsung(addr,cmd,2);
+    else if(proto==&quot;SONY&quot;)    IrSender.sendSony(addr,cmd,2,SIRCS_12_PROTOCOL);
+    char buf[64];
+    snprintf(buf,64,&quot;{&quot;sent&quot;:&quot;%s&quot;,&quot;addr&quot;:%u,&quot;cmd&quot;:%u}&quot;,
+      proto.c_str(),addr,cmd);
+    mqtt.publish(&quot;ir/result&quot;,buf);
+  }
+}
+
+void setup(){
+  Serial.begin(115200);
+  IrReceiver.begin(IR_RECV,DISABLE_LED_FEEDBACK);
+  IrSender.begin(IR_SEND);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  mqtt.setServer(MQTT_HOST,1883);
+  mqtt.setCallback(mqttCallback);
+}
+
+void loop(){
+  if(!mqtt.connected()){
+    mqtt.connect(&quot;IRBlaster&quot;);
+    mqtt.subscribe(&quot;ir/send&quot;);
+    mqtt.subscribe(&quot;ir/learn&quot;);
+  }
+  mqtt.loop();
+  if(learnMode &amp;&amp; IrReceiver.decode()){
+    StaticJsonDocument&lt;128&gt; doc;
+    doc[&quot;protocol&quot;]=getProtocolString(IrReceiver.decodedIRData.protocol);
+    doc[&quot;address&quot;]=IrReceiver.decodedIRData.address;
+    doc[&quot;command&quot;]=IrReceiver.decodedIRData.command;
+    char buf[128]; serializeJson(doc,buf);
+    mqtt.publish(&quot;ir/learned&quot;,buf);
+    IrReceiver.resume();
+    learnMode=false;
+    mqtt.publish(&quot;ir/status&quot;,&quot;ready&quot;);
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>MQTT Command Dispatch: The ESP32 subscribes to ir/send on startup. When a JSON payload arrives, the callback deserialises the protocol, address, and command fields and calls the appropriate IRremote send function. Results are published to ir/result for Home Assistant state tracking.</p></div><div class="step"><span class="step-no">02</span><p>Multi-Protocol Support: The callback dispatches to different IrSender functions based on the protocol field. NEC covers most Asian brands; Samsung uses a Samsung-specific 32-bit format; Sony uses 12, 15, or 20-bit SIRC. Adding more protocols requires only an additional else-if branch.</p></div><div class="step"><span class="step-no">03</span><p>MQTT Learn Mode: Publishing &quot;start&quot; to ir/learn activates the IR receiver for one code capture. The decoded result is published to ir/learned as a JSON object with protocol, address, and command. Home Assistant can then save this as a script that publishes back to ir/send to replay the code.</p></div><div class="step"><span class="step-no">04</span><p>Home Assistant Integration: An HA MQTT integration entity subscribes to ir/result for state feedback. HA scripts send the JSON payload to ir/send. Scenes combine multiple IR commands (TV on, HDMI input 1, volume 20) into a single scene activation.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Home Assistant IR blaster for complete home theatre control</li><li>Node-RED automation triggering IR commands on schedules</li><li>IR command library server for multi-room control</li><li>Legacy appliance integration into modern smart home systems</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>MQTT payload causes deserialization error</h4><p>Ensure the JSON payload uses double quotes and correct field names: {\&quot;protocol\&quot;:\&quot;NEC\&quot;,\&quot;address\&quot;:32,\&quot;command\&quot;:2}. Use the ArduinoJson assistant to validate the document capacity matches the payload size.</p></div><div class="trouble-item"><h4>Home Assistant cannot send commands to the blaster</h4><p>Verify the MQTT topic spelling matches exactly: ir/send (case-sensitive). In HA, use the MQTT developer tools to publish a test message and confirm the ESP32 receives and processes it.</p></div><div class="trouble-item"><h4>Samsung TV does not respond to sendSamsung()</h4><p>Some Samsung models require sendSamsung48() for 48-bit codes. Try decoding the original Samsung remote with the beginner sketch to identify the exact protocol variant and bit depth.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a web UI listing all known codes with one-click send buttons</li><li>Add a code database stored in SPIFFS JSON for persistent multi-device management</li><li>Add raw pulse replay for exotic protocols: publish an array of pulse durations to ir/raw</li><li>Add an IR receiver auto-discover mode that scans and publishes all received codes from any nearby remote</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 IR Remote Control?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TSOP38238 OUT, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 IR Remote Control require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 IR Remote Control?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Home Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-home-climate-automation.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Home Climate Automation</h3></div></a><a class="related-card" href="esp32-smart-door-lock.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Smart Door Lock</h3></div></a><a class="related-card" href="esp32-smart-power-strip.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Smart Power Strip</h3></div></a><a class="related-card" href="esp32-smart-thermostat.html"><div class="related-thumb t-home"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 30L32 14L54 30V50H10V30Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="36" width="16" height="14" rx="1" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.8"/><path d="M44 22C44 22 48 18 52 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="50" cy="18" r="2" fill="currentColor"/></svg></div><div class="related-body"><span class="badge badge-cat">Smart Home</span><h3>ESP32 Smart Thermostat</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

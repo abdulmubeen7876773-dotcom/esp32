@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 
 COMPLETE = {
+    "bme280",
     "dht22",
     "hc-sr04",
     "pir-sensor",

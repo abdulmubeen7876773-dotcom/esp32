@@ -1186,11 +1186,11 @@ def home_v3_mission_feature(guides: list) -> str:
 
 
 def home_v3_component_feature() -> str:
-    """Section 6 — Homepage v3: Featured Component (DHT22 spotlight). White bg."""
+    """Section 6 — Homepage v3: Featured Component (BME280 spotlight). White bg."""
     SPECS = [
-        ("Measures", "Air temperature and humidity"),
+        ("Measures", "Temperature, humidity, and pressure"),
         ("Voltage", "3.3 V — direct ESP32 compatible"),
-        ("Best for", "Weather stations, room monitors"),
+        ("Best for", "Weather stations, altitude tracking"),
     ]
     spec_items = "".join(
         f'<li class="v3-spec-item">'
@@ -1200,19 +1200,19 @@ def home_v3_component_feature() -> str:
         for label, val in SPECS
     )
     arrow = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    return f"""<section class="v3-component-feature reveal" aria-label="Featured Component: DHT22">
+    return f"""<section class="v3-component-feature reveal" aria-label="Featured Component: BME280">
   <div class="wrap v3-component-feature-inner">
     <div class="v3-component-image-panel">
-      <img src="https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg"
-           alt="DHT22 Temperature and Humidity Sensor"
+      <img src="https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg"
+           alt="BME280 environmental sensor breakout board"
            loading="lazy" width="200" height="200"/>
     </div>
     <div class="v3-component-content">
       <p class="v3-component-eyebrow">Featured Component</p>
-      <h2 class="v3-component-name">DHT22 Temperature &amp; Humidity Sensor</h2>
-      <p class="v3-component-summary">The most popular sensor for ESP32 weather projects. Three wires — power, ground, data — and you’re reading live temperature in minutes.</p>
+      <h2 class="v3-component-name">BME280 Environmental Sensor</h2>
+      <p class="v3-component-summary">One I2C chip reads temperature, humidity, and barometric pressure — the upgrade path when you want real weather data from a single module.</p>
       <ul class="v3-spec-list">{spec_items}</ul>
-      <a class="v3-btn-component" href="/components/dht22.html">Learn about DHT22 {arrow}</a>
+      <a class="v3-btn-component" href="/components/bme280.html">Learn about BME280 {arrow}</a>
     </div>
   </div>
 </section>"""
@@ -1277,12 +1277,14 @@ def home_v3_why() -> str:
 </section>"""
 
 
-def home_v3_progress(project_count: int = 15, guide_count: int = 5) -> str:
+def home_v3_progress(
+    project_count: int = 15, guide_count: int = 5, component_count: int = 7
+) -> str:
     """Section 9 — Homepage v3: Community Progress (large stat numbers). Deep dark bg."""
     STATS = [
         (str(project_count), "Projects"),
         (str(guide_count), "Missions"),
-        ("6", "Components"),
+        (str(component_count), "Components"),
         ("100%", "Free"),
     ]
     stats_html = "".join(

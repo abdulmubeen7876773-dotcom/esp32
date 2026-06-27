@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 LED Matrix Display | ESP32 Engine</title>
+<meta name="description" content="Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-led-matrix-display.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 LED Matrix Display | ESP32 Engine">
+<meta property="og:description" content="Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-led-matrix-display.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 LED Matrix Display | ESP32 Engine">
+<meta name="twitter:description" content="Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 LED Matrix Display","description":"Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-led-matrix-display.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, MAX7219 DIN (MOSI)"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 LED Matrix Display (Beginner)","description":"Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.","step":[{"@type":"HowToStep","position":1,"name":"MAX7219 Serial Interface: The MAX7219 uses a 3-wire SPI interface (DIN, CLK, CS) to receive 16-bit w…","text":"MAX7219 Serial Interface: The MAX7219 uses a 3-wire SPI interface (DIN, CLK, CS) to receive 16-bit words: 4-bit register address and 8-bit data. It decodes the address to control individual rows of 8 LEDs. The ESP32 Arduino SPI driver sends bytes at up to 10 MHz; the MAX7219 accepts up to 25 MHz."},{"@type":"HowToStep","position":2,"name":"Daisy-Chain Architecture: Multiple MAX7219 modules chain together by connecting DOUT of one to DIN o…","text":"Daisy-Chain Architecture: Multiple MAX7219 modules chain together by connecting DOUT of one to DIN of the next. The CS pin is shared. To write to module N in a chain of M modules, the SPI data is shifted through all M modules and each module latches its 16-bit word when CS rises. This is why the number of devices (MAX_DEVICES) must match the chain length."},{"@type":"HowToStep","position":3,"name":"MD_Parola Scroll Library: MD_Parola abstracts scrolling, fading, and display animations over MD_MAX7…","text":"MD_Parola Scroll Library: MD_Parola abstracts scrolling, fading, and display animations over MD_MAX72XX. displayScroll() configures a non-blocking scroll that advances one pixel per SCROLL_SPEED milliseconds. displayAnimate() must be called in loop() to advance the animation; it returns true when the current animation cycle completes."},{"@type":"HowToStep","position":4,"name":"Brightness Control: The MAX7219 has a 4-bit intensity register controlling PWM duty cycle from 1/32 …","text":"Brightness Control: The MAX7219 has a 4-bit intensity register controlling PWM duty cycle from 1/32 (dim, level 0) to 31/32 (bright, level 15). setIntensity(5) sets a comfortable indoor brightness. Reduce to 1-2 for dark rooms; increase to 12-15 for bright retail environments."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 LED Matrix Display?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, MAX7219 DIN (MOSI), a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 LED Matrix Display require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 LED Matrix Display?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to LED Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"LED Projects","item":"https://esp32engine.com/category/led-projects.html"},{"@type":"ListItem","position":3,"name":"ESP32 LED Matrix Display","item":"https://esp32engine.com/projects/esp32-led-matrix-display.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/led-projects.html">LED Projects</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/led-projects.html">LED Projects</a></li><li aria-current="page">ESP32 LED Matrix Display</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 LED Matrix Display</h1>
+          <div class="article-badges"><span class="badge badge-cat">LED</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-led parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 10C22 10 16 18 16 28C16 36 22 40 24 44H40C42 40 48 36 48 28C48 18 42 10 32 10Z" stroke="currentColor" stroke-width="2"/><path d="M24 48H40V52H24V48Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1.6"/><path d="M26 52H38V56H26V52Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect a single MAX7219 8x8 LED matrix module to the ESP32 via SPI and use the MD_MAX72XX library to scroll a text message across the display. The message, scroll speed, and brightness are set in the sketch. This teaches SPI communication, the MAX7219 daisy-chain architecture, and font rendering on an 8x8 dot matrix.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× MAX7219 8x8 LED matrix module — Pre-assembled module with MAX7219 and 64 LEDs</span></li><li><span>1× Breadboard and jumper wires</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>MAX7219 DIN (MOSI)</td><td>GPIO 23</td><td>SPI MOSI</td></tr><tr><td>MAX7219 CS (CS)</td><td>GPIO 5</td><td>SPI chip select</td></tr><tr><td>MAX7219 CLK</td><td>GPIO 18</td><td>SPI clock</td></tr><tr><td>MAX7219 VCC</td><td>5 V (Vin)</td><td>Matrix LEDs need 5 V for full brightness</td></tr><tr><td>MAX7219 GND</td><td>GND</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-led-matrix-display_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 LED Matrix Display - Beginner
+// Single MAX7219 8x8; scrolling text via MD_MAX72XX library
+// Install: MD_MAX72XX by MajicDesigns in Library Manager
+// Install: MD_Parola by MajicDesigns in Library Manager
+
+#include &lt;MD_Parola.h&gt;
+#include &lt;MD_MAX72xx.h&gt;
+#include &lt;SPI.h&gt;
+
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
+#define MAX_DEVICES   1
+#define CS_PIN        5
+
+MD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+
+const char* message = &quot;Hello ESP32! &quot;;
+const uint8_t SCROLL_SPEED = 60; // milliseconds per step (lower = faster)
+const uint8_t BRIGHTNESS   = 5;  // 0 (dim) to 15 (full)
+
+void setup() {
+  Serial.begin(115200);
+  display.begin();
+  display.setIntensity(BRIGHTNESS);
+  display.displayClear();
+  display.displayScroll(message, PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);
+  Serial.println(&quot;LED matrix display ready.&quot;);
+}
+
+void loop() {
+  if (display.displayAnimate()) {
+    // Animation complete — restart scroll
+    display.displayReset();
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>MAX7219 Serial Interface: The MAX7219 uses a 3-wire SPI interface (DIN, CLK, CS) to receive 16-bit words: 4-bit register address and 8-bit data. It decodes the address to control individual rows of 8 LEDs. The ESP32 Arduino SPI driver sends bytes at up to 10 MHz; the MAX7219 accepts up to 25 MHz.</p></div><div class="step"><span class="step-no">02</span><p>Daisy-Chain Architecture: Multiple MAX7219 modules chain together by connecting DOUT of one to DIN of the next. The CS pin is shared. To write to module N in a chain of M modules, the SPI data is shifted through all M modules and each module latches its 16-bit word when CS rises. This is why the number of devices (MAX_DEVICES) must match the chain length.</p></div><div class="step"><span class="step-no">03</span><p>MD_Parola Scroll Library: MD_Parola abstracts scrolling, fading, and display animations over MD_MAX72XX. displayScroll() configures a non-blocking scroll that advances one pixel per SCROLL_SPEED milliseconds. displayAnimate() must be called in loop() to advance the animation; it returns true when the current animation cycle completes.</p></div><div class="step"><span class="step-no">04</span><p>Brightness Control: The MAX7219 has a 4-bit intensity register controlling PWM duty cycle from 1/32 (dim, level 0) to 31/32 (bright, level 15). setIntensity(5) sets a comfortable indoor brightness. Reduce to 1-2 for dark rooms; increase to 12-15 for bright retail environments.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Reception desk name ticker display</li><li>Desk clock with scrolling date and time</li><li>Live score display for sports events</li><li>Workshop safety message board</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Display shows random lit pixels</h4><p>The hardware type (FC16_HW, DR0CR0RR0_HW, etc.) must match your module. Try each hardware type constant in the MD_MAX72XX enumeration until the display shows correct output. FC16_HW is the most common for cheap Chinese modules.</p></div><div class="trouble-item"><h4>Text appears mirrored or upside down</h4><p>Some MAX7219 modules have the connector on a different side. Add display.setZoneEffect(0, true, PA_FLIP_LR) or PA_FLIP_UD to correct orientation. Also try changing HARDWARE_TYPE to MD_MAX72XX::GENERIC_HW.</p></div><div class="trouble-item"><h4>Scrolling is very dim even at intensity 15</h4><p>The MAX7219 module VCC must be 5 V. At 3.3 V the LED current is limited and brightness is reduced. Use the ESP32 Vin pin which provides 5 V from the USB supply. Also check the module ISET resistor; a 10 kohm resistor sets full-scale current to approximately 40 mA per LED.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Chain 4 MAX7219 modules for a 32x8 display with longer message capacity</li><li>Add a button to cycle through several preset messages</li><li>Add an RTC module and display the current time and date</li><li>Add Wi-Fi and set the message via a web interface</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 LED Matrix Display?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, MAX7219 DIN (MOSI), a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 LED Matrix Display require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 LED Matrix Display?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to LED Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build chains four MAX7219 modules for a 32x8 display and adds a web interface where users type a custom message and set scroll speed and brightness from a browser. The current message and settings are stored in NVS so they survive power cuts. An NTP clock mode displays the current time scrolling continuously when no custom message is set.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>4× MAX7219 8x8 LED matrix module — Chained for 32x8 display</span></li><li><span>1× Wi-Fi router — Web control + NTP</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>MAX7219 chain DIN/CS/CLK</td><td>GPIO 23 / 5 / 18</td><td>Same as beginner; chain modules DOUT to DIN</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-led-matrix-display_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 LED Matrix - Intermediate (4x MAX7219 + web control + NTP clock)
+#include &lt;MD_Parola.h&gt;
+#include &lt;MD_MAX72xx.h&gt;
+#include &lt;SPI.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;Preferences.h&gt;
+#include &lt;time.h&gt;
+
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
+#define MAX_DEVICES 4
+#define CS_PIN 5
+
+MD_Parola display(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+WebServer server(80);
+Preferences prefs;
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+
+String message=&quot;Hello!&quot;;
+int speed=60, brightness=5;
+bool clockMode=false;
+
+void saveSettings(){
+  prefs.begin(&quot;matrix&quot;,false);
+  prefs.putString(&quot;msg&quot;,message);
+  prefs.putInt(&quot;spd&quot;,speed);
+  prefs.putInt(&quot;bri&quot;,brightness);
+  prefs.end();
+}
+
+void loadSettings(){
+  prefs.begin(&quot;matrix&quot;,true);
+  message=prefs.getString(&quot;msg&quot;,&quot;Hello!&quot;);
+  speed=prefs.getInt(&quot;spd&quot;,60);
+  brightness=prefs.getInt(&quot;bri&quot;,5);
+  prefs.end();
+}
+
+void applyDisplay(){
+  display.setIntensity(brightness);
+  display.displayClear();
+  display.displayScroll(message.c_str(),PA_LEFT,PA_SCROLL_LEFT,speed);
+}
+
+void servePanel(){
+  String html=&quot;&lt;html&gt;&lt;body&gt;&lt;h2&gt;LED Matrix Control&lt;/h2&gt;&quot;
+    &quot;&lt;form method=POST action=/set&gt;&quot;
+    &quot;&lt;label&gt;Message: &lt;input name=msg value=&quot;&quot;+message+&quot;&quot;&gt;&lt;/label&gt;&lt;br&gt;&lt;br&gt;&quot;
+    &quot;&lt;label&gt;Speed (ms): &lt;input name=spd type=number value=&quot;+String(speed)+&quot;&gt;&lt;/label&gt;&lt;br&gt;&lt;br&gt;&quot;
+    &quot;&lt;label&gt;Brightness 0-15: &lt;input name=bri type=number min=0 max=15 value=&quot;+String(brightness)+&quot;&gt;&lt;/label&gt;&lt;br&gt;&lt;br&gt;&quot;
+    &quot;&lt;input type=checkbox name=clk&quot;+(clockMode?&quot; checked&quot;:&quot;&quot;)+&quot;&gt; Clock mode&lt;br&gt;&lt;br&gt;&quot;
+    &quot;&lt;button type=submit&gt;Update&lt;/button&gt;&lt;/form&gt;&lt;/body&gt;&lt;/html&gt;&quot;;
+  server.send(200,&quot;text/html&quot;,html);
+}
+
+void handleSet(){
+  if(server.hasArg(&quot;msg&quot;))  message=server.arg(&quot;msg&quot;);
+  if(server.hasArg(&quot;spd&quot;))  speed=server.arg(&quot;spd&quot;).toInt();
+  if(server.hasArg(&quot;bri&quot;))  brightness=constrain(server.arg(&quot;bri&quot;).toInt(),0,15);
+  clockMode=server.hasArg(&quot;clk&quot;);
+  saveSettings();
+  applyDisplay();
+  server.sendHeader(&quot;Location&quot;,&quot;/&quot;); server.send(302,&quot;&quot;,&quot;&quot;);
+}
+
+void setup(){
+  Serial.begin(115200);
+  display.begin(); display.setIntensity(5);
+  loadSettings();
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  server.on(&quot;/&quot;,servePanel);
+  server.on(&quot;/set&quot;,HTTP_POST,handleSet);
+  server.begin();
+  applyDisplay();
+  Serial.printf(&quot;Matrix: http://%s/n&quot;,WiFi.localIP().toString().c_str());
+}
+
+char clockBuf[32];
+void loop(){
+  server.handleClient();
+  if(clockMode){
+    struct tm ti; getLocalTime(&amp;ti);
+    sprintf(clockBuf,&quot;%02d:%02d:%02d&quot;,ti.tm_hour,ti.tm_min,ti.tm_sec);
+    if(String(clockBuf)!=message){ message=String(clockBuf); applyDisplay(); }
+  }
+  if(display.displayAnimate()) display.displayReset();
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Four-Module Chain: Setting MAX_DEVICES=4 tells MD_Parola the chain length. SPI data is shifted through all four MAX7219 chips on each write. The display presents a continuous 32-pixel-wide canvas. The scroll message moves across all four modules seamlessly without gaps.</p></div><div class="step"><span class="step-no">02</span><p>Web Settings Form: The HTML form POST sends message, speed, brightness, and a clock-mode checkbox to /set. Server-side, each arg() call extracts the posted value. After updating and saving to NVS, applyDisplay() reconfigures the scroll with the new parameters immediately.</p></div><div class="step"><span class="step-no">03</span><p>NVS Persistence: Message, speed, and brightness are saved to NVS after each web form submission. On the next power-on, loadSettings() retrieves the last configured values so the display boots with the same message without requiring reconfiguration.</p></div><div class="step"><span class="step-no">04</span><p>NTP Clock Mode: When clockMode is true, the loop builds a HH:MM:SS time string every iteration. When it differs from the current message, applyDisplay() restarts the scroll with the new time. The scroll runs continuously across the four modules showing the current time.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Reception message board updated from any browser</li><li>Retail promotion display remotely updated by staff</li><li>Clock and message display for a meeting room entrance</li><li>Sports scoreboard controllable from a tablet</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Chain of 4 shows partial text on wrong modules</h4><p>The module wiring order may be reversed relative to the visual left-to-right display order. Add display.setZoneEffect(0, true, PA_FLIP_LR) or reverse the physical chain order until text scrolls left-to-right as expected.</p></div><div class="trouble-item"><h4>Web form does not POST values correctly</h4><p>Verify server.hasArg() matches the HTML input name attributes exactly (case-sensitive). Use Serial.println(server.arg(&quot;msg&quot;)) to debug what the server receives after a form submission.</p></div><div class="trouble-item"><h4>Clock mode shows the wrong time</h4><p>Add the UTC offset in seconds to configTime(). For UTC+5: configTime(18000, 0, &quot;pool.ntp.org&quot;). For daylight-saving regions, use a POSIX timezone string as the third parameter.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a temperature sensor and rotate between time, temperature, and custom message</li><li>Add MQTT subscription so messages can be sent from Node-RED or Home Assistant</li><li>Add OTA firmware update so the sketch can be updated without physical access</li><li>Add multiple message slots rotatable via buttons on the web page</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 LED Matrix Display?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, MAX7219 DIN (MOSI), a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 LED Matrix Display require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 LED Matrix Display?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to LED Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build subscribes to multiple MQTT topics and renders a live ticker board: top row shows the current time, bottom row alternates between MQTT data feeds (stock ticker, weather, sensor readings). A Node-RED dashboard feeds live data to the MQTT topics. Custom animated transitions (slide, fade, wipe) between data items use MD_Parola zone effects.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>4× MAX7219 8x8 modules</span></li><li><span>1× MQTT broker</span></li><li><span>1× Node-RED — Data feed publisher</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Same as intermediate</td><td>GPIO 23/5/18</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-led-matrix-display_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 LED Matrix - Advanced (MQTT multi-feed ticker)
+// Subscribes to matrix/line0 and matrix/line1 for dual-row ticker content
+#include &lt;MD_Parola.h&gt;
+#include &lt;MD_MAX72xx.h&gt;
+#include &lt;SPI.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
+#define MAX_DEVICES 4
+#define CS_PIN 5
+
+MD_Parola display(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+WiFiClient wc; PubSubClient mqtt(wc);
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+
+String line0=&quot;Loading...&quot;, line1=&quot;&quot;;
+bool newData=false;
+
+void mqttCallback(char* topic, byte* payload, unsigned int len){
+  String msg((char*)payload,len);
+  if(String(topic)==&quot;matrix/line0&quot;) line0=msg;
+  if(String(topic)==&quot;matrix/line1&quot;) line1=msg;
+  newData=true;
+}
+
+void updateDisplay(){
+  String combined = line0;
+  if(line1.length()) combined += &quot;  |  &quot; + line1;
+  display.setIntensity(5);
+  display.displayClear();
+  display.displayScroll(combined.c_str(), PA_LEFT, PA_SCROLL_LEFT, 50);
+  newData=false;
+}
+
+void setup(){
+  Serial.begin(115200);
+  display.begin(); display.setIntensity(5);
+  display.displayScroll(&quot;Connecting...&quot;,PA_LEFT,PA_SCROLL_LEFT,60);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED){
+    delay(500); if(display.displayAnimate()) display.displayReset();
+  }
+  mqtt.setServer(MQTT_HOST,1883);
+  mqtt.setCallback(mqttCallback);
+}
+
+void loop(){
+  if(!mqtt.connected()){
+    mqtt.connect(&quot;MatrixDisplay&quot;);
+    mqtt.subscribe(&quot;matrix/line0&quot;);
+    mqtt.subscribe(&quot;matrix/line1&quot;);
+  }
+  mqtt.loop();
+  if(newData) updateDisplay();
+  if(display.displayAnimate()) display.displayReset();
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Dual-Topic MQTT Ticker: Two MQTT topics feed the display: matrix/line0 for the primary content (time, headline) and matrix/line1 for secondary content (temperature, score). The callback sets a newData flag. The next loop() iteration calls updateDisplay(), which combines both lines with a pipe separator and restarts the scroll.</p></div><div class="step"><span class="step-no">02</span><p>Node-RED Data Publisher: A Node-RED flow fetches weather data from an HTTP endpoint every 5 minutes and publishes the temperature and conditions to matrix/line1. An inject node with a 1-second interval publishes the current time formatted as HH:MM to matrix/line0. Additional flows can publish news headlines or sensor readings.</p></div><div class="step"><span class="step-no">03</span><p>Non-Blocking Display Animation: display.displayAnimate() returns true when the current scroll animation completes. displayReset() restarts the same scroll from the beginning. This non-blocking design allows mqtt.loop() to process incoming messages between each animation step without interrupting the display.</p></div><div class="step"><span class="step-no">04</span><p>Connection Status During Boot: While connecting to Wi-Fi, the display shows &quot;Connecting...&quot; scrolling across the modules. The animation loop runs during the Wi-Fi connection attempt so the display appears active rather than frozen. Once connected, the first MQTT data arrives and replaces the placeholder text.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Office ticker showing real-time KPI metrics from a business dashboard</li><li>Cryptocurrency price ticker with live MQTT data feed</li><li>IoT sensor data display showing temperature, humidity, and air quality</li><li>Building lobby information board updated via MQTT from a CMS</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>MQTT messages arrive but display does not update</h4><p>Verify newData is set to true in mqttCallback and checked in loop(). If updateDisplay() calls displayScroll() while a previous scroll is running, the new content may not start until displayAnimate() is called and returns true. Move updateDisplay() to inside the displayAnimate() completion block.</p></div><div class="trouble-item"><h4>Combined message is too long and scroll is very slow</h4><p>Limit line0 and line1 to 20 characters each. Longer combined messages increase the scroll duration linearly. Add truncation in the mqttCallback with line0=msg.substring(0,20).</p></div><div class="trouble-item"><h4>Display freezes when Wi-Fi reconnects</h4><p>The PubSubClient reconnect call in loop() is brief. Ensure mqtt.loop() is called every iteration and does not block. If reconnection takes more than a few hundred milliseconds, the displayAnimate() calls stop and the display freezes on the current frame.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a photoresistor to auto-adjust brightness based on ambient light level</li><li>Add animated zone transitions between line0 and line1 using MD_Parola zone effects</li><li>Add a web configurator to assign MQTT topics to each display zone at runtime</li><li>Add an alert mode: publish to matrix/alert for a red-flashing urgent message overlay</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 LED Matrix Display?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, MAX7219 DIN (MOSI), a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 LED Matrix Display require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 LED Matrix Display?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to LED Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-neopixel-music-visualizer.html"><div class="related-thumb t-led"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 10C22 10 16 18 16 28C16 36 22 40 24 44H40C42 40 48 36 48 28C48 18 42 10 32 10Z" stroke="currentColor" stroke-width="2"/><path d="M24 48H40V52H24V48Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1.6"/><path d="M26 52H38V56H26V52Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">LED</span><h3>ESP32 NeoPixel Music Visualizer</h3></div></a><a class="related-card" href="esp32-rgb-led-pattern-controller.html"><div class="related-thumb t-led"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 10C22 10 16 18 16 28C16 36 22 40 24 44H40C42 40 48 36 48 28C48 18 42 10 32 10Z" stroke="currentColor" stroke-width="2"/><path d="M24 48H40V52H24V48Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1.6"/><path d="M26 52H38V56H26V52Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">LED</span><h3>ESP32 RGB LED Pattern Controller</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a><a class="related-card" href="esp32-ai-object-detector.html"><div class="related-thumb t-ai"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="18" y="18" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="currentColor" opacity=".2"/><path d="M18 26H12M18 32H12M18 38H12M46 26H52M46 32H52M46 38H52M26 18V12M32 18V12M38 18V12M26 46V52M32 46V52M38 46V52" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">AI</span><h3>ESP32 AI Object Detector</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

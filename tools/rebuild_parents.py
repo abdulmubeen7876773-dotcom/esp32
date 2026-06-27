@@ -283,8 +283,13 @@ def render_difficulty_content(level: dict, parent: dict) -> str:
     def acc(section_id: str, title: str, body_html: str) -> str:
         return accordion_item(lv, section_id, title, body_html, section_id == "overview")
 
+    overview_body = (
+        level["overview_html"]
+        if level.get("overview_html")
+        else f"<p>{esc(level['overview'])}</p>"
+    )
     sections = [
-        acc("overview", "Overview", f"<p>{esc(level['overview'])}</p>"),
+        acc("overview", "Overview", overview_body),
         acc("components", "Components", f'<ul class="parts-grid parts-grid-compact">{comps}</ul>'),
         acc("wiring", "Wiring", wiring_table(level["wiring"])),
         acc("code", "Arduino Code", f'<div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">{code_esc}</pre></div>'),

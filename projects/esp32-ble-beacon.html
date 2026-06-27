@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 BLE Beacon | ESP32 Engine</title>
+<meta name="description" content="Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling proximity detection, indoor positioning, and smart location-based automation triggers.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-ble-beacon.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 BLE Beacon | ESP32 Engine">
+<meta property="og:description" content="Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling proximity detection, indoor positioning, and smart location-based automation triggers.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-ble-beacon.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 BLE Beacon | ESP32 Engine">
+<meta name="twitter:description" content="Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling proximity detection, indoor positioning, and smart location-based automation triggers.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 BLE Beacon","description":"Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling proximity detection, indoor positioning, and smart location-based automation triggers.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-ble-beacon.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, TODO: output"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 BLE Beacon (Beginner)","description":"Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling proximity detection, indoor positioning, and smart location-based automation triggers.","step":[{"@type":"HowToStep","position":1,"name":"iBeacon Packet Structure: An iBeacon advertisement is a standard BLE advertising payload with a 2-by…","text":"iBeacon Packet Structure: An iBeacon advertisement is a standard BLE advertising payload with a 2-byte Apple manufacturer ID (0x004C), a 16-byte proximity UUID, 2-byte major, 2-byte minor, and 1-byte calibrated TX power. Total payload: 30 bytes within the 31-byte BLE advertising limit."},{"@type":"HowToStep","position":2,"name":"Non-Connectable Advertising: BLE beacons broadcast advertising packets every 100-1000 ms without acc…","text":"Non-Connectable Advertising: BLE beacons broadcast advertising packets every 100-1000 ms without accepting connections. setScanResponse(false) disables the scan response packet, keeping the beacon anonymous and saving power. Any scanner in range receives the packet passively."},{"@type":"HowToStep","position":3,"name":"UUID for Namespace Grouping: The proximity UUID groups beacons belonging to the same deployment (e.g…","text":"UUID for Namespace Grouping: The proximity UUID groups beacons belonging to the same deployment (e.g. all beacons in one building). Major identifies a specific area (floor or room) and minor identifies an individual beacon position. This three-level hierarchy enables scalable indoor positioning."},{"@type":"HowToStep","position":4,"name":"TX Power Calibration: TX_POWER is the measured RSSI when a phone is exactly 1 metre from the beacon.…","text":"TX Power Calibration: TX_POWER is the measured RSSI when a phone is exactly 1 metre from the beacon. The receiving device uses this value plus the current RSSI to estimate distance using a path-loss model. Measure it with nRF Connect after mounting the beacon in its final position."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 BLE Beacon?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 BLE Beacon require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 BLE Beacon?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"IoT Projects","item":"https://esp32engine.com/category/iot-projects.html"},{"@type":"ListItem","position":3,"name":"ESP32 BLE Beacon","item":"https://esp32engine.com/projects/esp32-ble-beacon.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/iot-projects.html">IoT Projects</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/iot-projects.html">IoT Projects</a></li><li aria-current="page">ESP32 BLE Beacon</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 BLE Beacon</h1>
+          <div class="article-badges"><span class="badge badge-cat">IoT</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling proximity detection, indoor positioning, and smart location-based automation triggers.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-iot parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will configure the ESP32 to broadcast a standard iBeacon advertisement packet containing a UUID, major, and minor value. Any iOS or Android phone with a BLE scanner app can detect the beacon and read its RSSI signal strength. No pairing or connection is required. This project teaches BLE advertising fundamentals, the iBeacon payload format, and how RSSI relates to physical distance.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1 — Built-in BLE 4.2</span></li><li><span>1× USB cable and power supply</span></li><li><span>1× Smartphone with BLE scanner app — nRF Connect (iOS/Android) for testing</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>No external wiring required</td><td>Built-in BLE antenna</td><td>ESP32 BLE runs on-chip without extra hardware</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ble-beacon_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 BLE Beacon - Beginner
+// Broadcasts a standard iBeacon advertisement packet
+#include &lt;BLEDevice.h&gt;
+#include &lt;BLEServer.h&gt;
+#include &lt;BLEUtils.h&gt;
+#include &lt;BLEAdvertising.h&gt;
+#include &lt;BLEBeacon.h&gt;
+
+// iBeacon identity — change UUID for your deployment
+#define BEACON_UUID &quot;8ec76ea3-6668-48da-9866-75be8bc86f4d&quot;
+#define MAJOR        1
+#define MINOR        1
+#define TX_POWER   -59  // Measured RSSI at 1 metre (calibrate per device)
+
+BLEAdvertising *pAdvertising;
+
+void setBeacon() {
+  BLEBeacon beacon;
+  beacon.setManufacturerId(0x004C); // Apple iBeacon manufacturer ID
+  beacon.setProximityUUID(BLEUUID(BEACON_UUID));
+  beacon.setMajor(MAJOR);
+  beacon.setMinor(MINOR);
+  beacon.setSignalPower(TX_POWER);
+
+  BLEAdvertisementData adData;
+  adData.setFlags(0x04); // BR/EDR not supported, LE general discoverable
+  adData.setManufacturerData(std::string(
+    (char*)beacon.getData().data(), beacon.getData().size()));
+
+  pAdvertising-&gt;setAdvertisementData(adData);
+}
+
+void setup() {
+  Serial.begin(115200);
+  BLEDevice::init(&quot;ESP32-Beacon&quot;);
+  BLEServer *pServer = BLEDevice::createServer();
+  pAdvertising = BLEDevice::getAdvertising();
+  setBeacon();
+  pAdvertising-&gt;setScanResponse(false);
+  pAdvertising-&gt;setMinPreferred(0x00);
+  BLEDevice::startAdvertising();
+  Serial.println(&quot;iBeacon advertising — UUID: &quot; BEACON_UUID);
+  Serial.printf(&quot;Major: %d  Minor: %d  TX Power: %d dBmn&quot;,MAJOR,MINOR,TX_POWER);
+}
+
+void loop() {
+  delay(1000); // Beacon advertises continuously in background
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>iBeacon Packet Structure: An iBeacon advertisement is a standard BLE advertising payload with a 2-byte Apple manufacturer ID (0x004C), a 16-byte proximity UUID, 2-byte major, 2-byte minor, and 1-byte calibrated TX power. Total payload: 30 bytes within the 31-byte BLE advertising limit.</p></div><div class="step"><span class="step-no">02</span><p>Non-Connectable Advertising: BLE beacons broadcast advertising packets every 100-1000 ms without accepting connections. setScanResponse(false) disables the scan response packet, keeping the beacon anonymous and saving power. Any scanner in range receives the packet passively.</p></div><div class="step"><span class="step-no">03</span><p>UUID for Namespace Grouping: The proximity UUID groups beacons belonging to the same deployment (e.g. all beacons in one building). Major identifies a specific area (floor or room) and minor identifies an individual beacon position. This three-level hierarchy enables scalable indoor positioning.</p></div><div class="step"><span class="step-no">04</span><p>TX Power Calibration: TX_POWER is the measured RSSI when a phone is exactly 1 metre from the beacon. The receiving device uses this value plus the current RSSI to estimate distance using a path-loss model. Measure it with nRF Connect after mounting the beacon in its final position.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Museum exhibit proximity trigger showing exhibit information on visitor phones</li><li>Retail shelf beacon triggering product information or discount notifications</li><li>Indoor navigation waypoints in offices or airports</li><li>Asset tracking with zone-level presence detection</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Beacon not visible in nRF Connect</h4><p>Ensure BLEDevice::startAdvertising() is called after setAdvertisementData(). Try restarting the ESP32. On iOS, location permission must be granted to BLE scanner apps for beacon detection.</p></div><div class="trouble-item"><h4>RSSI varies wildly even when stationary</h4><p>BLE RSSI is inherently noisy due to multipath reflections. Apply a rolling average of 5-10 RSSI samples on the receiver side before calculating distance.</p></div><div class="trouble-item"><h4>iOS does not detect the beacon in background</h4><p>iOS requires the app to register the specific UUID with Core Location CLBeaconRegion to receive background beacon ranging. Standard BLE scan apps only work in the foreground.</p></div><div class="trouble-item"><h4>Two beacons are confused for each other</h4><p>Assign unique Major and Minor values to each physical beacon. UUID can be shared across all beacons in a deployment; Major and Minor distinguish individual positions.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add Eddystone-URL broadcasting to push a web URL to nearby phones without an app</li><li>Add a button to cycle between multiple beacon profiles stored in NVS</li><li>Add deep sleep between advertising bursts to reduce power to under 10 uA average</li><li>Add an LED that blinks on each advertising interval as a visual status indicator</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 BLE Beacon?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 BLE Beacon require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 BLE Beacon?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build broadcasts both an iBeacon packet and an Eddystone-URL frame alternating every 200 ms so the beacon is detectable by both Apple and Android devices. An RSSI threshold on the ESP32 itself detects when a phone comes within 1 metre and triggers a GPIO output (relay, LED, or buzzer) for automatic proximity-based actions without a cloud connection.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× Relay module or LED — Triggered on proximity detection</span></li><li><span>1× SSD1306 OLED 128x64 — Shows detected device RSSI</span></li><li><span>1× Smartphone for testing</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Relay IN</td><td>GPIO 25</td><td>Proximity trigger output</td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ble-beacon_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 BLE Beacon - Intermediate (iBeacon + Eddystone + RSSI proximity trigger)
+#include &lt;BLEDevice.h&gt;
+#include &lt;BLEAdvertising.h&gt;
+#include &lt;BLEBeacon.h&gt;
+#include &lt;BLEScan.h&gt;
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+const int RELAY=25;
+const int PROXIMITY_RSSI=-70; // Tune: approx 1 metre
+
+BLEAdvertising *pAdvertising;
+BLEScan *pScan;
+
+// Eddystone-URL frame builder
+std::string eddystoneURL(const char* url){
+  std::string frame;
+  frame+=(char)0x02; // Eddystone frame type = URL
+  frame+=(char)0x15; // TX power
+  frame+=(char)0x03; // URL scheme: https://
+  for(const char *c=url;*c;c++) frame+=*c;
+  return frame;
+}
+
+class ScanCB: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice dev){
+    int rssi=dev.getRSSI();
+    oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+    oled.printf(&quot;Nearest devicenRSSI: %d dBmn&quot;,rssi);
+    oled.println(rssi&gt;PROXIMITY_RSSI?&quot;IN RANGE&quot;:&quot;out of range&quot;);
+    oled.display();
+    digitalWrite(RELAY, rssi&gt;PROXIMITY_RSSI?LOW:HIGH); // active LOW relay
+  }
+};
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  oled.setTextColor(WHITE);
+  pinMode(RELAY,OUTPUT); digitalWrite(RELAY,HIGH);
+
+  BLEDevice::init(&quot;ESP32-DualBeacon&quot;);
+  pAdvertising=BLEDevice::getAdvertising();
+
+  // Start in iBeacon mode (Eddystone switched in loop)
+  BLEBeacon beacon;
+  beacon.setManufacturerId(0x004C);
+  beacon.setProximityUUID(BLEUUID(&quot;8ec76ea3-6668-48da-9866-75be8bc86f4d&quot;));
+  beacon.setMajor(1); beacon.setMinor(1); beacon.setSignalPower(-59);
+  BLEAdvertisementData adData;
+  adData.setFlags(0x04);
+  adData.setManufacturerData(std::string((char*)beacon.getData().data(),beacon.getData().size()));
+  pAdvertising-&gt;setAdvertisementData(adData);
+  pAdvertising-&gt;setScanResponse(false);
+  BLEDevice::startAdvertising();
+
+  pScan=BLEDevice::getScan();
+  pScan-&gt;setAdvertisedDeviceCallbacks(new ScanCB());
+  pScan-&gt;setActiveScan(false);
+}
+
+void loop(){
+  pScan-&gt;start(1, false); // 1-second scan window
+  pScan-&gt;clearResults();
+  delay(200);
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Dual-Protocol Advertising: The ESP32 alternates between iBeacon and Eddystone-URL advertisement frames every 200 ms by calling setAdvertisementData() with different payloads. iOS devices prefer iBeacon; Android phones running Chrome respond to Eddystone-URL by showing a notification with the embedded web URL.</p></div><div class="step"><span class="step-no">02</span><p>Active BLE Scanning for RSSI: BLEScan::start() scans for surrounding BLE advertisers for 1 second. The ScanCB callback fires for each detected device, providing the current RSSI. The nearest detected device above the PROXIMITY_RSSI threshold triggers the relay.</p></div><div class="step"><span class="step-no">03</span><p>RSSI to Proximity Threshold: RSSI of -70 dBm corresponds approximately to 1 metre distance in an open indoor environment. Values closer to 0 dBm (e.g. -50) indicate the phone is very close. Tune PROXIMITY_RSSI by measuring RSSI at the desired trigger distance with nRF Connect.</p></div><div class="step"><span class="step-no">04</span><p>Relay Proximity Trigger: The relay (active LOW) is driven LOW when a device RSSI exceeds the threshold, activating a door strike, light, or other connected device. It returns HIGH (off) when the device moves out of range or no BLE devices are detected in the scan window.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Automatic door opener when an authorised phone approaches</li><li>Smart shelf that illuminates when a customer is within 1 metre</li><li>Touchless elevator call button triggered by phone proximity</li><li>Lab equipment that powers on when a technician enters the room</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Relay triggers on random phones, not just the owner</h4><p>Filter by device MAC address or advertised device name in the ScanCB. Store the expected MAC in NVS and only trigger the relay when a matching device is detected.</p></div><div class="trouble-item"><h4>RSSI threshold is too sensitive or not sensitive enough</h4><p>Stand at the exact desired trigger distance and note the RSSI shown on the OLED. Set PROXIMITY_RSSI to 5 dBm above that value to add a hysteresis margin and prevent rapid on/off toggling.</p></div><div class="trouble-item"><h4>Scanning and advertising conflict</h4><p>BLE cannot scan and advertise simultaneously on some ESP32 implementations. Stop advertising (BLEDevice::stopAdvertising()) before scanning and restart it after the scan window completes.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Filter by specific phone MAC address for owner-only proximity trigger</li><li>Add multiple RSSI zones: far (&gt;-80), near (-70 to -80), immediate (&lt;-70)</li><li>Add a web interface to set the proximity threshold without reflashing</li><li>Add battery-backed NVS logging of proximity events with timestamps</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 BLE Beacon?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 BLE Beacon require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 BLE Beacon?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build implements a three-beacon indoor positioning system. Three ESP32 beacons in known positions publish their RSSI readings for a target device to an MQTT broker. A Node-RED flow runs multilateration on the three RSSI values to estimate the target device location in 2D coordinates and displays it on a live floor plan dashboard. Estimated coordinates are also published back via MQTT for further automation.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>3× ESP32 DevKit V1 — One per beacon position</span></li><li><span>1× MQTT broker (Mosquitto) — Central data aggregator</span></li><li><span>1× Node-RED instance — Multilateration and dashboard</span></li><li><span>1× Smartphone (target device) — Broadcasting BLE advertisements</span></li><li><span>1× Wi-Fi router — All ESP32s on same network</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>No external wiring</td><td>Built-in BLE and Wi-Fi</td><td>Position each ESP32 at known coordinates in the room</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-ble-beacon_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 BLE Beacon - Advanced (Indoor positioning via RSSI + MQTT)
+// Deploy one instance per anchor beacon; set BEACON_ID and POSITION per device
+#include &lt;BLEDevice.h&gt;
+#include &lt;BLEScan.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const char* BEACON_ID=&quot;beacon-A&quot;;    // Unique per anchor: beacon-A, beacon-B, beacon-C
+const float POS_X=0.0, POS_Y=0.0;   // Anchor position in metres
+const char* TARGET_NAME=&quot;YourPhone&quot;; // BLE name of target device
+
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
+BLEScan *pScan;
+
+// Smooth RSSI with exponential moving average
+float smoothRSSI=-100.0f;
+const float ALPHA=0.3f;
+
+class ScanCB: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice dev){
+    String name=dev.getName().c_str();
+    if(name==TARGET_NAME){
+      float rssi=(float)dev.getRSSI();
+      smoothRSSI=ALPHA*rssi+(1-ALPHA)*smoothRSSI;
+    }
+  }
+};
+
+void publishRSSI(){
+  if(!mqtt.connected()) return;
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;beacon&quot;]  = BEACON_ID;
+  doc[&quot;rssi&quot;]    = (int)smoothRSSI;
+  doc[&quot;x&quot;]       = POS_X;
+  doc[&quot;y&quot;]       = POS_Y;
+  char buf[128]; serializeJson(doc,buf);
+  mqtt.publish(&quot;ips/rssi&quot;,buf);
+  Serial.printf(&quot;%s RSSI=%.1fn&quot;,BEACON_ID,smoothRSSI);
+}
+
+void setup(){
+  Serial.begin(115200);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  mqtt.setServer(MQTT_HOST,1883);
+  BLEDevice::init(&quot;Anchor-&quot;+String(BEACON_ID));
+  pScan=BLEDevice::getScan();
+  pScan-&gt;setAdvertisedDeviceCallbacks(new ScanCB());
+  pScan-&gt;setActiveScan(false);
+  pScan-&gt;setInterval(50); pScan-&gt;setWindow(40);
+}
+
+void loop(){
+  if(!mqtt.connected()) mqtt.connect(BEACON_ID);
+  mqtt.loop();
+  pScan-&gt;start(1,false);
+  pScan-&gt;clearResults();
+  publishRSSI();
+  delay(500);
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Distributed RSSI Collection: Each anchor ESP32 independently scans for the target device BLE advertisement and measures its RSSI. An exponential moving average (alpha=0.3) smooths rapid RSSI fluctuations. Every 500 ms each anchor publishes its smoothed RSSI, physical position (x, y in metres), and beacon ID to ips/rssi on MQTT.</p></div><div class="step"><span class="step-no">02</span><p>MQTT Aggregation in Node-RED: A Node-RED join node collects RSSI messages from all three anchors within a 1-second window. When all three are received, a function node runs the multilateration algorithm converting three (RSSI, x, y) tuples into estimated (x, y) coordinates for the target device.</p></div><div class="step"><span class="step-no">03</span><p>RSSI-to-Distance Conversion: Distance = 10^((TxPower - RSSI) / (10 * n)) where TxPower is the calibrated 1-metre RSSI and n is the path-loss exponent (typically 2.0-3.5 indoors). Three distance estimates from three anchors define three circles; their intersection is the position estimate.</p></div><div class="step"><span class="step-no">04</span><p>Multilateration Position Estimate: With three distance estimates and known anchor positions, the system solves a least-squares optimisation to find the (x, y) point minimising the sum of squared residuals. Node-RED publishes the result to ips/position and displays it on a UI floor plan overlay.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Office hot-desk occupancy tracking showing who is at which desk</li><li>Warehouse worker location monitoring for safety zone compliance</li><li>Museum visitor flow analysis showing dwell time at each exhibit</li><li>Hospital asset tracking for locating mobile equipment in real time</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Position estimate jumps erratically</h4><p>Increase the ALPHA smoothing factor to 0.1 for heavier filtering. Also apply a Kalman filter in Node-RED to further smooth the (x, y) estimate over time.</p></div><div class="trouble-item"><h4>One anchor never receives the target RSSI</h4><p>The target device BLE advertising interval may be too long. On Android, BLE advertising from apps runs at 160-1000 ms intervals. Extend the anchor scan window to 2 seconds.</p></div><div class="trouble-item"><h4>Position accuracy is poor (off by several metres)</h4><p>Calibrate TxPower for each anchor by measuring actual RSSI at 1 metre. Tune the path-loss exponent n for your environment: open offices need n=2.0, cluttered spaces need n=3.0-3.5.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a fourth anchor beacon to improve accuracy and handle dead zones</li><li>Implement a particle filter in Node-RED for smoother tracking in dynamic environments</li><li>Add a floor plan image to the Node-RED dashboard as a background layer</li><li>Extend to multiple target devices tracked simultaneously using their unique BLE names</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 BLE Beacon?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, TODO: output, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 BLE Beacon require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 BLE Beacon?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-iot-weather-station.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 Mini Weather Station</h3></div></a><a class="related-card" href="esp32-lora-remote-sensor-node.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 LoRa Remote Sensor Node</h3></div></a><a class="related-card" href="esp32-mqtt-sensor-dashboard.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 MQTT Sensor Dashboard</h3></div></a><a class="related-card" href="esp32-oled-weather-clock.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 OLED Weather Clock</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

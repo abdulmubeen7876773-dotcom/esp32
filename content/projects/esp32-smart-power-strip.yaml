@@ -1,0 +1,301 @@
+slug: esp32-smart-power-strip
+title: ESP32 Smart Power Strip
+category: Home Automation
+description: Convert a standard power strip into a smart IoT device using four relay channels controlled
+  by an ESP32 web interface. Monitor current draw per socket with ACS712 sensors, schedule outlets on
+  and off, and integrate with Home Assistant via MQTT.
+meta_description: Build an ESP32 smart power strip controlling four mains sockets via relays. From a web
+  toggle panel to ACS712 current monitoring, scheduling, and Home Assistant integration.
+source_base: esp32-smart-power-strip-legacy-import
+sensor: 'TODO: sensor'
+output: Relay IN1
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 3
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 26
+  sensor_name: 'TODO: sensor'
+  output_name: Relay IN1
+  wiring:
+  - component: Relay IN1
+    pin: GPIO 26
+  - component: Relay IN2
+    pin: GPIO 27
+  - component: Relay IN3
+    pin: GPIO 14
+  - component: Relay IN4
+    pin: GPIO 12
+  - component: Relay VCC
+    pin: 5 V (Vin)
+  - component: Relay GND
+    pin: GND
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will wire four relay modules to the ESP32 and build
+      a simple web page with toggle buttons for each socket. Connecting to the ESP32 IP address in a browser
+      shows four buttons labelled Socket 1-4. Each button sends an HTTP GET request that toggles the corresponding
+      relay. A status indicator shows whether each socket is on or off. No cloud service or app is required.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× 4-channel relay module (5 V) — Active LOW; each channel handles up to 10 A / 250 VAC
+    - 1× Mains power strip — Modified to insert relay into each socket live wire
+    - 1× Wi-Fi router — Web interface access
+    - 1× Enclosure — Mains-rated plastic enclosure; safety critical
+    wiring:
+    - - Relay IN1
+      - GPIO 26
+      - Socket 1
+    - - Relay IN2
+      - GPIO 27
+      - Socket 2
+    - - Relay IN3
+      - GPIO 14
+      - Socket 3
+    - - Relay IN4
+      - GPIO 12
+      - Socket 4
+    - - Relay VCC
+      - 5 V (Vin)
+      - Relay coils require 5 V
+    - - Relay GND
+      - GND
+      - ''
+    how:
+    - 'Active-LOW Relay Module: The 4-channel relay module activates each relay when the corresponding
+      IN pin is pulled LOW. On power-up, all IN pins are initialised HIGH (relay off, socket de-energised).
+      This fail-safe state prevents appliances from unexpectedly turning on during ESP32 reset or programming.'
+    - 'HTTP Redirect After Toggle: The /toggle handler redirects back to / with a 302 response after changing
+      state. This prevents the browser from re-submitting the toggle request if the page is refreshed,
+      which could unintentionally flip the socket state back immediately.'
+    - 'State Tracking in RAM: The relayState[] boolean array tracks whether each socket is on or off.
+      This state is lost on power-off. The intermediate build adds NVS persistence to restore socket states
+      after a power cut.'
+    - 'Mains Wiring Safety: Each relay COM contact connects to the live (phase) wire of the corresponding
+      socket. The normally-open (NO) contact connects to the socket live terminal. Neutral is wired directly
+      through without switching. Earth is never switched and connects directly to all socket earth terminals.'
+    apps:
+    - Home office desk power strip with web-controlled outlets
+    - Workshop bench power control for multiple tools
+    - Holiday decoration automated on/off switching
+    - Server rack PDU with web management interface
+    troubleshooting:
+    - - All relays click on and off rapidly at startup
+      - The relay IN pins floated during ESP32 boot before GPIO output mode was set. This is a known ESP32
+        boot issue. Add a 10 kohm pull-up resistor from each IN pin to 5 V to hold them HIGH (relay off)
+        during the boot sequence.
+    - - Web page does not load
+      - Verify the ESP32 is connected to Wi-Fi and the IP address is correct. Try the IP address directly
+        in the browser. Check that the router has not assigned a new IP; set a static DHCP reservation
+        for the ESP32 MAC address in the router admin page.
+    - - Relay does not click when toggle is pressed
+      - Verify the relay module VCC is connected to 5 V (Vin), not 3.3 V. Also check IN pin wiring matches
+        RELAY_PINS[]. Confirm the relay coil activates by connecting the IN pin directly to GND with a
+        jumper wire and listening for the click.
+    upgrades:
+    - Add NVS state persistence so socket states survive power cuts
+    - Add ACS712 current sensors to measure load current per socket
+    - Add a countdown timer to automatically turn off a socket after N minutes
+    - Add password protection to the web interface
+    code: "// ESP32 Smart Power Strip - Beginner (4-socket web toggle)\n#include <WiFi.h>\n#include <WebServer.h>\n\
+      \nWebServer server(80);\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\n\nconst int RELAY_PINS[4]\
+      \ = {26, 27, 14, 12};\nbool relayState[4] = {false, false, false, false};\n\nvoid applyRelays()\
+      \ {\n  for (int i = 0; i < 4; i++)\n    digitalWrite(RELAY_PINS[i], relayState[i] ? LOW : HIGH);\n\
+      }\n\nvoid servePanel() {\n  String html = \"<html><head><title>Smart Power Strip</title></head><body>\"\
+      \n                \"<h2>Smart Power Strip</h2>\";\n  for (int i = 0; i < 4; i++) {\n    html +=\
+      \ \"<p>Socket \" + String(i + 1) + \": \"\n          + String(relayState[i] ? \"<b>ON</b>\" : \"\
+      OFF\")\n          + \" <a href=\"/toggle?s=\" + String(i) + \"\">\"\n          + String(relayState[i]\
+      \ ? \"Turn OFF\" : \"Turn ON\")\n          + \"</a></p>\";\n  }\n  html += \"</body></html>\";\n\
+      \  server.send(200, \"text/html\", html);\n}\n\nvoid handleToggle() {\n  if (!server.hasArg(\"s\"\
+      )) { server.send(400, \"text/plain\", \"missing s\"); return; }\n  int s = server.arg(\"s\").toInt();\n\
+      \  if (s < 0 || s > 3) { server.send(400, \"text/plain\", \"invalid\"); return; }\n  relayState[s]\
+      \ = !relayState[s];\n  applyRelays();\n  server.sendHeader(\"Location\", \"/\");\n  server.send(302,\
+      \ \"text/plain\", \"\");\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  for (int i = 0; i < 4;\
+      \ i++) {\n    pinMode(RELAY_PINS[i], OUTPUT);\n    digitalWrite(RELAY_PINS[i], HIGH); // start with\
+      \ all sockets off\n  }\n  WiFi.begin(SSID, PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(500);\n\
+      \  Serial.printf(\"Panel: http://%s/n\", WiFi.localIP().toString().c_str());\n  server.on(\"/\"\
+      , servePanel);\n  server.on(\"/toggle\", handleToggle);\n  server.begin();\n}\n\nvoid loop() { server.handleClient();\
+      \ }"
+    code_filename: esp32-smart-power-strip-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build adds an ACS712 current sensor on each socket to measure current
+      draw in real time. An OLED shows per-socket current and total power (assuming 230 V mains). A scheduling
+      system powered by NTP automatically turns sockets on and off at configured times. Socket states
+      and schedules are stored in NVS so they survive power cuts and ESP32 restarts.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× 4-channel relay module
+    - 4× ACS712 current sensor module (5 A or 20 A) — One per socket; inline with mains live wire
+    - 1× SSD1306 OLED 128x64 I2C
+    - 1× Wi-Fi router — NTP + web dashboard
+    wiring:
+    - - ACS712 OUT (x4)
+      - GPIO 34/35/36/39
+      - One ADC input per socket current sensor
+    - - Relay IN1-4
+      - GPIO 26/27/14/12
+      - ''
+    - - OLED SDA/SCL
+      - GPIO 21/22
+      - ''
+    how:
+    - 'ACS712 AC Current Sensing: The ACS712 is a Hall-effect current sensor inserted inline with the
+      mains live wire. It outputs a voltage centered at VCC/2 (1.65 V for 3.3 V supply) with 185 mV/A
+      sensitivity for the 5 A variant. RMS current is estimated by taking 200 ADC samples and computing
+      the deviation from the midpoint.'
+    - 'Apparent Power Estimation: Power (W) = Vrms * Irms * power_factor. Without measuring voltage phase,
+      the true power factor is unknown. This code assumes unity power factor (resistive loads). For inductive
+      loads (motors, compressors) the actual power may be 20-40 percent lower than displayed.'
+    - 'NVS State Persistence: Each relay state is saved to NVS immediately after toggling. On startup,
+      the saved states are read and restored before any web server connection is accepted. This ensures
+      mains sockets return to their pre-power-cut state after an outage.'
+    - 'NTP Schedule Enforcement: applySchedule() is called every loop iteration. It checks the current
+      hour and minute against each socket''s on and off schedule. When a match occurs, the relay is switched.
+      Schedules are checked every loop cycle (approximately every millisecond) so triggers fire within
+      1 second of the scheduled time.'
+    apps:
+    - Home office equipment power management with usage monitoring
+    - Grow tent automated lighting and ventilation schedule
+    - Server rack PDU with per-outlet current monitoring
+    - Energy audit tool to measure appliance power consumption
+    troubleshooting:
+    - - ACS712 reads non-zero current with no load
+      - Electromagnetic interference from the mains wiring induces noise on the ACS712 output. The 200-sample
+        average reduces this significantly. For true RMS measurement, take samples over one full mains
+        cycle (20 ms for 50 Hz, 16.7 ms for 60 Hz) and compute sqrt(mean(v^2)).
+    - - Schedule fires at wrong time
+      - Check the timezone offset in configTime(). The first parameter is UTC offset in seconds (e.g.
+        3600 for UTC+1). If your timezone observes daylight saving time, use a POSIX timezone string as
+        the third parameter instead of a fixed offset.
+    - - OLED flickers during current measurement
+      - The 200-sample ADC loop takes approximately 20 ms and temporarily blocks the display update task.
+        Move current sampling to a FreeRTOS task on Core 1 to decouple it from the display update on Core
+        0.
+    upgrades:
+    - Add MQTT publishing of per-socket current and power to Home Assistant
+    - Add a daily kWh accumulator per socket using trapezoidal integration
+    - Add a current overload alert that turns off a socket if current exceeds a threshold
+    - Add a web schedule editor page with time-picker inputs for each socket
+    code: "// ESP32 Smart Power Strip - Intermediate (ACS712 + scheduling + NVS)\n#include <WiFi.h>\n\
+      #include <WebServer.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <Preferences.h>\n\
+      #include <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nWebServer server(80);\nPreferences\
+      \ prefs;\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int RELAY[4]={26,27,14,12};\n\
+      const int ACS[4]={34,35,36,39};\nconst float ACS712_SENS=0.185f; // 5A module: 185 mV/A\nconst float\
+      \ VREF=3.3f; const float ADC_MAX=4095.0f;\nconst float MAINS_V=230.0f;\nbool relayState[4]={false,false,false,false};\n\
+      // Schedule: onHour, onMin, offHour, offMin per socket (0=disabled)\nint schedOn[4][2]={{0,0},{0,0},{0,0},{0,0}};\n\
+      int schedOff[4][2]={{0,0},{0,0},{0,0},{0,0}};\n\nfloat readCurrentA(int ch){\n  long sum=0; for(int\
+      \ i=0;i<200;i++) sum+=analogRead(ACS[ch]);\n  float v=(sum/200.0f)/ADC_MAX*VREF;\n  float vMid=VREF/2.0f;\n\
+      \  return abs(v-vMid)/ACS712_SENS;\n}\n\nvoid setRelay(int ch, bool on){\n  relayState[ch]=on;\n\
+      \  digitalWrite(RELAY[ch],on?LOW:HIGH);\n  prefs.begin(\"strip\",false);\n  prefs.putBool((\"r\"\
+      +String(ch)).c_str(),on);\n  prefs.end();\n}\n\nvoid applySchedule(){\n  struct tm ti; if(!getLocalTime(&ti))\
+      \ return;\n  for(int i=0;i<4;i++){\n    if(schedOn[i][0]==ti.tm_hour&&schedOn[i][1]==ti.tm_min)\
+      \ setRelay(i,true);\n    if(schedOff[i][0]==ti.tm_hour&&schedOff[i][1]==ti.tm_min) setRelay(i,false);\n\
+      \  }\n}\n\nvoid servePanel(){\n  String html=\"<html><body><h2>Smart Strip</h2><table border=1>\"\
+      \n    \"<tr><th>Socket</th><th>State</th><th>Current</th><th>Power</th><th>Toggle</th></tr>\";\n\
+      \  for(int i=0;i<4;i++){\n    float a=readCurrentA(i);\n    html+=\"<tr><td>\"+String(i+1)+\"</td>\"\
+      \n      \"<td>\"+(relayState[i]?\"ON\":\"OFF\")+\"</td>\"\n      \"<td>\"+String(a,2)+\"A</td>\"\
+      \n      \"<td>\"+String(a*MAINS_V,0)+\"W</td>\"\n      \"<td><a href=\"/toggle?s=\"+String(i)+\"\
+      \">Toggle</a></td></tr>\";\n  }\n  html+=\"</table></body></html>\";\n  server.send(200,\"text/html\"\
+      ,html);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\
+      \ oled.setTextColor(WHITE);\n  analogReadResolution(12);\n  prefs.begin(\"strip\",true);\n  for(int\
+      \ i=0;i<4;i++){\n    pinMode(RELAY[i],OUTPUT);\n    bool on=prefs.getBool((\"r\"+String(i)).c_str(),false);\n\
+      \    digitalWrite(RELAY[i],on?LOW:HIGH); relayState[i]=on;\n  }\n  prefs.end();\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  server.on(\"\
+      /\",servePanel);\n  server.on(\"/toggle\",HTTP_GET,[](){ // inline lambda not ideal but functional\n\
+      \    int s=server.arg(\"s\").toInt();\n    if(s>=0&&s<4) setRelay(s,!relayState[s]);\n    server.sendHeader(\"\
+      Location\",\"/\"); server.send(302,\"\",\"\");\n  });\n  server.begin();\n}\n\nvoid loop(){\n  server.handleClient();\n\
+      \  applySchedule();\n  // Update OLED every 2 s\n  static unsigned long last=0;\n  if(millis()-last>2000){\n\
+      \    last=millis();\n    oled.clearDisplay(); oled.setTextSize(1); oled.setCursor(0,0);\n    float\
+      \ total=0;\n    for(int i=0;i<4;i++){\n      float a=readCurrentA(i); total+=a*MAINS_V;\n      oled.printf(\"\
+      S%d:%s %.1fAn\",i+1,relayState[i]?\"ON \":\"OFF\",a);\n    }\n    oled.printf(\"Total: %.0fWn\"\
+      ,total);\n    oled.display();\n  }\n}"
+    code_filename: esp32-smart-power-strip-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build publishes per-socket power data to MQTT every 30 seconds and
+      integrates with Home Assistant as four independent switch and sensor entities. Daily energy consumption
+      (kWh) is accumulated per socket and published at midnight. An overload protection relay automatically
+      cuts power to a socket if its current exceeds a configurable threshold, and sends an MQTT alert.
+      A Node-RED dashboard displays 24-hour power trend charts per socket.</p>
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× 4-channel relay module
+    - 4× ACS712 current sensor
+    - 1× MQTT broker (Mosquitto)
+    - 1× Home Assistant — MQTT switch and sensor entities
+    wiring:
+    - - All sensors and relays
+      - Same as intermediate
+      - ''
+    how:
+    - 'Home Assistant MQTT Discovery: Each socket maps to an HA switch entity (topic strip/socket/N/set,
+      state strip/socket/N/state) and a sensor entity (topic strip/socket/N/power). HA MQTT integration
+      auto-discovers these topics from the configuration. Users can toggle sockets from the HA dashboard
+      and see live current and power readings.'
+    - 'Energy Accumulation (kWh): Each 30-second power measurement is integrated: kWh += (Watts / 1000)
+      * (30 / 3600). Over 24 hours this accumulates the daily energy consumption per socket. At midnight
+      (tm_hour==0, tm_min==0) the accumulators reset to zero for the next day.'
+    - 'Overload Protection: After each current reading, if the socket is on and current exceeds MAX_CURRENT,
+      the relay is immediately turned off and an OVERLOAD alert is published to the socket alert MQTT
+      topic. Home Assistant can trigger a notification and prevent the socket from being turned back on
+      automatically.'
+    - 'Node-RED 24-Hour Power Chart: Node-RED subscribes to strip/socket/+/power (wildcard topic) and
+      stores JSON payloads in a per-socket circular buffer. A chart widget plots watt readings against
+      time, enabling identification of peak usage periods and idle consumption from always-on standby
+      devices.'
+    apps:
+    - Home energy management with per-appliance consumption tracking
+    - Smart home automation hub controlling legacy non-smart appliances
+    - Data centre PDU with remote management and overload protection
+    - Tenant billing system tracking electricity consumption per room
+    troubleshooting:
+    - - Home Assistant shows socket state as unavailable
+      - The HA MQTT switch entity requires the state topic to publish ON or OFF strings. Verify the JSON
+        payload contains {\"state\":\"ON\"} and the HA entity configuration value_template is set to {{value_json.state}}.
+    - - Daily kWh resets multiple times at midnight
+      - The loop() runs thousands of times per second; the midnight condition fires continuously for the
+        first 5 seconds (tm_sec<5). The 5-second window prevents multiple resets per day but requires
+        the loop to run at least once within those 5 seconds.
+    - - Overload trips immediately on motor start
+      - 'Electric motors draw 3-6 times their rated current at startup. Add a 5-second startup grace period:
+        record the relay-on timestamp and skip overload checking for 5 seconds after each relay activation.'
+    upgrades:
+    - Add a TFT display showing a real-time power bar chart per socket
+    - Add voice control via the voice relay project MQTT integration
+    - Add reactive power measurement using a ZMPT101B voltage sensor for true power factor
+    - 'Add tariff-based cost calculation: multiply kWh by electricity unit cost per hour'
+    code: "// ESP32 Smart Power Strip - Advanced (MQTT + Home Assistant + kWh + overload)\n#include <WiFi.h>\n\
+      #include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <time.h>\n\nWiFiClient wifiClient;\
+      \ PubSubClient mqtt(wifiClient);\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char*\
+      \ MQTT_HOST=\"192.168.1.100\";\nconst int RELAY[4]={26,27,14,12};\nconst int ACS[4]={34,35,36,39};\n\
+      bool relayState[4]={false};\nfloat dailyKwh[4]={0};\nconst float MAX_CURRENT[4]={10.0f,10.0f,10.0f,10.0f};\
+      \ // per-socket overload threshold\n\nfloat readCurrentA(int ch){\n  long s=0; for(int i=0;i<200;i++)\
+      \ s+=analogRead(ACS[ch]);\n  return abs((s/200.0f)/4095.0f*3.3f-1.65f)/0.185f;\n}\n\nvoid setRelay(int\
+      \ ch, bool on){\n  relayState[ch]=on;\n  digitalWrite(RELAY[ch],on?LOW:HIGH);\n  StaticJsonDocument<64>\
+      \ doc; doc[\"state\"]=on?\"ON\":\"OFF\";\n  char buf[64]; serializeJson(doc,buf);\n  mqtt.publish((\"\
+      strip/socket/\"+String(ch+1)+\"/state\").c_str(),buf,true);\n}\n\nvoid mqttCallback(char* topic,\
+      \ byte* payload, unsigned int len){\n  String t(topic), msg((char*)payload,len);\n  for(int i=0;i<4;i++){\n\
+      \    if(t==\"strip/socket/\"+String(i+1)+\"/set\"){\n      setRelay(i,msg==\"ON\");\n    }\n  }\n\
+      }\n\nvoid publishPower(){\n  for(int i=0;i<4;i++){\n    float a=readCurrentA(i);\n    float w=a*230.0f;\n\
+      \    dailyKwh[i]+=w/1000.0f*(30.0f/3600.0f); // 30-second interval\n    // Overload check\n    if(relayState[i]&&a>MAX_CURRENT[i]){\n\
+      \      setRelay(i,false);\n      mqtt.publish((\"strip/socket/\"+String(i+1)+\"/alert\").c_str(),\"\
+      OVERLOAD\");\n    }\n    StaticJsonDocument<128> doc;\n    doc[\"current\"]=a; doc[\"power\"]=w;\
+      \ doc[\"kwh\"]=dailyKwh[i];\n    char buf[128]; serializeJson(doc,buf);\n    mqtt.publish((\"strip/socket/\"\
+      +String(i+1)+\"/power\").c_str(),buf);\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  for(int i=0;i<4;i++){ pinMode(RELAY[i],OUTPUT); digitalWrite(RELAY[i],HIGH); }\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
+      \  mqtt.setCallback(mqttCallback);\n}\n\nvoid loop(){\n  if(!mqtt.connected()){\n    mqtt.connect(\"\
+      SmartStrip\");\n    for(int i=0;i<4;i++)\n      mqtt.subscribe((\"strip/socket/\"+String(i+1)+\"\
+      /set\").c_str());\n  }\n  mqtt.loop();\n  static unsigned long last=0;\n  if(millis()-last>30000){\
+      \ last=millis(); publishPower(); }\n  // Reset kWh at midnight\n  struct tm ti; if(getLocalTime(&ti)&&ti.tm_hour==0&&ti.tm_min==0&&ti.tm_sec<5)\n\
+      \    for(int i=0;i<4;i++) dailyKwh[i]=0;\n}"
+    code_filename: esp32-smart-power-strip-advanced.ino
+related_slugs:
+- esp32-voice-controlled-relay
+- esp32-ac-power-monitor

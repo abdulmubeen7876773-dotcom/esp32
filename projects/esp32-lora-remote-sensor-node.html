@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 LoRa Remote Sensor Node | ESP32 Engine</title>
+<meta name="description" content="Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network, and connect to The Things Network for global IoT coverage.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-lora-remote-sensor-node.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 LoRa Remote Sensor Node | ESP32 Engine">
+<meta property="og:description" content="Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network, and connect to The Things Network for global IoT coverage.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-lora-remote-sensor-node.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 LoRa Remote Sensor Node | ESP32 Engine">
+<meta name="twitter:description" content="Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network, and connect to The Things Network for global IoT coverage.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 LoRa Remote Sensor Node","description":"Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network, and connect to The Things Network for global IoT coverage.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-lora-remote-sensor-node.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, DHT22 DATA (transmitter), SX1276 NSS/SCK/MOSI/MISO"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 LoRa Remote Sensor Node (Beginner)","description":"Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network, and connect to The Things Network for global IoT coverage.","step":[{"@type":"HowToStep","position":1,"name":"LoRa Chirp Spread Spectrum: LoRa modulation encodes data by sweeping a carrier frequency across a ba…","text":"LoRa Chirp Spread Spectrum: LoRa modulation encodes data by sweeping a carrier frequency across a bandwidth (125 kHz in this sketch). The spreading factor (SF7-SF12) controls how many chips represent each symbol. Higher SF means more chips per symbol, enabling the receiver to decode signals 20 dB below the noise floor at the cost of lower data rate."},{"@type":"HowToStep","position":2,"name":"Packet Structure: The CSV string \"id,temp,hum\" is transmitted as a LoRa packet. beginPacket() starts…","text":"Packet Structure: The CSV string \"id,temp,hum\" is transmitted as a LoRa packet. beginPacket() starts a packet buffer, print() writes the payload bytes, and endPacket() triggers the SX1276 transmitter. The receiver calls parsePacket() repeatedly; when a packet arrives it returns the payload length and readString() extracts the content."},{"@type":"HowToStep","position":3,"name":"RSSI Signal Strength: packetRssi() returns the received signal strength in dBm. LoRa typically achie…","text":"RSSI Signal Strength: packetRssi() returns the received signal strength in dBm. LoRa typically achieves -120 dBm sensitivity, enabling communication at distances of 1-10 km in open terrain. Values above -90 dBm indicate strong signal; below -110 dBm indicates marginal link quality at risk of packet loss."},{"@type":"HowToStep","position":4,"name":"Spreading Factor Trade-off: SF7 provides the highest data rate (approximately 5 kbps) but shortest r…","text":"Spreading Factor Trade-off: SF7 provides the highest data rate (approximately 5 kbps) but shortest range. SF12 provides the longest range but only approximately 250 bps. For sensor nodes transmitting one reading per minute, SF9 or SF10 balances range and air time while staying within duty cycle regulations."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 LoRa Remote Sensor Node?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, DHT22 DATA (transmitter), SX1276 NSS/SCK/MOSI/MISO, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 LoRa Remote Sensor Node require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 LoRa Remote Sensor Node?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"IoT Projects","item":"https://esp32engine.com/category/iot-projects.html"},{"@type":"ListItem","position":3,"name":"ESP32 LoRa Remote Sensor Node","item":"https://esp32engine.com/projects/esp32-lora-remote-sensor-node.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/iot-projects.html">IoT Projects</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/iot-projects.html">IoT Projects</a></li><li aria-current="page">ESP32 LoRa Remote Sensor Node</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 LoRa Remote Sensor Node</h1>
+          <div class="article-badges"><span class="badge badge-cat">IoT</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network, and connect to The Things Network for global IoT coverage.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-iot parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect an SX1276 LoRa module to the ESP32 via SPI and build a simple transmitter/receiver pair. The transmitter reads a DHT22 sensor and sends a CSV packet every 30 seconds. The receiver prints the received data to Serial and displays it on an OLED. No gateway or internet connection is needed: LoRa communicates directly between the two ESP32 modules.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>2× ESP32 with SX1276 LoRa module — Heltec LoRa 32 or TTGO LoRa32 (integrated); or separate ESP32 + Ra-02 module</span></li><li><span>1× DHT22 sensor — On the transmitter node</span></li><li><span>1× SSD1306 OLED (on receiver) — Many LoRa32 boards include OLED</span></li><li><span>2× 868 MHz or 915 MHz antenna — Match frequency to your region</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>SX1276 NSS/SCK/MOSI/MISO</td><td>GPIO 18/5/27/19 (Heltec)</td><td>Varies by board; check pinout</td></tr><tr><td>SX1276 RST/DIO0</td><td>GPIO 14/26 (Heltec)</td><td>DIO0 = interrupt on RX done</td></tr><tr><td>DHT22 DATA (transmitter)</td><td>GPIO 4</td><td>10 kohm pull-up</td></tr><tr><td>OLED SDA/SCL (receiver)</td><td>GPIO 4/15 (Heltec)</td><td>Check board-specific pins</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-lora-remote-sensor-node_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 LoRa Remote Sensor - Beginner TRANSMITTER
+// SX1276 LoRa + DHT22 -&gt; periodic packet transmission
+// Library: LoRa by Sandeep Mistry in Library Manager
+// Board: Heltec WiFi LoRa 32 (or match pins to your module)
+
+#include &lt;SPI.h&gt;
+#include &lt;LoRa.h&gt;
+#include &lt;DHT.h&gt;
+
+// Heltec LoRa 32 V2 pin definitions
+#define LORA_SCK  5
+#define LORA_MISO 19
+#define LORA_MOSI 27
+#define LORA_SS   18
+#define LORA_RST  14
+#define LORA_DIO0 26
+
+DHT dht(4, DHT22);
+
+void setup(){
+  Serial.begin(115200);
+  dht.begin();
+  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
+  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+  if(!LoRa.begin(868E6)){ // 868 MHz for EU; use 915E6 for US
+    Serial.println(&quot;LoRa init failed&quot;); while(1);
+  }
+  LoRa.setSpreadingFactor(7);    // SF7 = fastest; SF12 = longest range
+  LoRa.setSignalBandwidth(125E3);
+  LoRa.setCodingRate4(5);
+  Serial.println(&quot;LoRa TX ready.&quot;);
+}
+
+int pktId=0;
+void loop(){
+  float temp=dht.readTemperature();
+  float hum=dht.readHumidity();
+  if(isnan(temp)||isnan(hum)){ delay(2000); return; }
+
+  String packet=String(pktId++)+&quot;,&quot;+String(temp,1)+&quot;,&quot;+String(hum,1);
+  LoRa.beginPacket();
+  LoRa.print(packet);
+  LoRa.endPacket();
+  Serial.printf(&quot;Sent: %sn&quot;, packet.c_str());
+  delay(30000);
+}
+
+// --- RECEIVER SKETCH (flash on second ESP32) ---
+// #include &lt;SPI.h&gt;
+// #include &lt;LoRa.h&gt;
+// void setup(){
+//   Serial.begin(115200);
+//   SPI.begin(LORA_SCK,LORA_MISO,LORA_MOSI,LORA_SS);
+//   LoRa.setPins(LORA_SS,LORA_RST,LORA_DIO0);
+//   LoRa.begin(868E6);
+//   LoRa.setSpreadingFactor(7);
+//   Serial.println(&quot;LoRa RX ready.&quot;);
+// }
+// void loop(){
+//   int pkt=LoRa.parsePacket();
+//   if(pkt){
+//     String data=LoRa.readString();
+//     int rssi=LoRa.packetRssi();
+//     Serial.printf(&quot;Received: %s  RSSI: %d dBmn&quot;,data.c_str(),rssi);
+//   }
+// }</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>LoRa Chirp Spread Spectrum: LoRa modulation encodes data by sweeping a carrier frequency across a bandwidth (125 kHz in this sketch). The spreading factor (SF7-SF12) controls how many chips represent each symbol. Higher SF means more chips per symbol, enabling the receiver to decode signals 20 dB below the noise floor at the cost of lower data rate.</p></div><div class="step"><span class="step-no">02</span><p>Packet Structure: The CSV string &quot;id,temp,hum&quot; is transmitted as a LoRa packet. beginPacket() starts a packet buffer, print() writes the payload bytes, and endPacket() triggers the SX1276 transmitter. The receiver calls parsePacket() repeatedly; when a packet arrives it returns the payload length and readString() extracts the content.</p></div><div class="step"><span class="step-no">03</span><p>RSSI Signal Strength: packetRssi() returns the received signal strength in dBm. LoRa typically achieves -120 dBm sensitivity, enabling communication at distances of 1-10 km in open terrain. Values above -90 dBm indicate strong signal; below -110 dBm indicates marginal link quality at risk of packet loss.</p></div><div class="step"><span class="step-no">04</span><p>Spreading Factor Trade-off: SF7 provides the highest data rate (approximately 5 kbps) but shortest range. SF12 provides the longest range but only approximately 250 bps. For sensor nodes transmitting one reading per minute, SF9 or SF10 balances range and air time while staying within duty cycle regulations.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Remote field sensor on a farm communicating to a gateway node</li><li>Weather station in a barn or outbuilding without Wi-Fi coverage</li><li>Water tank level monitor several kilometres from the house</li><li>Wildlife monitoring sensor in a remote forest location</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>LoRa.begin() returns false</h4><p>Check the SPI pin assignments match your specific board. Print the LORA_SS, LORA_RST, and LORA_DIO0 pin numbers and verify they match the hardware. Ensure the antenna is connected; operating the SX1276 without an antenna can damage the RF front-end.</p></div><div class="trouble-item"><h4>Receiver never receives packets despite transmitter sending</h4><p>Both devices must use the same frequency, spreading factor, bandwidth, and coding rate. Verify all four LoRa.set...() calls match exactly between TX and RX. Also confirm both are in the same ISM band (868 MHz EU or 915 MHz US) matching the hardware module frequency.</p></div><div class="trouble-item"><h4>RSSI is very low even with devices close together</h4><p>Check that the antenna is properly connected. A missing or mismatched antenna causes 20-30 dB signal loss. Also verify the frequency matches the antenna resonant frequency — a 915 MHz antenna on an 868 MHz channel reduces gain significantly.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add AES-128 packet encryption using the mbedTLS library for secure transmission</li><li>Add a packet acknowledgement system with retransmission on timeout</li><li>Add GPS coordinates to the packet payload for a mobile sensor tracker</li><li>Add a solar panel and deep sleep between transmissions for a battery-powered field node</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 LoRa Remote Sensor Node?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, DHT22 DATA (transmitter), SX1276 NSS/SCK/MOSI/MISO, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 LoRa Remote Sensor Node require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 LoRa Remote Sensor Node?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build creates a three-node LoRa sensor network with one coordinator (receiver) and two remote sensor nodes. Each node sends its ID, temperature, humidity, and battery voltage in a structured packet. The coordinator displays all node readings on an OLED and forwards them to an MQTT broker via Wi-Fi. A Node-RED dashboard shows the live sensor map.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>3× Heltec LoRa 32 or TTGO LoRa32 — One coordinator, two sensor nodes</span></li><li><span>2× DHT22 sensor — One per sensor node</span></li><li><span>2× LiPo battery 3.7 V 1000 mAh — Sensor nodes run on battery</span></li><li><span>1× MQTT broker + Node-RED — On the coordinator Wi-Fi</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>DHT22 on each sensor node</td><td>GPIO 4</td><td></td></tr><tr><td>Battery ADC (node)</td><td>GPIO 34</td><td>Voltage divider to read LiPo voltage</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-lora-remote-sensor-node_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 LoRa Network - Intermediate SENSOR NODE (flash on nodes 1 and 2)
+// Change NODE_ID to 1 or 2 for each physical device
+#include &lt;SPI.h&gt;
+#include &lt;LoRa.h&gt;
+#include &lt;DHT.h&gt;
+#include &quot;esp_sleep.h&quot;
+
+#define NODE_ID    1
+#define LORA_SCK  5
+#define LORA_MISO 19
+#define LORA_MOSI 27
+#define LORA_SS   18
+#define LORA_RST  14
+#define LORA_DIO0 26
+
+DHT dht(4, DHT22);
+
+float readBattery(){
+  int raw=analogRead(34);
+  // Heltec: 100k/100k divider; 3.3 V ref; 12-bit ADC
+  return (raw/4095.0f)*3.3f*2.0f;
+}
+
+void setup(){
+  Serial.begin(115200);
+  dht.begin();
+  SPI.begin(LORA_SCK,LORA_MISO,LORA_MOSI,LORA_SS);
+  LoRa.setPins(LORA_SS,LORA_RST,LORA_DIO0);
+  LoRa.begin(868E6);
+  LoRa.setSpreadingFactor(9);
+  float t=dht.readTemperature(), h=dht.readHumidity(), v=readBattery();
+  String pkt=String(NODE_ID)+&quot;,&quot;+String(t,1)+&quot;,&quot;+String(h,1)+&quot;,&quot;+String(v,2);
+  LoRa.beginPacket(); LoRa.print(pkt); LoRa.endPacket();
+  Serial.printf(&quot;Node %d sent: %sn&quot;,NODE_ID,pkt.c_str());
+  LoRa.sleep();
+  // Deep sleep for 5 minutes to save battery
+  esp_sleep_enable_timer_wakeup(300ULL*1000000ULL);
+  esp_deep_sleep_start();
+}
+void loop(){}
+
+// --- COORDINATOR SKETCH (flash on the base station ESP32) ---
+// Receives packets from all nodes, displays on OLED, publishes to MQTT
+// See esp32-lora-intermediate-coordinator.ino in the project files</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Node ID in Packet Header: Each node prefixes its packet with a unique NODE_ID integer. The coordinator parses this first field to identify which node sent the packet and updates the corresponding slot in its display. This simple scheme supports up to 255 nodes on the same frequency using a single-byte ID.</p></div><div class="step"><span class="step-no">02</span><p>Deep Sleep Between Transmissions: After transmitting one reading, the node calls LoRa.sleep() to power down the SX1276 radio, then enters ESP32 deep sleep for 5 minutes using esp_sleep_enable_timer_wakeup(). Deep sleep reduces current from 80 mA to under 10 uA, extending a 1000 mAh LiPo battery from hours to weeks.</p></div><div class="step"><span class="step-no">03</span><p>Battery Voltage Monitoring: The Heltec board includes a 100k/100k voltage divider connecting the LiPo positive terminal to GPIO 34. Reading this pin and multiplying by 2 gives the battery voltage. A fully charged LiPo is 4.2 V; below 3.3 V the cell is depleted. Including battery voltage in the sensor packet enables remote battery monitoring.</p></div><div class="step"><span class="step-no">04</span><p>Coordinator MQTT Bridge: The coordinator runs continuously on USB power with Wi-Fi enabled. On receiving each LoRa packet it parses the node ID and publishes to lora/nodeN where N is the ID. Node-RED subscribes to lora/# and populates a sensor map dashboard showing all nodes, their readings, last-seen timestamps, and battery levels.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Multi-building campus temperature monitoring network</li><li>Remote agricultural multi-field sensor array</li><li>Smart city distributed environmental monitoring nodes</li><li>Construction site equipment tracking with environmental logging</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Coordinator receives packets from only one node</h4><p>Verify each node has a different NODE_ID defined. If two nodes have the same ID, their packets may collide on the channel and the coordinator cannot distinguish them. Also check that both nodes use the same SF and frequency as the coordinator.</p></div><div class="trouble-item"><h4>Battery depletes in days instead of weeks</h4><p>Check that LoRa.sleep() is called before esp_deep_sleep_start(). Leaving the SX1276 in standby mode consumes 1.5 mA, which drains a 1000 mAh battery in approximately 28 days — still acceptable. Sleeping the radio first reduces this to the micro-amp deep sleep current for the ESP32 only.</p></div><div class="trouble-item"><h4>Packets from distant nodes are received but not from nearby ones</h4><p>Nearby nodes may be too close, causing the SX1276 receiver to saturate (overload). Add 10 dB of attenuation between the antenna and the module for nodes within 10 metres of the coordinator, or reduce the transmit power with LoRa.setTxPower(2).</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add packet sequence numbers and RSSI logging to detect packet loss per node</li><li>Add GPS to each node for automatic location-tagged sensor mapping</li><li>Add OTA update capability to sensor nodes via the LoRa downlink channel</li><li>Add adaptive data rate: switch to SF7 for good signal, SF12 for weak signal automatically</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 LoRa Remote Sensor Node?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, DHT22 DATA (transmitter), SX1276 NSS/SCK/MOSI/MISO, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 LoRa Remote Sensor Node require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 LoRa Remote Sensor Node?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build joins The Things Network (TTN) using the LMIC LoRaWAN stack. The sensor node authenticates with OTAA (over-the-air activation), encrypts each uplink with AES-128, and schedules transmissions within TTN fair-use duty cycle limits. TTN forwards payloads to an MQTT endpoint where a Grafana dashboard displays all sensor readings with geographic node map.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× Heltec LoRa 32 or TTGO LoRa32 — With SX1276</span></li><li><span>1× DHT22 sensor</span></li><li><span>1× The Things Network account (free) — TTN V3 console at console.thethingsnetwork.org</span></li><li><span>1× LoRaWAN gateway within range — TTN community gateway or personal RAK gateway</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Same as beginner/intermediate</td><td>SX1276 on standard LoRa32 pinout</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-lora-remote-sensor-node_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 LoRaWAN - Advanced (TTN OTAA via LMIC)
+// Library: MCCI Arduino LoRaWAN LMIC (install via Library Manager)
+// Register device on TTN V3 console and copy AppEUI, DevEUI, AppKey below
+// Guide: https://www.thethingsindustries.com/docs/
+
+#include &lt;lmic.h&gt;
+#include &lt;hal/hal.h&gt;
+#include &lt;SPI.h&gt;
+#include &lt;DHT.h&gt;
+
+// From TTN console (little-endian for AppEUI and DevEUI)
+static const u1_t PROGMEM APPEUI[8]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+static const u1_t PROGMEM DEVEUI[8]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+static const u1_t PROGMEM APPKEY[16]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                                       0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+void os_getArtEui(u1_t*b){ memcpy_P(b,APPEUI,8); }
+void os_getDevEui(u1_t*b){ memcpy_P(b,DEVEUI,8); }
+void os_getDevKey(u1_t*b){ memcpy_P(b,APPKEY,16); }
+
+// Heltec LoRa 32 V2 pin mapping for LMIC
+const lmic_pinmap lmic_pins={
+  .nss=18,.rxtx=LMIC_UNUSED_PIN,.rst=14,
+  .dio={26,35,34}
+};
+
+DHT dht(4,DHT22);
+static uint8_t payload[4];
+static osjob_t sendjob;
+const unsigned TX_INTERVAL=300; // 5 minutes
+
+void do_send(osjob_t *j){
+  if(LMIC.opmode&amp;OP_TXRXPEND){ os_setTimedCallback(j,os_getTime()+sec2osticks(TX_INTERVAL),do_send); return; }
+  float t=dht.readTemperature(), h=dht.readHumidity();
+  int16_t ti=(int16_t)(t*100), hi=(int16_t)(h*100);
+  payload[0]=ti&gt;&gt;8; payload[1]=ti&amp;0xFF;
+  payload[2]=hi&gt;&gt;8; payload[3]=hi&amp;0xFF;
+  LMIC_setTxData2(1,payload,sizeof(payload),0);
+  Serial.printf(&quot;Queued: T=%.1f H=%.1fn&quot;,t,h);
+}
+
+void onEvent(ev_t ev){
+  switch(ev){
+    case EV_JOINED: Serial.println(&quot;OTAA joined TTN&quot;); do_send(&amp;sendjob); break;
+    case EV_TXCOMPLETE:
+      Serial.println(&quot;TX complete&quot;);
+      os_setTimedCallback(&amp;sendjob,os_getTime()+sec2osticks(TX_INTERVAL),do_send);
+      break;
+    default: break;
+  }
+}
+
+void setup(){
+  Serial.begin(115200); dht.begin();
+  os_init(); LMIC_reset();
+  LMIC_startJoining();
+}
+void loop(){ os_runloop_once(); }</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>LoRaWAN OTAA Activation: Over-the-Air Activation (OTAA) is the secure method for joining a LoRaWAN network. The device sends a JoinRequest containing the DevEUI and AppEUI. The network server authenticates using the AppKey and responds with a JoinAccept containing a session key pair (NwkSKey, AppSKey) used for all subsequent AES-128 encryption.</p></div><div class="step"><span class="step-no">02</span><p>LMIC Stack Operation: The MCCI LMIC library implements the full LoRaWAN class A specification. os_runloop_once() processes scheduled events: join requests, TX windows, RX windows, and duty cycle timers. All LoRaWAN timing (RX1/RX2 receive windows exactly 1 and 2 seconds after TX) is managed automatically by the LMIC scheduler.</p></div><div class="step"><span class="step-no">03</span><p>Payload Encoding: Temperature and humidity floats are multiplied by 100 and packed as two-byte signed integers to minimise payload size. A 4-byte payload at SF9 uses approximately 500 ms air time. TTN fair-use policy limits each device to 30 seconds of air time per day, allowing approximately 60 transmissions at this payload size and spreading factor.</p></div><div class="step"><span class="step-no">04</span><p>TTN MQTT Integration: TTN V3 provides an MQTT broker where all device uplinks are published as JSON to v3/application-id/devices/device-id/up. A Node-RED MQTT-in node subscribes to this topic, decodes the base64-encoded payload, and plots temperature and humidity on a Grafana time-series panel with a world map showing device location.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Nationwide agricultural sensor network using TTN community gateways</li><li>Smart city pollution monitoring with TTN public infrastructure</li><li>Logistics package environment tracking over LoRaWAN</li><li>Community weather station network contributing to shared data platforms</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>OTAA join never completes (EV_JOINED never fires)</h4><p>Verify a TTN gateway is within range by checking the TTN coverage map. Confirm AppEUI and DevEUI are in little-endian byte order as required by LMIC (reverse the bytes from the TTN console MSB display). Ensure the AppKey is in big-endian order (as shown in the TTN console).</p></div><div class="trouble-item"><h4>TX complete fires but data does not appear on TTN console</h4><p>Wait 60 seconds for the TTN console to refresh. Check the TTN application payload formatter is set to None (raw bytes) and that the device is registered under the correct application. Verify the frequency plan matches the gateway region.</p></div><div class="trouble-item"><h4>LMIC reports duty cycle violation and delays transmission</h4><p>This is correct behaviour. LMIC enforces regulatory duty cycle limits. Increase TX_INTERVAL from 300 seconds to 600 seconds to reduce duty cycle usage. TTN fair-use limits also apply independently; the 30-second/day air time budget requires careful interval management.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add confirmed uplinks with TTN acknowledgements for critical data delivery</li><li>Add a TTN downlink command to change the sensor sampling interval remotely</li><li>Add Cayenne Low Power Payload encoding for automatic TTN dashboard integration</li><li>Add a personal RAK7244 LoRaWAN gateway to extend TTN coverage in your area</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 LoRa Remote Sensor Node?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, DHT22 DATA (transmitter), SX1276 NSS/SCK/MOSI/MISO, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 LoRa Remote Sensor Node require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 LoRa Remote Sensor Node?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to IoT Projects. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-ble-beacon.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 BLE Beacon</h3></div></a><a class="related-card" href="esp32-iot-weather-station.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 Mini Weather Station</h3></div></a><a class="related-card" href="esp32-mqtt-sensor-dashboard.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 MQTT Sensor Dashboard</h3></div></a><a class="related-card" href="esp32-oled-weather-clock.html"><div class="related-thumb t-iot"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 28C22 18 42 18 54 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 36C26 29 38 29 46 36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M26 44C29 41 35 41 38 44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="3" fill="currentColor"/><rect x="26" y="12" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="related-body"><span class="badge badge-cat">IoT</span><h3>ESP32 OLED Weather Clock</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

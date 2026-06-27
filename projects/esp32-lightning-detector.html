@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 Lightning Detector | ESP32 Engine</title>
+<meta name="description" content="Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor noise, and publish alerts to Telegram and MQTT the moment a strike is detected.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-lightning-detector.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Lightning Detector | ESP32 Engine">
+<meta property="og:description" content="Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor noise, and publish alerts to Telegram and MQTT the moment a strike is detected.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-lightning-detector.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Lightning Detector | ESP32 Engine">
+<meta name="twitter:description" content="Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor noise, and publish alerts to Telegram and MQTT the moment a strike is detected.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 Lightning Detector","description":"Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor noise, and publish alerts to Telegram and MQTT the moment a strike is detected.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-lightning-detector.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, AS3935 CS/SCK/MOSI/MISO, AS3935 IRQ"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 Lightning Detector (Beginner)","description":"Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor noise, and publish alerts to Telegram and MQTT the moment a strike is detected.","step":[{"@type":"HowToStep","position":1,"name":"AS3935 RF Detection Principle: The AS3935 contains a tuned antenna resonating at 500 kHz that detect…","text":"AS3935 RF Detection Principle: The AS3935 contains a tuned antenna resonating at 500 kHz that detects the broadband radio frequency burst (sferic) emitted by lightning discharge. The IC applies a matched filter and statistical algorithm to distinguish genuine lightning sferics from narrowband interference sources like motors, switching supplies, and fluorescent lights."},{"@type":"HowToStep","position":2,"name":"Interrupt-Driven Detection: The AS3935 IRQ pin goes HIGH for approximately 1 ms when any event is de…","text":"Interrupt-Driven Detection: The AS3935 IRQ pin goes HIGH for approximately 1 ms when any event is detected (noise, disturber, or lightning). The interrupt service routine sets a strikeDetected flag. The main loop checks this flag and reads the interrupt register to determine which event type occurred. The 5 ms delay allows the AS3935 registers to stabilise after IRQ."},{"@type":"HowToStep","position":3,"name":"Distance Estimation Algorithm: The AS3935 estimates distance to the storm front based on the signal …","text":"Distance Estimation Algorithm: The AS3935 estimates distance to the storm front based on the signal strength and time-frequency signature of the sferic. It returns 14 distance values from 1 km (overhead) to 40 km (storm approaching from distant horizon) plus a value indicating the storm is overhead. Accuracy is approximately +/-3 km at 20 km."},{"@type":"HowToStep","position":4,"name":"Indoor vs Outdoor Mode: Indoor mode reduces the antenna gain by 6 dB to decrease sensitivity, reduci…","text":"Indoor vs Outdoor Mode: Indoor mode reduces the antenna gain by 6 dB to decrease sensitivity, reducing false positives from building electrical noise. Outdoor mode uses full gain for maximum range. For an outdoor-mounted detector connected to an ESP32 indoors via long wires, use outdoor mode with increased noise floor level to compensate for wire-conducted interference."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 Lightning Detector?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, AS3935 CS/SCK/MOSI/MISO, AS3935 IRQ, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 Lightning Detector require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 Lightning Detector?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Environmental","item":"https://esp32engine.com/category/environmental.html"},{"@type":"ListItem","position":3,"name":"ESP32 Lightning Detector","item":"https://esp32engine.com/projects/esp32-lightning-detector.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/environmental.html">Environmental</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/environmental.html">Environmental</a></li><li aria-current="page">ESP32 Lightning Detector</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 Lightning Detector</h1>
+          <div class="article-badges"><span class="badge badge-cat">Environmental</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor noise, and publish alerts to Telegram and MQTT the moment a strike is detected.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-agriculture parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect an AS3935 lightning sensor module to the ESP32 via SPI and configure it to detect cloud-to-ground and intra-cloud lightning. When a strike is detected, the estimated distance (1-40 km) is printed to Serial and an LED flashes rapidly. The sensor filters disturbers (electrical noise from motors and fluorescent lights) automatically.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× AS3935 lightning sensor module — DFRobot Gravity or SparkFun; SPI or I2C</span></li><li><span>1× Red LED and 220 ohm resistor — Strike indicator</span></li><li><span>1× SSD1306 OLED 128x64 I2C</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>AS3935 CS/SCK/MOSI/MISO</td><td>GPIO 5/18/23/19</td><td>SPI interface</td></tr><tr><td>AS3935 IRQ</td><td>GPIO 4</td><td>Interrupt; strike event signal</td></tr><tr><td>AS3935 VCC/GND</td><td>3.3 V / GND</td><td>3.3 V only; not 5 V tolerant</td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td></td></tr><tr><td>Red LED anode via 220R</td><td>GPIO 26</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-lightning-detector_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Lightning Detector - Beginner
+// AS3935 SPI -&gt; interrupt-driven strike detection with distance estimate
+// Library: SparkFun AS3935 Lightning Detector Arduino Library
+
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;SPI.h&gt;
+#include &lt;SparkFun_AS3935.h&gt;
+
+#define AS3935_CS  5
+#define AS3935_IRQ 4
+#define LED_PIN    26
+
+SparkFun_AS3935 lightning(AS3935_CS);
+Adafruit_SSD1306 oled(128, 64, &amp;Wire, -1);
+
+volatile bool strikeDetected = false;
+void IRAM_ATTR onStrike() { strikeDetected = true; }
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22);
+  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); oled.setTextColor(WHITE);
+  SPI.begin();
+  pinMode(AS3935_IRQ, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ), onStrike, RISING);
+
+  if (!lightning.beginSPI(AS3935_CS, 2000000)) {
+    Serial.println(&quot;AS3935 not detected&quot;); while (1);
+  }
+  // Indoor mode reduces antenna gain for less false positives in buildings
+  lightning.setIndoorOutdoor(INDOOR);
+  // Disturber rejection: masks false triggers from noise sources
+  lightning.maskDisturber(true);
+  // Spike rejection (0-15): higher = stricter; default 2
+  lightning.spikeRejection(2);
+  // Noise floor level (0-7): increase if frequent false positives
+  lightning.setNoiseLevel(2);
+
+  Serial.println(&quot;Lightning detector armed. Watching for storms...&quot;);
+  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+  oled.println(&quot;Lightning Detector&quot;); oled.println(&quot;Watching...&quot;); oled.display();
+}
+
+void loop() {
+  if (!strikeDetected) return;
+  strikeDetected = false;
+  delay(5); // brief delay for AS3935 to update registers
+
+  int intType = lightning.readInterruptReg();
+  if (intType == NOISE_INT) {
+    Serial.println(&quot;Noise detected — increase noise floor level&quot;);
+  } else if (intType == DISTURBER_INT) {
+    Serial.println(&quot;Disturber detected (electrical noise, not lightning)&quot;);
+  } else if (intType == LIGHTNING_INT) {
+    int dist = lightning.distanceToStorm();
+    int energy = lightning.lightningEnergy();
+    Serial.printf(&quot;LIGHTNING! Distance: %d km  Energy: %dn&quot;, dist, energy);
+    // Flash LED
+    for (int i = 0; i &lt; 5; i++) {
+      digitalWrite(LED_PIN, HIGH); delay(50);
+      digitalWrite(LED_PIN, LOW);  delay(50);
+    }
+    oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+    oled.println(&quot;LIGHTNING DETECTED!&quot;);
+    oled.printf(&quot;Distance: ~%d kmn&quot;, dist);
+    oled.printf(&quot;Energy: %dn&quot;, energy);
+    oled.display();
+  }
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>AS3935 RF Detection Principle: The AS3935 contains a tuned antenna resonating at 500 kHz that detects the broadband radio frequency burst (sferic) emitted by lightning discharge. The IC applies a matched filter and statistical algorithm to distinguish genuine lightning sferics from narrowband interference sources like motors, switching supplies, and fluorescent lights.</p></div><div class="step"><span class="step-no">02</span><p>Interrupt-Driven Detection: The AS3935 IRQ pin goes HIGH for approximately 1 ms when any event is detected (noise, disturber, or lightning). The interrupt service routine sets a strikeDetected flag. The main loop checks this flag and reads the interrupt register to determine which event type occurred. The 5 ms delay allows the AS3935 registers to stabilise after IRQ.</p></div><div class="step"><span class="step-no">03</span><p>Distance Estimation Algorithm: The AS3935 estimates distance to the storm front based on the signal strength and time-frequency signature of the sferic. It returns 14 distance values from 1 km (overhead) to 40 km (storm approaching from distant horizon) plus a value indicating the storm is overhead. Accuracy is approximately +/-3 km at 20 km.</p></div><div class="step"><span class="step-no">04</span><p>Indoor vs Outdoor Mode: Indoor mode reduces the antenna gain by 6 dB to decrease sensitivity, reducing false positives from building electrical noise. Outdoor mode uses full gain for maximum range. For an outdoor-mounted detector connected to an ESP32 indoors via long wires, use outdoor mode with increased noise floor level to compensate for wire-conducted interference.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Outdoor worker safety alert system for approaching electrical storms</li><li>Golf course automatic lightning siren controller</li><li>Drone flight safety automatic ground recall trigger</li><li>Amateur radio station antenna disconnection automation on lightning alert</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Frequent DISTURBER_INT interrupts with no storms</h4><p>Disturbers are electrical noise sources: fluorescent lights, switching power supplies, AC motors. Move the AS3935 away from these sources. Increase spikeRejection() from 2 to 4 or 5. If disturbers persist, keep maskDisturber(true) to prevent the disturber interrupt and only respond to confirmed lightning events.</p></div><div class="trouble-item"><h4>No interrupts at all even during confirmed thunderstorms</h4><p>Verify the IRQ pin wiring and the interrupt attachment. Print the AS3935 register dump using lightning.printAllRegs() to verify communication. Ensure the antenna calibration is correct: call lightning.tuneCap() and check the returned value is between 0-15.</p></div><div class="trouble-item"><h4>Distance always reads 63 km (out of range)</h4><p>The distance register returns 63 when the storm is estimated to be over 40 km away or the energy was too low for a reliable distance estimate. This is normal for weak distant strikes. Readings will become more specific as the storm approaches within 40 km.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a buzzer with increasing alarm rate as storm distance decreases</li><li>Add a second AS3935 outdoors and compare indoor/outdoor readings to improve accuracy</li><li>Add Wi-Fi and Telegram alerts with the estimated distance and time</li><li>Add NVS logging of all strike events with timestamps for storm tracking</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Lightning Detector?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, AS3935 CS/SCK/MOSI/MISO, AS3935 IRQ, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Lightning Detector require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Lightning Detector?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build logs all strike events with NTP timestamps and estimated distances to NVS. A Telegram alert fires within seconds of each detected strike, including the distance and whether the storm appears to be approaching (decreasing distances) or retreating. An OLED shows a text storm-distance timeline for the last five strikes.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× AS3935 module</span></li><li><span>1× SSD1306 OLED</span></li><li><span>1× Wi-Fi router — NTP + Telegram</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Same as beginner</td><td>AS3935 SPI + IRQ + OLED I2C</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-lightning-detector_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Lightning Detector - Intermediate (NTP log + Telegram + storm trend)
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;SPI.h&gt;
+#include &lt;SparkFun_AS3935.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WiFiClientSecure.h&gt;
+#include &lt;time.h&gt;
+
+#define AS3935_CS 5
+#define AS3935_IRQ 4
+
+SparkFun_AS3935 lightning(AS3935_CS);
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* BOT_TOKEN=&quot;YOUR_BOT_TOKEN&quot;;
+const char* CHAT_ID=&quot;YOUR_CHAT_ID&quot;;
+
+volatile bool strike=false;
+void IRAM_ATTR onStrike(){ strike=true; }
+
+struct StrikeLog { time_t ts; int dist; };
+StrikeLog history[5]; int histIdx=0;
+
+void sendTelegram(const String &amp;msg){
+  WiFiClientSecure c; c.setInsecure();
+  if(!c.connect(&quot;api.telegram.org&quot;,443)) return;
+  String body=&quot;chat_id=&quot;+String(CHAT_ID)+&quot;&amp;text=&quot;+msg;
+  c.printf(&quot;POST /bot%s/sendMessage HTTP/1.1rnHost: api.telegram.orgrn&quot;
+    &quot;Content-Type: application/x-www-form-urlencodedrnContent-Length: %drnrn%s&quot;,
+    BOT_TOKEN,(int)body.length(),body.c_str());
+  delay(1000); c.stop();
+}
+
+void updateOLED(){
+  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);
+  oled.println(&quot;Recent strikes (km):&quot;);
+  for(int i=0;i&lt;5;i++){
+    int idx=(histIdx-1-i+5)%5;
+    if(history[idx].ts) oled.printf(&quot;%d km agon&quot;,history[idx].dist);
+  }
+  oled.display();
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);
+  SPI.begin();
+  pinMode(AS3935_IRQ,INPUT);
+  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),onStrike,RISING);
+  lightning.beginSPI(AS3935_CS,2000000);
+  lightning.setIndoorOutdoor(INDOOR);
+  lightning.maskDisturber(true);
+  WiFi.begin(SSID,PASS); while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  Serial.printf(&quot;Lightning detector: %sn&quot;,WiFi.localIP().toString().c_str());
+}
+
+void loop(){
+  if(!strike) return;
+  strike=false; delay(5);
+  if(lightning.readInterruptReg()!=LIGHTNING_INT) return;
+  int dist=lightning.distanceToStorm();
+  time_t now=time(nullptr);
+  history[histIdx%5]={now,dist}; histIdx++;
+  // Check trend: is storm approaching?
+  bool approaching=false;
+  if(histIdx&gt;=2){
+    int prev=history[(histIdx-2+5)%5].dist;
+    int curr=history[(histIdx-1+5)%5].dist;
+    approaching=(curr&lt;prev);
+  }
+  String msg=&quot;LIGHTNING! ~&quot;+String(dist)+&quot;km &quot;+(approaching?&quot;APPROACHING&quot;:&quot;retreating&quot;);
+  struct tm ti; localtime_r(&amp;now,&amp;ti);
+  char ts[20]; strftime(ts,sizeof(ts),&quot;%H:%M:%S&quot;,&amp;ti);
+  msg+=&quot; (&quot;+String(ts)+&quot;)&quot;;
+  Serial.println(msg);
+  sendTelegram(msg);
+  updateOLED();
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Storm Trend Detection: The history[] circular buffer stores the last five strike distances. After each strike, the current distance is compared to the previous strike distance. If current is smaller than previous, the storm is approaching. This simple delta-based trend gives actionable direction information that a single distance reading cannot provide.</p></div><div class="step"><span class="step-no">02</span><p>NTP Timestamps for Alerts: configTime() syncs the ESP32 clock from the NTP pool. localtime_r() converts the Unix timestamp to local time for the alert message. Including the detection time in the Telegram message allows correlation with official weather radar and provides audit records if the strike caused damage.</p></div><div class="step"><span class="step-no">03</span><p>Circular Strike History Buffer: The five-element history[] array with histIdx incremented on each strike stores the most recent five events. The display iterates back from histIdx-1 to show events in reverse chronological order. This provides a visual trend without persistent storage — the history clears on power cycle.</p></div><div class="step"><span class="step-no">04</span><p>Disturber Masking in Wi-Fi Environments: Wi-Fi radio frequency bursts can occasionally trigger AS3935 disturber interrupts. maskDisturber(true) prevents disturber events from reaching the main code. The ESP32 Wi-Fi transceiver operates at 2.4 GHz, far from the 500 kHz lightning detection band, but switch-mode converters on the development board may generate broadband interference.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Campsite or outdoor event lightning safety alert system</li><li>Automated irrigation system shutdown on storm approach</li><li>Lightning rod effectiveness monitoring station</li><li>Citizen science lightning detection network for storm tracking</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Storm trend always shows approaching even for retreating storm</h4><p>The AS3935 distance estimate has variance between strikes; two consecutive measurements from the same storm may fluctuate. Average the last three distances before comparing trend. Require at least three consecutive decreasing readings before classifying as approaching.</p></div><div class="trouble-item"><h4>Telegram alert arrives 10-30 seconds after interrupt</h4><p>The WiFiClientSecure TLS handshake takes 1-3 seconds. The 1000 ms delay after sending adds more latency. Reduce latency by keeping the Telegram connection open with Connection: keep-alive or switch to a lightweight HTTP client without TLS (use http instead of https for non-sensitive alerts).</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add an NVS log that persists across power cycles for post-storm analysis</li><li>Add a Home Assistant webhook so the lightning event can trigger automations like closing skylights</li><li>Add GPS to share your location with the Telegram alert for remote-site safety monitoring</li><li>Add multiple detectors at different locations and triangulate the strike position</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Lightning Detector?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, AS3935 CS/SCK/MOSI/MISO, AS3935 IRQ, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Lightning Detector require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Lightning Detector?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build publishes strike events to MQTT in real time, with Node-RED plotting each strike on a time-distance chart. Strike energy values are accumulated to estimate storm intensity. When a storm is detected approaching within 15 km, the ESP32 publishes a high-priority MQTT alert that triggers Home Assistant automations: closing Velux windows, activating an outdoor siren, and pausing lawn irrigation.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× AS3935 module</span></li><li><span>1× MQTT broker + Node-RED</span></li><li><span>1× Home Assistant — Automation on proximity alert</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>Same as intermediate</td><td></td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-lightning-detector_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Lightning Detector - Advanced (MQTT + storm proximity automation)
+#include &lt;SPI.h&gt;
+#include &lt;SparkFun_AS3935.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;time.h&gt;
+
+#define AS3935_CS 5
+#define AS3935_IRQ 4
+SparkFun_AS3935 lightning(AS3935_CS);
+WiFiClient wc; PubSubClient mqtt(wc);
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const int PROXIMITY_KM=15; // trigger automation within 15 km
+
+volatile bool strike=false;
+void IRAM_ATTR onStrike(){ strike=true; }
+
+int recentDist[10]; int distIdx=0;
+bool proximityAlertActive=false;
+
+void publishStrike(int dist, int energy){
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;dist&quot;]=dist; doc[&quot;energy&quot;]=energy; doc[&quot;ts&quot;]=(long)time(nullptr);
+  char buf[128]; serializeJson(doc,buf);
+  mqtt.publish(&quot;lightning/strike&quot;,buf);
+  Serial.printf(&quot;Strike: %dkm energy:%dn&quot;,dist,energy);
+}
+
+void checkProximity(int dist){
+  recentDist[distIdx%10]=dist; distIdx++;
+  if(dist&lt;=PROXIMITY_KM&amp;&amp;!proximityAlertActive){
+    mqtt.publish(&quot;lightning/proximity&quot;,&quot;DANGER&quot;);
+    proximityAlertActive=true;
+    Serial.println(&quot;PROXIMITY ALERT published&quot;);
+  }
+  if(dist&gt;PROXIMITY_KM+10&amp;&amp;proximityAlertActive){
+    mqtt.publish(&quot;lightning/proximity&quot;,&quot;CLEAR&quot;);
+    proximityAlertActive=false;
+  }
+}
+
+void setup(){
+  Serial.begin(115200);
+  SPI.begin();
+  pinMode(AS3935_IRQ,INPUT);
+  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),onStrike,RISING);
+  lightning.beginSPI(AS3935_CS,2000000);
+  lightning.setIndoorOutdoor(INDOOR);
+  lightning.maskDisturber(true);
+  WiFi.begin(SSID,PASS); while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  mqtt.setServer(MQTT_HOST,1883);
+}
+
+void loop(){
+  if(!mqtt.connected()) mqtt.connect(&quot;LightningDet&quot;);
+  mqtt.loop();
+  if(!strike) return;
+  strike=false; delay(5);
+  if(lightning.readInterruptReg()!=LIGHTNING_INT) return;
+  int dist=lightning.distanceToStorm();
+  int energy=lightning.lightningEnergy();
+  publishStrike(dist,energy);
+  checkProximity(dist);
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Proximity Alert Hysteresis: The proximity alert activates when any strike registers within PROXIMITY_KM (15 km). It clears only when a strike registers beyond PROXIMITY_KM+10 (25 km), providing a 10 km hysteresis band. This prevents the alert from flickering on and off as the storm distance estimate fluctuates around the threshold.</p></div><div class="step"><span class="step-no">02</span><p>MQTT Topic Separation: lightning/strike receives every detected strike as a JSON object for logging and charting. lightning/proximity receives only the high-priority state change (DANGER or CLEAR). Separating topics allows consumers to subscribe selectively: Node-RED subscribes to strike for charting; Home Assistant subscribes to proximity for automation.</p></div><div class="step"><span class="step-no">03</span><p>Home Assistant Automation Trigger: An HA MQTT trigger on lightning/proximity matching &quot;DANGER&quot; fires an automation sequence: service call to close cover entities (skylights), switch on siren switch, and turn off irrigation switch. The CLEAR payload fires the reverse automation. All in under 1 second of the MQTT message arrival.</p></div><div class="step"><span class="step-no">04</span><p>Strike Energy Accumulation: The AS3935 lightningEnergy() returns a 21-bit value proportional to the electromagnetic energy of the detected sferic. Summing energy values over a window indicates storm intensity. Node-RED processes the accumulated energy series and renders it as a storm intensity bar chart alongside the distance time series.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Smart home storm protection automating windows, gates, and outdoor equipment</li><li>Golf course or sports venue automated safety siren and PA announcement trigger</li><li>Outdoor wedding or event venue lightning safety management system</li><li>IoT lightning strike density mapping network for meteorological research</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Proximity alert fires and never clears</h4><p>The clear condition requires a strike to be detected beyond 25 km. If the storm passes directly overhead and no subsequent strikes are detected, the alert stays active indefinitely. Add a 30-minute timer that clears the alert if no strikes are detected within the timeout.</p></div><div class="trouble-item"><h4>Home Assistant does not respond to lightning/proximity messages</h4><p>Verify the MQTT integration is connected in HA Settings. Create a Manual Trigger in the automation with Platform: MQTT, Topic: lightning/proximity, Payload: DANGER. Test the trigger by manually publishing &quot;DANGER&quot; to the topic from MQTT Explorer before relying on the live detector.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add multiple detector nodes at different sites and publish to a common MQTT topic for distributed coverage</li><li>Add a lightning strike heatmap in Node-RED using a world-map node with strike GPS coordinates from detector location metadata</li><li>Add integration with the Blitzortung.org open lightning detection network for comparison</li><li>Add a battery backup so the detector continues operating during storm-induced power outages</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Lightning Detector?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, AS3935 CS/SCK/MOSI/MISO, AS3935 IRQ, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Lightning Detector require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Lightning Detector?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Environmental. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-air-quality-monitor.html"><div class="related-thumb t-agriculture"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Environmental</span><h3>ESP32 Air Quality Monitor</h3></div></a><a class="related-card" href="esp32-uv-index-monitor.html"><div class="related-thumb t-agriculture"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M32 34C32 34 18 30 16 18C24 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M32 34C32 34 46 30 48 18C40 20 32 28 32 34Z" fill="currentColor" opacity=".22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 54H44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Environmental</span><h3>ESP32 UV Index Monitor</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a><a class="related-card" href="esp32-ai-object-detector.html"><div class="related-thumb t-ai"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="18" y="18" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="currentColor" opacity=".2"/><path d="M18 26H12M18 32H12M18 38H12M46 26H52M46 32H52M46 38H52M26 18V12M32 18V12M38 18V12M26 46V52M32 46V52M38 46V52" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">AI</span><h3>ESP32 AI Object Detector</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

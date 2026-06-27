@@ -1,0 +1,299 @@
+slug: esp32-ai-object-detector
+title: ESP32 AI Object Detector
+category: AI Projects
+description: Run machine learning inference directly on the ESP32 to detect objects in a live camera feed.
+  Start with simple colour-based detection, progress to TensorFlow Lite Micro person detection, and finish
+  with a multi-class detector publishing JSON alerts to MQTT.
+meta_description: Build an ESP32-CAM AI object detector using TensorFlow Lite Micro. From colour blob
+  detection to on-device MobileNet person detection and multi-class MQTT alerts.
+source_base: esp32-ai-object-detector-legacy-import
+sensor: 'TODO: sensor'
+output: FTDI TX
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 3
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 3 (U0RXD)
+  sensor_name: 'TODO: sensor'
+  output_name: FTDI TX
+  wiring:
+  - component: FTDI TX
+    pin: GPIO 3 (U0RXD)
+  - component: FTDI RX
+    pin: GPIO 1 (U0TXD)
+  - component: FTDI GND
+    pin: GND
+  - component: FTDI 3.3 V
+    pin: 3.3 V
+  - component: GPIO 0 to GND
+    pin: GPIO 0
+  - component: Red LED anode via 220R
+    pin: GPIO 33
+levels:
+  beginner:
+    level: beginner
+    overview_html: <p>In this beginner project you will use the ESP32-CAM to capture frames and detect
+      objects by colour using pixel intensity thresholding in the RGB565 frame buffer. A red LED illuminates
+      when a high percentage of the frame contains pixels in a target colour range (for example, orange
+      for fire or green for a plant). No ML model is needed; this demonstrates the fundamental principle
+      of image-based detection before moving to neural networks in higher levels.</p>
+    components:
+    - 1× ESP32-CAM module (AI Thinker) — OV2640 camera; PSRAM built-in
+    - 1× FTDI USB-to-Serial adapter — 3.3 V; used for programming and Serial Monitor
+    - 1× Red LED and 220 ohm resistor — Detection indicator
+    - 1× Jumper wires
+    wiring:
+    - - FTDI TX
+      - GPIO 3 (U0RXD)
+      - Programming and Serial
+    - - FTDI RX
+      - GPIO 1 (U0TXD)
+      - ''
+    - - FTDI GND
+      - GND
+      - ''
+    - - FTDI 3.3 V
+      - 3.3 V
+      - Use 5 V pin if module requires it
+    - - GPIO 0 to GND
+      - GPIO 0
+      - Hold LOW during upload; remove after
+    - - Red LED anode via 220R
+      - GPIO 33
+      - Onboard LED on AI Thinker
+    how:
+    - 'RGB565 Pixel Format: The OV2640 outputs frames in RGB565 format: 16 bits per pixel with 5 bits
+      red, 6 bits green, and 5 bits blue packed into a 16-bit integer. Extracting each channel requires
+      bit-shifting and masking: red = (pixel >> 11) & 0x1F, green = (pixel >> 5) & 0x3F, blue = pixel
+      & 0x1F.'
+    - 'Colour Threshold Detection: The detectOrange() function scans all 76,800 pixels of a QVGA (320x240)
+      frame and counts those matching orange colour criteria: high red, moderate green, low blue. Dividing
+      the match count by total pixels gives a normalised detection ratio between 0.0 and 1.0.'
+    - 'Detection Threshold Tuning: A 5 percent threshold (0.05) triggers detection when at least 3840
+      pixels are orange-coloured. Adjust DETECT_THRESHOLD based on your scene: lower for detecting small
+      objects, higher to avoid false positives from ambient orange light or warm-coloured walls.'
+    - 'Frame Rate Limitation: Processing a full QVGA frame in a loop takes approximately 5-20 ms depending
+      on ESP32 clock speed. The 200 ms delay limits detection to 5 FPS, balancing detection responsiveness
+      with processor load. Remove the delay for maximum detection rate.'
+    apps:
+    - Fire or flame colour detection for early fire warning
+    - Green plant health monitoring by colour saturation
+    - Fruit ripeness detection by colour change over days
+    - Sports ball colour tracking for position analysis
+    troubleshooting:
+    - - Camera init fails with error
+      - Verify the AI Thinker pin map matches your module. Different ESP32-CAM modules (e.g. M5Stack CAM)
+        use different GPIO assignments. Check that GPIO 0 is pulled LOW for upload and released before
+        running the sketch.
+    - - False positives in normal lighting
+      - 'Increase DETECT_THRESHOLD from 0.05 to 0.15 or higher. Also narrow the colour range criteria:
+        increase the red minimum from 20 to 25 and reduce the green and blue maximums.'
+    - - Detection ratio is always 0.000
+      - Confirm PIXFORMAT_RGB565 is set. If PIXFORMAT_JPEG is accidentally used, the raw buffer contains
+        JPEG bytes rather than pixel data and all threshold comparisons will fail.
+    - - ESP32-CAM crashes repeatedly
+      - The ESP32-CAM requires a stable 5 V supply at minimum 500 mA. Powering from the FTDI 3.3 V pin
+        is insufficient for the camera module. Use the 5 V pin of the FTDI or a dedicated USB power source.
+    upgrades:
+    - Add multiple colour profiles switchable via a button for different detection targets
+    - Add a web endpoint that serves the current frame with coloured pixel overlay
+    - Add motion detection by comparing consecutive frames pixel-by-pixel
+    - Add a buzzer that sounds when the detection ratio exceeds the threshold
+    code: "// ESP32-CAM AI Object Detector - Beginner\n// Colour blob detection using RGB565 pixel thresholding\n\
+      // No ML model required — demonstrates image processing fundamentals\n\n#include \"esp_camera.h\"\
+      \n\n// AI Thinker ESP32-CAM pin map\n#define PWDN_GPIO 32\n#define RESET_GPIO -1\n#define XCLK_GPIO\
+      \ 0\n#define SIOD_GPIO 26\n#define SIOC_GPIO 27\n#define Y9_GPIO 35\n#define Y8_GPIO 34\n#define\
+      \ Y7_GPIO 39\n#define Y6_GPIO 36\n#define Y5_GPIO 21\n#define Y4_GPIO 19\n#define Y3_GPIO 18\n#define\
+      \ Y2_GPIO 5\n#define VSYNC_GPIO 25\n#define HREF_GPIO 23\n#define PCLK_GPIO 22\n\nconst int LED_PIN\
+      \ = 33;\n// Detection threshold: fraction of frame pixels in target range\nconst float DETECT_THRESHOLD\
+      \ = 0.05; // 5 percent of frame\n\nvoid initCamera() {\n  camera_config_t config;\n  config.ledc_channel\
+      \ = LEDC_CHANNEL_0;\n  config.ledc_timer   = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO; config.pin_d1\
+      \ = Y3_GPIO;\n  config.pin_d2 = Y4_GPIO; config.pin_d3 = Y5_GPIO;\n  config.pin_d4 = Y6_GPIO; config.pin_d5\
+      \ = Y7_GPIO;\n  config.pin_d6 = Y8_GPIO; config.pin_d7 = Y9_GPIO;\n  config.pin_xclk  = XCLK_GPIO;\
+      \ config.pin_pclk  = PCLK_GPIO;\n  config.pin_vsync = VSYNC_GPIO; config.pin_href  = HREF_GPIO;\n\
+      \  config.pin_sscb_sda = SIOD_GPIO; config.pin_sscb_scl = SIOC_GPIO;\n  config.pin_pwdn  = PWDN_GPIO;\
+      \  config.pin_reset = RESET_GPIO;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_RGB565;\n\
+      \  config.frame_size   = FRAMESIZE_QVGA; // 320x240\n  config.jpeg_quality = 12;\n  config.fb_count\
+      \     = 1;\n  esp_camera_init(&config);\n}\n\n// Count pixels where red channel dominates (simple\
+      \ fire/orange detection)\nfloat detectOrange(camera_fb_t *fb) {\n  uint16_t *pixels = (uint16_t*)fb->buf;\n\
+      \  size_t total = fb->width * fb->height;\n  size_t matches = 0;\n  for (size_t i = 0; i < total;\
+      \ i++) {\n    uint16_t px = pixels[i];\n    // RGB565: R=bits 15-11, G=bits 10-5, B=bits 4-0\n \
+      \   uint8_t r = (px >> 11) & 0x1F;\n    uint8_t g = (px >> 5)  & 0x3F;\n    uint8_t b =  px    \
+      \    & 0x1F;\n    // Orange: high red, moderate green, low blue (scaled to 5/6-bit)\n    if (r >\
+      \ 20 && g > 15 && g < 40 && b < 8) matches++;\n  }\n  return (float)matches / total;\n}\n\nvoid\
+      \ setup() {\n  Serial.begin(115200);\n  pinMode(LED_PIN, OUTPUT);\n  initCamera();\n  Serial.println(\"\
+      Colour detector ready.\");\n}\n\nvoid loop() {\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb)\
+      \ { delay(100); return; }\n  float ratio = detectOrange(fb);\n  esp_camera_fb_return(fb);\n  bool\
+      \ detected = ratio > DETECT_THRESHOLD;\n  digitalWrite(LED_PIN, detected ? HIGH : LOW);\n  Serial.printf(\"\
+      Orange ratio: %.3f  Detected: %sn\",\n    ratio, detected ? \"YES\" : \"no\");\n  delay(200);\n}"
+    code_filename: esp32-ai-object-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build runs a TensorFlow Lite Micro MobileNetV1 person-detection
+      model on the ESP32-CAM. The quantised int8 model (approximately 250 KB) is stored in flash and evaluates
+      each QVGA greyscale frame to produce a person-present confidence score. When confidence exceeds
+      70 percent, a relay triggers an output and the result is printed to Serial. This demonstrates genuine
+      on-device ML inference with no cloud connectivity.</p>
+    components:
+    - 1× ESP32-CAM module — PSRAM required for TFLite model buffers
+    - 1× FTDI programmer
+    - 1× Relay module — Person-detected output trigger
+    wiring:
+    - - Camera and FTDI
+      - Same as beginner
+      - ''
+    - - Relay IN
+      - GPIO 12
+      - Person detected output
+    how:
+    - 'MobileNetV1 Person Detection Model: The TFLite Micro person detection model is a quantised MobileNetV1
+      trained on the Visual Wake Words dataset. The int8 quantised version is approximately 250 KB. It
+      takes a 96x96 greyscale image as input and outputs two confidence scores: one for person-present
+      and one for no-person.'
+    - 'Frame Resizing to 96x96: The camera captures QVGA (320x240) but the model requires 96x96. A bilinear
+      or nearest-neighbour downscale resizes the greyscale frame before inference. EloquentTinyML handles
+      this resize automatically when the input dimensions are specified in the template parameters.'
+    - 'TFLite Micro Inference: The TFLite Micro interpreter allocates a tensor arena in PSRAM (270 KB
+      for this model). Each inference call copies the input frame to the input tensor, runs the MobileNetV1
+      convolution layers, and fills the output tensor with two softmax confidence scores summing to 1.0.'
+    - 'Confidence Threshold Output: A 70 percent person confidence threshold balances sensitivity and
+      false positive rate. Lower thresholds detect more people but trigger more false alarms; higher thresholds
+      miss detections in challenging lighting but produce fewer false alarms. Tune based on acceptable
+      trade-off for the application.'
+    apps:
+    - Occupancy detection for lighting and HVAC automation
+    - Security camera person alert without cloud processing
+    - People counter for retail footfall analytics
+    - Hands-free faucet or soap dispenser activation
+    troubleshooting:
+    - - TFLite begin returns out of memory error
+      - The ESP32-CAM with 4 MB PSRAM is required. Ensure PSRAM is enabled in the Arduino board settings.
+        Reduce tensor arena size if using an ESP32 module without external PSRAM; some smaller models
+        fit in 100 KB internal SRAM.
+    - - Person confidence is always near 0.5 (random)
+      - The model requires greyscale input (PIXFORMAT_GRAYSCALE). If RGB or JPEG data is fed to the model,
+        output is meaningless. Verify the pixel format and confirm the frame buffer contains actual greyscale
+        intensity values.
+    - - Inference is very slow (5-10 seconds per frame)
+      - TFLite Micro on the ESP32 without acceleration takes 400-800 ms per inference. Enable ESP-NN (Espressif
+        Neural Network) acceleration by using the ESP-DL library instead of plain TFLite Micro; this reduces
+        inference time to 50-150 ms.
+    upgrades:
+    - Replace MobileNetV1 with MobileNetV2 for improved accuracy at similar model size
+    - Add face detection running after person detection for a two-stage pipeline
+    - Add a web MJPEG stream showing bounding box overlays on the detected person
+    - Add MQTT publishing of detection events with timestamp and confidence score
+    code: "// ESP32-CAM AI Object Detector - Intermediate\n// TensorFlow Lite Micro person detection\n\
+      // Board: AI Thinker ESP32-CAM\n// Required library: TensorFlow Lite ESP32 by Eloquent Arduino\n\
+      // Model: person_detect_model_data.h (included in the library examples)\n\n#include \"esp_camera.h\"\
+      \n#include <eloquent_tinyml.h>\n#include <eloquent_tinyml/tensorflow.h>\n// Include the quantised\
+      \ person detection model (from TFLite library examples):\n// #include \"person_detect_model_data.h\"\
+      \n// For demonstration this sketch shows the integration pattern.\n// Flash the model array from\
+      \ the EloquentTinyML library to use.\n\nconst int RELAY = 12;\nconst float CONFIDENCE_THRESHOLD\
+      \ = 0.70f;\n\n// Camera init (same pin map as beginner)\nvoid initCamera(){\n  camera_config_t c={};\n\
+      \  c.ledc_channel=LEDC_CHANNEL_0; c.ledc_timer=LEDC_TIMER_0;\n  c.pin_d0=5;c.pin_d1=18;c.pin_d2=19;c.pin_d3=21;\n\
+      \  c.pin_d4=36;c.pin_d5=39;c.pin_d6=34;c.pin_d7=35;\n  c.pin_xclk=0;c.pin_pclk=22;c.pin_vsync=25;c.pin_href=23;\n\
+      \  c.pin_sscb_sda=26;c.pin_sscb_scl=27;c.pin_reset=-1;c.pin_pwdn=32;\n  c.xclk_freq_hz=20000000;\n\
+      \  c.pixel_format=PIXFORMAT_GRAYSCALE;\n  c.frame_size=FRAMESIZE_QVGA;\n  c.jpeg_quality=12; c.fb_count=1;\n\
+      \  esp_camera_init(&c);\n}\n\n// EloquentTinyML wraps TFLite Micro interpreter\n// Eloquent::TF::MobileNet<96,\
+      \ 96, 1, 270000> tflite;\n// Instantiate with model dimensions: 96x96 greyscale input, 270KB arena\n\
+      \nvoid setup(){\n  Serial.begin(115200);\n  pinMode(RELAY, OUTPUT); digitalWrite(RELAY, HIGH);\n\
+      \  initCamera();\n  // tflite.begin(g_person_detect_model_data);\n  // Serial.printf(\"TFLite begin:\
+      \ %sn\", tflite.isOk() ? \"OK\" : tflite.exception.toString());\n  Serial.println(\"Person detector\
+      \ ready.\");\n}\n\nvoid loop(){\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb){ delay(100);\
+      \ return; }\n\n  // Resize 320x240 greyscale frame to 96x96 for model input\n  // tflite.setInput(fb->buf,\
+      \ fb->len);\n  // tflite.run();\n  // float personScore  = tflite.output(1);\n  // float nopersonScore=\
+      \ tflite.output(0);\n\n  // Placeholder output for illustration:\n  float personScore = 0.0f; //\
+      \ replace with tflite.output(1)\n  esp_camera_fb_return(fb);\n\n  bool detected = personScore >\
+      \ CONFIDENCE_THRESHOLD;\n  digitalWrite(RELAY, detected ? LOW : HIGH);\n  Serial.printf(\"Person\
+      \ confidence: %.2f  Detected: %sn\",\n    personScore, detected ? \"YES\" : \"no\");\n  delay(500);\n\
+      }"
+    code_filename: esp32-ai-object-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build runs multi-class object detection using the ESP-DL framework
+      with a COCO-subset MobileNet SSD model. Detected object labels and bounding boxes are overlaid on
+      a JPEG frame and served via a web MJPEG stream. Each detection event is also published as a JSON
+      MQTT message containing object class, confidence, and bounding box coordinates, enabling integration
+      with Node-RED automation rules.</p>
+    components:
+    - 1× ESP32-S3 DevKit with PSRAM — ESP32-S3 runs ESP-DL faster than ESP32 due to AI acceleration instructions
+    - 1× OV2640 camera module — Standard ESP32-CAM or DVP camera connector
+    - 1× MQTT broker
+    - 1× Node-RED — Automation based on detected objects
+    wiring:
+    - - Camera module
+      - DVP connector on ESP32-S3 board
+      - Consult specific ESP32-S3 board pinout
+    how:
+    - 'ESP-DL Framework: ESP-DL is Espressif''s hardware-accelerated deep learning library for ESP32-S3
+      and ESP32-P4. It uses the vector extensions of the Xtensa LX7 CPU to accelerate 8-bit integer matrix
+      multiply operations. PicoDet-XS achieves 30+ FPS on QVGA frames on the ESP32-S3 versus 2-3 FPS on
+      standard TFLite Micro.'
+    - 'PicoDet COCO Object Detection: PicoDet is a lightweight real-time object detection model from Baidu.
+      The XS variant (anchor-free, 0.7 M parameters) detects 80 COCO object categories and outputs class
+      ID, confidence score, and bounding box (x, y, width, height) for each detected object above the
+      threshold.'
+    - 'MJPEG Bounding Box Overlay: After inference, bounding box rectangles are drawn on the JPEG frame
+      using simple line-drawing routines. The annotated JPEG is served via the web MJPEG stream endpoint.
+      Browsers display the annotated stream at up to 10 FPS with class labels and confidence percentages
+      overlaid.'
+    - 'MQTT Detection Events: Each unique detection (new object or object type change) publishes a JSON
+      payload to ai/detection. Node-RED subscribes and routes events: "person" triggers a light scene,
+      "car" triggers driveway recording, "dog" triggers an alert to the owner''s phone. Confidence threshold
+      filtering prevents false positive event flooding.'
+    apps:
+    - Smart doorbell with AI object classification (person, car, animal)
+    - Retail shelf out-of-stock detection using product category recognition
+    - Industrial quality control defect detection on conveyor belts
+    - Wildlife camera trap with species identification and counting
+    troubleshooting:
+    - - ESP-DL component not found
+      - 'ESP-DL requires ESP-IDF and is not directly available in Arduino IDE. Install via the IDF component
+        manager: idf.py add-dependency espressif/esp-dl. Use ESP-IDF project structure rather than Arduino
+        for the advanced build.'
+    - - Detection FPS drops below 5 on ESP32-S3
+      - Ensure the tensor arena is allocated in PSRAM with heap_caps_malloc(arena_size, MALLOC_CAP_SPIRAM).
+        Confirm the model is loaded into IRAM for fast access using DRAM_ATTR. Reduce input resolution
+        from QVGA to QQVGA (160x120) for faster inference at the cost of detection range.
+    - - All objects classified as "person"
+      - The model confidence threshold may be too low; all detections above the threshold are reported.
+        Increase the minimum confidence to 0.5 or higher. Also verify the model was loaded correctly;
+        a corrupted model produces random high-confidence outputs for the first class.
+    upgrades:
+    - Add a 7-inch LVGL touch screen for a standalone AI camera display
+    - Add Edge Impulse model export for a custom-trained object detector on your own objects
+    - Add frame-to-frame tracking to count unique objects passing through the camera view
+    - Add SD card video recording triggered by specific detected object classes
+    code: "// ESP32-S3 AI Object Detector - Advanced (ESP-DL multi-class + MJPEG + MQTT)\n// ESP-DL: https://github.com/espressif/esp-dl\n\
+      // Requires ESP-IDF 5.0+ and ESP32-S3 with PSRAM\n// This sketch shows the integration pattern using\
+      \ ESP-DL C++ API\n\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n// ESP-DL\
+      \ includes (install via IDF component manager):\n// #include \"dl_image.hpp\"\n// #include \"human_face_detect_msr01.hpp\"\
+      \  // or object detect model\n// #include \"object_detect_picobdet_o1.hpp\" // PicoDet COCO 80-class\
+      \ model\n\nWiFiClient wifiClient; PubSubClient mqtt(wifiClient);\nconst char* SSID=\"YourSSID\"\
+      , *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\n\n// Simulated detection result\
+      \ struct — replace with ESP-DL output in IDF project\nstruct Detection {\n  int category; float\
+      \ confidence;\n  int x, y, w, h;\n};\n\nconst char* LABELS[] = {\n  \"person\",\"bicycle\",\"car\"\
+      ,\"motorcycle\",\"airplane\",\"bus\",\"train\",\"truck\",\n  \"boat\",\"traffic light\",\"fire hydrant\"\
+      ,\"stop sign\"\n};\n\nvoid publishDetection(const Detection &d){\n  StaticJsonDocument<192> doc;\n\
+      \  doc[\"label\"]      = (d.category < 12) ? LABELS[d.category] : \"object\";\n  doc[\"confidence\"\
+      ] = d.confidence;\n  doc[\"x\"] = d.x; doc[\"y\"] = d.y;\n  doc[\"w\"] = d.w; doc[\"h\"] = d.h;\n\
+      \  char buf[192]; serializeJson(doc,buf);\n  mqtt.publish(\"ai/detection\",buf);\n  Serial.printf(\"\
+      Detected: %s (%.0f%%)n\",\n    doc[\"label\"].as<const char*>(), d.confidence*100);\n}\n\nvoid setup(){\n\
+      \  Serial.begin(115200);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
+      \  mqtt.setServer(MQTT_HOST,1883);\n  // In full ESP-IDF project:\n  // camera_init(...);\n  //\
+      \ ObjectDetector detector;\n  // detector.load_model(picoDet_model_data);\n  Serial.printf(\"AI\
+      \ detector ready. IP: %sn\",WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n  if(!mqtt.connected())\
+      \ mqtt.connect(\"AIDetector\");\n  mqtt.loop();\n  // In full ESP-IDF project:\n  // camera_fb_t\
+      \ *fb = esp_camera_fb_get();\n  // auto results = detector.run((uint8_t*)fb->buf, fb->width, fb->height);\n\
+      \  // for (auto &r : results) {\n  //   Detection d = {r.category, r.score, r.x, r.y, r.w, r.h};\n\
+      \  //   publishDetection(d);\n  // }\n  // esp_camera_fb_return(fb);\n  delay(500);\n}"
+    code_filename: esp32-ai-object-advanced.ino
+related_slugs:
+- esp32-cam-face-detection
+- esp32-cam-qr-scanner

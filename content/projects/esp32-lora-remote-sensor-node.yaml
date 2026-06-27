@@ -1,0 +1,271 @@
+slug: esp32-lora-remote-sensor-node
+title: ESP32 LoRa Remote Sensor Node
+category: IoT Projects
+description: Use LoRa (Long Range) radio with the ESP32 to transmit sensor data over kilometres without
+  Wi-Fi or cellular infrastructure. Build a transmitter/receiver pair, scale to a multi-node sensor network,
+  and connect to The Things Network for global IoT coverage.
+meta_description: Build an ESP32 LoRa sensor node using the SX1276 module. Transmit temperature and humidity
+  over kilometres without Wi-Fi, scale to a multi-node network, and join The Things Network.
+source_base: esp32-lora-remote-sensor-node-legacy-import
+sensor: DHT22 DATA (transmitter)
+output: SX1276 NSS/SCK/MOSI/MISO
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 4
+import_source: batch-php
+hardware:
+  sensor_pin: GPIO 4
+  output_pin: GPIO 18/5/27/19 (Heltec)
+  sensor_name: DHT22 DATA (transmitter)
+  output_name: SX1276 NSS/SCK/MOSI/MISO
+  wiring:
+  - component: SX1276 NSS/SCK/MOSI/MISO
+    pin: GPIO 18/5/27/19 (Heltec)
+  - component: SX1276 RST/DIO0
+    pin: GPIO 14/26 (Heltec)
+  - component: DHT22 DATA (transmitter)
+    pin: GPIO 4
+  - component: OLED SDA/SCL (receiver)
+    pin: GPIO 4/15 (Heltec)
+levels:
+  beginner:
+    level: beginner
+    overview_html: '<p>In this beginner project you will connect an SX1276 LoRa module to the ESP32 via
+      SPI and build a simple transmitter/receiver pair. The transmitter reads a DHT22 sensor and sends
+      a CSV packet every 30 seconds. The receiver prints the received data to Serial and displays it on
+      an OLED. No gateway or internet connection is needed: LoRa communicates directly between the two
+      ESP32 modules.</p>'
+    components:
+    - 2× ESP32 with SX1276 LoRa module — Heltec LoRa 32 or TTGO LoRa32 (integrated); or separate ESP32
+      + Ra-02 module
+    - 1× DHT22 sensor — On the transmitter node
+    - 1× SSD1306 OLED (on receiver) — Many LoRa32 boards include OLED
+    - 2× 868 MHz or 915 MHz antenna — Match frequency to your region
+    wiring:
+    - - SX1276 NSS/SCK/MOSI/MISO
+      - GPIO 18/5/27/19 (Heltec)
+      - Varies by board; check pinout
+    - - SX1276 RST/DIO0
+      - GPIO 14/26 (Heltec)
+      - DIO0 = interrupt on RX done
+    - - DHT22 DATA (transmitter)
+      - GPIO 4
+      - 10 kohm pull-up
+    - - OLED SDA/SCL (receiver)
+      - GPIO 4/15 (Heltec)
+      - Check board-specific pins
+    how:
+    - 'LoRa Chirp Spread Spectrum: LoRa modulation encodes data by sweeping a carrier frequency across
+      a bandwidth (125 kHz in this sketch). The spreading factor (SF7-SF12) controls how many chips represent
+      each symbol. Higher SF means more chips per symbol, enabling the receiver to decode signals 20 dB
+      below the noise floor at the cost of lower data rate.'
+    - 'Packet Structure: The CSV string "id,temp,hum" is transmitted as a LoRa packet. beginPacket() starts
+      a packet buffer, print() writes the payload bytes, and endPacket() triggers the SX1276 transmitter.
+      The receiver calls parsePacket() repeatedly; when a packet arrives it returns the payload length
+      and readString() extracts the content.'
+    - 'RSSI Signal Strength: packetRssi() returns the received signal strength in dBm. LoRa typically
+      achieves -120 dBm sensitivity, enabling communication at distances of 1-10 km in open terrain. Values
+      above -90 dBm indicate strong signal; below -110 dBm indicates marginal link quality at risk of
+      packet loss.'
+    - 'Spreading Factor Trade-off: SF7 provides the highest data rate (approximately 5 kbps) but shortest
+      range. SF12 provides the longest range but only approximately 250 bps. For sensor nodes transmitting
+      one reading per minute, SF9 or SF10 balances range and air time while staying within duty cycle
+      regulations.'
+    apps:
+    - Remote field sensor on a farm communicating to a gateway node
+    - Weather station in a barn or outbuilding without Wi-Fi coverage
+    - Water tank level monitor several kilometres from the house
+    - Wildlife monitoring sensor in a remote forest location
+    troubleshooting:
+    - - LoRa.begin() returns false
+      - Check the SPI pin assignments match your specific board. Print the LORA_SS, LORA_RST, and LORA_DIO0
+        pin numbers and verify they match the hardware. Ensure the antenna is connected; operating the
+        SX1276 without an antenna can damage the RF front-end.
+    - - Receiver never receives packets despite transmitter sending
+      - Both devices must use the same frequency, spreading factor, bandwidth, and coding rate. Verify
+        all four LoRa.set...() calls match exactly between TX and RX. Also confirm both are in the same
+        ISM band (868 MHz EU or 915 MHz US) matching the hardware module frequency.
+    - - RSSI is very low even with devices close together
+      - Check that the antenna is properly connected. A missing or mismatched antenna causes 20-30 dB
+        signal loss. Also verify the frequency matches the antenna resonant frequency — a 915 MHz antenna
+        on an 868 MHz channel reduces gain significantly.
+    upgrades:
+    - Add AES-128 packet encryption using the mbedTLS library for secure transmission
+    - Add a packet acknowledgement system with retransmission on timeout
+    - Add GPS coordinates to the packet payload for a mobile sensor tracker
+    - Add a solar panel and deep sleep between transmissions for a battery-powered field node
+    code: "// ESP32 LoRa Remote Sensor - Beginner TRANSMITTER\n// SX1276 LoRa + DHT22 -> periodic packet\
+      \ transmission\n// Library: LoRa by Sandeep Mistry in Library Manager\n// Board: Heltec WiFi LoRa\
+      \ 32 (or match pins to your module)\n\n#include <SPI.h>\n#include <LoRa.h>\n#include <DHT.h>\n\n\
+      // Heltec LoRa 32 V2 pin definitions\n#define LORA_SCK  5\n#define LORA_MISO 19\n#define LORA_MOSI\
+      \ 27\n#define LORA_SS   18\n#define LORA_RST  14\n#define LORA_DIO0 26\n\nDHT dht(4, DHT22);\n\n\
+      void setup(){\n  Serial.begin(115200);\n  dht.begin();\n  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI,\
+      \ LORA_SS);\n  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);\n  if(!LoRa.begin(868E6)){ // 868 MHz\
+      \ for EU; use 915E6 for US\n    Serial.println(\"LoRa init failed\"); while(1);\n  }\n  LoRa.setSpreadingFactor(7);\
+      \    // SF7 = fastest; SF12 = longest range\n  LoRa.setSignalBandwidth(125E3);\n  LoRa.setCodingRate4(5);\n\
+      \  Serial.println(\"LoRa TX ready.\");\n}\n\nint pktId=0;\nvoid loop(){\n  float temp=dht.readTemperature();\n\
+      \  float hum=dht.readHumidity();\n  if(isnan(temp)||isnan(hum)){ delay(2000); return; }\n\n  String\
+      \ packet=String(pktId++)+\",\"+String(temp,1)+\",\"+String(hum,1);\n  LoRa.beginPacket();\n  LoRa.print(packet);\n\
+      \  LoRa.endPacket();\n  Serial.printf(\"Sent: %sn\", packet.c_str());\n  delay(30000);\n}\n\n//\
+      \ --- RECEIVER SKETCH (flash on second ESP32) ---\n// #include <SPI.h>\n// #include <LoRa.h>\n//\
+      \ void setup(){\n//   Serial.begin(115200);\n//   SPI.begin(LORA_SCK,LORA_MISO,LORA_MOSI,LORA_SS);\n\
+      //   LoRa.setPins(LORA_SS,LORA_RST,LORA_DIO0);\n//   LoRa.begin(868E6);\n//   LoRa.setSpreadingFactor(7);\n\
+      //   Serial.println(\"LoRa RX ready.\");\n// }\n// void loop(){\n//   int pkt=LoRa.parsePacket();\n\
+      //   if(pkt){\n//     String data=LoRa.readString();\n//     int rssi=LoRa.packetRssi();\n//   \
+      \  Serial.printf(\"Received: %s  RSSI: %d dBmn\",data.c_str(),rssi);\n//   }\n// }"
+    code_filename: esp32-lora-beginner-tx.ino
+  intermediate:
+    level: intermediate
+    overview_html: <p>The intermediate build creates a three-node LoRa sensor network with one coordinator
+      (receiver) and two remote sensor nodes. Each node sends its ID, temperature, humidity, and battery
+      voltage in a structured packet. The coordinator displays all node readings on an OLED and forwards
+      them to an MQTT broker via Wi-Fi. A Node-RED dashboard shows the live sensor map.</p>
+    components:
+    - 3× Heltec LoRa 32 or TTGO LoRa32 — One coordinator, two sensor nodes
+    - 2× DHT22 sensor — One per sensor node
+    - 2× LiPo battery 3.7 V 1000 mAh — Sensor nodes run on battery
+    - 1× MQTT broker + Node-RED — On the coordinator Wi-Fi
+    wiring:
+    - - DHT22 on each sensor node
+      - GPIO 4
+      - ''
+    - - Battery ADC (node)
+      - GPIO 34
+      - Voltage divider to read LiPo voltage
+    how:
+    - 'Node ID in Packet Header: Each node prefixes its packet with a unique NODE_ID integer. The coordinator
+      parses this first field to identify which node sent the packet and updates the corresponding slot
+      in its display. This simple scheme supports up to 255 nodes on the same frequency using a single-byte
+      ID.'
+    - 'Deep Sleep Between Transmissions: After transmitting one reading, the node calls LoRa.sleep() to
+      power down the SX1276 radio, then enters ESP32 deep sleep for 5 minutes using esp_sleep_enable_timer_wakeup().
+      Deep sleep reduces current from 80 mA to under 10 uA, extending a 1000 mAh LiPo battery from hours
+      to weeks.'
+    - 'Battery Voltage Monitoring: The Heltec board includes a 100k/100k voltage divider connecting the
+      LiPo positive terminal to GPIO 34. Reading this pin and multiplying by 2 gives the battery voltage.
+      A fully charged LiPo is 4.2 V; below 3.3 V the cell is depleted. Including battery voltage in the
+      sensor packet enables remote battery monitoring.'
+    - 'Coordinator MQTT Bridge: The coordinator runs continuously on USB power with Wi-Fi enabled. On
+      receiving each LoRa packet it parses the node ID and publishes to lora/nodeN where N is the ID.
+      Node-RED subscribes to lora/# and populates a sensor map dashboard showing all nodes, their readings,
+      last-seen timestamps, and battery levels.'
+    apps:
+    - Multi-building campus temperature monitoring network
+    - Remote agricultural multi-field sensor array
+    - Smart city distributed environmental monitoring nodes
+    - Construction site equipment tracking with environmental logging
+    troubleshooting:
+    - - Coordinator receives packets from only one node
+      - Verify each node has a different NODE_ID defined. If two nodes have the same ID, their packets
+        may collide on the channel and the coordinator cannot distinguish them. Also check that both nodes
+        use the same SF and frequency as the coordinator.
+    - - Battery depletes in days instead of weeks
+      - Check that LoRa.sleep() is called before esp_deep_sleep_start(). Leaving the SX1276 in standby
+        mode consumes 1.5 mA, which drains a 1000 mAh battery in approximately 28 days — still acceptable.
+        Sleeping the radio first reduces this to the micro-amp deep sleep current for the ESP32 only.
+    - - Packets from distant nodes are received but not from nearby ones
+      - Nearby nodes may be too close, causing the SX1276 receiver to saturate (overload). Add 10 dB of
+        attenuation between the antenna and the module for nodes within 10 metres of the coordinator,
+        or reduce the transmit power with LoRa.setTxPower(2).
+    upgrades:
+    - Add packet sequence numbers and RSSI logging to detect packet loss per node
+    - Add GPS to each node for automatic location-tagged sensor mapping
+    - Add OTA update capability to sensor nodes via the LoRa downlink channel
+    - 'Add adaptive data rate: switch to SF7 for good signal, SF12 for weak signal automatically'
+    code: "// ESP32 LoRa Network - Intermediate SENSOR NODE (flash on nodes 1 and 2)\n// Change NODE_ID\
+      \ to 1 or 2 for each physical device\n#include <SPI.h>\n#include <LoRa.h>\n#include <DHT.h>\n#include\
+      \ \"esp_sleep.h\"\n\n#define NODE_ID    1\n#define LORA_SCK  5\n#define LORA_MISO 19\n#define LORA_MOSI\
+      \ 27\n#define LORA_SS   18\n#define LORA_RST  14\n#define LORA_DIO0 26\n\nDHT dht(4, DHT22);\n\n\
+      float readBattery(){\n  int raw=analogRead(34);\n  // Heltec: 100k/100k divider; 3.3 V ref; 12-bit\
+      \ ADC\n  return (raw/4095.0f)*3.3f*2.0f;\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  dht.begin();\n\
+      \  SPI.begin(LORA_SCK,LORA_MISO,LORA_MOSI,LORA_SS);\n  LoRa.setPins(LORA_SS,LORA_RST,LORA_DIO0);\n\
+      \  LoRa.begin(868E6);\n  LoRa.setSpreadingFactor(9);\n  float t=dht.readTemperature(), h=dht.readHumidity(),\
+      \ v=readBattery();\n  String pkt=String(NODE_ID)+\",\"+String(t,1)+\",\"+String(h,1)+\",\"+String(v,2);\n\
+      \  LoRa.beginPacket(); LoRa.print(pkt); LoRa.endPacket();\n  Serial.printf(\"Node %d sent: %sn\"\
+      ,NODE_ID,pkt.c_str());\n  LoRa.sleep();\n  // Deep sleep for 5 minutes to save battery\n  esp_sleep_enable_timer_wakeup(300ULL*1000000ULL);\n\
+      \  esp_deep_sleep_start();\n}\nvoid loop(){}\n\n// --- COORDINATOR SKETCH (flash on the base station\
+      \ ESP32) ---\n// Receives packets from all nodes, displays on OLED, publishes to MQTT\n// See esp32-lora-intermediate-coordinator.ino\
+      \ in the project files"
+    code_filename: esp32-lora-intermediate-node.ino
+  advanced:
+    level: advanced
+    overview_html: <p>The advanced build joins The Things Network (TTN) using the LMIC LoRaWAN stack.
+      The sensor node authenticates with OTAA (over-the-air activation), encrypts each uplink with AES-128,
+      and schedules transmissions within TTN fair-use duty cycle limits. TTN forwards payloads to an MQTT
+      endpoint where a Grafana dashboard displays all sensor readings with geographic node map.</p>
+    components:
+    - 1× Heltec LoRa 32 or TTGO LoRa32 — With SX1276
+    - 1× DHT22 sensor
+    - 1× The Things Network account (free) — TTN V3 console at console.thethingsnetwork.org
+    - 1× LoRaWAN gateway within range — TTN community gateway or personal RAK gateway
+    wiring:
+    - - Same as beginner/intermediate
+      - SX1276 on standard LoRa32 pinout
+      - ''
+    how:
+    - 'LoRaWAN OTAA Activation: Over-the-Air Activation (OTAA) is the secure method for joining a LoRaWAN
+      network. The device sends a JoinRequest containing the DevEUI and AppEUI. The network server authenticates
+      using the AppKey and responds with a JoinAccept containing a session key pair (NwkSKey, AppSKey)
+      used for all subsequent AES-128 encryption.'
+    - 'LMIC Stack Operation: The MCCI LMIC library implements the full LoRaWAN class A specification.
+      os_runloop_once() processes scheduled events: join requests, TX windows, RX windows, and duty cycle
+      timers. All LoRaWAN timing (RX1/RX2 receive windows exactly 1 and 2 seconds after TX) is managed
+      automatically by the LMIC scheduler.'
+    - 'Payload Encoding: Temperature and humidity floats are multiplied by 100 and packed as two-byte
+      signed integers to minimise payload size. A 4-byte payload at SF9 uses approximately 500 ms air
+      time. TTN fair-use policy limits each device to 30 seconds of air time per day, allowing approximately
+      60 transmissions at this payload size and spreading factor.'
+    - 'TTN MQTT Integration: TTN V3 provides an MQTT broker where all device uplinks are published as
+      JSON to v3/application-id/devices/device-id/up. A Node-RED MQTT-in node subscribes to this topic,
+      decodes the base64-encoded payload, and plots temperature and humidity on a Grafana time-series
+      panel with a world map showing device location.'
+    apps:
+    - Nationwide agricultural sensor network using TTN community gateways
+    - Smart city pollution monitoring with TTN public infrastructure
+    - Logistics package environment tracking over LoRaWAN
+    - Community weather station network contributing to shared data platforms
+    troubleshooting:
+    - - OTAA join never completes (EV_JOINED never fires)
+      - Verify a TTN gateway is within range by checking the TTN coverage map. Confirm AppEUI and DevEUI
+        are in little-endian byte order as required by LMIC (reverse the bytes from the TTN console MSB
+        display). Ensure the AppKey is in big-endian order (as shown in the TTN console).
+    - - TX complete fires but data does not appear on TTN console
+      - Wait 60 seconds for the TTN console to refresh. Check the TTN application payload formatter is
+        set to None (raw bytes) and that the device is registered under the correct application. Verify
+        the frequency plan matches the gateway region.
+    - - LMIC reports duty cycle violation and delays transmission
+      - This is correct behaviour. LMIC enforces regulatory duty cycle limits. Increase TX_INTERVAL from
+        300 seconds to 600 seconds to reduce duty cycle usage. TTN fair-use limits also apply independently;
+        the 30-second/day air time budget requires careful interval management.
+    upgrades:
+    - Add confirmed uplinks with TTN acknowledgements for critical data delivery
+    - Add a TTN downlink command to change the sensor sampling interval remotely
+    - Add Cayenne Low Power Payload encoding for automatic TTN dashboard integration
+    - Add a personal RAK7244 LoRaWAN gateway to extend TTN coverage in your area
+    code: "// ESP32 LoRaWAN - Advanced (TTN OTAA via LMIC)\n// Library: MCCI Arduino LoRaWAN LMIC (install\
+      \ via Library Manager)\n// Register device on TTN V3 console and copy AppEUI, DevEUI, AppKey below\n\
+      // Guide: https://www.thethingsindustries.com/docs/\n\n#include <lmic.h>\n#include <hal/hal.h>\n\
+      #include <SPI.h>\n#include <DHT.h>\n\n// From TTN console (little-endian for AppEUI and DevEUI)\n\
+      static const u1_t PROGMEM APPEUI[8]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};\nstatic const u1_t\
+      \ PROGMEM DEVEUI[8]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};\nstatic const u1_t PROGMEM APPKEY[16]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\n\
+      \                                       0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};\nvoid os_getArtEui(u1_t*b){\
+      \ memcpy_P(b,APPEUI,8); }\nvoid os_getDevEui(u1_t*b){ memcpy_P(b,DEVEUI,8); }\nvoid os_getDevKey(u1_t*b){\
+      \ memcpy_P(b,APPKEY,16); }\n\n// Heltec LoRa 32 V2 pin mapping for LMIC\nconst lmic_pinmap lmic_pins={\n\
+      \  .nss=18,.rxtx=LMIC_UNUSED_PIN,.rst=14,\n  .dio={26,35,34}\n};\n\nDHT dht(4,DHT22);\nstatic uint8_t\
+      \ payload[4];\nstatic osjob_t sendjob;\nconst unsigned TX_INTERVAL=300; // 5 minutes\n\nvoid do_send(osjob_t\
+      \ *j){\n  if(LMIC.opmode&OP_TXRXPEND){ os_setTimedCallback(j,os_getTime()+sec2osticks(TX_INTERVAL),do_send);\
+      \ return; }\n  float t=dht.readTemperature(), h=dht.readHumidity();\n  int16_t ti=(int16_t)(t*100),\
+      \ hi=(int16_t)(h*100);\n  payload[0]=ti>>8; payload[1]=ti&0xFF;\n  payload[2]=hi>>8; payload[3]=hi&0xFF;\n\
+      \  LMIC_setTxData2(1,payload,sizeof(payload),0);\n  Serial.printf(\"Queued: T=%.1f H=%.1fn\",t,h);\n\
+      }\n\nvoid onEvent(ev_t ev){\n  switch(ev){\n    case EV_JOINED: Serial.println(\"OTAA joined TTN\"\
+      ); do_send(&sendjob); break;\n    case EV_TXCOMPLETE:\n      Serial.println(\"TX complete\");\n\
+      \      os_setTimedCallback(&sendjob,os_getTime()+sec2osticks(TX_INTERVAL),do_send);\n      break;\n\
+      \    default: break;\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200); dht.begin();\n  os_init();\
+      \ LMIC_reset();\n  LMIC_startJoining();\n}\nvoid loop(){ os_runloop_once(); }"
+    code_filename: esp32-lora-advanced-ttn.ino
+related_slugs:
+- esp32-smart-mailbox
+- esp32-mqtt-sensor-dashboard

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 RFID Inventory Tracker | ESP32 Engine</title>
+<meta name="description" content="Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud subscription required.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-rfid-inventory-tracker.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 RFID Inventory Tracker | ESP32 Engine">
+<meta property="og:description" content="Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud subscription required.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-rfid-inventory-tracker.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 RFID Inventory Tracker | ESP32 Engine">
+<meta name="twitter:description" content="Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud subscription required.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 RFID Inventory Tracker","description":"Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud subscription required.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-rfid-inventory-tracker.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, RC522 RST"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 RFID Inventory Tracker (Beginner)","description":"Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud subscription required.","step":[{"@type":"HowToStep","position":1,"name":"RC522 SPI Communication: The RC522 uses SPI with a dedicated chip-select (SS) pin. The MFRC522 libra…","text":"RC522 SPI Communication: The RC522 uses SPI with a dedicated chip-select (SS) pin. The MFRC522 library manages the ISO 14443A protocol: it sends RF commands to detect tags (PICC_IsNewCardPresent), authenticate (for MIFARE Classic encrypted blocks), and read/write data. The 13.56 MHz field powers the passive tag and enables two-way communication."},{"@type":"HowToStep","position":2,"name":"UID as Asset Identifier: Each MIFARE tag has a factory-programmed UID (4-7 bytes) that is globally u…","text":"UID as Asset Identifier: Each MIFARE tag has a factory-programmed UID (4-7 bytes) that is globally unique. The beginner project uses these UIDs directly as asset identifiers by comparing scanned UIDs against a hardcoded array. The uidToHex() function converts the raw byte array to an uppercase hex string for easy comparison."},{"@type":"HowToStep","position":3,"name":"Shared SPI Bus: The RC522 and SD card module share the SPI bus (SCK, MOSI, MISO) but each has its ow…","text":"Shared SPI Bus: The RC522 and SD card module share the SPI bus (SCK, MOSI, MISO) but each has its own chip-select pin (GPIO 5 for RC522, GPIO 4 for SD). Only one device is active at a time: when RC522_SS is LOW the SD_CS is HIGH and vice versa. The SPI library manages this automatically when different CS pins are used."},{"@type":"HowToStep","position":4,"name":"CSV Audit Log: Each scan appends a line to /inventory.csv: millis timestamp, UID, and asset name. Th…","text":"CSV Audit Log: Each scan appends a line to /inventory.csv: millis timestamp, UID, and asset name. The millis() timestamp can be replaced with an NTP timestamp in Wi-Fi enabled builds. The CSV format is directly importable into Excel or Google Sheets for reporting."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 RFID Inventory Tracker?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, RC522 RST, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 RFID Inventory Tracker require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 RFID Inventory Tracker?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Industrial Automation","item":"https://esp32engine.com/category/industrial-automation.html"},{"@type":"ListItem","position":3,"name":"ESP32 RFID Inventory Tracker","item":"https://esp32engine.com/projects/esp32-rfid-inventory-tracker.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/industrial-automation.html">Industrial Automation</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/industrial-automation.html">Industrial Automation</a></li><li aria-current="page">ESP32 RFID Inventory Tracker</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 RFID Inventory Tracker</h1>
+          <div class="article-badges"><span class="badge badge-cat">Industrial Automation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud subscription required.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-default parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will connect an RC522 RFID module to the ESP32 via SPI and read MIFARE 13.56 MHz tag UIDs. When a tag is scanned, the UID and a timestamp are printed to Serial and stored as a line in a CSV file on an SD card. An LED flashes green for a known tag and red for an unknown tag. This demonstrates SPI RFID reading and SD card logging fundamentals.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× RC522 RFID reader module — 13.56 MHz MIFARE; SPI; 3.3 V</span></li><li><span>3× MIFARE 1K RFID tag or card — Classic key fobs or credit-card size tags</span></li><li><span>1× MicroSD card module (SPI)</span></li><li><span>1× Green and red LED + 220 ohm resistors</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>RC522 SDA/SCK/MOSI/MISO</td><td>GPIO 5/18/23/19</td><td>SPI bus shared with SD</td></tr><tr><td>RC522 RST</td><td>GPIO 22</td><td></td></tr><tr><td>RC522 3.3 V / GND</td><td>3.3 V / GND</td><td>Do NOT connect to 5 V</td></tr><tr><td>SD CS</td><td>GPIO 4</td><td>Separate CS from RC522</td></tr><tr><td>Green LED</td><td>GPIO 26</td><td>220 ohm series</td></tr><tr><td>Red LED</td><td>GPIO 27</td><td>220 ohm series</td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-rfid-inventory-tracker_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 RFID Inventory Tracker - Beginner
+// RC522 tag scan -&gt; SD card CSV log with known/unknown LED feedback
+// Libraries: MFRC522 by GithubCommunity, SD by Arduino
+
+#include &lt;SPI.h&gt;
+#include &lt;MFRC522.h&gt;
+#include &lt;SD.h&gt;
+
+#define RC522_SS  5
+#define RC522_RST 22
+#define SD_CS     4
+#define LED_GREEN 26
+#define LED_RED   27
+
+MFRC522 rfid(RC522_SS, RC522_RST);
+
+// Known tag UIDs (hex strings) mapped to asset names
+const char* KNOWN_UIDS[] = {&quot;A1B2C3D4&quot;, &quot;11223344&quot;, &quot;DEADBEEF&quot;};
+const char* ASSET_NAMES[] = {&quot;Laptop-01&quot;, &quot;Camera-01&quot;, &quot;Toolbox-01&quot;};
+const int NUM_ASSETS = 3;
+
+String uidToHex(MFRC522::Uid *uid){
+  String s=&quot;&quot;;
+  for(byte i=0;i&lt;uid-&gt;size;i++){
+    if(uid-&gt;uidByte[i]&lt;0x10) s+=&quot;0&quot;;
+    s+=String(uid-&gt;uidByte[i],HEX);
+  }
+  s.toUpperCase();
+  return s;
+}
+
+void flashLED(int pin){ digitalWrite(pin,HIGH); delay(300); digitalWrite(pin,LOW); }
+
+void logScan(const String &amp;uid, const char* name){
+  File f=SD.open(&quot;/inventory.csv&quot;,FILE_APPEND);
+  if(!f) return;
+  f.printf(&quot;%lu,%s,%sn&quot;,millis(),uid.c_str(),name);
+  f.close();
+}
+
+void setup(){
+  Serial.begin(115200);
+  SPI.begin();
+  rfid.PCD_Init();
+  SD.begin(SD_CS);
+  pinMode(LED_GREEN,OUTPUT); pinMode(LED_RED,OUTPUT);
+  Serial.println(&quot;RFID Inventory Tracker ready. Scan a tag...&quot;);
+}
+
+void loop(){
+  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial()) return;
+  String uid=uidToHex(&amp;rfid.uid);
+  const char* name=&quot;UNKNOWN&quot;;
+  bool known=false;
+  for(int i=0;i&lt;NUM_ASSETS;i++){
+    if(uid==String(KNOWN_UIDS[i])){ name=ASSET_NAMES[i]; known=true; break; }
+  }
+  Serial.printf(&quot;UID: %s  Asset: %sn&quot;,uid.c_str(),name);
+  logScan(uid,name);
+  flashLED(known?LED_GREEN:LED_RED);
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
+  delay(1000);
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>RC522 SPI Communication: The RC522 uses SPI with a dedicated chip-select (SS) pin. The MFRC522 library manages the ISO 14443A protocol: it sends RF commands to detect tags (PICC_IsNewCardPresent), authenticate (for MIFARE Classic encrypted blocks), and read/write data. The 13.56 MHz field powers the passive tag and enables two-way communication.</p></div><div class="step"><span class="step-no">02</span><p>UID as Asset Identifier: Each MIFARE tag has a factory-programmed UID (4-7 bytes) that is globally unique. The beginner project uses these UIDs directly as asset identifiers by comparing scanned UIDs against a hardcoded array. The uidToHex() function converts the raw byte array to an uppercase hex string for easy comparison.</p></div><div class="step"><span class="step-no">03</span><p>Shared SPI Bus: The RC522 and SD card module share the SPI bus (SCK, MOSI, MISO) but each has its own chip-select pin (GPIO 5 for RC522, GPIO 4 for SD). Only one device is active at a time: when RC522_SS is LOW the SD_CS is HIGH and vice versa. The SPI library manages this automatically when different CS pins are used.</p></div><div class="step"><span class="step-no">04</span><p>CSV Audit Log: Each scan appends a line to /inventory.csv: millis timestamp, UID, and asset name. The millis() timestamp can be replaced with an NTP timestamp in Wi-Fi enabled builds. The CSV format is directly importable into Excel or Google Sheets for reporting.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Tool crib check-out logging in a workshop or factory</li><li>Library book scan-in/scan-out system</li><li>Equipment cage access and removal tracking</li><li>School lab equipment loan tracking</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>PICC_IsNewCardPresent always returns false</h4><p>Verify the RC522 is powered at exactly 3.3 V — it is not 5 V tolerant. Check all four SPI pins. Confirm RC522_SS and RC522_RST are correctly defined. Call rfid.PCD_DumpVersionToSerial() in setup() to verify the library can communicate with the RC522 chip.</p></div><div class="trouble-item"><h4>SD card fails to initialise on the same SPI bus</h4><p>The RC522 must be initialised first with SPI.begin() already called. Ensure SD.begin(SD_CS) uses a different CS pin from RC522_SS. Some SD modules require the CS pin to be explicitly pulled HIGH before SPI.begin() to prevent bus contention during initialisation.</p></div><div class="trouble-item"><h4>Same tag triggers multiple scans in rapid succession</h4><p>The 1000 ms delay at the end of loop() prevents rapid rescanning. Increase to 2000 ms if double-scanning still occurs. rfid.PICC_HaltA() puts the tag in HALT state; rfid.PCD_StopCrypto1() resets the crypto layer. Both must be called to properly terminate each card transaction.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add Wi-Fi and NTP timestamps to replace millis() in the CSV log</li><li>Add a buzzer that plays different tones for known versus unknown tags</li><li>Add a 16x2 LCD to display the scanned asset name without a computer</li><li>Add MIFARE data block writing to store asset name directly on the tag</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 RFID Inventory Tracker?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, RC522 RST, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 RFID Inventory Tracker require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 RFID Inventory Tracker?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build maintains a live inventory database in memory and on SD card. Each tag scan toggles the asset between checked-in and checked-out state. A web interface lists all assets with their current state, last-seen timestamp, and check-out count. Stock levels below a configurable minimum trigger a Telegram low-stock alert.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× RC522 RFID reader</span></li><li><span>1× MicroSD card module</span></li><li><span>10× MIFARE tags — One per tracked asset</span></li><li><span>1× Wi-Fi router — Web dashboard + Telegram</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>RC522 and SD</td><td>Same as beginner</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-rfid-inventory-tracker_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 RFID Inventory Tracker - Intermediate (check-in/out + web dashboard + alerts)
+#include &lt;SPI.h&gt;
+#include &lt;MFRC522.h&gt;
+#include &lt;SD.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;WiFiClientSecure.h&gt;
+#include &lt;time.h&gt;
+
+#define RC522_SS 5
+#define RC522_RST 22
+#define SD_CS 4
+
+MFRC522 rfid(RC522_SS,RC522_RST);
+WebServer server(80);
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* BOT_TOKEN=&quot;YOUR_BOT_TOKEN&quot;;
+const char* CHAT_ID=&quot;YOUR_CHAT_ID&quot;;
+const int MIN_STOCK=2; // alert when fewer than 2 assets checked in
+
+struct Asset { String uid,name; bool checkedIn; time_t lastSeen; int outCount; };
+const int MAX_ASSETS=20;
+Asset assets[MAX_ASSETS]; int assetCount=0;
+
+void loadAssets(){
+  File f=SD.open(&quot;/assets.csv&quot;);
+  if(!f) return;
+  while(f.available()){
+    String line=f.readStringUntil((char)10); line.trim();
+    if(!line.length()) continue;
+    int c=line.indexOf(</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Toggle Check-In/Check-Out State: Each tag scan flips the checkedIn boolean for that asset. The first scan of a previously checked-in asset marks it as checked out; scanning again marks it as checked in. This toggle model works well for simple tool crib scenarios where assets leave and return through one checkpoint.</p></div><div class="step"><span class="step-no">02</span><p>Asset Database from SD Card: The /assets.csv file contains UID,AssetName pairs, one per line. loadAssets() reads this file at startup to populate the in-memory assets[] array. Adding a new asset requires editing the CSV on a computer and restarting the ESP32. The in-memory database is fast; the SD card provides persistence.</p></div><div class="step"><span class="step-no">03</span><p>Real-Time Stock Count Alert: After each scan, the code counts how many assets are currently checked in. If this count falls below MIN_STOCK, a Telegram alert is sent. The alert fires on every scan that keeps stock below the threshold, so consider adding an alerted flag to prevent repeat messages until stock recovers.</p></div><div class="step"><span class="step-no">04</span><p>Audit Log with Timestamps: Each check-in/out event appends a timestamped line to /log.csv with Unix timestamp, UID, asset name, and direction (IN/OUT). This log is the audit trail for compliance reporting. The NTP timestamp ensures log entries are correlated with real-world events even after ESP32 restarts.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Tool crib management with check-out accountability</li><li>Medical equipment tracking in a hospital ward</li><li>Library equipment and AV loan system</li><li>Warehouse sample and prototype tracking system</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Asset state is lost after power cycle</h4><p>The current implementation holds state in RAM. On restart loadAssets() reloads names and UIDs but not current check-in/out state. Add a /state.csv file that saves the checkedIn boolean and outCount for each asset and reads it on startup alongside assets.csv.</p></div><div class="trouble-item"><h4>Unknown tags trigger no response</h4><p>The current code silently ignores unregistered tags. Add an else branch after the for-loop to log unknown UIDs to a separate /unknown.csv file and flash a red LED. This helps identify unregistered tags that need to be added to assets.csv.</p></div><div class="trouble-item"><h4>Web dashboard shows outdated data after multiple scans</h4><p>The web server is synchronous; it serves the current in-memory state on each request. If the browser caches the response, add a Cache-Control: no-cache header: server.sendHeader(&quot;Cache-Control&quot;,&quot;no-cache&quot;) before server.send().</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add a barcode scanner as an alternative to RFID for items without tags</li><li>Add user authentication: scan a personal ID card first, then the asset, to track who took what</li><li>Add SD card export endpoint to download the audit log as a CSV file from the browser</li><li>Add MQTT publishing so Home Assistant tracks stock levels as sensors</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 RFID Inventory Tracker?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, RC522 RST, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 RFID Inventory Tracker require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 RFID Inventory Tracker?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build stores the inventory database in an SQLite-equivalent structure using LittleFS and exposes a full REST API: GET /api/assets returns JSON, POST /api/scan processes a tag event, PUT /api/asset/:id updates an asset record. A React single-page dashboard served from LittleFS shows real-time stock, scan history charts, and an asset search field. MQTT events broadcast each scan to Home Assistant.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1 — 4 MB flash for LittleFS</span></li><li><span>1× RC522 RFID reader</span></li><li><span>1× MQTT broker</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>RC522 SPI</td><td>GPIO 5/18/23/19 + RST GPIO 22</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-rfid-inventory-tracker_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 RFID Inventory - Advanced (REST API + LittleFS JSON DB + MQTT)
+#include &lt;SPI.h&gt;
+#include &lt;MFRC522.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;ESPAsyncWebServer.h&gt;
+#include &lt;AsyncTCP.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;LittleFS.h&gt;
+#include &lt;time.h&gt;
+
+MFRC522 rfid(5,22);
+AsyncWebServer server(80);
+WiFiClient wc; PubSubClient mqtt(wc);
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+
+struct Asset { String uid,name; bool in; time_t last; int outCount; };
+const int MAX_A=50; Asset assets[MAX_A]; int aCount=0;
+
+void saveDB(){
+  DynamicJsonDocument doc(8192);
+  JsonArray arr=doc.createNestedArray(&quot;assets&quot;);
+  for(int i=0;i&lt;aCount;i++){
+    JsonObject o=arr.createNestedObject();
+    o[&quot;uid&quot;]=assets[i].uid; o[&quot;name&quot;]=assets[i].name;
+    o[&quot;in&quot;]=assets[i].in; o[&quot;last&quot;]=(long)assets[i].last;
+    o[&quot;out&quot;]=assets[i].outCount;
+  }
+  File f=LittleFS.open(&quot;/db.json&quot;,&quot;w&quot;);
+  serializeJson(doc,f); f.close();
+}
+
+void loadDB(){
+  if(!LittleFS.exists(&quot;/db.json&quot;)) return;
+  File f=LittleFS.open(&quot;/db.json&quot;,&quot;r&quot;);
+  DynamicJsonDocument doc(8192);
+  deserializeJson(doc,f); f.close();
+  JsonArray arr=doc[&quot;assets&quot;];
+  for(JsonObject o:arr){
+    if(aCount&gt;=MAX_A) break;
+    assets[aCount]={o[&quot;uid&quot;].as&lt;String&gt;(),o[&quot;name&quot;].as&lt;String&gt;(),
+      o[&quot;in&quot;]|true,(time_t)(o[&quot;last&quot;]|0),(int)(o[&quot;out&quot;]|0)};
+    aCount++;
+  }
+}
+
+String uidStr(MFRC522::Uid *u){
+  String s=&quot;&quot;;
+  for(byte i=0;i&lt;u-&gt;size;i++){if(u-&gt;uidByte[i]&lt;0x10)s+=&quot;0&quot;;s+=String(u-&gt;uidByte[i],HEX);}
+  s.toUpperCase(); return s;
+}
+
+void mqttEvent(const String &amp;uid, const String &amp;name, bool in){
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;uid&quot;]=uid; doc[&quot;name&quot;]=name; doc[&quot;in&quot;]=in; doc[&quot;ts&quot;]=(long)time(nullptr);
+  char buf[128]; serializeJson(doc,buf);
+  mqtt.publish(&quot;inventory/scan&quot;,buf);
+}
+
+void setup(){
+  Serial.begin(115200); SPI.begin(); rfid.PCD_Init();
+  LittleFS.begin(true);
+  loadDB();
+  WiFi.begin(SSID,PASS); while(WiFi.status()!=WL_CONNECTED) delay(500);
+  configTime(0,0,&quot;pool.ntp.org&quot;);
+  mqtt.setServer(MQTT_HOST,1883);
+
+  // Serve React SPA from LittleFS /www/index.html
+  server.serveStatic(&quot;/&quot;,LittleFS,&quot;/www/&quot;).setDefaultFile(&quot;index.html&quot;);
+
+  server.on(&quot;/api/assets&quot;,HTTP_GET,[](AsyncWebServerRequest *r){
+    DynamicJsonDocument doc(4096); JsonArray arr=doc.createNestedArray(&quot;assets&quot;);
+    for(int i=0;i&lt;aCount;i++){
+      JsonObject o=arr.createNestedObject();
+      o[&quot;uid&quot;]=assets[i].uid; o[&quot;name&quot;]=assets[i].name;
+      o[&quot;in&quot;]=assets[i].in; o[&quot;out&quot;]=assets[i].outCount;
+    }
+    String out; serializeJson(doc,out);
+    r-&gt;send(200,&quot;application/json&quot;,out);
+  });
+
+  server.on(&quot;/api/add&quot;,HTTP_POST,[](AsyncWebServerRequest *r){
+    if(!r-&gt;hasParam(&quot;uid&quot;,true)||!r-&gt;hasParam(&quot;name&quot;,true)){r-&gt;send(400); return;}
+    String uid=r-&gt;getParam(&quot;uid&quot;,true)-&gt;value();
+    String name=r-&gt;getParam(&quot;name&quot;,true)-&gt;value();
+    if(aCount&lt;MAX_A){ assets[aCount++]={uid,name,true,time(nullptr),0}; saveDB(); }
+    r-&gt;send(200,&quot;text/plain&quot;,&quot;OK&quot;);
+  });
+
+  server.begin();
+  Serial.printf(&quot;Inventory API: http://%s/n&quot;,WiFi.localIP().toString().c_str());
+}
+
+void loop(){
+  if(!mqtt.connected()) mqtt.connect(&quot;RFID&quot;);
+  mqtt.loop();
+  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial()) return;
+  String uid=uidStr(&amp;rfid.uid);
+  for(int i=0;i&lt;aCount;i++){
+    if(assets[i].uid==uid){
+      assets[i].in=!assets[i].in;
+      assets[i].last=time(nullptr);
+      if(!assets[i].in) assets[i].outCount++;
+      saveDB();
+      mqttEvent(uid,assets[i].name,assets[i].in);
+      Serial.printf(&quot;%s -&gt; %sn&quot;,assets[i].name.c_str(),assets[i].in?&quot;IN&quot;:&quot;OUT&quot;);
+      break;
+    }
+  }
+  rfid.PICC_HaltA(); rfid.PCD_StopCrypto1();
+  delay(1000);
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>LittleFS JSON Database: All asset records are stored as a JSON array in /db.json on LittleFS (the ESP32 internal flash filesystem). On each scan event, saveDB() rewrites the entire file. For 50 assets, the JSON is approximately 3 KB and write time is under 50 ms. LittleFS wear levelling distributes writes across flash blocks.</p></div><div class="step"><span class="step-no">02</span><p>AsyncWebServer REST API: ESPAsyncWebServer handles concurrent HTTP requests without blocking the RFID scan loop. The /api/assets endpoint returns a JSON array of all assets. The /api/add endpoint adds a new asset by POST parameters. The React SPA makes fetch() calls to these endpoints and updates the UI without full page reloads.</p></div><div class="step"><span class="step-no">03</span><p>Static SPA from LittleFS: A React single-page application minified to index.html, app.js, and app.css is uploaded to the /www/ directory on LittleFS using the Arduino LittleFS upload plugin. serveStatic() maps HTTP requests to these files. The SPA polls /api/assets every 5 seconds and renders a table with stock status and scan count charts.</p></div><div class="step"><span class="step-no">04</span><p>MQTT Home Assistant Integration: Each scan publishes a JSON event to inventory/scan with uid, name, checked-in state, and timestamp. A Home Assistant MQTT sensor entity tracks each asset&#x27;s state. Home Assistant automations can trigger notifications, update dashboard badges, or control room access based on specific asset check-out events.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Enterprise asset management for IT equipment lifecycle tracking</li><li>Hospital medical device location and availability monitoring</li><li>Laboratory sample chain-of-custody RFID tracking</li><li>Construction site equipment check-out with automated loss alerts</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>LittleFS fails to mount with begin(true)</h4><p>The true parameter in LittleFS.begin(true) formats LittleFS on first run if not already formatted. On subsequent boots it mounts normally. If mounting fails repeatedly, check the flash partition scheme includes a LittleFS partition (use &quot;Default 4MB with spiffs&quot; or &quot;Minimal SPIFFS&quot; board configuration).</p></div><div class="trouble-item"><h4>API returns stale data after adding a new asset</h4><p>The /api/assets handler reads from the in-memory assets[] array which is always current. If the browser shows stale data, the issue is browser caching. Add response headers: res-&gt;addHeader(&quot;Cache-Control&quot;,&quot;no-store&quot;) to all API responses.</p></div><div class="trouble-item"><h4>ESP32 crashes after many scan events</h4><p>Repeated JSON serialisation with DynamicJsonDocument allocates heap memory. Monitor free heap with Serial.println(ESP.getFreeHeap()). If heap decreases over time, use a StaticJsonDocument with a fixed size or pre-allocate the document once globally rather than inside saveDB().</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Add HTTPS with a self-signed certificate for secure API access over the network</li><li>Add a barcode scanner USB HID input as a fallback for items without RFID tags</li><li>Add a Node-RED dashboard with a Sankey chart showing asset movement patterns over time</li><li>Add role-based access: different tag types grant different permissions (admin vs read-only)</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 RFID Inventory Tracker?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, RC522 RST, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 RFID Inventory Tracker require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 RFID Inventory Tracker?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-cnc-controller.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 CNC Controller</h3></div></a><a class="related-card" href="esp32-machine-monitoring-node.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 Machine Monitoring Node</h3></div></a><a class="related-card" href="esp32-vibration-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 Vibration Monitor</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6D28D9">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-WLHZKSEFP3";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<title>ESP32 Vibration Monitor | ESP32 Engine</title>
+<meta name="description" content="Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-vibration-monitor.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Vibration Monitor | ESP32 Engine">
+<meta property="og:description" content="Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-vibration-monitor.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Vibration Monitor | ESP32 Engine">
+<meta name="twitter:description" content="Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 Vibration Monitor","description":"Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.","datePublished":"2026-06-14","dateModified":"2026-06-18","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-vibration-monitor.html"},"proficiencyLevel":"Beginner","dependencies":"ESP32 DevKit, TODO: sensor, Red LED anode"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 Vibration Monitor (Beginner)","description":"Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.","step":[{"@type":"HowToStep","position":1,"name":"MPU6050 I2C Communication: The MPU6050 communicates over I2C at address 0x68 (AD0 low) or 0x69 (AD0 …","text":"MPU6050 I2C Communication: The MPU6050 communicates over I2C at address 0x68 (AD0 low) or 0x69 (AD0 high). The Adafruit MPU6050 library handles register reads and converts raw 16-bit ADC values into calibrated m/s^2 acceleration values."},{"@type":"HowToStep","position":2,"name":"Vector Magnitude Calculation: The 3-axis acceleration vector magnitude sqrt(ax^2+ay^2+az^2) represen…","text":"Vector Magnitude Calculation: The 3-axis acceleration vector magnitude sqrt(ax^2+ay^2+az^2) represents total vibration energy from all directions. At rest this equals approximately 9.81 m/s^2 (gravity). Dynamic vibration adds to this value."},{"@type":"HowToStep","position":3,"name":"Threshold Alert Logic: If magnitude exceeds THRESHOLD (default 15 m/s^2) the red LED and buzzer acti…","text":"Threshold Alert Logic: If magnitude exceeds THRESHOLD (default 15 m/s^2) the red LED and buzzer activate. The green LED indicates normal operation. Adjust the threshold based on the baseline vibration of the specific machine."},{"@type":"HowToStep","position":4,"name":"Serial Plotter Visualisation: Printing the magnitude value to Serial at 50 Hz lets the Arduino IDE S…","text":"Serial Plotter Visualisation: Printing the magnitude value to Serial at 50 Hz lets the Arduino IDE Serial Plotter display a live vibration waveform. Open Tools > Serial Plotter to see peaks when the machine vibrates."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hardware do I need for ESP32 Vibration Monitor?","acceptedAnswer":{"@type":"Answer","text":"You need an ESP32 DevKit, TODO: sensor, Red LED anode, a breadboard, jumper wires, and a USB cable for power and programming."}},{"@type":"Question","name":"Does ESP32 Vibration Monitor require Wi-Fi?","acceptedAnswer":{"@type":"Answer","text":"Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power."}},{"@type":"Question","name":"Which difficulty level should I start with for ESP32 Vibration Monitor?","acceptedAnswer":{"@type":"Answer","text":"Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Industrial Automation","item":"https://esp32engine.com/category/industrial-automation.html"},{"@type":"ListItem","position":3,"name":"ESP32 Vibration Monitor","item":"https://esp32engine.com/projects/esp32-vibration-monitor.html"}]}</script>
+<link rel="preload" href="/style.css?v=20260627-mission01-golden-v1" as="style">
+<link rel="stylesheet" href="/style.css?v=20260627-mission01-golden-v1">
+<style>.level-radio{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}.difficulty-switcher .difficulty-content{display:none!important}.difficulty-switcher #level-radio-beginner:checked~.difficulty-sections #level-beginner{display:block!important}.difficulty-switcher #level-radio-intermediate:checked~.difficulty-sections #level-intermediate{display:block!important}.difficulty-switcher #level-radio-advanced:checked~.difficulty-sections #level-advanced{display:block!important}details.accordion-item>summary{list-style:none;cursor:pointer}details.accordion-item>summary::-webkit-details-marker{display:none}</style>
+</head>
+<body>
+<div class="site-nav-sticky">
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><span class="logo-mark" aria-hidden="true"></span><span class="logo-text">ESP32<span class="logo-accent">Engine</span></span><span class="logo-tagline">Learn · Build · Explore</span></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html" class="active">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+</div>
+<main>
+<div class="wrap article-shell parent-project-shell">
+  <aside class="sidebar-left">
+    <div class="sidebar-sticky">
+      <h3>Difficulty</h3>
+      <ul class="side-list side-toc side-levels">
+        <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
+        <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
+        <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
+      </ul>
+      <h3 class="sidebar-divider">Sections</h3>
+      <ul class="side-list side-toc side-sections" id="section-toc"><li><a href="#sec-beginner-overview" data-section="overview">Overview</a></li><li><a href="#sec-beginner-components" data-section="components">Components</a></li><li><a href="#sec-beginner-wiring" data-section="wiring">Wiring</a></li><li><a href="#sec-beginner-code" data-section="code">Arduino Code</a></li><li><a href="#sec-beginner-apps" data-section="apps">Applications</a></li><li><a href="#sec-beginner-faq" data-section="faq">FAQ</a></li></ul>
+      <h3 class="sidebar-divider">Category</h3>
+      <ul class="side-list"><li><a href="/category/industrial-automation.html">Industrial Automation</a></li></ul>
+    </div>
+  </aside>
+  <article class="article-main parent-article">
+    <header class="article-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/category/industrial-automation.html">Industrial Automation</a></li><li aria-current="page">ESP32 Vibration Monitor</li></ol></nav>
+      <div class="parent-hero-row project-hero-banner">
+        <div class="parent-hero-text">
+          <h1>ESP32 Vibration Monitor</h1>
+          <div class="article-badges"><span class="badge badge-cat">Industrial Automation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-advanced">Advanced</span></div>
+          <p class="article-lead">Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.</p>
+        </div>
+        <div class="article-thumb project-hero-image t-default parent-thumb"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      </div>
+    </header>
+    <div class="difficulty-switcher">
+      <input type="radio" name="difficulty-level" id="level-radio-beginner" class="level-radio" checked aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-intermediate" class="level-radio" aria-hidden="true" tabindex="-1"><input type="radio" name="difficulty-level" id="level-radio-advanced" class="level-radio" aria-hidden="true" tabindex="-1">
+      <div class="difficulty-tabs" role="tablist" aria-label="Difficulty level">
+        <label for="level-radio-beginner" class="difficulty-tab" id="tab-beginner" data-level="beginner" role="tab">Beginner</label><label for="level-radio-intermediate" class="difficulty-tab" id="tab-intermediate" data-level="intermediate" role="tab">Intermediate</label><label for="level-radio-advanced" class="difficulty-tab" id="tab-advanced" data-level="advanced" role="tab">Advanced</label>
+      </div>
+      <div class="mobile-section-nav"><label class="visually-hidden" for="mobile-nav-select">Jump to section</label><select id="mobile-nav-select" class="mobile-nav-select" aria-label="Jump to section"><option value="">Jump to section…</option><option value="sec-beginner-overview">Overview</option><option value="sec-beginner-components">Components</option><option value="sec-beginner-wiring">Wiring</option><option value="sec-beginner-code">Arduino Code</option><option value="sec-beginner-how">How It Works</option><option value="sec-beginner-apps">Applications</option><option value="sec-beginner-troubleshooting">Troubleshooting</option><option value="sec-beginner-upgrades">Upgrades</option><option value="sec-beginner-faq">FAQ</option><option value="related">Related Projects</option></select></div>
+      <div class="difficulty-sections">
+        <div class="difficulty-content level-beginner-panel" data-level="beginner" id="level-beginner" role="tabpanel" aria-labelledby="tab-beginner"><details class="accordion-item" id="sec-beginner-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>In this beginner project you will mount an MPU6050 IMU on a surface and use the ESP32 to read 3-axis acceleration data over I2C. The combined vibration magnitude is compared to a threshold: if exceeded, a red LED and buzzer alert the user. The Serial Plotter lets you watch vibration in real time. This project teaches I2C sensor communication, vector magnitude calculation, and simple threshold alerting.</p></div></details><details class="accordion-item" id="sec-beginner-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× MPU6050 IMU module — Accelerometer + gyroscope, I2C</span></li><li><span>1× Red LED 5 mm — Alert indicator</span></li><li><span>1× Green LED 5 mm — Normal status indicator</span></li><li><span>1× Active buzzer 5 V</span></li><li><span>2× 220 ohm resistor — LED current limiting</span></li><li><span>1× Breadboard and jumper wires</span></li></ul></div></details><details class="accordion-item" id="sec-beginner-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>MPU6050 SDA</td><td>GPIO 21</td><td>I2C data line; 3.3 V pullup</td></tr><tr><td>MPU6050 SCL</td><td>GPIO 22</td><td>I2C clock line</td></tr><tr><td>MPU6050 VCC</td><td>3V3</td><td>Do not use 5 V</td></tr><tr><td>MPU6050 GND</td><td>GND</td><td></td></tr><tr><td>MPU6050 AD0</td><td>GND</td><td>I2C address 0x68; tie HIGH for 0x69</td></tr><tr><td>Red LED anode</td><td>GPIO 2</td><td>220 ohm resistor</td></tr><tr><td>Green LED anode</td><td>GPIO 4</td><td>220 ohm resistor</td></tr><tr><td>Buzzer +</td><td>GPIO 15</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-beginner-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-vibration-monitor_beginner.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Vibration Monitor - Beginner
+// MPU6050 I2C + threshold LED/buzzer alert
+#include &lt;Adafruit_MPU6050.h&gt;
+#include &lt;Adafruit_Sensor.h&gt;
+#include &lt;Wire.h&gt;
+
+Adafruit_MPU6050 mpu;
+
+const int LED_R=2, LED_G=4, BUZ=15;
+const float THRESHOLD = 15.0; // m/s^2 combined; gravity=9.81
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  if(!mpu.begin()){
+    Serial.println(&quot;MPU6050 not found - check wiring&quot;);
+    while(1) delay(10);
+  }
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  pinMode(LED_R,OUTPUT); pinMode(LED_G,OUTPUT); pinMode(BUZ,OUTPUT);
+  Serial.println(&quot;magnitude_m_s2&quot;);
+}
+
+void loop(){
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&amp;a,&amp;g,&amp;temp);
+
+  float ax=a.acceleration.x;
+  float ay=a.acceleration.y;
+  float az=a.acceleration.z;
+  float mag=sqrt(ax*ax+ay*ay+az*az);
+
+  // Print for Serial Plotter
+  Serial.println(mag);
+
+  if(mag &gt; THRESHOLD){
+    digitalWrite(LED_R,HIGH); digitalWrite(LED_G,LOW);
+    digitalWrite(BUZ,HIGH);
+  } else {
+    digitalWrite(LED_R,LOW); digitalWrite(LED_G,HIGH);
+    digitalWrite(BUZ,LOW);
+  }
+  delay(20); // 50 Hz sample rate
+}</pre></div></div></details><details class="accordion-item" id="sec-beginner-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>MPU6050 I2C Communication: The MPU6050 communicates over I2C at address 0x68 (AD0 low) or 0x69 (AD0 high). The Adafruit MPU6050 library handles register reads and converts raw 16-bit ADC values into calibrated m/s^2 acceleration values.</p></div><div class="step"><span class="step-no">02</span><p>Vector Magnitude Calculation: The 3-axis acceleration vector magnitude sqrt(ax^2+ay^2+az^2) represents total vibration energy from all directions. At rest this equals approximately 9.81 m/s^2 (gravity). Dynamic vibration adds to this value.</p></div><div class="step"><span class="step-no">03</span><p>Threshold Alert Logic: If magnitude exceeds THRESHOLD (default 15 m/s^2) the red LED and buzzer activate. The green LED indicates normal operation. Adjust the threshold based on the baseline vibration of the specific machine.</p></div><div class="step"><span class="step-no">04</span><p>Serial Plotter Visualisation: Printing the magnitude value to Serial at 50 Hz lets the Arduino IDE Serial Plotter display a live vibration waveform. Open Tools &gt; Serial Plotter to see peaks when the machine vibrates.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Factory machine bearing wear early detection</li><li>Pump cavitation monitoring on fluid systems</li><li>Building structural vibration monitoring</li><li>Motor imbalance detection on rotating equipment</li></ul></div></details><details class="accordion-item" id="sec-beginner-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>MPU6050 not found error at startup</h4><p>Check that SDA is on GPIO 21 and SCL on GPIO 22. Ensure VCC is 3.3 V, not 5 V. Run an I2C scanner sketch to confirm the device appears at address 0x68.</p></div><div class="trouble-item"><h4>Magnitude reads 9.81 m/s^2 with no vibration</h4><p>This is correct: gravity contributes to the Z-axis reading when the sensor is horizontal. Subtract the gravity component or use only the AC portion of the signal for vibration analysis.</p></div><div class="trouble-item"><h4>Alert triggers on normal machine vibration</h4><p>Increase the THRESHOLD constant. Run the machine in normal operation and note the peak magnitude in the Serial Plotter. Set the threshold 30 percent above that baseline.</p></div><div class="trouble-item"><h4>LED flickers rapidly during vibration</h4><p>Add hysteresis: only trigger the alert when magnitude stays above threshold for 5 consecutive samples, and clear it when magnitude stays below for 5 consecutive samples.</p></div></div></div></details><details class="accordion-item" id="sec-beginner-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Log peak vibration values to NVS with a timestamp</li><li>Add an OLED display showing live magnitude and alert status</li><li>Send an alert SMS via a GSM module when vibration is detected</li><li>Add a calibration routine that automatically measures the at-rest baseline</li></ul></div></details><details class="accordion-item" id="sec-beginner-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Vibration Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Red LED anode, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Vibration Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Vibration Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-intermediate-panel" data-level="intermediate" id="level-intermediate" role="tabpanel" aria-labelledby="tab-intermediate"><details class="accordion-item" id="sec-intermediate-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The intermediate build samples acceleration at 500 Hz, calculates RMS (root mean square) vibration amplitude, identifies the peak frequency using a basic FFT, and serves a web page showing a rolling 60-second chart. RMS values are compared against ISO 10816 vibration severity limits and stored in NVS for trend analysis over time.</p></div></details><details class="accordion-item" id="sec-intermediate-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× MPU6050 IMU</span></li><li><span>1× SSD1306 OLED 128x64 I2C — Live RMS and frequency display</span></li><li><span>1× Active buzzer — Severity alert</span></li><li><span>1× Wi-Fi router — For web chart access</span></li><li><span>1× Breadboard and wires</span></li></ul></div></details><details class="accordion-item" id="sec-intermediate-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>MPU6050 SDA/SCL</td><td>GPIO 21/22</td><td></td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td>Shared I2C bus; different I2C addresses</td></tr><tr><td>Buzzer</td><td>GPIO 15</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-intermediate-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-vibration-monitor_intermediate.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Vibration Monitor - Intermediate (RMS + peak frequency + web chart)
+#include &lt;Adafruit_MPU6050.h&gt;
+#include &lt;Adafruit_Sensor.h&gt;
+#include &lt;Wire.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;arduinoFFT.h&gt;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+Adafruit_MPU6050 mpu;
+Adafruit_SSD1306 oled(128,64,&amp;Wire,-1);
+WebServer server(80);
+
+const int SAMPLES=256;
+double vReal[SAMPLES], vImag[SAMPLES];
+ArduinoFFT&lt;double&gt; FFT=ArduinoFFT&lt;double&gt;(vReal,vImag,SAMPLES,500.0);
+
+float rmsHistory[60]={0}; // 1-minute rolling buffer
+int   histIdx=0;
+float currentRMS=0, peakFreq=0;
+
+float computeRMS(){
+  float sum=0;
+  sensors_event_t a,g,t;
+  for(int i=0;i&lt;SAMPLES;i++){
+    mpu.getEvent(&amp;a,&amp;g,&amp;t);
+    float mag=sqrt(a.acceleration.x*a.acceleration.x+
+                   a.acceleration.y*a.acceleration.y+
+                   a.acceleration.z*a.acceleration.z)-9.81f;
+    vReal[i]=mag; vImag[i]=0;
+    sum+=mag*mag;
+    delayMicroseconds(2000); // 500 Hz
+  }
+  FFT.windowing(FFT_WIN_TYP_HAMMING,FFT_FORWARD);
+  FFT.compute(FFT_FORWARD);
+  FFT.complexToMagnitude();
+  peakFreq=FFT.majorPeak();
+  return sqrt(sum/SAMPLES);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  mpu.begin(); mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  oled.setTextSize(1); oled.setTextColor(WHITE);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  server.on(&quot;/&quot;,[](){
+    String body=&quot;&lt;h2&gt;Vibration Monitor&lt;/h2&gt;&lt;p&gt;RMS: &quot;+String(currentRMS,3)+
+      &quot; m/s2 | Peak: &quot;+String(peakFreq,1)+&quot; Hz&lt;/p&gt;&quot;;
+    body+=&quot;&lt;canvas id=c width=600 height=200&gt;&lt;/canvas&gt;&lt;script&gt;&quot;
+      &quot;var d=[&quot;;
+    for(int i=0;i&lt;60;i++) body+=String(rmsHistory[(histIdx+i)%60])+&quot;,&quot;;
+    body+=&quot;];&quot;
+      &quot;var c=document.getElementById(&quot;c&quot;).getContext(&quot;2d&quot;);&quot;
+      &quot;c.beginPath();&quot;
+      &quot;for(var i=0;i&lt;d.length;i++){c.lineTo(i*10,200-d[i]*20);}&quot;
+      &quot;c.stroke();&lt;/script&gt;&quot;;
+    server.send(200,&quot;text/html&quot;,body);
+  });
+  server.begin();
+}
+
+void loop(){
+  currentRMS=computeRMS();
+  rmsHistory[histIdx%60]=currentRMS;
+  histIdx++;
+
+  oled.clearDisplay(); oled.setCursor(0,0);
+  oled.printf(&quot;RMS: %.3f m/s2n&quot;,currentRMS);
+  oled.printf(&quot;Peak: %.1f Hzn&quot;,peakFreq);
+  // ISO 10816 Zone A &lt; 0.71, B &lt; 1.8, C &lt; 4.5, D &gt;= 4.5 mm/s
+  oled.println(currentRMS&lt;0.71?&quot;Zone A OK&quot;:currentRMS&lt;1.8?&quot;Zone B GOOD&quot;:
+               currentRMS&lt;4.5?&quot;Zone C WARN&quot;:&quot;Zone D ALARM&quot;);
+  oled.display();
+  digitalWrite(15, currentRMS&gt;=4.5?HIGH:LOW);
+  server.handleClient();
+}</pre></div></div></details><details class="accordion-item" id="sec-intermediate-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>High-Rate Sampling: The MPU6050 is sampled 256 times with a 2 ms delay (500 Hz effective rate). The gravity component (9.81 m/s^2) is subtracted from the magnitude so only dynamic vibration contributes to the RMS and FFT calculations.</p></div><div class="step"><span class="step-no">02</span><p>RMS Amplitude: RMS = sqrt(sum of squared samples / N). RMS in mm/s is the industry standard metric for vibration severity. The Adafruit MPU6050 returns m/s^2; convert to mm/s by integrating over the dominant frequency period if needed.</p></div><div class="step"><span class="step-no">03</span><p>FFT Peak Frequency: The arduinoFFT library applies a Hamming window to reduce spectral leakage, computes the DFT of the 256-sample buffer, converts to magnitude spectrum, and returns the dominant frequency in Hz. This identifies imbalance (1x RPM), misalignment (2x RPM), or bearing fault signatures.</p></div><div class="step"><span class="step-no">04</span><p>ISO 10816 Severity Zones: ISO 10816-3 defines four vibration severity zones for industrial machines. The display shows Zone A (new machines), B (acceptable), C (alarm condition), or D (shut down). Thresholds here are approximate; consult the standard for machine-class-specific limits.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Predictive maintenance programme for pump and motor monitoring</li><li>HVAC fan bearing wear detection before failure</li><li>Industrial compressor vibration logging for compliance records</li><li>Research platform for vibration signature analysis</li></ul></div></details><details class="accordion-item" id="sec-intermediate-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>FFT peak frequency is always at 0 Hz</h4><p>The DC offset from gravity subtraction may be imperfect. Apply a high-pass filter by subtracting the mean of the sample buffer before running the FFT.</p></div><div class="trouble-item"><h4>RMS values vary wildly between readings</h4><p>Ensure the MPU6050 is rigidly mounted to the surface being monitored. Any loose connection acts as a mechanical filter and introduces random variation.</p></div><div class="trouble-item"><h4>Web chart does not update</h4><p>Add a meta refresh tag to the HTML page or use JavaScript fetch() with a 1-second interval to auto-reload the data endpoint without refreshing the full page.</p></div></div></div></details><details class="accordion-item" id="sec-intermediate-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Log RMS and peak frequency to SD card with timestamp for long-term trending</li><li>Add email alerts when Zone C or D thresholds are exceeded</li><li>Display the full FFT magnitude spectrum as a bar chart on the OLED</li><li>Add a second MPU6050 at a different bearing location for comparative analysis</li></ul></div></details><details class="accordion-item" id="sec-intermediate-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Vibration Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Red LED anode, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Vibration Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Vibration Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div><div class="difficulty-content level-advanced-panel" data-level="advanced" id="level-advanced" role="tabpanel" aria-labelledby="tab-advanced"><details class="accordion-item" id="sec-advanced-overview" data-section="overview" open><summary class="accordion-header">Overview</summary><div class="accordion-content"><p>The advanced build publishes vibration RMS and peak FFT frequency to an MQTT broker every minute, where a Node-RED or Grafana dashboard plots long-term trends. A predictive maintenance score (0-100) is computed from trend slope and severity zone history. When the score drops below 40 the ESP32 publishes an MQTT maintenance request and sends an email alert via SMTP.</p></div></details><details class="accordion-item" id="sec-advanced-components" data-section="components"><summary class="accordion-header">Components</summary><div class="accordion-content"><ul class="parts-grid parts-grid-compact"><li><span>1× ESP32 DevKit V1</span></li><li><span>1× MPU6050 IMU — Rigidly mounted on machine housing</span></li><li><span>1× SSD1306 OLED 128x64</span></li><li><span>1× MQTT broker (Mosquitto) — Local or cloud</span></li><li><span>1× Node-RED or Grafana instance — For trend dashboard</span></li><li><span>1× Wi-Fi router</span></li></ul></div></details><details class="accordion-item" id="sec-advanced-wiring" data-section="wiring"><summary class="accordion-header">Wiring</summary><div class="accordion-content"><div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th>Component Pin</th><th>ESP32 Pin</th><th>Notes</th></tr></thead><tbody><tr><td>MPU6050 SDA/SCL</td><td>GPIO 21/22</td><td></td></tr><tr><td>OLED SDA/SCL</td><td>GPIO 21/22</td><td>Shared I2C bus</td></tr><tr><td>Buzzer</td><td>GPIO 15</td><td></td></tr></tbody></table></div></div></details><details class="accordion-item" id="sec-advanced-code" data-section="code"><summary class="accordion-header">Arduino Code</summary><div class="accordion-content"><div class="code-block"><div class="code-bar"><span>esp32-vibration-monitor_advanced.ino</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">// ESP32 Vibration Monitor - Advanced (MQTT + predictive score + alerts)
+#include &lt;Adafruit_MPU6050.h&gt;
+#include &lt;Adafruit_Sensor.h&gt;
+#include &lt;Wire.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+#include &lt;ArduinoJson.h&gt;
+#include &lt;Preferences.h&gt;
+
+Adafruit_MPU6050 mpu;
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
+Preferences prefs;
+
+const char* SSID=&quot;YourSSID&quot;, *PASS=&quot;YourPass&quot;;
+const char* MQTT_HOST=&quot;192.168.1.100&quot;;
+const char* TOPIC_DATA =&quot;vibration/data&quot;;
+const char* TOPIC_ALERT=&quot;vibration/alert&quot;;
+
+const int HISTORY=60; // 60-minute trend window
+float rmsLog[HISTORY]={0};
+int   logIdx=0;
+
+float measureRMS(){
+  float sum=0;
+  sensors_event_t a,g,t;
+  for(int i=0;i&lt;256;i++){
+    mpu.getEvent(&amp;a,&amp;g,&amp;t);
+    float m=sqrt(a.acceleration.x*a.acceleration.x+
+                 a.acceleration.y*a.acceleration.y+
+                 a.acceleration.z*a.acceleration.z)-9.81f;
+    sum+=m*m;
+    delayMicroseconds(2000);
+  }
+  return sqrt(sum/256.0f);
+}
+
+int predictiveScore(){
+  // Linear regression slope of last HISTORY readings
+  float sumX=0,sumY=0,sumXY=0,sumX2=0;
+  for(int i=0;i&lt;HISTORY;i++){
+    sumX+=i; sumY+=rmsLog[i]; sumXY+=i*rmsLog[i]; sumX2+=i*i;
+  }
+  float slope=(HISTORY*sumXY-sumX*sumY)/(HISTORY*sumX2-sumX*sumX);
+  // Score 100 = flat trend near zero, 0 = steep upward trend
+  int score=100-(int)(slope*200.0f);
+  return constrain(score,0,100);
+}
+
+void setup(){
+  Serial.begin(115200);
+  Wire.begin(21,22);
+  mpu.begin(); mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  WiFi.begin(SSID,PASS);
+  while(WiFi.status()!=WL_CONNECTED) delay(500);
+  mqtt.setServer(MQTT_HOST,1883);
+}
+
+void loop(){
+  if(!mqtt.connected()) mqtt.connect(&quot;ESP32Vibe&quot;);
+  mqtt.loop();
+
+  float rms=measureRMS();
+  rmsLog[logIdx%HISTORY]=rms;
+  logIdx++;
+
+  int score=predictiveScore();
+
+  StaticJsonDocument&lt;128&gt; doc;
+  doc[&quot;rms&quot;]=rms; doc[&quot;score&quot;]=score;
+  char buf[128]; serializeJson(doc,buf);
+  mqtt.publish(TOPIC_DATA,buf);
+
+  if(score&lt;40){
+    mqtt.publish(TOPIC_ALERT,&quot;MAINTENANCE_REQUIRED&quot;);
+    Serial.println(&quot;ALERT: Maintenance required&quot;);
+  }
+
+  Serial.printf(&quot;RMS=%.3f score=%dn&quot;,rms,score);
+  delay(60000); // publish every minute
+}</pre></div></div></details><details class="accordion-item" id="sec-advanced-how" data-section="how"><summary class="accordion-header">How It Works</summary><div class="accordion-content"><div class="steps steps-compact"><div class="step"><span class="step-no">01</span><p>Rolling RMS History: Each 1-minute RMS measurement is stored in a circular buffer of 60 entries. This gives a 60-minute trend window. logIdx%HISTORY keeps the write index within bounds, automatically overwriting the oldest sample.</p></div><div class="step"><span class="step-no">02</span><p>Linear Regression Trend Score: A least-squares linear regression is computed over the 60-sample RMS history. A positive slope means vibration is increasing over time. The predictive score converts slope to a 0-100 index: 100 = stable, 0 = rapidly increasing. Below 40 suggests maintenance intervention within days.</p></div><div class="step"><span class="step-no">03</span><p>MQTT JSON Publishing: ArduinoJson serialises the RMS and predictive score into a compact JSON string published to vibration/data. Node-RED subscribes, parses the JSON, and feeds data to a Grafana InfluxDB panel for historical trending.</p></div><div class="step"><span class="step-no">04</span><p>Maintenance Alert: When the predictive score drops below the 40-point threshold, a plain-text &quot;MAINTENANCE_REQUIRED&quot; message is published to vibration/alert. A Node-RED node subscribing to this topic can trigger email, SMS, or a ticketing system notification.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-apps" data-section="apps"><summary class="accordion-header">Applications</summary><div class="accordion-content"><ul class="detail-list"><li>Factory predictive maintenance programme reducing unplanned downtime</li><li>HVAC system health monitoring with monthly trend reports</li><li>Pump fleet management with per-unit maintenance score tracking</li><li>Industrial IoT integration with Grafana and InfluxDB dashboards</li></ul></div></details><details class="accordion-item" id="sec-advanced-troubleshooting" data-section="troubleshooting"><summary class="accordion-header">Troubleshooting</summary><div class="accordion-content"><div class="trouble-list"><div class="trouble-item"><h4>Predictive score drops to 0 immediately</h4><p>The regression slope is very sensitive to outlier readings in the first few samples. Prefill the rmsLog array with the first measured value before starting the trend calculation.</p></div><div class="trouble-item"><h4>MQTT publish fails during 256-sample measurement</h4><p>The measurement takes 512 ms (256 x 2 ms). Move the MQTT loop to a FreeRTOS task on core 0 so it runs concurrently with the ADC sampling on core 1.</p></div><div class="trouble-item"><h4>Grafana shows gaps in the vibration trend</h4><p>The 60-second delay between publishes is acceptable but confirm the MQTT keep-alive is longer than 60 seconds. Set mqtt.setKeepAlive(90) to prevent broker-side disconnection between publishes.</p></div></div></div></details><details class="accordion-item" id="sec-advanced-upgrades" data-section="upgrades"><summary class="accordion-header">Upgrades</summary><div class="accordion-content"><ul class="detail-list"><li>Store RMS history in InfluxDB directly from Node-RED for unlimited retention</li><li>Add a second vibration axis (vertical vs horizontal) and publish separately</li><li>Implement adaptive thresholds that learn the machine normal baseline over 24 hours</li><li>Integrate with a CMMS (Computerised Maintenance Management System) via REST API webhook</li></ul></div></details><details class="accordion-item" id="sec-advanced-faq" data-section="faq"><summary class="accordion-header">FAQ</summary><div class="accordion-content"><div class="faq-list"><div class="faq-item"><button type="button" class="faq-q">What hardware do I need for ESP32 Vibration Monitor?<span class="plus">+</span></button><div class="faq-a"><p>You need an ESP32 DevKit, TODO: sensor, Red LED anode, a breadboard, jumper wires, and a USB cable for power and programming.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does ESP32 Vibration Monitor require Wi-Fi?<span class="plus">+</span></button><div class="faq-a"><p>Only the Advanced stage uses Wi-Fi. Beginner and Intermediate builds run offline on the ESP32 with USB power.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which difficulty level should I start with for ESP32 Vibration Monitor?<span class="plus">+</span></button><div class="faq-a"><p>Start with Beginner if you are new to Industrial Automation. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.</p></div></div></div></div></details></div>
+      </div>
+    </div>
+    <div class="article-content parent-footer-sections">
+      <div class="footer-accordions">
+        <details class="accordion-item" id="related" data-section="related"><summary class="accordion-header">Related Projects</summary><div class="accordion-content"><div class="related-grid"><a class="related-card" href="esp32-cnc-controller.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 CNC Controller</h3></div></a><a class="related-card" href="esp32-machine-monitoring-node.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 Machine Monitoring Node</h3></div></a><a class="related-card" href="esp32-rfid-inventory-tracker.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 50H54V30L42 36V22L30 28V18L10 30V50Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18 50V40M26 50V36M34 50V42M42 50V34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div class="related-body"><span class="badge badge-cat">Industrial Automation</span><h3>ESP32 RFID Inventory Tracker</h3></div></a><a class="related-card" href="esp32-ac-power-monitor.html"><div class="related-thumb t-default"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M34 10L18 36H30L28 54L46 28H34L34 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" opacity=".18"/></svg></div><div class="related-body"><span class="badge badge-cat">Energy Monitoring</span><h3>ESP32 AC Power Monitor</h3></div></a></div></div></details>
+      </div>
+    </div>
+  </article>
+  <aside class="sidebar-right">
+    <div class="sidebar-sticky">
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="/projects.html">Browse all projects »</a></p></div>
+    </div>
+  </aside>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/ui.js" defer></script>
+<script src="/project.js?v=20260627-mission01-golden-v1" defer></script>
+</body>
+</html>

@@ -345,6 +345,34 @@ void loop() {{
 }}"""
 
 
+def _merge_imported_level(level: str, parent: dict, hardware: dict, imported: dict) -> dict:
+    base = build_level(level, parent, hardware)
+    if imported.get("overview_html"):
+        base["overview_html"] = imported["overview_html"]
+    if imported.get("components"):
+        base["components"] = imported["components"]
+    if imported.get("wiring"):
+        rows = imported["wiring"]
+        if rows and isinstance(rows[0], dict):
+            base["wiring"] = [(r.get("component", ""), r.get("pin", ""), r.get("note", "")) for r in rows]
+        else:
+            base["wiring"] = rows
+    if imported.get("how"):
+        base["how"] = imported["how"]
+    if imported.get("apps"):
+        base["apps"] = imported["apps"]
+    if imported.get("troubleshooting"):
+        base["troubleshooting"] = [
+            (t["problem"], t["fix"]) if isinstance(t, dict) else t
+            for t in imported["troubleshooting"]
+        ]
+    if imported.get("upgrades"):
+        base["upgrades"] = imported["upgrades"]
+    if imported.get("code"):
+        base["code"] = imported["code"]
+    return base
+
+
 def build_level(level: str, parent: dict, hardware: dict) -> dict:
     return {
         "level": level,
@@ -361,4 +389,12 @@ def build_level(level: str, parent: dict, hardware: dict) -> dict:
 
 
 def build_all_levels(parent: dict, hardware: dict) -> dict[str, dict]:
-    return {lv: build_level(lv, parent, hardware) for lv in LEVELS}
+    imported_levels = parent.get("levels") or {}
+    result = {}
+    for lv in LEVELS:
+        raw = imported_levels.get(lv) if isinstance(imported_levels, dict) else None
+        if isinstance(raw, dict) and raw.get("code"):
+            result[lv] = _merge_imported_level(lv, parent, hardware, raw)
+        else:
+            result[lv] = build_level(lv, parent, hardware)
+    return result

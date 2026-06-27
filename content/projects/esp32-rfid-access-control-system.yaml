@@ -1,0 +1,386 @@
+slug: esp32-rfid-access-control-system
+title: ESP32 RFID Access Control System
+category: Security Projects
+description: A card-based door access system using an RC522 RFID reader — from a simple single-card lock
+  to a web-managed multi-user system with audit logs.
+meta_description: Build an ESP32 RFID access control system using the RC522 module. From single-card door
+  lock to a web-managed multi-user system with audit logs and MQTT alerts.
+source_base: esp32-rfid-access-control-system-legacy-import
+sensor: 'TODO: sensor'
+output: RC522 SCK
+featured: false
+date_published: '2026-06-14'
+date_modified: '2026-06-27'
+quality_status: legacy_import
+status: needs_polish
+import_tier: 2
+import_source: batch-php
+hardware:
+  sensor_pin: 'TODO: sensor_pin'
+  output_pin: GPIO 18
+  sensor_name: 'TODO: sensor'
+  output_name: RC522 SCK
+  wiring:
+  - component: RC522 SDA (SS)
+    pin: GPIO 5
+  - component: RC522 SCK
+    pin: GPIO 18
+  - component: RC522 MOSI
+    pin: GPIO 23
+  - component: RC522 MISO
+    pin: GPIO 19
+  - component: RC522 RST
+    pin: GPIO 27
+  - component: RC522 3.3 V
+    pin: 3.3 V
+  - component: RC522 GND
+    pin: GND
+  - component: Relay IN
+    pin: GPIO 26
+  - component: Green LED (+ 220 Ω)
+    pin: GPIO 33
+  - component: Red LED (+ 220 Ω)
+    pin: GPIO 32
+  - component: Buzzer +
+    pin: GPIO 25
+levels:
+  beginner:
+    level: beginner
+    overview_html: '<p>In this beginner project you build a <strong>single-card RFID door lock</strong>.
+      The ESP32 reads a card''s unique ID (UID) from an RC522 reader connected over SPI. One authorised
+      UID is hardcoded in the sketch. When the matching card is presented, a green LED lights up and a
+      relay unlocks a door strike or electric solenoid for 3 seconds. Any other card triggers a red LED
+      and a short buzzer tone.</p>
+
+
+      <p>The RC522 module communicates via SPI (Serial Peripheral Interface) — a fast four-wire protocol
+      where the ESP32 is the master and the RC522 is the slave. You will learn SPI wiring, the MFRC522
+      Arduino library, reading card UIDs, and comparing byte arrays. You will also learn how to use a
+      relay for an electric door strike — the most common type of electronic lock used in offices and
+      apartments.</p>
+
+
+      <p>This project is a genuine real-world security component. After completing it you will understand
+      exactly how tap-to-enter systems work — the same technology in your office badge reader and hotel
+      key cards.</p>'
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× RC522 RFID Reader Module — Operates at 3.3 V — do NOT use 5 V
+    - 2× RFID Cards or Key Fobs (13.56 MHz) — Most RC522 kits include 1 card + 1 fob
+    - 1× 5 V Relay Module — For door strike or solenoid lock
+    - 1× LED (green) — Access granted indicator
+    - 1× LED (red) — Access denied indicator
+    - 2× 220 Ω Resistor — Current limiting for LEDs
+    - 1× Active Buzzer (5 V) — Optional audio feedback
+    - 1× Jumper wires + breadboard
+    wiring:
+    - - RC522 SDA (SS)
+      - GPIO 5
+      - Chip Select / Slave Select
+    - - RC522 SCK
+      - GPIO 18
+      - SPI Clock — hardware SPI bus
+    - - RC522 MOSI
+      - GPIO 23
+      - Master Out Slave In
+    - - RC522 MISO
+      - GPIO 19
+      - Master In Slave Out
+    - - RC522 RST
+      - GPIO 27
+      - Reset — any spare GPIO works
+    - - RC522 3.3 V
+      - 3.3 V
+      - 'CRITICAL: 3.3 V only — 5 V destroys RC522'
+    - - RC522 GND
+      - GND
+      - ''
+    - - Relay IN
+      - GPIO 26
+      - ''
+    - - Green LED (+ 220 Ω)
+      - GPIO 33
+      - LED anode via 220 Ω to GPIO, cathode to GND
+    - - Red LED (+ 220 Ω)
+      - GPIO 32
+      - Same wiring pattern
+    - - Buzzer +
+      - GPIO 25
+      - 'Active buzzer: + to GPIO, - to GND'
+    how:
+    - 'SPI Communication: SPI uses four wires: SCK (clock), MOSI (data to slave), MISO (data from slave),
+      and SS/SDA (chip select). The ESP32 drives SCK and MOSI while reading MISO. SS going LOW tells the
+      RC522 the bus is for it — allowing multiple SPI devices on the same bus using different SS pins.'
+    - 'RFID Card Detection: rfid.PICC_IsNewCardPresent() sends a 13.56 MHz radio pulse and listens for
+      a response. When a card enters the ~3 cm field, its internal antenna harvests power from the field
+      and sends back its UID. PICC_ReadCardSerial() reads and validates the full UID.'
+    - 'UID Comparison: The UID is stored as a byte array. The loop compares each byte of the scanned card
+      against the hardcoded AUTH_UID[]. A single byte mismatch sets match = false. Comparing byte-by-byte
+      is safer than converting to a string, which can introduce encoding issues.'
+    - 'Relay Timing: On access grant, the relay energises for DOOR_MS milliseconds (default 3000 = 3 seconds).
+      During this window the LED stays on. When the door catches and closes, the relay drops and the LED
+      turns off. Adjust DOOR_MS to suit your electric strike''s release time.'
+    - 'Learning Your Card UID: Scan your card before setting AUTH_UID. The sketch prints the full UID
+      to Serial Monitor in hex format (e.g. DE AD BE EF). Copy each byte into AUTH_UID[] and set AUTH_LEN
+      to the number of bytes. Most MIFARE Classic 1K cards are 4 bytes; MIFARE DESFire cards are 7 bytes.'
+    apps:
+    - Home office or workshop door entry system
+    - Filing cabinet or safe electronic lock
+    - Makerspace machine-enable interlock (lathe, laser cutter)
+    - Prototype for apartment building entry systems
+    - Attendance logger combined with a server-side database
+    troubleshooting:
+    - - rfid.PCD_DumpVersionToSerial() prints 0x00 or 0xFF
+      - 'This means the ESP32 cannot communicate with the RC522. Check: 1) RC522 is on 3.3 V, not 5 V.
+        2) SPI pins match exactly (SS→GPIO5, SCK→GPIO18, MOSI→GPIO23, MISO→GPIO19). 3) RST pin is connected.
+        4) All GND lines are common.'
+    - - Card is detected but UID bytes are always 00 00 00 00
+      - The card is not being fully read. Ensure the card is held flat and parallel to the RC522 antenna,
+        within 1-3 cm. Some plastic card holders block RFID — test without them first.
+    - - Access is always denied even for the correct card
+      - Open Serial Monitor and scan the card to see the actual UID bytes printed. Compare them to the
+        AUTH_UID[] array in your sketch — they must match exactly including byte order.
+    upgrades:
+    - Store multiple authorised UIDs in an array and loop through them
+    - Add a keypad so the system requires RFID + PIN (two-factor access)
+    - Log every access attempt with timestamp to Serial or SD card
+    - Add a push-exit button on the inside of the door
+    code: "/*\n * ESP32 RFID Access Control — Beginner\n * Single authorised card UID stored in flash.\n\
+      \ * Green LED + relay = access granted (3 s).\n * Red LED + buzzer  = access denied.\n *\n * Library:\
+      \ \"MFRC522\" by GithubCommunity (Library Manager)\n */\n#include <SPI.h>\n#include <MFRC522.h>\n\
+      \n#define SS_PIN    5\n#define RST_PIN   27\n#define RELAY_PIN 26\n#define LED_GREEN 33\n#define\
+      \ LED_RED   32\n#define BUZZER    25\n#define DOOR_MS   3000   // How long to hold relay open (ms)\n\
+      \nMFRC522 rfid(SS_PIN, RST_PIN);\n\n// ── Authorised UID — replace with YOUR card's UID ───────────────\n\
+      // Scan a card and read the UID from Serial Monitor, then paste it here.\nbyte AUTH_UID[] = { 0xDE,\
+      \ 0xAD, 0xBE, 0xEF };\nbyte AUTH_LEN   = 4;   // Most MIFARE Classic cards: 4 bytes\n\nvoid grantAccess()\
+      \ {\n  Serial.println(\"ACCESS GRANTED\");\n  digitalWrite(LED_GREEN, HIGH);\n  digitalWrite(RELAY_PIN,\
+      \ HIGH);\n  delay(DOOR_MS);\n  digitalWrite(RELAY_PIN, LOW);\n  digitalWrite(LED_GREEN, LOW);\n\
+      }\n\nvoid denyAccess() {\n  Serial.println(\"ACCESS DENIED\");\n  for (int i = 0; i < 3; i++) {\n\
+      \    digitalWrite(LED_RED, HIGH);\n    digitalWrite(BUZZER, HIGH);\n    delay(150);\n    digitalWrite(LED_RED,\
+      \ LOW);\n    digitalWrite(BUZZER, LOW);\n    delay(100);\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  SPI.begin();\n  rfid.PCD_Init();\n  rfid.PCD_DumpVersionToSerial();   // Prints firmware version\
+      \ — confirms wiring\n\n  pinMode(RELAY_PIN, OUTPUT); digitalWrite(RELAY_PIN, LOW);\n  pinMode(LED_GREEN,\
+      \ OUTPUT); pinMode(LED_RED, OUTPUT);\n  pinMode(BUZZER,    OUTPUT);\n  Serial.println(\"Waiting\
+      \ for card...\");\n}\n\nvoid loop() {\n  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial())\
+      \ return;\n\n  // Print scanned UID to Serial (useful for learning what UID your card has)\n  Serial.print(\"\
+      Card UID: \");\n  for (byte i = 0; i < rfid.uid.size; i++) {\n    Serial.printf(\"%02X \", rfid.uid.uidByte[i]);\n\
+      \  }\n  Serial.println();\n\n  // Compare UID\n  bool match = (rfid.uid.size == AUTH_LEN);\n  if\
+      \ (match) {\n    for (byte i = 0; i < AUTH_LEN; i++) {\n      if (rfid.uid.uidByte[i] != AUTH_UID[i])\
+      \ { match = false; break; }\n    }\n  }\n\n  match ? grantAccess() : denyAccess();\n  rfid.PICC_HaltA();\n\
+      \  rfid.PCD_StopCrypto1();\n}"
+    code_filename: esp32-rfid-access-beginner.ino
+  intermediate:
+    level: intermediate
+    overview_html: '<p>At the intermediate level you expand to a <strong>multi-card system with persistent
+      storage</strong>. Authorised UIDs are stored in ESP32 NVS flash using the Preferences library, so
+      you can add and remove cards without reflashing. A small serial command interface lets you enrol
+      new cards, list authorised cards, and revoke access — all through the Arduino Serial Monitor or
+      any terminal.</p>
+
+
+      <p>You also add an access attempt log that records the last 20 events (card UID, grant/deny result,
+      timestamp from NTP) in circular buffer memory, viewable via the serial command <code>log</code>.
+      This intermediate level mirrors the logic inside a real commercial access controller.</p>'
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× RC522 RFID Module
+    - 2+× RFID Cards / Fobs — One for admin enrolment, one per user
+    - 1× 5 V Relay Module
+    - 1× LEDs (green + red) + 220 Ω resistors
+    - 1× Active Buzzer
+    wiring:
+    - - RC522 SDA/SCK/MOSI/MISO/RST
+      - GPIO 5/18/23/19/27
+      - Same as beginner
+    - - Relay IN / LEDs / Buzzer
+      - GPIO 26 / 33 / 32 / 25
+      - Same as beginner
+    how:
+    - 'NVS Slot Allocation: Preferences stores up to MAX_CARDS UIDs as string key-value pairs (c0, c1,
+      … c19). enrollCard() scans for the first empty slot (empty string value) and writes the UID there.
+      revokeCard() finds the matching slot and calls prefs.remove() to clear it.'
+    - 'Admin Mode via Serial: A simple state machine (enum Mode) switches between NORMAL, ENROL, and REVOKE
+      modes based on serial commands. When a card is presented in ENROL mode, it is added rather than
+      checked. This is the same pattern commercial access controllers use with a physical admin card or
+      master key.'
+    - 'Circular Log Buffer: accessLog[] is a fixed array of LOG_SIZE structs. logIdx is an ever-increasing
+      integer; the actual array index is logIdx % LOG_SIZE. When logIdx exceeds LOG_SIZE, old entries
+      are overwritten — a classic circular buffer pattern requiring no dynamic memory.'
+    apps: []
+    troubleshooting:
+    - - Card is enrolled but still denied
+      - 'Run the "list" command to confirm the UID is stored. Compare the format: the sketch stores colon-separated
+        uppercase hex (e.g. DE:AD:BE:EF). If the beginner-level UID used spaces (DE AD BE EF), the formats
+        won''t match — they must be identical.'
+    - - Time shows ??:??:?? in the log
+      - The ESP32 did not connect to Wi-Fi or NTP. Check SSID/PASSWORD. NTP requires working internet
+        access from the ESP32's network, not just local network access.
+    upgrades:
+    - Add a 16×2 LCD to show "Welcome, User" on grant instead of just a green LED
+    - Store user names mapped to UIDs for human-readable log entries
+    - Add a door-open sensor (magnetic reed switch) to detect if the door was actually opened after grant
+    code: "/*\n * ESP32 RFID Access Control — Intermediate\n * Multi-card NVS storage + serial admin commands\
+      \ + access log\n *\n * Serial commands (115200 baud):\n *   enrol   — present a card to add it\n\
+      \ *   revoke  — present a card to remove it\n *   list    — list all authorised UIDs\n *   log \
+      \    — show last 20 access events\n *   clear   — wipe ALL authorised UIDs (careful!)\n */\n#include\
+      \ <SPI.h>\n#include <MFRC522.h>\n#include <Preferences.h>\n#include <WiFi.h>\n#include <time.h>\n\
+      \n#define SS_PIN    5\n#define RST_PIN   27\n#define RELAY_PIN 26\n#define LED_GREEN 33\n#define\
+      \ LED_RED   32\n#define BUZZER    25\n#define MAX_CARDS 20\n#define LOG_SIZE  20\n\nconst char*\
+      \ SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\n\nMFRC522  rfid(SS_PIN,\
+      \ RST_PIN);\nPreferences prefs;\n\n// Access log (circular buffer)\nstruct LogEntry { String uid;\
+      \ bool granted; String ts; };\nLogEntry accessLog[LOG_SIZE];\nint logIdx = 0;\n\nString uidToString(byte*\
+      \ uid, byte len) {\n  String s;\n  for (byte i = 0; i < len; i++) { if(i) s+=\":\"; s+=String(uid[i],HEX);\
+      \ }\n  s.toUpperCase(); return s;\n}\n\nString nowString() {\n  struct tm t; if(getLocalTime(&t)){\n\
+      \    char b[20]; strftime(b,sizeof(b),\"%H:%M:%S\",&t); return String(b);\n  } return \"??:??:??\"\
+      ;\n}\n\nbool isAuthorised(String uid) {\n  for (int i = 0; i < MAX_CARDS; i++) {\n    if (prefs.getString((\"\
+      c\"+String(i)).c_str(),\"\") == uid) return true;\n  }\n  return false;\n}\n\nbool enrollCard(String\
+      \ uid) {\n  for (int i = 0; i < MAX_CARDS; i++) {\n    String key = \"c\"+String(i);\n    if (prefs.getString(key.c_str(),\"\
+      \").isEmpty()) {\n      prefs.putString(key.c_str(), uid); return true;\n    }\n  }\n  return false;\
+      \  // storage full\n}\n\nvoid revokeCard(String uid) {\n  for (int i = 0; i < MAX_CARDS; i++) {\n\
+      \    String key = \"c\"+String(i);\n    if (prefs.getString(key.c_str(),\"\") == uid) { prefs.remove(key.c_str());\
+      \ return; }\n  }\n}\n\nvoid addLog(String uid, bool granted) {\n  accessLog[logIdx % LOG_SIZE] =\
+      \ {uid, granted, nowString()};\n  logIdx++;\n}\n\nenum Mode { NORMAL, ENROL, REVOKE };\nMode mode\
+      \ = NORMAL;\n\nvoid setup() {\n  Serial.begin(115200);\n  SPI.begin(); rfid.PCD_Init();\n  pinMode(RELAY_PIN,OUTPUT);\
+      \ digitalWrite(RELAY_PIN,LOW);\n  pinMode(LED_GREEN,OUTPUT); pinMode(LED_RED,OUTPUT); pinMode(BUZZER,OUTPUT);\n\
+      \n  prefs.begin(\"rfid\", false);\n\n  WiFi.begin(SSID, PASSWORD);\n  for (int i=0;i<20&&WiFi.status()!=WL_CONNECTED;i++)\
+      \ delay(500);\n  if(WiFi.status()==WL_CONNECTED) configTime(0,0,\"pool.ntp.org\");\n\n  Serial.println(\"\
+      RFID Access Control ready. Commands: enrol | revoke | list | log | clear\");\n}\n\nvoid loop() {\n\
+      \  // Handle serial commands\n  if (Serial.available()) {\n    String cmd = Serial.readStringUntil('\\\
+      n'); cmd.trim();\n    if (cmd == \"enrol\")  { mode=ENROL;  Serial.println(\"Present card to ENROL...\"\
+      ); }\n    if (cmd == \"revoke\") { mode=REVOKE; Serial.println(\"Present card to REVOKE...\"); }\n\
+      \    if (cmd == \"list\") {\n      Serial.println(\"Authorised UIDs:\");\n      for(int i=0;i<MAX_CARDS;i++){\n\
+      \        String u=prefs.getString((\"c\"+String(i)).c_str(),\"\");\n        if(!u.isEmpty()) Serial.printf(\"\
+      \  [%d] %sn\",i,u.c_str());\n      }\n    }\n    if (cmd == \"log\") {\n      Serial.println(\"\
+      Access Log (newest last):\");\n      for(int i=0;i<min(logIdx,LOG_SIZE);i++){\n        auto& e=accessLog[i];\n\
+      \        Serial.printf(\"  %s  %s  %sn\",e.ts.c_str(),e.uid.c_str(),e.granted?\"GRANT\":\"DENY\"\
+      );\n      }\n    }\n    if (cmd == \"clear\") { prefs.clear(); Serial.println(\"All UIDs cleared.\"\
+      ); }\n  }\n\n  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;\n  String\
+      \ uid = uidToString(rfid.uid.uidByte, rfid.uid.size);\n  Serial.print(\"Card: \"); Serial.println(uid);\n\
+      \n  if (mode == ENROL) {\n    enrollCard(uid) ? Serial.println(\"Enrolled.\") : Serial.println(\"\
+      Storage full.\");\n    mode = NORMAL;\n  } else if (mode == REVOKE) {\n    revokeCard(uid); Serial.println(\"\
+      Revoked.\");\n    mode = NORMAL;\n  } else {\n    bool ok = isAuthorised(uid);\n    addLog(uid,\
+      \ ok);\n    if (ok) {\n      digitalWrite(LED_GREEN,HIGH); digitalWrite(RELAY_PIN,HIGH);\n     \
+      \ delay(3000);\n      digitalWrite(RELAY_PIN,LOW); digitalWrite(LED_GREEN,LOW);\n    } else {\n\
+      \      for(int i=0;i<3;i++){\n        digitalWrite(LED_RED,HIGH); digitalWrite(BUZZER,HIGH); delay(150);\n\
+      \        digitalWrite(LED_RED,LOW);  digitalWrite(BUZZER,LOW);  delay(100);\n      }\n    }\n  }\n\
+      \n  rfid.PICC_HaltA(); rfid.PCD_StopCrypto1();\n}"
+    code_filename: esp32-rfid-access-intermediate.ino
+  advanced:
+    level: advanced
+    overview_html: '<p>The advanced level adds a <strong>full web-based admin panel</strong> served directly
+      by the ESP32. From any browser on your network you can view all authorised cards by name, enrol
+      or revoke access, set per-user access schedules (time-of-day restrictions), and download the complete
+      access log as CSV. The system also publishes every access event to MQTT so your home automation
+      can react — for example, turning on the entry hall lights when a specific card is presented.</p>
+
+
+      <p>Card UIDs are stored with associated user names, giving meaningful log entries ("Alice granted
+      at 08:32") instead of raw hex strings. The web panel uses a minimal REST API (JSON over HTTP) with
+      a small JS front-end, making this an excellent introduction to building ESP32-hosted web applications
+      beyond simple dashboards.</p>'
+    components:
+    - 1× ESP32 DevKit V1
+    - 1× RC522 RFID Module
+    - 1× 5 V Relay Module
+    - 2+× RFID Cards / Fobs
+    - 1× MQTT Broker (local or cloud) — For event publishing
+    wiring:
+    - - RC522 SDA/SCK/MOSI/MISO/RST
+      - GPIO 5/18/23/19/27
+      - Same as previous levels
+    - - Relay IN / LEDs / Buzzer
+      - GPIO 26/33/32/25
+      - Same as previous levels
+    how:
+    - 'REST API Design: The web server exposes five JSON endpoints. The admin HTML page calls these via
+      browser fetch() — no server-side rendering required. This separates data (API) from presentation
+      (HTML), the same architecture used by modern web applications.'
+    - 'Pending Enrolment Pattern: When POST /api/enrol is called, the server sets a flag (enrolPending)
+      and a 10-second deadline. The next card scan within that window is enrolled rather than authenticated.
+      This is a common pattern in physical security systems where you press an enrol button then present
+      the card.'
+    - 'MQTT Event Publishing: Every access event (grant or deny) is published to esp32engine/rfid/events
+      as JSON. A Node-RED flow or Home Assistant automation can consume this stream: turn on lights when
+      Alice is granted, send a push notification when an unknown card is denied, or update a Google Sheet
+      for audit compliance.'
+    - 'CSV Export: The /api/log/csv endpoint sends a Content-Disposition header with filename=access_log.csv,
+      causing the browser to download the data as a file. This gives building managers a format compatible
+      with Excel for compliance reporting.'
+    apps: []
+    troubleshooting:
+    - - Enrol endpoint returns 200 but card is not stored after scanning
+      - The 10-second enrolment window may have expired before the card was presented. Check that enrolPending
+        is true and enrolDeadline is still in the future when the card scan triggers. Increase the 10000
+        ms deadline if needed.
+    - - MQTT events not appearing on broker
+      - Call mqtt.connect() in loop() as a reconnect handler — the advanced sketch shows a minimal version.
+        Verify the broker IP with a mosquitto_sub -h BROKER_IP -t "esp32engine/rfid/#" command on the
+        broker machine.
+    upgrades:
+    - 'Add per-user access schedules: deny card X on weekends or outside 08:00–18:00'
+    - Integrate with Telegram Bot API to send push notifications on denied access attempts
+    - Add a camera (ESP32-CAM as a separate node) to photograph every access attempt
+    code: "/*\n * ESP32 RFID Access Control — Advanced\n * Web admin panel + named users + MQTT events\
+      \ + CSV log export\n *\n * Endpoints:\n *   GET  /          — Admin panel HTML\n *   GET  /api/users\
+      \ — List all users (JSON)\n *   POST /api/enrol — Enrol card: present card within 10s after request\n\
+      \ *   POST /api/revoke?uid=XX:XX — Revoke by UID\n *   GET  /api/log   — Access log (JSON)\n * \
+      \  GET  /api/log/csv — Download log as CSV\n *\n * Libraries: MFRC522, PubSubClient, WebServer (built-in)\n\
+      \ */\n#include <SPI.h>\n#include <MFRC522.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include\
+      \ <PubSubClient.h>\n#include <Preferences.h>\n#include <time.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\"\
+      ;\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   = \"192.168.1.100\";\n#define\
+      \ SS_PIN 5\n#define RST_PIN 27\n#define RELAY_PIN 26\n#define LED_GREEN 33\n#define LED_RED 32\n\
+      #define BUZZER 25\n\nMFRC522  rfid(SS_PIN, RST_PIN);\nWebServer server(80);\nWiFiClient net;\nPubSubClient\
+      \ mqtt(net);\nPreferences prefs;\n\nstruct User { String uid; String name; };\nstruct LogEntry {\
+      \ String uid; String name; bool granted; String ts; };\n\n#define MAX_USERS 20\n#define LOG_SIZE\
+      \  50\nUser     users[MAX_USERS];\nLogEntry log_[LOG_SIZE];\nint      userCount=0, logHead=0;\n\n\
+      bool enrolPending=false;\nunsigned long enrolDeadline=0;\nString enrolName;\n\nString nowStr(){\n\
+      \  struct tm t; char b[20]=\"\";\n  if(getLocalTime(&t)) strftime(b,sizeof(b),\"%Y-%m-%d %H:%M:%S\"\
+      ,&t);\n  return String(b);\n}\nString uidStr(byte* u,byte l){\n  String s; for(byte i=0;i<l;i++){if(i)s+=\"\
+      :\";s+=String(u[i],HEX);}\n  s.toUpperCase(); return s;\n}\nvoid loadUsers(){\n  userCount=prefs.getInt(\"\
+      count\",0);\n  for(int i=0;i<userCount;i++){\n    users[i].uid  = prefs.getString((\"u\"+String(i)+\"\
+      uid\").c_str(),\"\");\n    users[i].name = prefs.getString((\"u\"+String(i)+\"nam\").c_str(),\"\
+      User\");\n  }\n}\nvoid saveUsers(){\n  prefs.putInt(\"count\",userCount);\n  for(int i=0;i<userCount;i++){\n\
+      \    prefs.putString((\"u\"+String(i)+\"uid\").c_str(),users[i].uid);\n    prefs.putString((\"u\"\
+      +String(i)+\"nam\").c_str(),users[i].name);\n  }\n}\nvoid publishEvent(String uid,String name,bool\
+      \ ok){\n  if(!mqtt.connected()) return;\n  String j=\"{\"uid\":\"\"+uid+\"\",\"user\":\"\"+name+\"\
+      \",\"granted\":\"+(ok?\"true\":\"false\")+\",\"ts\":\"\"+nowStr()+\"\"}\";\n  mqtt.publish(\"esp32engine/rfid/events\"\
+      ,j.c_str());\n}\nvoid addLog(String uid,String name,bool ok){\n  log_[logHead%LOG_SIZE]={uid,name,ok,nowStr()};\n\
+      \  logHead++;\n  publishEvent(uid,name,ok);\n}\n\n// ── Web Handlers ────────────────────────────────────────────────\n\
+      void handleUsers(){\n  String j=\"[\";\n  for(int i=0;i<userCount;i++){\n    if(i) j+=\",\";\n \
+      \   j+=\"{\"uid\":\"\"+users[i].uid+\"\",\"name\":\"\"+users[i].name+\"\"}\";\n  }\n  j+=\"]\";\
+      \ server.send(200,\"application/json\",j);\n}\nvoid handleEnrol(){\n  enrolName=server.hasArg(\"\
+      name\")?server.arg(\"name\"):\"Unknown\";\n  enrolPending=true; enrolDeadline=millis()+10000;\n\
+      \  server.send(200,\"text/plain\",\"Present card within 10 seconds\");\n}\nvoid handleRevoke(){\n\
+      \  String uid=server.arg(\"uid\");\n  for(int i=0;i<userCount;i++){\n    if(users[i].uid==uid){\n\
+      \      users[i]=users[--userCount]; saveUsers();\n      server.send(200,\"text/plain\",\"Revoked\"\
+      ); return;\n    }\n  }\n  server.send(404,\"text/plain\",\"Not found\");\n}\nvoid handleLog(){\n\
+      \  String j=\"[\"; int count=min(logHead,LOG_SIZE);\n  for(int i=0;i<count;i++){\n    auto& e=log_[i];\
+      \ if(i) j+=\",\";\n    j+=\"{\"uid\":\"\"+e.uid+\"\",\"user\":\"\"+e.name+\"\",\"granted\":\"+(e.granted?\"\
+      true\":\"false\")+\",\"ts\":\"\"+e.ts+\"\"}\";\n  }\n  j+=\"]\"; server.send(200,\"application/json\"\
+      ,j);\n}\nvoid handleLogCSV(){\n  String csv=\"UID,User,Granted,Timestampn\";\n  for(int i=0;i<min(logHead,LOG_SIZE);i++){\n\
+      \    auto& e=log_[i];\n    csv+=e.uid+\",\"+e.name+\",\"+(e.granted?\"YES\":\"NO\")+\",\"+e.ts+\"\
+      n\";\n  }\n  server.sendHeader(\"Content-Disposition\",\"attachment; filename=access_log.csv\");\n\
+      \  server.send(200,\"text/csv\",csv);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  SPI.begin();\
+      \ rfid.PCD_Init();\n  pinMode(RELAY_PIN,OUTPUT); digitalWrite(RELAY_PIN,LOW);\n  pinMode(LED_GREEN,OUTPUT);\
+      \ pinMode(LED_RED,OUTPUT); pinMode(BUZZER,OUTPUT);\n  prefs.begin(\"rfid2\",false); loadUsers();\n\
+      \  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED) delay(400);\n  configTime(0,0,\"\
+      pool.ntp.org\");\n  mqtt.setServer(BROKER,1883);\n  mqtt.connect(\"rfid-controller\");\n  server.on(\"\
+      /api/users\",HTTP_GET,handleUsers);\n  server.on(\"/api/enrol\",HTTP_POST,handleEnrol);\n  server.on(\"\
+      /api/revoke\",HTTP_POST,handleRevoke);\n  server.on(\"/api/log\",HTTP_GET,handleLog);\n  server.on(\"\
+      /api/log/csv\",HTTP_GET,handleLogCSV);\n  server.begin();\n  Serial.printf(\"Admin panel: http://%s/n\"\
+      ,WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n  server.handleClient();\n  if(!mqtt.connected())\
+      \ mqtt.connect(\"rfid-controller\");\n  mqtt.loop();\n\n  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial())\
+      \ return;\n  String uid=uidStr(rfid.uid.uidByte,rfid.uid.size);\n\n  if(enrolPending && millis()<enrolDeadline){\n\
+      \    if(userCount<MAX_USERS){\n      users[userCount++]={uid,enrolName}; saveUsers();\n      Serial.printf(\"\
+      Enrolled: %s -> %sn\",uid.c_str(),enrolName.c_str());\n    }\n    enrolPending=false;\n    rfid.PICC_HaltA();\
+      \ rfid.PCD_StopCrypto1(); return;\n  }\n  enrolPending=false;\n\n  String name=\"Unknown\";\n  bool\
+      \ ok=false;\n  for(int i=0;i<userCount;i++){\n    if(users[i].uid==uid){ ok=true; name=users[i].name;\
+      \ break; }\n  }\n  addLog(uid,name,ok);\n  if(ok){\n    digitalWrite(LED_GREEN,HIGH); digitalWrite(RELAY_PIN,HIGH);\
+      \ delay(3000);\n    digitalWrite(RELAY_PIN,LOW);  digitalWrite(LED_GREEN,LOW);\n  } else {\n   \
+      \ for(int i=0;i<3;i++){\n      digitalWrite(LED_RED,HIGH);digitalWrite(BUZZER,HIGH);delay(150);\n\
+      \      digitalWrite(LED_RED,LOW); digitalWrite(BUZZER,LOW); delay(100);\n    }\n  }\n  rfid.PICC_HaltA();\
+      \ rfid.PCD_StopCrypto1();\n}"
+    code_filename: esp32-rfid-access-advanced.ino
+related_slugs:
+- esp32-motion-security-alert
+- esp32-smart-street-light
