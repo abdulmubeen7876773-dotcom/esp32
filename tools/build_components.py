@@ -15,6 +15,8 @@ from site_layout import (
     organization_schema,
     site_href,
     webpage_schema,
+    UI_JS_SRC,
+    SEARCH_JS_SRC,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -72,8 +74,8 @@ def index_html(components: list, categories: list) -> str:
 </section>
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 <script>
 document.querySelectorAll('.category-pill').forEach(function(btn) {{
   btn.addEventListener('click', function() {{

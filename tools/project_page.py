@@ -1,5 +1,5 @@
 from guide_mission import code_panel, illustration_placeholder
-from site_layout import badge_class, esc, site_href
+from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
 
 
 def project_section_heading(section_id: str, icon: str, title: str) -> str:
@@ -349,8 +349,8 @@ def render_golden_project_page(p: dict, *, head: str, header: str, footer: str) 
 {body}
 </main>
 {footer}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 <script src="/mission-guide.js" defer></script>
 </body>
 </html>"""

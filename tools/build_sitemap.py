@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
 from content_store import get_content_store
-from site_layout import PROJECTS_PAGE_SIZE, SITE_DOMAIN, esc, header_html, footer_html, head_html, projects_page_path
+from site_layout import PROJECTS_PAGE_SIZE, SITE_DOMAIN, esc, header_html, footer_html, head_html, projects_page_path, UI_JS_SRC
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -147,7 +147,7 @@ def write_sitemap_html(project_files: list[Path]) -> None:
 </section>
 </main>
 {footer_html()}
-<script src="/ui.js" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 </body>
 </html>"""
     SITEMAP_HTML.write_text(page, encoding="utf-8")

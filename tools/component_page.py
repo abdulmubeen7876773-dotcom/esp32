@@ -1,5 +1,5 @@
 from guide_mission import code_panel, illustration_placeholder
-from site_layout import badge_class, esc, site_href
+from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
 
 
 def component_section_heading(section_id: str, icon: str, title: str) -> str:
@@ -358,8 +358,8 @@ def render_component_page(component: dict, *, head: str, header: str, footer: st
 {body}
 </main>
 {footer}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 <script src="/mission-guide.js" defer></script>
 {component_faq_script()}
 </body>

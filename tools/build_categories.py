@@ -23,6 +23,7 @@ from site_layout import (
     sidebar_categories_html,
     site_href,
     webpage_schema,
+    UI_JS_SRC,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -132,7 +133,7 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
 </div>
 </main>
 {footer_html()}
-<script src="/ui.js" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 </body>
 </html>"""
 

@@ -13,6 +13,7 @@ from site_layout import (
     static_page_shell,
     webpage_schema,
     website_schema,
+    UI_JS_SRC,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -71,7 +72,7 @@ def not_found_page() -> str:
 </section>
 </main>
 {footer_html()}
-<script src="/ui.js" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 </body>
 </html>"""
 

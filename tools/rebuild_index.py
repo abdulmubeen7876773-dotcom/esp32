@@ -48,6 +48,8 @@ from site_layout import (
     filters_bar_html,
     category_hero_html,
     esc as layout_esc,
+    UI_JS_SRC,
+    SEARCH_JS_SRC,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -307,8 +309,8 @@ def home_html(projects):
 {home_v2_invitation()}
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 {home_v2_showcase_js()}
 </body>
 </html>
@@ -370,8 +372,8 @@ def projects_listing_html(
 </main>
 {footer_html()}
 <script src="/project-icons.js" defer></script>
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 <script src="/projects.js" defer></script>
 </body>
 </html>

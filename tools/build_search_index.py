@@ -69,7 +69,7 @@ def build_index() -> list:
 
 
 def search_page_html() -> str:
-    from site_layout import SITE_NAME, footer_html, head_html, header_html, organization_schema, webpage_schema
+    from site_layout import SITE_NAME, footer_html, head_html, header_html, organization_schema, webpage_schema, UI_JS_SRC, SEARCH_JS_SRC
 
     title = f"Search | {SITE_NAME}"
     desc = "Search components, projects, guides, downloads, and news on ESP32 Engine."
@@ -92,8 +92,8 @@ def search_page_html() -> str:
 </section>
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 </body>
 </html>"""
 

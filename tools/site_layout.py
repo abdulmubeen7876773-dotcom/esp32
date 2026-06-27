@@ -7,6 +7,9 @@ from project_icons import pick_icon, thumb_class, featured_cat_bar
 
 _cfg = load_site_settings()
 CSS_VERSION = _cfg["css_version"]
+JS_VERSION = _cfg.get("js_version", CSS_VERSION)
+UI_JS_SRC = f"/ui.js?v={JS_VERSION}"
+SEARCH_JS_SRC = f"/search.js?v={JS_VERSION}"
 SITE_DOMAIN = _cfg["site_domain"]
 SITE_NAME = _cfg["site_name"]
 ORG_NAME = _cfg["org_name"]
@@ -549,8 +552,8 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 </section>
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 </body>
 </html>
 """

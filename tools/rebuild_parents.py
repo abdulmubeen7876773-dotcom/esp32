@@ -31,6 +31,7 @@ from site_layout import (
     head_extras_html,
     site_href,
     webpage_schema,
+    UI_JS_SRC,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -424,7 +425,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 </div>
 </main>
 {footer_html()}
-<script src="/ui.js" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 <script src="/project.js?v={CSS_VERSION}" defer></script>
 </body>
 </html>"""

@@ -21,6 +21,8 @@ from site_layout import (
     organization_schema,
     site_href,
     webpage_schema,
+    UI_JS_SRC,
+    SEARCH_JS_SRC,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -206,8 +208,8 @@ def render_legacy_guide(guide: dict) -> str:
 </section>
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 {guide_faq_script()}
 </body>
 </html>"""
@@ -247,8 +249,8 @@ def render_mission_page(guide: dict) -> str:
 </section>
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 <script src="/mission-guide.js" defer></script>
 </body>
 </html>"""
@@ -319,8 +321,8 @@ def render_guides_index(guides: list[dict]) -> str:
 </section>
 </main>
 {footer_html()}
-<script src="/search.js" defer></script>
-<script src="/ui.js" defer></script>
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
 </body>
 </html>"""
 

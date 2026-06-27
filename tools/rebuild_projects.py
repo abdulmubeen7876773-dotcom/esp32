@@ -27,6 +27,7 @@ from site_layout import (
     json_ld_script,
     social_meta,
     analytics_config_script,
+    JS_VERSION,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -669,7 +670,7 @@ def render_page(d: dict) -> str:
 </div>
 </main>
 {footer_html("../")}
-<script src="../ui.js" defer></script>
+<script src="../ui.js?v={JS_VERSION}" defer></script>
 <script src="../project.js"></script>
 </body>
 </html>
