@@ -270,11 +270,20 @@ def website_schema() -> str:
     return json_ld_script(data)
 
 
-def social_meta(title: str, description: str, url: str, og_type: str = "website") -> str:
+def social_meta(
+    title: str,
+    description: str,
+    url: str,
+    og_type: str = "website",
+    image: str = "",
+) -> str:
     t = esc(title)
     d = esc(description)
     u = esc(url)
-    img = esc(OG_IMAGE)
+    img_src = image or OG_IMAGE
+    if img_src.startswith("/"):
+        img_src = SITE_DOMAIN.rstrip("/") + img_src
+    img = esc(img_src)
     return f"""<meta property="og:type" content="{esc(og_type)}">
 <meta property="og:site_name" content="{esc(SITE_NAME)}">
 <meta property="og:title" content="{t}">
@@ -389,6 +398,7 @@ def head_html(
     include_gsc: bool = True,
     robots: str = "index,follow,max-image-preview:large",
     include_index_redirect: bool = False,
+    og_image: str = "",
 ) -> str:
     t = esc(title)
     d = esc(description)
@@ -406,7 +416,7 @@ def head_html(
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 {extras}
-{social_meta(title, description, canon, og_type)}
+{social_meta(title, description, canon, og_type, og_image)}
 {pinterest}
 {gsc}
 {redirect}
@@ -1263,8 +1273,16 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
             if len(desc) > 88:
                 desc = desc[:85].rstrip() + "…"
             feat = '<span class="v3-pick-badge">Featured</span>' if p.get("featured") else ""
+            image = p.get("featured_image") or p.get("image") or ""
+            image_html = ""
+            if image:
+                image_html = (
+                    f'<span class="v3-pick-art" aria-hidden="true">'
+                    f'<img src="{esc(image)}" alt="" loading="lazy" decoding="async"></span>'
+                )
             rows.append(
                 f'<a class="v3-pick-row" href="{site_href(f"projects/{p["slug"]}.html")}">'
+                f"{image_html}"
                 f'<span class="v3-pick-row-main">'
                 f'{feat}<strong>{esc(p["title"])}</strong>'
                 f'<span class="v3-pick-row-desc">{esc(desc)}</span>'

@@ -311,6 +311,13 @@ def project_hero_html(p: dict, category: str) -> str:
     icon = proj.get("icon", "🚀")
     title = p.get("title", "")
     desc = p.get("description", "")
+    hero_image = p.get("hero_image") or p.get("featured_image") or ""
+    hero_art = ""
+    if hero_image:
+        hero_art = (
+            f'<div class="project-hero-art">'
+            f'<img src="{esc(hero_image)}" alt="" loading="eager" decoding="async"></div>'
+        )
     return f"""<div class="project-hero-band">
   <section class="wrap project-hero">
     <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href("projects.html")}">Projects</a></li><li aria-current="page">{esc(title)}</li></ol></nav>
@@ -324,6 +331,7 @@ def project_hero_html(p: dict, category: str) -> str:
       {project_meta_badges(p)}
       <span class="project-hero-icon" aria-hidden="true">{esc(icon)}</span>
     </div>
+    {hero_art}
   </section>
 </div>"""
 

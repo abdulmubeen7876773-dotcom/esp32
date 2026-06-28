@@ -245,6 +245,7 @@ def project_json_record(p: dict) -> dict:
         "levels": p.get("levels", LEVELS),
         "readMin": p.get("readMin", 12),
         "featured": bool(p.get("featured")),
+        "featured_image": p.get("featured_image") or p.get("image") or "",
     }
 
 

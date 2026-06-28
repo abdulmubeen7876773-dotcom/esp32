@@ -172,6 +172,8 @@ def build_head(parent: dict, hardware: dict) -> str:
         faq_schema.append(
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
         )
+    image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or OG_IMAGE
+    absolute_image = image if image.startswith("http") else f"{DOMAIN}{image}"
     article = {
         "@context": "https://schema.org",
         "@type": "TechArticle",
@@ -179,7 +181,7 @@ def build_head(parent: dict, hardware: dict) -> str:
         "description": desc,
         "datePublished": "2026-06-14",
         "dateModified": "2026-06-18",
-        "image": OG_IMAGE,
+        "image": absolute_image,
         "author": {"@type": "Organization", "name": ORG_NAME, "url": DOMAIN + "/"},
         "publisher": {
             "@type": "Organization",
@@ -215,7 +217,7 @@ def build_head(parent: dict, hardware: dict) -> str:
             {"@type": "ListItem", "position": 3, "name": title, "item": url},
         ],
     }
-    social = social_meta(f"{title} | {SITE_NAME}", desc, url, "article")
+    social = social_meta(f"{title} | {SITE_NAME}", desc, url, "article", image)
     return f"""<title>{esc(title)} | {esc(SITE_NAME)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{url}">
@@ -320,7 +322,8 @@ def render_golden_parent(parent: dict) -> str:
         ]
     )
     schema = organization_schema() + webpage_schema(title, desc, path) + crumbs
-    head = head_html("", title, desc, canonical_path=path, og_type="article", extra_schema=schema)
+    og_image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or ""
+    head = head_html("", title, desc, canonical_path=path, og_type="article", extra_schema=schema, og_image=og_image)
     return render_golden_project_page(
         parent,
         head=head,
@@ -335,6 +338,13 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     cat_slug = slug_cat(cat)
     tc = icon_thumb_class(cat)
     icon = pick_icon(cat)
+    hero_image = parent.get("hero_image") or parent.get("featured_image") or ""
+    if hero_image:
+        hero_media = (
+            f'<img class="project-hero-art-img" src="{esc(hero_image)}" alt="" loading="eager" decoding="async">'
+        )
+    else:
+        hero_media = icon
     radios = []
     labels = []
     for i, lv in enumerate(LEVELS):
@@ -398,7 +408,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
           <div class="article-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span>{level_badges}</div>
           <p class="article-lead">{esc(parent['description'])}</p>
         </div>
-        <div class="article-thumb project-hero-image {tc} parent-thumb">{icon}</div>
+        <div class="article-thumb project-hero-image {tc} parent-thumb">{hero_media}</div>
       </div>
     </header>
     <div class="difficulty-switcher">

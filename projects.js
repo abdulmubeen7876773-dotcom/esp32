@@ -26,11 +26,22 @@
     return base + ' min read';
   }
 
-  function thumbHtml(category) {
+  function thumbHtml(category, image) {
     var icons = window.PROJECT_ICONS || {};
     var thumbs = window.PROJECT_THUMBS || {};
     var svg = icons[category] || icons.__default__ || '';
     var cls = thumbs[category] || 't-default';
+    if (image) {
+      return (
+        '<div class="card-media card-media--has-image"><img class="card-media-img" src="' +
+        esc(image) +
+        '" alt="" loading="lazy" decoding="async"><div class="card-media-fallback ' +
+        cls +
+        '">' +
+        svg +
+        '</div></div>'
+      );
+    }
     return '<div class="card-media"><div class="card-thumb ' + cls + '">' + svg + '</div></div>';
   }
 
@@ -61,7 +72,9 @@
       '" data-featured="' +
       (p.featured ? '1' : '0') +
       '">' +
-      thumbHtml(p.category) +
+      '<div class="card-media-wrap">' +
+      thumbHtml(p.category, p.featured_image || p.image || '') +
+      '</div>' +
       '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
       esc(shortCategory(p.category)) +
       '</span>' +
