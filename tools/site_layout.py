@@ -928,6 +928,25 @@ _V2_SVG_SECURITY = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true">
 _V2_SVG_CLIMATE = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2cG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#A855F7" stop-opacity=".9"/><stop offset="1" stop-color="#0099FF" stop-opacity=".5"/></linearGradient><filter id="v2cGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 150 L140 60 L230 150 L230 240 L50 240 Z" stroke="url(#v2cG)" stroke-width="2.5" fill="rgba(168,85,247,0.05)" stroke-linejoin="round" filter="url(#v2cGl)"/><rect x="118" y="200" width="44" height="40" rx="3" stroke="rgba(168,85,247,0.38)" stroke-width="1.5" fill="rgba(168,85,247,0.05)"/><rect x="72" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="90" y1="175" x2="90" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="72" y1="190" x2="108" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="172" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="190" y1="175" x2="190" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="172" y1="190" x2="208" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="104" y="120" width="72" height="50" rx="8" stroke="rgba(168,85,247,0.48)" stroke-width="1.5" fill="rgba(168,85,247,0.08)"/><text x="140" y="143" text-anchor="middle" fill="#A855F7" font-size="16" font-weight="700" font-family="JetBrains Mono,monospace">22°C</text><text x="140" y="159" text-anchor="middle" fill="rgba(168,85,247,0.55)" font-size="9" font-family="Inter,sans-serif">AUTO · COOL</text><circle cx="35" cy="75" r="4" fill="rgba(168,85,247,0.48)"/><circle cx="245" cy="75" r="4" fill="rgba(0,153,255,0.48)"/><text x="35" y="65" text-anchor="middle" fill="rgba(168,85,247,0.38)" font-size="8" font-family="Inter,sans-serif">WiFi</text><text x="245" y="65" text-anchor="middle" fill="rgba(0,153,255,0.38)" font-size="8" font-family="Inter,sans-serif">Cloud</text><line x1="35" y1="79" x2="55" y2="100" stroke="rgba(168,85,247,0.18)" stroke-width="1" stroke-dasharray="3,3"/><line x1="245" y1="79" x2="225" y2="100" stroke="rgba(0,153,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/></svg>"""
 
 
+_V2_TRUST_ICON_PROJECTS = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.8" rx="3"/></svg>'
+_V2_TRUST_ICON_GUIDES = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4h9a3 3 0 0 1 3 3v13H9a3 3 0 0 0-3-3V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8h6M9 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+_V2_TRUST_ICON_COMPONENTS = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h3M4 14h3M17 10h3M17 14h3M10 4v3M14 4v3M10 17v3M14 17v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+_V2_TRUST_ICON_FREE = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7 9 18l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+_V2_TRUST_ICON_RESPONSIVE = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><rect x="17" y="9" width="3" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><path d="M8 16h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+_V2_TRUST_ICON_HARDWARE = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 8h8v8H8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 3v5M12 16v5M3 12h5M16 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>'
+
+_V2_TRUST_STRIP = """<div class="v2-trust-strip" aria-label="ESP32 Engine platform highlights">
+  <div class="wrap v2-trust-strip-inner">
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_PROJECTS + """<strong>50+</strong><span>Projects</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_GUIDES + """<strong>40+</strong><span>Guides</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_COMPONENTS + """<strong>7</strong><span>Components</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_FREE + """<strong>100%</strong><span>Free</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_RESPONSIVE + """<span>Responsive</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_HARDWARE + """<span>Real Hardware</span></span>
+  </div>
+</div>"""
+
+
 def home_v2_declaration() -> str:
     """Section 1 — Homepage v2: The Declaration (full-viewport hero)."""
     return f"""<section class="v2-declaration" aria-labelledby="v2-hero-heading">
@@ -972,6 +991,7 @@ def home_v2_proof() -> str:
         for i in range(len(panels))
     )
     return f"""<section class="v2-proof" aria-labelledby="v2-proof-heading">
+  {_V2_TRUST_STRIP}
   <div class="v2-proof-header">
     <div class="wrap">
       <h2 id="v2-proof-heading" class="v2-proof-heading">What engineers build here.</h2>
