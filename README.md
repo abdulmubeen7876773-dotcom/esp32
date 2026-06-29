@@ -11,17 +11,17 @@ The world's friendliest ESP32 learning platform — static-first, no server requ
 **Edit content** in `content/`, then rebuild:
 
 ```bash
-py tools/build_all.py
+build.bat
 ```
 
 Push to `main` and GitHub Actions rebuilds + deploys automatically.
 
-**First time on this machine:**
+## Developer Setup
 
-```bash
-pip install -r requirements.txt
-py tools/build_all.py
-```
+1. Clone the repository.
+2. Run `setup.bat`.
+3. Run `build.bat`.
+4. Done.
 
 ---
 
@@ -51,7 +51,7 @@ py tools/build_all.py
 ## Coming back after a break?
 
 1. Edit YAML in `content/`
-2. Run `py tools/build_all.py`
+2. Run `build.bat`
 3. Push to `main`
 
 See [docs/guides/CONTENT_EDITOR_GUIDE.md](docs/guides/CONTENT_EDITOR_GUIDE.md) for step-by-step instructions.
