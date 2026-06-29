@@ -35,6 +35,7 @@ from site_layout import (
     card_media_html,
     home_v3_journey,
     home_v3_roadmap,
+    home_v3_academy,
     home_v3_mission_feature,
     home_v3_top_picks,
     home_v3_why,
@@ -303,6 +304,7 @@ def home_html(projects):
 {home_v2_proof()}
 {home_v3_journey()}
 {home_v3_roadmap(guides)}
+{home_v3_academy()}
 {home_v3_top_picks(catalog, guides, components)}
 {home_v3_mission_feature(guides)}
 {home_v3_why()}

@@ -1272,6 +1272,58 @@ def home_v3_roadmap(guides: list) -> str:
 </section>"""
 
 
+def home_v3_academy() -> str:
+    """Homepage Academy exposure using existing section, row, badge, and CTA styles."""
+    arrow = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    missions = [
+        ("Mission 01", "Blink LED", "Complete", "guides/blink-led-esp32.html"),
+        ("Mission 02", "Button Controls LED", "Complete", "guides/button-led-control.html"),
+        ("Mission 03", "Digital Inputs & Floating Pins", "Complete", "guides/digital-inputs-floating-pins.html"),
+    ]
+    mission_rows = "".join(
+        f'<a class="v3-pick-row" href="{site_href(href)}">'
+        f'<span class="v3-pick-row-main">'
+        f'<span class="v3-pick-badge">{esc(number)}</span>'
+        f'<strong>{esc(title)}</strong>'
+        f'<span class="v3-pick-row-desc">Foundation Course step marked complete.</span>'
+        f'</span>'
+        f'<span class="v3-pick-row-meta">{esc(status)} {arrow}</span>'
+        f'</a>'
+        for number, title, status, href in missions
+    )
+    mission_rows += (
+        '<div class="v3-pick-row">'
+        '<span class="v3-pick-row-main">'
+        '<span class="v3-pick-badge">Mission 04</span>'
+        '<strong>Pull-up vs Pull-down Resistors</strong>'
+        '<span class="v3-pick-row-desc">Coming next in the Foundation Course.</span>'
+        '</span>'
+        '<span class="v3-pick-row-meta">Coming Next</span>'
+        '</div>'
+    )
+    return f"""<section class="v3-top-picks reveal" aria-labelledby="v3-academy-heading">
+  <div class="wrap">
+    <p class="v3-top-picks-eyebrow">ESP32 Academy</p>
+    <h2 id="v3-academy-heading" class="v3-top-picks-heading">Course 01 — ESP32 Foundations</h2>
+    <p class="v3-top-picks-sub">A structured learning journey from your first LED to confident digital inputs.</p>
+    <div class="v3-top-picks-grid">
+      <div class="v3-top-picks-col">
+        <h3 class="v3-top-picks-col-title">Foundation Progress</h3>
+        <div class="v3-pick-list">{mission_rows}</div>
+        <a class="v3-top-picks-more" href="{site_href("guides/digital-inputs-floating-pins.html")}">Continue Learning {arrow}</a>
+      </div>
+      <div class="v3-top-picks-col">
+        <h3 class="v3-top-picks-col-title">Academy Links</h3>
+        <div class="v3-pick-list">
+          <a class="v3-pick-row" href="{site_href("learning.html")}"><span class="v3-pick-row-main"><strong>Learning Paths</strong><span class="v3-pick-row-desc">Choose Beginner, IoT, Robotics, Smart Home, and more.</span></span><span class="v3-pick-row-meta">Open {arrow}</span></a>
+          <a class="v3-pick-row" href="{site_href("guides.html#missions")}"><span class="v3-pick-row-main"><strong>Foundation Roadmap</strong><span class="v3-pick-row-desc">See the full mission list and continue in order.</span></span><span class="v3-pick-row-meta">View {arrow}</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>"""
+
+
 def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
     """Section — Top 3 projects, guides, and components from live catalog."""
     arrow = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
