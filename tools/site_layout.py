@@ -562,7 +562,7 @@ def static_page_shell(active: str, title: str, description: str, body: str, cano
 <head>
 {head_html("", title, description, canonical_path=canonical_path, extra_schema=schema)}
 </head>
-<body>
+<body class="{esc(active)}-page">
 <main>
 {header_html(active)}
 <section class="section-block wrap page-head static-page">
