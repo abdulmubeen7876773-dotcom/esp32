@@ -80,7 +80,9 @@ def share_actions_html(component: dict) -> str:
 def toc_html() -> str:
     items = [
         ("eli12", "Overview"),
+        ("applications", "Applications"),
         ("quick-facts", "Quick facts"),
+        ("how-it-works", "How it works"),
         ("specs", "Specs"),
         ("pinout", "Pinout"),
         ("wiring", "Wiring"),
@@ -91,6 +93,16 @@ def toc_html() -> str:
     return '<aside class="component-toc" aria-label="Component page contents"><strong>On this page</strong>' + "".join(
         f'<a href="#{sid}">{label}</a>' for sid, label in items
     ) + "</aside>"
+
+
+def text_section_html(section_id: str, icon: str, title: str, body: str) -> str:
+    body = (body or "").strip()
+    if not body:
+        return ""
+    return f"""<section class="component-section" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {component_section_heading(section_id, icon, title)}
+  <div class="component-section-prose">{_paragraphs(body)}</div>
+</section>"""
 
 
 def quick_facts_html(facts: list) -> str:
@@ -116,12 +128,31 @@ def quick_facts_html(facts: list) -> str:
 def specs_html(specs: list, library: str = "") -> str:
     if not specs and not library:
         return ""
-    items = "".join(f"<li>{esc(s)}</li>" for s in specs)
+    structured = specs and all(isinstance(s, dict) for s in specs)
+    if structured:
+        rows = []
+        for item in specs:
+            rows.append(
+                f"""<tr>
+  <th scope="row">{esc(item.get("name", ""))}</th>
+  <td>{esc(item.get("value", ""))}</td>
+  <td>{esc(item.get("why", item.get("note", "")))}</td>
+</tr>"""
+            )
+        specs_body = f"""<div class="wiring-table-wrap">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody>{"".join(rows)}</tbody>
+  </table>
+</div>"""
+    else:
+        items = "".join(f"<li>{esc(s)}</li>" for s in specs)
+        specs_body = f'<ul class="component-spec-list">{items}</ul>'
     library_html = f'<p class="component-section-lead">Arduino library: <strong>{esc(library)}</strong></p>' if library else ""
     return f"""<section class="component-section" id="specs" aria-labelledby="specs-heading">
   {component_section_heading("specs", "02", "Technical Specifications")}
   {library_html}
-  <ul class="component-spec-list">{items}</ul>
+  {specs_body}
 </section>"""
 
 
@@ -220,11 +251,14 @@ def code_section_html(component: dict) -> str:
         hidden = "" if index == 0 else " hidden"
         tabs.append(f'<button class="component-code-tab{active}" type="button" data-code-tab="{key}" aria-selected="{str(index == 0).lower()}">{label}</button>')
         panels.append(f'<div class="component-code-panel{active}" data-code-panel="{key}"{hidden}>{code_panel(_framework_code(component, key, code))}</div>')
+    notes = (code.get("notes") or code.get("explanation") or "").strip()
+    notes_html = f'<div class="component-section-prose">{_paragraphs(notes)}</div>' if notes else ""
     return f"""<section class="component-section" id="code" aria-labelledby="code-heading">
   {component_section_heading("code", "05", "Code Examples")}
   <p class="component-section-lead">Use the same wiring with Arduino IDE, PlatformIO, or ESP-IDF. Start with Arduino, then graduate when you need a larger project structure.</p>
   <div class="component-code-tabs" role="tablist" aria-label="Code framework options">{"".join(tabs)}</div>
   {"".join(panels)}
+  {notes_html}
 </section>"""
 
 
@@ -244,6 +278,27 @@ def list_panel_html(section_id: str, icon: str, title: str, items: list, css_cla
 def troubleshooting_html(items: list) -> str:
     if not items:
         return ""
+    structured = items and all(isinstance(item, dict) and item.get("cause") for item in items)
+    if structured:
+        rows = []
+        for item in items:
+            rows.append(
+                f"""<tr>
+  <th scope="row">{esc(item.get("problem", ""))}</th>
+  <td>{esc(item.get("cause", ""))}</td>
+  <td>{esc(item.get("fix", ""))}</td>
+</tr>"""
+            )
+        body = f"""<div class="wiring-table-wrap">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Problem</th><th scope="col">Possible cause</th><th scope="col">Solution</th></tr></thead>
+    <tbody>{"".join(rows)}</tbody>
+  </table>
+</div>"""
+        return f"""<section class="component-section component-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  {component_section_heading("troubleshooting", "06", "Troubleshooting")}
+  {body}
+</section>"""
     rows = []
     for item in items:
         if isinstance(item, str):
@@ -381,7 +436,9 @@ def render_component_body(component: dict) -> str:
     library = component.get("library", "")
     return f"""<article class="component-journey">
 {eli12_html(component.get("eli12", ""))}
+{list_panel_html("applications", "A", "Where You Use It", component.get("applications", []), "component-applications")}
 {quick_facts_html(derive_quick_facts(component))}
+{text_section_html("how-it-works", "H", "How It Works", component.get("how_it_works", ""))}
 {specs_html(component.get("specs", []), library)}
 {pinout_html(component)}
 {wiring_html(derive_wiring(component))}
@@ -391,6 +448,7 @@ def render_component_body(component: dict) -> str:
 {troubleshooting_html(component.get("troubleshooting", []))}
 {related_links_html("guides", "G", "Related Guides", component.get("related_guides", []), "component-guides")}
 {related_links_html("projects", "P", "Related Projects", component.get("related_projects", []), "component-projects")}
+{related_links_html("related-components", "C", "Related Components", component.get("related_components", []), "component-related-components")}
 {faq_section_html(component.get("faqs", []))}
 {downloads_html(component)}
 </article>"""
