@@ -1,379 +1,361 @@
-slug: esp32-smart-thermostat
-title: ESP32 Smart Thermostat
-category: Home Automation
-image: /assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg
-featured_image: /assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg
-hero_image: /assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg
-placeholder_image: /assets/visuals/projects/placeholders/esp32-smart-thermostat-placeholder.svg
-og_image: /assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg
-description: A Wi-Fi smart thermostat that reads temperature and humidity, switches a relay for heating
-  or cooling, and serves a live browser dashboard — all running on a single ESP32.
-meta_description: Build an ESP32 smart thermostat with DHT22, relay control, OLED display, and a Wi-Fi
-  web dashboard. Three difficulty levels from basic threshold control to full MQTT Home Assistant integration.
-source_base: esp32-smart-thermostat-legacy-import
-sensor: DHT22 Pin 2 (DATA)
-output: Relay IN
-featured: false
-date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
-status: needs_polish
-import_tier: 2
-import_source: batch-php
-hardware:
-  sensor_pin: GPIO 4
-  output_pin: GPIO 26
-  sensor_name: DHT22 Pin 2 (DATA)
-  output_name: Relay IN
-  wiring:
-  - component: DHT22 Pin 1 (VCC)
-    pin: 3.3 V
-  - component: DHT22 Pin 2 (DATA)
-    pin: GPIO 4
-  - component: DHT22 Pin 4 (GND)
-    pin: GND
-  - component: Relay IN
-    pin: GPIO 26
-  - component: Relay VCC
-    pin: VIN (5 V)
-  - component: Relay GND
-    pin: GND
-levels:
-  beginner:
-    level: beginner
-    overview_html: '<p>In this beginner project you build a <strong>temperature-controlled relay switch</strong>
-      using an ESP32 DevKit and a DHT22 sensor. Every five seconds the ESP32 reads the current temperature.
-      When it climbs above your chosen threshold — default 25 °C — GPIO 26 goes HIGH and energises a 5
-      V relay module, which can switch a fan, air conditioner, or space heater.</p>
-
-
-      <p>This project teaches the three core pillars of every embedded system: <strong>sense, decide,
-      act</strong>. You will learn how to use the Adafruit DHT library, compare float values against a
-      threshold, and drive a digital output to switch a real-world load. The relay is an electromagnetically
-      operated switch that lets your low-power ESP32 safely control mains-voltage appliances without any
-      electrical contact between the control and power circuits.</p>
-
-
-      <p>By the end you will have a fully automatic temperature controller. Adjust <code>TEMP_THRESHOLD</code>
-      at the top of the sketch to set your desired cut-in temperature without touching any other code.
-      The project is a foundation for the intermediate and advanced levels, where you add an OLED display,
-      web dashboard, and MQTT smart-home integration.</p>
-
-
-      <p><strong>What you will learn:</strong> DHT22 wiring with pull-up resistor, reading temperature
-      and humidity, basic relay control, digital output logic, serial debugging.</p>'
-    components:
-    - 1× ESP32 DevKit V1 (30-pin or 38-pin) — Any standard ESP32 board
-    - 1× DHT22 Temperature & Humidity Sensor — More accurate than DHT11 — ±0.5 °C
-    - 1× 5 V Single-Channel Relay Module — Optocoupler-isolated type for safety
-    - 1× 10 kΩ Resistor — Pull-up for DHT22 data line
-    - 1× Breadboard (400-tie or larger)
-    - 1× Jumper Wires (male-to-male) — ~20 assorted
-    - 1× USB Micro-B Cable — Programming and power
-    wiring:
-    - - DHT22 Pin 1 (VCC)
-      - 3.3 V
-      - Do NOT use 5 V — DHT22 is 3.3 V tolerant
-    - - DHT22 Pin 2 (DATA)
-      - GPIO 4
-      - Place 10 kΩ pull-up between DATA and 3.3 V
-    - - DHT22 Pin 4 (GND)
-      - GND
-      - ''
-    - - Relay IN
-      - GPIO 26
-      - Active-HIGH on most modules; check your datasheet
-    - - Relay VCC
-      - VIN (5 V)
-      - Relay coil needs 5 V — use VIN when powered via USB
-    - - Relay GND
-      - GND
-      - ''
-    how:
-    - 'DHT22 Protocol: The DHT22 uses a single-wire protocol requiring a 10 kΩ pull-up resistor to keep
-      the data line HIGH when idle. Without it, readings fail. The library handles all timing automatically.'
-    - '5-Second Sample Interval: delay(5000) prevents reading the sensor faster than its 2-second minimum
-      interval, which causes "nan" errors. It also gives the ESP32 CPU a rest during which it draws less
-      power.'
-    - 'isnan() Guard: If a read fails (bad wiring, noise), the library returns NaN (Not a Number). The
-      isnan() check catches this and skips the bad sample instead of accidentally switching the relay
-      on corrupted data.'
-    - 'Threshold Comparison: A simple >= comparison decides relay state. Adjust TEMP_THRESHOLD once at
-      the top of the file. The relay activates for cooling loads (fan, AC) when above threshold, or for
-      heating loads (heater) when below — swap HIGH/LOW in the if/else branches to invert.'
-    - 'Active-HIGH vs Active-LOW Relays: Most relay modules with an optocoupler activate when IN is HIGH.
-      Some older "active-LOW" modules activate when IN is LOW. If your relay clicks on at boot or behaves
-      inverted, swap HIGH and LOW in the sketch and set the initial state accordingly.'
-    apps:
-    - Automatic fan controller for 3D printer enclosure or electronics cabinet
-    - Server rack over-temperature emergency shutdown
-    - Reptile vivarium basking-spot heat lamp controller
-    - Home brewing fermentation temperature regulation
-    - Seedling germination heating mat controller
-    troubleshooting:
-    - - Serial Monitor prints "Sensor read failed" on every cycle
-      - 1) Verify DHT22 is on 3.3 V, not 5 V. 2) Confirm the 10 kΩ pull-up is between DATA and 3.3 V.
-        3) Try a 4.7 kΩ resistor — some clone sensors prefer it. 4) Check the DHT_PIN definition matches
-        your physical GPIO.
-    - - Relay chatters ON/OFF rapidly when temperature is near threshold
-      - 'Add a 2 °C hysteresis band: turn ON at threshold + 1 and OFF at threshold - 1. This avoids the
-        relay toggling every sample when temperature hovers at the setpoint.'
-    - - Temperature reads 5–10 °C higher than actual room temperature
-      - The ESP32 radiates heat during operation. Move the DHT22 at least 5 cm away from the board. If
-        using Wi-Fi (later levels), the RF transceiver adds additional heat; enclosing both in a box makes
-        this worse.
-    upgrades:
-    - Add hysteresis (2 °C dead-band) to prevent relay chattering
-    - Wire an LED indicator so relay state is visible without a computer
-    - Add a push button on GPIO 27 to force-override the relay manually
-    - Log readings to SD card for a week of temperature history
-    code: "/*\n * ESP32 Smart Thermostat — Beginner\n * Switches a relay ON when temperature exceeds TEMP_THRESHOLD.\n\
-      \ * Reads DHT22 every 5 s. Logs readings to Serial Monitor.\n *\n * Wiring:\n *   DHT22 DATA → GPIO\
-      \ 4  (+ 10 kΩ pull-up to 3.3 V)\n *   Relay IN   → GPIO 26\n *\n * Library: \"DHT sensor library\"\
-      \ by Adafruit (Library Manager)\n */\n#include <DHT.h>\n\n#define DHT_PIN        4\n#define DHT_TYPE\
-      \       DHT22\n#define RELAY_PIN      26\n#define TEMP_THRESHOLD 25.0f   // Change this to your\
-      \ desired cut-in temp (°C)\n\nDHT dht(DHT_PIN, DHT_TYPE);\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, LOW);   // Relay OFF at boot\n  dht.begin();\n\
-      \  Serial.printf(\"Thermostat started — threshold: %.1f °Cn\", TEMP_THRESHOLD);\n}\n\nvoid loop()\
-      \ {\n  delay(5000);   // DHT22 min sample interval: 2 s; 5 s is safe\n\n  float h = dht.readHumidity();\n\
-      \  float t = dht.readTemperature();   // Default: Celsius\n\n  if (isnan(h) || isnan(t)) {\n   \
-      \ Serial.println(\"Sensor read failed — check wiring and pull-up resistor.\");\n    return;\n  }\n\
-      \n  Serial.printf(\"Temp: %.1f °C  |  Hum: %.1f %%  |  \", t, h);\n\n  if (t >= TEMP_THRESHOLD)\
-      \ {\n    digitalWrite(RELAY_PIN, HIGH);\n    Serial.println(\"Relay ON  (cooling active)\");\n \
-      \ } else {\n    digitalWrite(RELAY_PIN, LOW);\n    Serial.println(\"Relay OFF\");\n  }\n}"
-    code_filename: esp32-smart-thermostat-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: '<p>At the intermediate level you add a <strong>0.96-inch OLED display</strong> for
-      local status readout and a <strong>Wi-Fi web dashboard</strong> so you can monitor readings and
-      change the setpoint from any browser on your network — no app required, no cloud required, just
-      a local IP address.</p>
-
-
-      <p>The dashboard auto-refreshes every 3 seconds using a small JavaScript fetch() loop. A number
-      input lets you type a new threshold; the ESP32 saves it instantly to NVS flash via the Preferences
-      library so the setting survives power cuts. The OLED shows temperature, humidity, relay state, and
-      current threshold locally even when no browser is open.</p>
-
-
-      <p>You will learn: the ESP32 WebServer library, serving HTML/CSS/JS from PROGMEM, handling HTTP
-      GET routes, building a JSON data endpoint, and storing persistent settings without needing an EEPROM
-      chip. You will also learn non-blocking timing with millis() so the web server stays responsive while
-      sensor reads happen in the background.</p>'
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× DHT22 Sensor + 10 kΩ resistor — Same wiring as beginner level
-    - 1× 5 V Relay Module
-    - 1× 0.96" OLED Display (SSD1306, I2C) — 128×64 px, I2C address 0x3C (most common)
-    - 1× Jumper wires
-    wiring:
-    - - DHT22 DATA
-      - GPIO 4
-      - 10 kΩ pull-up to 3.3 V
-    - - Relay IN
-      - GPIO 26
-      - ''
-    - - OLED SDA
-      - GPIO 21
-      - I2C data — default ESP32 I2C bus
-    - - OLED SCL
-      - GPIO 22
-      - I2C clock
-    - - OLED VCC
-      - 3.3 V
-      - ''
-    - - OLED GND
-      - GND
-      - ''
-    how:
-    - 'Non-blocking Loop: server.handleClient() is called on every loop iteration to process incoming
-      HTTP requests. Sensor reading uses a millis() timer instead of delay() so the web server never blocks
-      mid-request.'
-    - 'PROGMEM HTML: The HTML/CSS/JS dashboard is stored in flash memory using the PROGMEM keyword, not
-      RAM. With 520 KB RAM on the ESP32 this matters less than on Arduino, but the pattern keeps heap
-      free for the web server buffers.'
-    - 'JSON Data Endpoint: GET /data returns a small JSON string. The browser JavaScript calls this every
-      3 seconds and updates the DOM without reloading the page. This pattern (separate HTML and API endpoints)
-      is the same approach used by full-stack web applications.'
-    - 'Persistent Setpoint: Preferences wraps ESP32''s built-in NVS (Non-Volatile Storage) flash. putFloat("sp",
-      value) writes in under 1 ms with no wear concern for this use case (100,000+ write cycles rated).
-      The threshold survives firmware resets, power cuts, and watchdog reboots.'
-    - 'OLED Update: updateOLED() clears the display buffer, renders four lines of text at two different
-      font sizes, then calls display() to push the buffer to the screen via I2C. Calling display() is
-      the expensive step; always buffer all drawing before committing.'
-    apps: []
-    troubleshooting:
-    - - Cannot reach the dashboard in a browser
-      - 1) Confirm SSID and PASSWORD are correct. 2) Check Serial Monitor for the assigned IP. 3) Ensure
-        your computer is on the same network (2.4 GHz — ESP32 does not support 5 GHz). 4) Temporarily
-        disable Windows Firewall to rule out port blocking.
-    - - OLED shows nothing or garbled output
-      - Run an I2C scanner sketch to find your display's address. Some SSD1306 modules use 0x3D instead
-        of 0x3C. Change the address in oled.begin(SSD1306_SWITCHCAPVCC, 0x3D).
-    - - Setpoint resets to 25 °C after every restart
-      - The Preferences namespace must match between putFloat and getFloat. Both must use "thermo" (the
-        first argument to prefs.begin()). If you cloned from beginner and renamed the namespace, the stored
-        key is not found and falls back to 25.0.
-    upgrades:
-    - Assign a static IP or use mDNS (WiFi.setHostname("thermostat")) to access via http://thermostat.local
-    - Add a 7-day temperature history graph using Chart.js fetched from a /history endpoint
-    - Add a second relay for heating so the board can control both cooling and heating automatically
-    code: "/*\n * ESP32 Smart Thermostat — Intermediate\n * Adds: OLED display, Wi-Fi web dashboard, persistent\
-      \ setpoint (NVS)\n * Libraries: DHT (Adafruit), Adafruit_SSD1306, Adafruit_GFX\n *            WebServer\
-      \ & Preferences (ESP32 built-in)\n */\n#include <WiFi.h>\n#include <WebServer.h>\n#include <Preferences.h>\n\
-      #include <DHT.h>\n#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n\
-      // ── CONFIGURE THESE ──────────────────────────────────────────────\nconst char* SSID     = \"\
-      YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\n// ────────────────────────────────────────────────────────────────\n\
-      \n#define DHT_PIN   4\n#define DHT_TYPE  DHT22\n#define RELAY_PIN 26\n\nDHT          dht(DHT_PIN,\
-      \ DHT_TYPE);\nWebServer    server(80);\nPreferences  prefs;\nAdafruit_SSD1306 oled(128, 64, &Wire,\
-      \ -1);\n\nfloat g_temp = 0, g_hum = 0, g_threshold = 25.0f;\nbool  g_relay = false;\n\n/* ── Dashboard\
-      \ HTML (stored in flash) ─────────────────────────── */\nconst char HTML[] PROGMEM = R\"HTML(<!DOCTYPE\
-      \ html>\n<html lang=\"en\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"\
-      >\n<title>ESP32 Thermostat</title>\n<style>\n body{font-family:sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:20px}\n\
-      \ h1{color:#60a5fa;margin-bottom:20px}\n .card{background:#1e293b;border-radius:12px;padding:24px;margin:12px\
-      \ 0;max-width:420px}\n .big{font-size:3.5rem;font-weight:700;color:#60a5fa;line-height:1}\n .sub{color:#94a3b8;margin-top:6px}\n\
-      \ .on{color:#4ade80}.off{color:#f87171}\n input[type=number]{background:#334155;border:1px solid\
-      \ #475569;color:#e2e8f0;\n   padding:8px 12px;border-radius:8px;width:90px;font-size:1rem}\n button{background:#2563eb;color:#fff;border:none;padding:10px\
-      \ 20px;\n   border-radius:8px;cursor:pointer;font-size:1rem;margin-left:10px}\n button:hover{background:#1d4ed8}\n\
-      </style></head><body>\n<h1>ESP32 Thermostat</h1>\n<div class=\"card\">\n <div class=\"big\" id=\"\
-      t\">--</div>\n <div class=\"sub\" id=\"h\">Humidity: --%</div>\n <div class=\"sub\" id=\"r\" style=\"\
-      margin-top:10px\">Relay: --</div>\n</div>\n<div class=\"card\">\n <label>Setpoint (°C):\n  <input\
-      \ type=\"number\" id=\"sp\" step=\"0.5\" min=\"5\" max=\"45\">\n </label>\n <button onclick=\"save()\"\
-      >Save</button>\n</div>\n<script>\nfunction refresh(){\n fetch(\"/data\").then(r=>r.json()).then(d=>{\n\
-      \  document.getElementById(\"t\").textContent=d.temp.toFixed(1)+\"°C\";\n  document.getElementById(\"\
-      h\").textContent=\"Humidity: \"+d.hum.toFixed(1)+\"%\";\n  const r=document.getElementById(\"r\"\
-      );\n  r.textContent=\"Relay: \"+(d.relay?\"ON — cooling active\":\"OFF\");\n  r.className=d.relay?\"\
-      on\":\"off\";\n  document.getElementById(\"sp\").value=d.threshold;\n });\n}\nfunction save(){\n\
-      \ const v=document.getElementById(\"sp\").value;\n fetch(\"/set?threshold=\"+v).then(refresh);\n\
-      }\nsetInterval(refresh,3000);refresh();\n</script></body></html>)HTML\";\n\nvoid updateOLED() {\n\
-      \  oled.clearDisplay();\n  oled.setTextColor(SSD1306_WHITE);\n  oled.setTextSize(2); oled.setCursor(0,0);\n\
-      \  oled.printf(\"%.1fC\", g_temp);\n  oled.setTextSize(1); oled.setCursor(0,20);\n  oled.printf(\"\
-      Hum: %.1f%%\", g_hum);\n  oled.setCursor(0,32);\n  oled.print(g_relay ? \"RELAY: ON \" : \"RELAY:\
-      \ OFF\");\n  oled.setCursor(0,44);\n  oled.printf(\"Set: %.1fC\", g_threshold);\n  oled.display();\n\
-      }\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT); digitalWrite(RELAY_PIN,\
-      \ LOW);\n  dht.begin();\n  Wire.begin();\n  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  oled.clearDisplay();\
-      \ oled.display();\n\n  prefs.begin(\"thermo\", false);\n  g_threshold = prefs.getFloat(\"sp\", 25.0f);\n\
-      \n  WiFi.begin(SSID, PASSWORD);\n  Serial.print(\"Wi-Fi connecting\");\n  while (WiFi.status() !=\
-      \ WL_CONNECTED) { delay(400); Serial.print(\".\"); }\n  Serial.printf(\"nDashboard: http://%sn\"\
-      , WiFi.localIP().toString().c_str());\n\n  server.on(\"/\", [](){\n    server.send_P(200, \"text/html\"\
-      , HTML);\n  });\n  server.on(\"/data\", [](){\n    String j = \"{\"temp\":\" + String(g_temp,1)\
-      \ +\n               \",\"hum\":\"  + String(g_hum,1)  +\n               \",\"relay\":\" + (g_relay?\"\
-      true\":\"false\") +\n               \",\"threshold\":\" + String(g_threshold,1) + \"}\";\n    server.send(200,\
-      \ \"application/json\", j);\n  });\n  server.on(\"/set\", [](){\n    if (server.hasArg(\"threshold\"\
-      )) {\n      g_threshold = server.arg(\"threshold\").toFloat();\n      prefs.putFloat(\"sp\", g_threshold);\n\
-      \    }\n    server.send(200, \"text/plain\", \"OK\");\n  });\n  server.begin();\n}\n\nvoid loop()\
-      \ {\n  server.handleClient();\n  static unsigned long last = 0;\n  if (millis() - last >= 5000)\
-      \ {\n    last = millis();\n    float h = dht.readHumidity(), t = dht.readTemperature();\n    if\
-      \ (!isnan(h) && !isnan(t)) {\n      g_temp = t; g_hum = h;\n      g_relay = (t >= g_threshold);\n\
-      \      digitalWrite(RELAY_PIN, g_relay ? HIGH : LOW);\n      updateOLED();\n    }\n  }\n}"
-    code_filename: esp32-smart-thermostat-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: '<p>The advanced level turns your thermostat into a <strong>proper smart-home device</strong>:
-      it publishes temperature, humidity, and relay state to an MQTT broker every 30 seconds; subscribes
-      to a command topic so automations in Home Assistant, Node-RED, or Apple HomeKit (via Homebridge)
-      can change the setpoint remotely; announces itself as unavailable via a Last Will Testament if it
-      drops offline; and supports <strong>over-the-air firmware updates</strong> so you never need to
-      physically access the device again.</p>
-
-
-      <p>You will integrate with Home Assistant using the standard MQTT sensor platform, and optionally
-      enable MQTT Auto-Discovery so the thermostat appears in Home Assistant automatically without any
-      YAML configuration. The sketch also adds an NTP time client so log messages carry real timestamps
-      for debugging.</p>
-
-
-      <p><strong>What you will learn:</strong> MQTT publish/subscribe patterns, Last Will Testament (LWT),
-      MQTT retain flags, ArduinoOTA for wireless firmware updates, NTP time synchronisation, JSON payload
-      design, Home Assistant integration.</p>'
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× DHT22 + 10 kΩ resistor
-    - 1× 5 V Relay Module
-    - 1× 0.96" OLED (SSD1306) — Optional — shows MQTT connection status locally
-    - 1× MQTT Broker — Mosquitto on Raspberry Pi, or cloud broker (HiveMQ free tier)
-    wiring:
-    - - DHT22 DATA
-      - GPIO 4
-      - 10 kΩ pull-up to 3.3 V
-    - - Relay IN
-      - GPIO 26
-      - ''
-    - - OLED SDA / SCL
-      - GPIO 21 / 22
-      - Optional
-    how:
-    - 'MQTT Topic Hierarchy: All topics follow the pattern esp32engine/thermostat/{device-id}/{sub-topic}.
-      Using a device ID in the path allows multiple thermostats on the same broker without topic collisions.
-      The /state topic carries the full JSON payload; /avail carries "online"/"offline".'
-    - 'Last Will Testament (LWT): The MQTT CONNECT packet includes a LWT message: if the TCP connection
-      drops unexpectedly (power cut, network loss), the broker automatically publishes "offline" to the
-      /avail topic. Home Assistant uses this to mark the device as unavailable on its dashboard.'
-    - 'Retained Messages: mqtt.publish(..., true) sets the RETAIN flag. The broker caches the last retained
-      message per topic and sends it immediately to any new subscriber. This means Home Assistant receives
-      current temperature the instant it connects — even if the ESP32 last published 25 minutes ago.'
-    - 'ArduinoOTA: ArduinoOTA.begin() starts an mDNS service and a TCP listener for firmware updates.
-      Once running, the device appears as a network port in Arduino IDE. Select it and upload as normal.
-      The bootloader handles the swap safely — on failure it rolls back to the previous firmware.'
-    - 'NTP Timestamps: configTime() syncs the ESP32 real-time clock with pool.ntp.org. getLocalTime()
-      fills a tm struct for formatting. Published JSON payloads include a "time" field, which makes Grafana
-      and InfluxDB time-series graphs accurate even across broker restarts.'
-    apps: []
-    troubleshooting:
-    - - MQTT connection fails with state -2
-      - 'rc=-2 means the broker was not found on the network. Verify BROKER IP and that Mosquitto is running:
-        sudo systemctl status mosquitto. Test from another device: mosquitto_pub -h BROKER_IP -t test
-        -m hello'
-    - - OTA upload fails — port not visible in Arduino IDE
-      - ESP32 must be powered and running the loop (not in a crash loop). Ensure your PC and the ESP32
-        are on the same subnet. Temporarily disable OS firewall. Check that ArduinoOTA.handle() is called
-        on every loop iteration.
-    - - Home Assistant shows "unavailable" even though device is running
-      - Check the LWT topic string matches what HA is subscribed to. If the broker was restarted, the
-        ESP32 may not have reconnected yet — restart the ESP32 or wait for the MQTT keep-alive timeout
-        to trigger reconnection.
-    upgrades:
-    - 'Add MQTT Auto-Discovery: publish a config payload to homeassistant/sensor/{id}/config and HA adds
-      the device automatically'
-    - Replace simple ON/OFF with a PID controller for smoother temperature regulation with no overshoot
-    - 'Add multi-zone support: run multiple ESP32 thermostats reporting to one broker, view all zones
-      in one HA dashboard'
-    code: "/*\n * ESP32 Smart Thermostat — Advanced\n * MQTT publish/subscribe + ArduinoOTA + NTP timestamps\n\
-      \ * Libraries: DHT (Adafruit), PubSubClient (Nick O'Leary), ArduinoOTA (built-in)\n */\n#include\
-      \ <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoOTA.h>\n#include <Preferences.h>\n#include\
-      \ <DHT.h>\n#include <time.h>\n\nconst char* SSID      = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD\
-      \  = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER    = \"192.168.1.100\";   // Your broker IP\nconst\
-      \ int   MQTT_PORT = 1883;\nconst char* DEV_ID    = \"thermostat-esp32-01\";\n\n#define DHT_PIN \
-      \  4\n#define DHT_TYPE  DHT22\n#define RELAY_PIN 26\n#define PUB_MS    30000UL   // Publish interval\n\
-      \n// Topic helpers\nString T(const char* sub) { return String(\"esp32engine/thermostat/\") + DEV_ID\
-      \ + \"/\" + sub; }\n\nDHT dht(DHT_PIN, DHT_TYPE);\nWiFiClient net;\nPubSubClient mqtt(net);\nPreferences\
-      \ prefs;\n\nfloat g_temp=0,g_hum=0,g_threshold=25.0f;\nbool  g_relay=false;\n\nvoid onMqttMessage(char*\
-      \ topic, byte* pl, unsigned int len) {\n  String msg; for(unsigned int i=0;i<len;i++) msg+=(char)pl[i];\n\
-      \  if(String(topic)==T(\"set/threshold\")){\n    float v=msg.toFloat();\n    if(v>0&&v<60){ g_threshold=v;\
-      \ prefs.putFloat(\"sp\",v); }\n  }\n  if(String(topic)==T(\"set/relay\")){\n    // Manual override:\
-      \ \"ON\" or \"OFF\"\n    bool on=(msg==\"ON\"||msg==\"1\");\n    g_relay=on;\n    digitalWrite(RELAY_PIN,on?HIGH:LOW);\n\
-      \  }\n}\n\nvoid mqttConnect(){\n  while(!mqtt.connected()){\n    if(mqtt.connect(DEV_ID,\"\",\"\"\
-      ,T(\"avail\").c_str(),0,true,\"offline\")){\n      mqtt.publish(T(\"avail\").c_str(),\"online\"\
-      ,true);\n      mqtt.subscribe(T(\"set/threshold\").c_str());\n      mqtt.subscribe(T(\"set/relay\"\
-      ).c_str());\n      Serial.println(\"MQTT connected\");\n    } else {\n      Serial.printf(\"MQTT\
-      \ rc=%d retry in 5sn\",mqtt.state());\n      delay(5000);\n    }\n  }\n}\n\nvoid publishState(){\n\
-      \  char ts[20]=\"\";\n  struct tm ti; if(getLocalTime(&ti)) strftime(ts,sizeof(ts),\"%H:%M:%S\"\
-      ,&ti);\n  String j = \"{\"temperature\":\" + String(g_temp,2) +\n             \",\"humidity\":\"\
-      \     + String(g_hum,2)  +\n             \",\"relay\":\"        + (g_relay?\"true\":\"false\") +\n\
-      \             \",\"threshold\":\"    + String(g_threshold,1) +\n             \",\"time\":\"\" +\
-      \ ts + \"\"}\";\n  mqtt.publish(T(\"state\").c_str(), j.c_str(), true);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  pinMode(RELAY_PIN,OUTPUT); digitalWrite(RELAY_PIN,LOW);\n  dht.begin();\n  prefs.begin(\"thermo\"\
-      ,false);\n  g_threshold=prefs.getFloat(\"sp\",25.0f);\n\n  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(400);\n  Serial.printf(\"IP: %sn\",WiFi.localIP().toString().c_str());\n\n  configTime(0,0,\"\
-      pool.ntp.org\");   // UTC — adjust offset for your timezone\n\n  ArduinoOTA.setHostname(DEV_ID);\n\
-      \  ArduinoOTA.begin();\n\n  mqtt.setServer(BROKER,MQTT_PORT);\n  mqtt.setCallback(onMqttMessage);\n\
-      \  mqtt.setKeepAlive(60);\n  mqttConnect();\n}\n\nvoid loop(){\n  ArduinoOTA.handle();\n  if(!mqtt.connected())\
-      \ mqttConnect();\n  mqtt.loop();\n\n  static unsigned long last=0;\n  if(millis()-last>=PUB_MS){\n\
-      \    last=millis();\n    float h=dht.readHumidity(),t=dht.readTemperature();\n    if(!isnan(h)&&!isnan(t)){\n\
-      \      g_temp=t; g_hum=h;\n      bool shouldBeOn=(t>=g_threshold);\n      if(shouldBeOn!=g_relay){\n\
-      \        g_relay=shouldBeOn;\n        digitalWrite(RELAY_PIN,g_relay?HIGH:LOW);\n      }\n     \
-      \ publishState();\n    }\n  }\n}"
-    code_filename: esp32-smart-thermostat-advanced.ino
-related_slugs:
-- esp32-home-climate-automation
-- esp32-smart-irrigation-system
+{
+  "format": "golden",
+  "slug": "esp32-smart-thermostat",
+  "title": "ESP32 Smart Thermostat",
+  "category": "Home Automation",
+  "image": "/assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg",
+  "featured_image": "/assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg",
+  "hero_image": "/assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg",
+  "placeholder_image": "/assets/visuals/projects/placeholders/esp32-smart-thermostat-placeholder.svg",
+  "og_image": "/assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg",
+  "description": "Build a safe low-voltage thermostat prototype that reads room temperature and switches a fan or indicator when a threshold is crossed.",
+  "source_base": "esp32-smart-thermostat",
+  "sensor": "DHT22 or BME280 temperature sensor",
+  "output": "relay module or low-voltage fan driver",
+  "featured": true,
+  "date_published": "2026-06-14",
+  "date_modified": "2026-06-29",
+  "keywords": [
+    "ESP32",
+    "ESP32 Smart Thermostat",
+    "DHT22 or BME280 temperature sensor",
+    "relay module or low-voltage fan driver",
+    "Arduino tutorial"
+  ],
+  "hardware": {
+    "sensor_pin": "GPIO4",
+    "output_pin": "GPIO26",
+    "sensor_name": "DHT22 or BME280 temperature sensor",
+    "output_name": "relay module or low-voltage fan driver",
+    "wiring": [
+      {
+        "component": "DHT22 DATA",
+        "pin": "GPIO4"
+      },
+      {
+        "component": "Relay IN",
+        "pin": "GPIO26"
+      }
+    ]
+  },
+  "project": {
+    "icon": "TEMP",
+    "mission_title": "Build Your Smart Thermostat",
+    "difficulty": "Intermediate",
+    "age": "Ages 12+",
+    "estimated_time": "90-120 min",
+    "budget": "Under $30",
+    "what_you_build": "A working thermostat controller with an ESP32, a real input, a controlled output, Serial Monitor diagnostics, and a wiring map you can expand into a more advanced version.",
+    "components": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Thermostat controller",
+        "icon": "PART",
+        "link": "/components/esp32-devkit.html"
+      },
+      {
+        "item": "DHT22 sensor module",
+        "note": "Room temperature input",
+        "icon": "PART",
+        "link": "/components/dht22.html"
+      },
+      {
+        "item": "Relay module",
+        "note": "Low-voltage fan or lamp output",
+        "icon": "PART",
+        "link": "/components/relay-module.html"
+      },
+      {
+        "item": "SSD1306 OLED display",
+        "note": "Optional setpoint display",
+        "icon": "PART",
+        "link": "/components/ssd1306-oled.html"
+      },
+      {
+        "item": "Breadboard and wires",
+        "note": "Prototype wiring",
+        "icon": "PART"
+      }
+    ],
+    "bom": [
+      {
+        "part": "ESP32 DevKit",
+        "qty": "1",
+        "estimated_cost": "$6-$10",
+        "notes": "USB board"
+      },
+      {
+        "part": "DHT22 module",
+        "qty": "1",
+        "estimated_cost": "$3-$6",
+        "notes": "Temperature and humidity"
+      },
+      {
+        "part": "Relay module",
+        "qty": "1",
+        "estimated_cost": "$2-$5",
+        "notes": "Use low-voltage load only"
+      },
+      {
+        "part": "OLED",
+        "qty": "1 optional",
+        "estimated_cost": "$3-$6",
+        "notes": "I2C feedback"
+      }
+    ],
+    "wiring": {
+      "illustration_alt": "ESP32 Smart Thermostat wiring diagram",
+      "summary": "Wire the DHT22 or BME280 temperature sensor first, verify readings, then connect the relay module or low-voltage fan driver.",
+      "steps": [
+        "Unplug USB and keep the relay load disconnected.",
+        "Connect DHT22 VCC to 3.3 V, GND to GND, and DATA to GPIO4.",
+        "Connect relay VCC to 5 V if your relay module requires it, GND to ESP32 GND, and IN to GPIO26.",
+        "Connect only a low-voltage test load to the relay during learning.",
+        "Power the ESP32 and watch Serial Monitor before connecting any moving fan."
+      ]
+    },
+    "gpio_map": [
+      {
+        "signal": "DHT22 DATA",
+        "esp32_pin": "GPIO4",
+        "direction": "Input",
+        "notes": "Digital sensor data"
+      },
+      {
+        "signal": "Relay IN",
+        "esp32_pin": "GPIO26",
+        "direction": "Output",
+        "notes": "Fan command"
+      },
+      {
+        "signal": "OLED SDA",
+        "esp32_pin": "GPIO21",
+        "direction": "I2C data",
+        "notes": "Optional"
+      },
+      {
+        "signal": "OLED SCL",
+        "esp32_pin": "GPIO22",
+        "direction": "I2C clock",
+        "notes": "Optional"
+      }
+    ],
+    "code": {
+      "filename": "smart-thermostat.ino",
+      "content": "#include \"DHT.h\"\n\n#define DHTPIN 4\n#define DHTTYPE DHT22\n#define RELAY_PIN 26\n\nconst float FAN_ON_C = 27.0;\nconst float FAN_OFF_C = 25.5;\nbool fanOn = false;\nDHT dht(DHTPIN, DHTTYPE);\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, LOW);\n  dht.begin();\n  Serial.println(\"Smart thermostat ready\");\n}\n\nvoid loop() {\n  float tempC = dht.readTemperature();\n  if (isnan(tempC)) {\n    Serial.println(\"Temperature read failed\");\n    delay(2000);\n    return;\n  }\n\n  if (!fanOn && tempC >= FAN_ON_C) fanOn = true;\n  if (fanOn && tempC <= FAN_OFF_C) fanOn = false;\n\n  digitalWrite(RELAY_PIN, fanOn ? HIGH : LOW);\n  Serial.print(\"Temp C: \"); Serial.print(tempC, 1);\n  Serial.print(\" | Fan: \"); Serial.println(fanOn ? \"ON\" : \"OFF\");\n  delay(2000);\n}\n"
+    },
+    "expected_output": "Below the lower threshold, Serial Monitor prints Fan: OFF. Warm the sensor above the ON threshold and the relay LED should switch on. Let the sensor cool below the OFF threshold and the relay turns off.",
+    "common_mistakes": [
+      {
+        "text": "Driving a fan motor directly from an ESP32 GPIO."
+      },
+      {
+        "text": "Using mains voltage on a breadboard."
+      },
+      {
+        "text": "Forgetting hysteresis and making the relay chatter."
+      },
+      {
+        "text": "Using a relay module that needs more current than the USB port can provide."
+      }
+    ],
+    "troubleshooting": [
+      {
+        "problem": "Relay LED never turns on",
+        "fix": "Check GPIO26, relay VCC requirement, and active HIGH versus active LOW logic."
+      },
+      {
+        "problem": "Temperature never changes",
+        "fix": "Wait between reads and confirm the DHT22 data pin matches GPIO4."
+      },
+      {
+        "problem": "ESP32 resets when relay switches",
+        "fix": "Use a separate supply for the load and keep relay power wiring short."
+      },
+      {
+        "problem": "Fan logic feels backwards",
+        "fix": "Invert the digitalWrite state if your relay module is active LOW."
+      }
+    ],
+    "upgrade_ideas": [
+      "Add buttons to adjust setpoint.",
+      "Show temperature and fan state on OLED.",
+      "Add Wi-Fi dashboard control.",
+      "Log heating and cooling cycles."
+    ],
+    "related_guides": [
+      {
+        "title": "Read Temperature with DHT22",
+        "href": "/guides/read-temperature-dht22.html",
+        "description": "Learn the sensor-reading workflow used in many ESP32 projects."
+      },
+      {
+        "title": "Connect an OLED Display",
+        "href": "/guides/connect-oled-esp32.html",
+        "description": "Add a local display for values, status, and debugging."
+      }
+    ],
+    "related_projects": [
+      {
+        "title": "ESP32 IoT Weather Station",
+        "href": "/projects/esp32-iot-weather-station.html",
+        "description": "Practice sensor readings and clean Serial output."
+      },
+      {
+        "title": "ESP32 Home Climate Automation",
+        "href": "/projects/esp32-home-climate-automation.html",
+        "description": "Turn measurements into automatic control decisions."
+      }
+    ],
+    "complete": {
+      "summary": "You built a real thermostat controller and learned how to connect sensing, decision logic, and output control in one ESP32 project.",
+      "skills": [
+        "Wire and test DHT22 or BME280 temperature sensor",
+        "Control relay module or low-voltage fan driver from ESP32",
+        "Debug hardware with Serial Monitor",
+        "Improve the project safely"
+      ]
+    },
+    "story": "ESP32 Smart Thermostat turns the ESP32 into a real object that senses something, decides what it means, and reacts in the physical world.\n\nThe important lesson is not only the finished thermostat controller. You learn how to separate input, decision logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.",
+    "eli12": "Think of the ESP32 as the brain. The DHT22 or BME280 temperature sensor is how it notices the world. The relay module or low-voltage fan driver is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.",
+    "parent_safety": "This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming circuit. Do not use mains voltage on a breadboard.",
+    "learning_objectives": [
+      "Wire and test the DHT22 or BME280 temperature sensor before connecting the rest of the circuit.",
+      "Map each signal to a named ESP32 GPIO and keep the code constants readable.",
+      "Control relay module or low-voltage fan driver using a clear threshold or command instead of hidden magic numbers.",
+      "Use Serial Monitor as an engineering tool, not only as a success message.",
+      "Identify power, wiring, and timing faults using a repeatable test checklist."
+    ],
+    "circuit_explanation": "The sensor side is a low-current digital input. The relay side is an isolated switch input controlled by GPIO26. The ESP32 does not power the load directly; it only commands the relay module. Shared ground lets the relay input understand the ESP32 signal.",
+    "engineering_explanation": "A thermostat should avoid rapid on-off switching near the setpoint. This is called hysteresis. Instead of turning the fan on at exactly 27 C and off at 27 C, the code turns it on above 27 C and off below 25.5 C so the relay does not chatter.",
+    "code_explanation": "The code keeps the fan state in a Boolean variable. Two thresholds create hysteresis: one threshold turns the output on, and a lower threshold turns it off. This protects the relay and makes the system feel calm.",
+    "testing_checklist": [
+      "ESP32 appears on the correct port and accepts a basic blink upload.",
+      "Ground is shared between every module that exchanges signals with the ESP32.",
+      "Each GPIO in the code matches the wire connected on the breadboard.",
+      "Serial Monitor prints startup text at 115200 baud.",
+      "The DHT22 or BME280 temperature sensor value changes when you create a real test condition.",
+      "The relay module or low-voltage fan driver changes only when the expected condition is reached.",
+      "The circuit still behaves correctly after power is removed and restored."
+    ],
+    "build_photos": [
+      {
+        "title": "Breadboard overview",
+        "note": "Show the ESP32, module placement, and power rails clearly."
+      },
+      {
+        "title": "Close-up wiring",
+        "note": "Capture each GPIO wire so beginners can compare their build."
+      },
+      {
+        "title": "Working output",
+        "note": "Show the Serial Monitor, display, robot, pump, or lock state after the code runs."
+      }
+    ],
+    "downloads": [
+      {
+        "text": "ESP32 Smart Thermostat Arduino sketch",
+        "note": "Use the code section as the downloadable source until file downloads are published."
+      },
+      {
+        "text": "Wiring checklist",
+        "note": "Match the GPIO table and wiring steps before powering the circuit."
+      },
+      {
+        "text": "Troubleshooting worksheet",
+        "note": "Record symptoms, Serial output, voltage checks, and fixes."
+      }
+    ],
+    "real_world_applications": [
+      "Room fan controller",
+      "Greenhouse vent trigger",
+      "Small incubator demo",
+      "HVAC classroom model",
+      "Thermal control trainer"
+    ],
+    "faqs": [
+      {
+        "question": "Is ESP32 Smart Thermostat good for beginners?",
+        "answer": "Yes. Start with USB power, build the wiring slowly, and test one signal at a time before adding the full thermostat controller behavior."
+      },
+      {
+        "question": "Which ESP32 board should I use for ESP32 Smart Thermostat?",
+        "answer": "A standard ESP32 DevKit is the safest choice because it has USB programming, many GPIO pins, and strong Arduino IDE support."
+      },
+      {
+        "question": "Can I power ESP32 Smart Thermostat from a phone charger?",
+        "answer": "For bench testing, use the USB cable connected to your computer. Use a regulated 5 V supply only after the circuit works and the current requirement is known."
+      },
+      {
+        "question": "Why does my DHT22 or BME280 temperature sensor reading look wrong?",
+        "answer": "Most wrong readings come from reversed power, loose breadboard rows, the wrong GPIO number in code, or reading the sensor before it has settled."
+      },
+      {
+        "question": "Can I change the GPIO pins?",
+        "answer": "Yes, but update the constants at the top of the sketch and avoid ESP32 boot strapping pins unless you understand their startup behavior."
+      },
+      {
+        "question": "Does ESP32 Smart Thermostat need Wi-Fi?",
+        "answer": "The core lesson works locally. Wi-Fi is useful for dashboards, alerts, and remote control, but it should be added after the hardware is stable."
+      },
+      {
+        "question": "Can I use 5 V signals with ESP32 in ESP32 Smart Thermostat?",
+        "answer": "Do not feed 5 V logic into an ESP32 GPIO. ESP32 pins are 3.3 V logic pins and can be damaged by 5 V signals."
+      },
+      {
+        "question": "Why does relay module or low-voltage fan driver not respond?",
+        "answer": "Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the output module uses active HIGH or active LOW logic."
+      },
+      {
+        "question": "What should I test first?",
+        "answer": "Upload a tiny sketch that reads only DHT22 or BME280 temperature sensor. Once that is reliable, add relay module or low-voltage fan driver, then add the full decision logic."
+      },
+      {
+        "question": "How accurate is this project?",
+        "answer": "It is accurate enough for learning and prototypes. For production work you should calibrate sensors, protect wiring, and test across temperature and voltage changes."
+      },
+      {
+        "question": "Can this run on batteries?",
+        "answer": "Yes, but runtime depends on Wi-Fi usage, sensor current, output current, and sleep mode. First measure current with a multimeter."
+      },
+      {
+        "question": "Should I solder the circuit?",
+        "answer": "Use a breadboard while learning. Solder a final version only after every wire and GPIO has been tested for several sessions."
+      },
+      {
+        "question": "Why does the ESP32 reset randomly?",
+        "answer": "Random resets usually mean weak USB power, motor or relay noise, brownout from high current loads, or a loose breadboard power rail."
+      },
+      {
+        "question": "Can I use PlatformIO instead of Arduino IDE?",
+        "answer": "Yes. The same sketch structure works in PlatformIO after adding the required libraries to the project configuration."
+      },
+      {
+        "question": "How do I make ESP32 Smart Thermostat safer?",
+        "answer": "Keep high-current loads isolated, unplug before rewiring, use fused supplies for motors or pumps, and never connect mains voltage on a breadboard."
+      },
+      {
+        "question": "What is the most common mistake?",
+        "answer": "Beginners often trust the breadboard rows without checking continuity. Always trace each signal from ESP32 pin to module pin."
+      },
+      {
+        "question": "Can I add an OLED display?",
+        "answer": "Yes. An I2C OLED can share GPIO21 and GPIO22 with other I2C sensors as long as every device has a unique address."
+      },
+      {
+        "question": "How do I debug the code?",
+        "answer": "Print each important value to Serial Monitor: raw sensor reading, threshold, decision state, and output state."
+      },
+      {
+        "question": "Can this become a real product?",
+        "answer": "The idea can, but a product also needs enclosure design, electrical protection, watchdog recovery, calibration, and long-term testing."
+      },
+      {
+        "question": "What should I build next after ESP32 Smart Thermostat?",
+        "answer": "Add logging, a web dashboard, OTA updates, or a second sensor so the thermostat controller system can make better decisions."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}

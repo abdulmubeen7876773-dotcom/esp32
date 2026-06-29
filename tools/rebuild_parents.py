@@ -315,6 +315,7 @@ def render_golden_parent(parent: dict) -> str:
     path = f"projects/{slug}.html"
     title = f"{parent['title']} | {SITE_NAME}"
     desc = parent["description"]
+    proj = parent.get("project") or {}
     crumbs = breadcrumb_schema(
         [
             ("Home", "/"),
@@ -322,7 +323,52 @@ def render_golden_parent(parent: dict) -> str:
             (parent["title"], path),
         ]
     )
-    schema = organization_schema() + webpage_schema(title, desc, path) + crumbs
+    url = f"{SITE_DOMAIN}/{path}"
+    image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or OG_IMAGE
+    absolute_image = image if str(image).startswith("http") else f"{SITE_DOMAIN}{image}"
+    article = {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": parent["title"],
+        "description": desc,
+        "datePublished": parent.get("date_published", "2026-06-14"),
+        "dateModified": parent.get("date_modified", "2026-06-29"),
+        "image": absolute_image,
+        "author": {"@type": "Organization", "name": ORG_NAME, "url": SITE_DOMAIN + "/"},
+        "publisher": {"@type": "Organization", "name": ORG_NAME, "logo": {"@type": "ImageObject", "url": OG_IMAGE}},
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+        "proficiencyLevel": proj.get("difficulty", "Beginner"),
+        "timeRequired": proj.get("estimated_time", ""),
+        "keywords": ", ".join(parent.get("keywords", [])),
+    }
+    howto_steps = (proj.get("wiring") or {}).get("steps", [])
+    howto = {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": f"How to build {parent['title']}",
+        "description": desc,
+        "totalTime": proj.get("estimated_time", ""),
+        "supply": [{"@type": "HowToSupply", "name": item.get("item", "")} for item in proj.get("components", []) if isinstance(item, dict)],
+        "tool": [{"@type": "HowToTool", "name": "Arduino IDE"}, {"@type": "HowToTool", "name": "USB cable"}],
+        "step": [
+            {"@type": "HowToStep", "position": i + 1, "name": step[:80], "text": step}
+            for i, step in enumerate(howto_steps)
+        ],
+    }
+    faq_items = [
+        {"@type": "Question", "name": item.get("question", ""), "acceptedAnswer": {"@type": "Answer", "text": item.get("answer", "")}}
+        for item in proj.get("faqs", [])
+        if isinstance(item, dict) and item.get("question") and item.get("answer")
+    ]
+    faq_schema = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faq_items}
+    schema = (
+        organization_schema()
+        + webpage_schema(title, desc, path)
+        + crumbs
+        + json_ld_script(article)
+        + json_ld_script(howto)
+        + (json_ld_script(faq_schema) if faq_items else "")
+    )
     og_image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or ""
     head = head_html("", title, desc, canonical_path=path, og_type="article", extra_schema=schema, og_image=og_image)
     return render_golden_project_page(

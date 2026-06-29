@@ -1,315 +1,358 @@
-slug: esp32-line-following-robot
-title: ESP32 Line Following Robot
-category: Robotics
-image: /assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg
-featured_image: /assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg
-hero_image: /assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg
-placeholder_image: /assets/visuals/projects/placeholders/esp32-line-following-robot-placeholder.svg
-og_image: /assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg
-description: Program an ESP32-powered two-wheel robot that autonomously follows a black tape line using
-  infrared sensors, from basic threshold logic up to smooth PID control with Bluetooth override.
-meta_description: 'Build an ESP32 line following robot with IR sensors and L298N motor driver. Three levels:
-  threshold logic, PID speed control, and BLE remote override.'
-source_base: esp32-line-following-robot-legacy-import
-sensor: 'TODO: sensor'
-output: L298N IN1
-featured: false
-date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
-status: needs_polish
-import_tier: 2
-import_source: batch-php
-hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 25
-  sensor_name: 'TODO: sensor'
-  output_name: L298N IN1
-  wiring:
-  - component: L298N IN1
-    pin: GPIO 25
-  - component: L298N IN2
-    pin: GPIO 26
-  - component: L298N IN3
-    pin: GPIO 27
-  - component: L298N IN4
-    pin: GPIO 14
-  - component: Left IR OUT
-    pin: GPIO 34
-  - component: Right IR OUT
-    pin: GPIO 35
-  - component: L298N ENA
-    pin: 5 V jumper
-  - component: L298N ENB
-    pin: 5 V jumper
-  - component: L298N 12 V terminal
-    pin: Battery +
-  - component: L298N GND
-    pin: Common GND
-levels:
-  beginner:
-    level: beginner
-    overview_html: <p>In this beginner project you will build a two-wheel robot car that follows a black
-      tape line on a white floor. Two infrared proximity sensors detect the line position, and an L298N
-      dual H-bridge module drives two DC motors. When both sensors detect white the robot drives forward.
-      When one sensor detects black it turns to re-centre on the line. This project teaches GPIO digital
-      reads, motor direction control, and simple conditional logic with no external libraries required.</p>
-    components:
-    - 1× ESP32 DevKit V1 — 30-pin or 38-pin
-    - 1× L298N dual H-bridge motor driver module — Onboard 5 V regulator
-    - 2× TCRT5000 IR line sensor module — With sensitivity potentiometer
-    - 2× TT DC gear motor with wheel — 3-6 V, 200 RPM
-    - 1× 2WD robot chassis — Acrylic or 3D-printed
-    - 1× 7.4 V 1200 mAh Li-Po battery — Powers motors and ESP32
-    - 1× Breadboard and jumper wires — M-M and M-F
-    wiring:
-    - - L298N IN1
-      - GPIO 25
-      - Left motor direction A
-    - - L298N IN2
-      - GPIO 26
-      - Left motor direction B
-    - - L298N IN3
-      - GPIO 27
-      - Right motor direction A
-    - - L298N IN4
-      - GPIO 14
-      - Right motor direction B
-    - - Left IR OUT
-      - GPIO 34
-      - Input-only; LOW = black detected
-    - - Right IR OUT
-      - GPIO 35
-      - Input-only; LOW = black detected
-    - - L298N ENA
-      - 5 V jumper
-      - Keep jumper for full speed
-    - - L298N ENB
-      - 5 V jumper
-      - Keep jumper for full speed
-    - - L298N 12 V terminal
-      - Battery +
-      - Li-Po 7.4 V
-    - - L298N GND
-      - Common GND
-      - Shared with ESP32 GND
-    how:
-    - 'IR Reflection Principle: Each TCRT5000 emits infrared light downward. Black tape absorbs IR so
-      the receiver sees less light and the OUT pin goes LOW. White surface reflects strongly, keeping
-      OUT HIGH.'
-    - 'Conditional Direction Logic: The ESP32 reads both sensor pins every 10 ms. Four conditions map
-      to forward, left-turn, right-turn, and stop, covering every sensor combination.'
-    - 'H-Bridge Motor Control: The L298N H-bridge reverses polarity to each motor pair by toggling IN1/IN2
-      and IN3/IN4. HIGH on IN1 and LOW on IN2 spins the left motor forward; swapping reverses it.'
-    - 'Sensitivity Adjustment: The potentiometer on each IR module sets the detection threshold. Turn
-      it until the onboard LED lights on white and extinguishes on the black tape at operating height.'
-    apps:
-    - Warehouse floor logistics following tape guides
-    - Classroom STEM robotics demonstrations
-    - Automated conveyor routing prototype
-    - Entry-level robotics competition platform
-    troubleshooting:
-    - - Robot ignores the line and drives straight
-      - Adjust the IR sensor potentiometers. The onboard LED must be ON over white and OFF over black
-        tape at the actual mounting height (10-15 mm).
-    - - Motors spin but chassis does not move
-      - Verify ENA and ENB jumpers are installed on the L298N. Check that motor wires are firmly inserted
-        in the terminal block with correct polarity.
-    - - Robot oscillates back and forth on the line
-      - Widen the sensor spacing or reduce motor speed by adding a short delay after each turn command.
-        The intermediate level adds PID for smooth correction.
-    - - ESP32 resets when motors start
-      - Motor inrush current causes a voltage dip. Add a 100 uF capacitor across the 5 V rail and power
-        the ESP32 from the L298N 5 V output, not directly from the battery.
-    upgrades:
-    - Remove ENA/ENB jumpers and add PWM pins for variable speed control
-    - Add an HC-SR04 ultrasonic sensor for obstacle avoidance
-    - Add an OLED to display current direction and sensor states
-    - Add a push button to start or stop the robot without power cycling
-    code: "// ESP32 Line Following Robot - Beginner\n// Two IR sensors + L298N motor driver, no libraries\
-      \ needed\n\nconst int IN1 = 25, IN2 = 26; // left motor\nconst int IN3 = 27, IN4 = 14; // right\
-      \ motor\nconst int IR_L = 34, IR_R = 35;\n\nvoid forward()   { digitalWrite(IN1,HIGH);digitalWrite(IN2,LOW);\n\
-      \                   digitalWrite(IN3,HIGH);digitalWrite(IN4,LOW); }\nvoid turnLeft()  { digitalWrite(IN1,LOW);\
-      \ digitalWrite(IN2,HIGH);\n                   digitalWrite(IN3,HIGH);digitalWrite(IN4,LOW); }\n\
-      void turnRight() { digitalWrite(IN1,HIGH);digitalWrite(IN2,LOW);\n                   digitalWrite(IN3,LOW);\
-      \ digitalWrite(IN4,HIGH); }\nvoid stopAll()   { digitalWrite(IN1,LOW);digitalWrite(IN2,LOW);\n \
-      \                  digitalWrite(IN3,LOW);digitalWrite(IN4,LOW); }\n\nvoid setup() {\n  pinMode(IN1,OUTPUT);pinMode(IN2,OUTPUT);\n\
-      \  pinMode(IN3,OUTPUT);pinMode(IN4,OUTPUT);\n  pinMode(IR_L,INPUT);\n  pinMode(IR_R,INPUT);\n  Serial.begin(115200);\n\
-      }\n\nvoid loop() {\n  int L = digitalRead(IR_L);\n  int R = digitalRead(IR_R);\n  // HIGH = white\
-      \ surface, LOW = black line\n  if (L == HIGH && R == HIGH) { forward();   }\n  else if (L == LOW\
-      \  && R == HIGH) { turnLeft();  }\n  else if (L == HIGH && R == LOW)  { turnRight(); }\n  else \
-      \                            { stopAll();   }\n  delay(10);\n}"
-    code_filename: esp32-line-following-robot-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build replaces the two-sensor binary system with a five-sensor
-      analog array and a PID controller that produces smooth, proportional speed corrections. LEDC PWM
-      on ENA and ENB allows variable speed so the robot accelerates on straights and automatically slows
-      through curves. Calibrated thresholds are stored in NVS flash so the robot adapts to different lighting
-      environments without reflashing.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× 5-element TCRT5000 sensor array — Pre-assembled bar module
-    - 1× L298N motor driver — ENA/ENB will be PWM-driven
-    - 2× DC gear motor 6 V 200 RPM — Higher torque TT-motors
-    - 1× 7.4 V 2000 mAh Li-Po
-    - 1× SSD1306 OLED 128x64 I2C — Shows mode and PID error
-    - 1× Tactile push button — Calibration trigger
-    wiring:
-    - - Sensor S0-S4 (analog)
-      - GPIO 36,39,34,35,32
-      - ADC-capable input-only pins
-    - - L298N IN1-IN4
-      - GPIO 25,26,27,14
-      - Same as beginner level
-    - - L298N ENA (PWM)
-      - GPIO 33
-      - Remove ENA jumper first
-    - - L298N ENB (PWM)
-      - GPIO 19
-      - Remove ENB jumper first
-    - - OLED SDA
-      - GPIO 21
-      - I2C default
-    - - OLED SCL
-      - GPIO 22
-      - I2C default
-    - - Calibration button
-      - GPIO 0
-      - Internal pull-up; active LOW
-    how:
-    - 'Weighted-Average Position: Each sensor returns 1 if its analog reading exceeds the calibrated threshold
-      (line detected). A weighted sum of active indices divided by total active sensors gives a position
-      from 0 (far left) to 4000 (far right), with 2000 being centre.'
-    - 'PID Correction: Error = position - 2000. The proportional term gives immediate correction, the
-      derivative term damps overshoot, and the integral term removes steady-state offset. Tune Kp first
-      with Ki and Kd at zero.'
-    - 'LEDC PWM Speed: ledcSetup() configures two 8-bit 5 kHz PWM channels on ENA and ENB pins. ledcWrite()
-      adjusts duty cycle 0-255 so the robot slows automatically on curves where PID correction is large.'
-    - 'NVS Calibration Storage: A 3-second calibration spin sweeps all sensors over both white and black
-      surfaces. Min and max analog values are recorded per sensor and midpoint thresholds are stored in
-      NVS flash using the Preferences library, surviving power cycles.'
-    apps:
-    - Competitive line-following robot events
-    - Automated guided vehicle prototyping in maker labs
-    - Teaching PID control theory to engineering students
-    - Warehouse cart following floor tape paths
-    troubleshooting:
-    - - PID causes violent oscillation
-      - Set Ki and Kd to zero and reduce Kp to 5. Increase Kp slowly until the robot tracks, then add
-        Kd in small increments to reduce overshoot.
-    - - Calibration does not capture full range
-      - Make sure the robot is positioned at the edge of the line before pressing the calibration button.
-        Increase the spin time from 3 s to 5 s if sensors do not fully sweep.
-    - - Robot loses line on sharp turns at high speed
-      - Reduce BASE speed constant from 180 to 120. The outer wheel needs more time to complete tight
-        turns at lower speeds.
-    upgrades:
-    - Add rotary encoders on both wheels for closed-loop speed matching
-    - Display lap time on the OLED and save best lap to NVS
-    - Add BLE serial to tune Kp, Ki, Kd from a smartphone without reflashing
-    - Log position and correction data to an SD card for offline PID analysis
-    code: "// ESP32 Line Following Robot - Intermediate (5-sensor PID)\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
-      #include <Preferences.h>\n\n#define N 5\nconst int S[N] = {36,39,34,35,32};\nconst int IN1=25,IN2=26,IN3=27,IN4=14;\n\
-      const int ENA_CH=0, ENB_CH=1, ENA_PIN=33, ENB_PIN=19;\n\nfloat Kp=25.0, Ki=0.0, Kd=15.0;\nconst\
-      \ int BASE=180;\nfloat lastErr=0, integral=0;\nint thr[N];\n\nPreferences prefs;\nAdafruit_SSD1306\
-      \ oled(128,64,&Wire,-1);\n\nvoid setupPWM(){\n  ledcSetup(ENA_CH,5000,8); ledcAttachPin(ENA_PIN,ENA_CH);\n\
-      \  ledcSetup(ENB_CH,5000,8); ledcAttachPin(ENB_PIN,ENB_CH);\n}\n\nvoid drive(int l, int r){\n  l=constrain(l,-255,255);\
-      \ r=constrain(r,-255,255);\n  if(l>=0){digitalWrite(IN1,HIGH);digitalWrite(IN2,LOW);}\n  else  \
-      \  {digitalWrite(IN1,LOW); digitalWrite(IN2,HIGH);l=-l;}\n  if(r>=0){digitalWrite(IN3,HIGH);digitalWrite(IN4,LOW);}\n\
-      \  else    {digitalWrite(IN3,LOW); digitalWrite(IN4,HIGH);r=-r;}\n  ledcWrite(ENA_CH,l); ledcWrite(ENB_CH,r);\n\
-      }\n\nvoid calibrate(){\n  int mn[N],mx[N];\n  for(int i=0;i<N;i++){mn[i]=4095;mx[i]=0;}\n  drive(150,-150);\n\
-      \  unsigned long t=millis();\n  while(millis()-t<3000){\n    for(int i=0;i<N;i++){\n      int v=analogRead(S[i]);\n\
-      \      if(v<mn[i])mn[i]=v;\n      if(v>mx[i])mx[i]=v;\n    }\n  }\n  drive(0,0);\n  prefs.begin(\"\
-      lfr\",false);\n  for(int i=0;i<N;i++){\n    thr[i]=(mn[i]+mx[i])/2;\n    prefs.putInt(String(i).c_str(),thr[i]);\n\
-      \  }\n  prefs.end();\n}\n\nfloat position(){\n  int sum=0,wsum=0;\n  for(int i=0;i<N;i++){\n   \
-      \ int on=(analogRead(S[i])>thr[i])?1:0;\n    wsum+=on*i*1000; sum+=on;\n  }\n  if(sum==0) return\
-      \ lastErr>0?4000:0;\n  return (float)wsum/sum;\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  int\
-      \ pins[]={IN1,IN2,IN3,IN4};\n  for(int p:pins) pinMode(p,OUTPUT);\n  setupPWM();\n  Wire.begin(21,22);\n\
-      \  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextSize(1); oled.setTextColor(WHITE);\n  prefs.begin(\"\
-      lfr\",true);\n  for(int i=0;i<N;i++) thr[i]=prefs.getInt(String(i).c_str(),2048);\n  prefs.end();\n\
-      \  pinMode(0,INPUT_PULLUP);\n  if(digitalRead(0)==LOW) calibrate();\n}\n\nvoid loop(){\n  float\
-      \ pos=position();\n  float err=pos-2000.0f;\n  integral+=err;\n  float corr=Kp*err+Ki*integral+Kd*(err-lastErr);\n\
-      \  lastErr=err;\n  drive(BASE+(int)corr, BASE-(int)corr);\n  delay(5);\n}"
-    code_filename: esp32-line-following-robot-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: '<p>The advanced build adds dual-mode operation: the PID line-follower can be overridden
-      in real time by a smartphone via BLE UART. Wheel encoders provide closed-loop speed matching so
-      both motors run at equal velocity regardless of battery voltage sag. A left-hand rule state machine
-      allows the robot to solve simple mazes at junctions automatically, while live PID gains can be updated
-      over BLE without reflashing the firmware.</p>'
-    components:
-    - 1× ESP32 DevKit V1 — Built-in BLE 4.2
-    - 2× Hall-effect wheel encoder disc + sensor — 20-slot disc per wheel
-    - 1× 5-element IR sensor array — Same as intermediate
-    - 1× L298N motor driver
-    - 2× DC gear motor 12 V with encoder shaft — 150 RPM
-    - 1× 11.1 V 3S Li-Po 1500 mAh — Matches 12 V motors
-    - 1× SSD1306 OLED 128x64 — Shows mode and speed
-    wiring:
-    - - Left encoder signal
-      - GPIO 18
-      - Interrupt-capable; 3.3 V logic
-    - - Right encoder signal
-      - GPIO 23
-      - Interrupt-capable
-    - - Sensor array + motors
-      - Same as intermediate
-      - ''
-    - - Mode status LED
-      - GPIO 2
-      - ON = BLE manual mode
-    how:
-    - 'BLE UART Service: The Nordic UART Service (NUS) UUID pair over BLE 4.2 lets any BLE terminal app
-      (Serial Bluetooth Terminal on Android, LightBlue on iOS) send single-character commands. Compound
-      commands like "P:30:0:20" update Kp, Ki, Kd at runtime without reflashing.'
-    - 'Encoder Interrupt Counting: Hall-effect sensors trigger IRAM-resident ISRs on each rising edge.
-      The main loop reads and resets counters every 5 ms, comparing left vs right pulse counts to detect
-      and correct speed mismatch caused by motor tolerance.'
-    - 'Dual-Mode Switching: The autoMode flag selects between PID line-following and BLE manual control.
-      Switching from manual back to auto resets the PID integral accumulator to zero to prevent windup
-      that accumulated during manual driving.'
-    - 'Left-Hand Maze Rule: At a junction where multiple sensors detect the line, the robot prioritises
-      left turn, then straight, then right turn, then reverse. This deterministic rule guarantees escape
-      from any simply-connected maze in finite steps.'
-    apps:
-    - RoboCup Junior Rescue Line competition entries
-    - Research platform for navigation algorithm testing
-    - Bluetooth-controlled demonstration at maker fairs
-    - University-level control systems lab project
-    troubleshooting:
-    - - BLE drops connection when motors start
-      - Add 100 nF ceramic capacitors across motor terminals and a 10 uF electrolytic on the 3.3 V rail.
-        Ferrite beads on motor leads reduce high-frequency EMI that disrupts the BLE radio.
-    - - Encoder ISR misses pulses at high RPM
-      - Move the PID computation to a hardware timer ISR running at 200 Hz so loop() latency does not
-        cause missed encoder edges at speed.
-    - - Maze solver enters an infinite loop
-      - The left-hand rule only works for simply-connected mazes. Add a visited-junction map using encoder
-        odometry coordinates to detect revisits and break out.
-    upgrades:
-    - Replace BLE with ESP-NOW for latency-free multi-robot swarm control
-    - Add a camera module for visual line detection using colour blob tracking
-    - Implement dead-reckoning SLAM using encoder odometry and an MPU6050 IMU
-    - Add a colour sensor to read intersection markers for dynamic route selection
-    code: "// ESP32 Line Following Robot - Advanced (BLE + encoders + maze solver)\n#include <BLEDevice.h>\n\
-      #include <BLEServer.h>\n#include <BLE2902.h>\n\n#define SVC_UUID  \"6E400001-B5A3-F393-E0A9-E50E24DCCA9E\"\
-      \n#define RX_UUID   \"6E400002-B5A3-F393-E0A9-E50E24DCCA9E\"\n#define TX_UUID   \"6E400003-B5A3-F393-E0A9-E50E24DCCA9E\"\
-      \n\nvolatile long encL=0, encR=0;\nvoid IRAM_ATTR iL(){ encL++; }\nvoid IRAM_ATTR iR(){ encR++;\
-      \ }\n\nbool autoMode=true;\nString cmd=\"\";\nBLECharacteristic *pTx;\n\nclass RxCB: public BLECharacteristicCallbacks\
-      \ {\n  void onWrite(BLECharacteristic *c) override {\n    cmd = c->getValue().c_str();\n  }\n};\n\
-      \n// PID and motor functions from intermediate level included here\n// ...\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  attachInterrupt(18,iL,RISING);\n  attachInterrupt(23,iR,RISING);\n\n  BLEDevice::init(\"ESP32-LineBot\"\
-      );\n  BLEServer *srv = BLEDevice::createServer();\n  BLEService *svc = srv->createService(SVC_UUID);\n\
-      \  pTx = svc->createCharacteristic(TX_UUID, BLECharacteristic::PROPERTY_NOTIFY);\n  pTx->addDescriptor(new\
-      \ BLE2902());\n  BLECharacteristic *rx = svc->createCharacteristic(RX_UUID, BLECharacteristic::PROPERTY_WRITE);\n\
-      \  rx->setCallbacks(new RxCB());\n  svc->start();\n  BLEDevice::getAdvertising()->start();\n}\n\n\
-      void loop(){\n  if(cmd.length()){\n    if(cmd==\"A\") autoMode=true;\n    else if(cmd==\"M\") autoMode=false;\n\
-      \    // F,B,L,R,S handled in manual drive function\n    cmd=\"\";\n  }\n  if(autoMode) runPID();\n\
-      \  else         runManual();\n\n  // Encoder speed balancing: compare encL vs encR\n  // and offset\
-      \ left/right PWM to match wheel speeds\n  encL=0; encR=0;\n  delay(5);\n}"
-    code_filename: esp32-line-following-robot-advanced.ino
-related_slugs:
-- esp32-wifi-robot-controller
-- esp32-machine-monitoring-node
+{
+  "format": "golden",
+  "slug": "esp32-line-following-robot",
+  "title": "ESP32 Line Following Robot",
+  "category": "Robotics",
+  "image": "/assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg",
+  "featured_image": "/assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg",
+  "hero_image": "/assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg",
+  "placeholder_image": "/assets/visuals/projects/placeholders/esp32-line-following-robot-placeholder.svg",
+  "og_image": "/assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg",
+  "description": "Build a two-motor robot that reads line sensors and steers itself along a dark track.",
+  "source_base": "esp32-line-following-robot",
+  "sensor": "left and right IR line sensors",
+  "output": "motor driver",
+  "featured": true,
+  "date_published": "2026-06-14",
+  "date_modified": "2026-06-29",
+  "keywords": [
+    "ESP32",
+    "ESP32 Line Following Robot",
+    "left and right IR line sensors",
+    "motor driver",
+    "Arduino tutorial"
+  ],
+  "hardware": {
+    "sensor_pin": "GPIO34/GPIO35",
+    "output_pin": "GPIO16-GPIO19",
+    "sensor_name": "left and right IR line sensors",
+    "output_name": "motor driver",
+    "wiring": [
+      {
+        "component": "left and right IR line sensors",
+        "pin": "GPIO34/GPIO35"
+      },
+      {
+        "component": "motor driver",
+        "pin": "GPIO16-GPIO19"
+      }
+    ]
+  },
+  "project": {
+    "icon": "ESP",
+    "mission_title": "Build Your Line Following Robot",
+    "difficulty": "Intermediate",
+    "age": "Ages 12+",
+    "estimated_time": "90-150 min",
+    "budget": "Under $35",
+    "what_you_build": "A working line-following robot with an ESP32, a real input, a controlled output, Serial Monitor diagnostics, and a wiring map you can expand into a more advanced version.",
+    "components": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Main controller",
+        "icon": "PART",
+        "link": "/components/esp32-devkit.html"
+      },
+      {
+        "item": "Left And Right Ir Line Sensors",
+        "note": "Primary input for the project",
+        "icon": "PART"
+      },
+      {
+        "item": "Motor Driver",
+        "note": "Physical output controlled by ESP32",
+        "icon": "PART"
+      },
+      {
+        "item": "Breadboard and jumper wires",
+        "note": "Prototype wiring",
+        "icon": "PART"
+      },
+      {
+        "item": "USB data cable",
+        "note": "Programming and testing",
+        "icon": "PART"
+      }
+    ],
+    "bom": [
+      {
+        "part": "ESP32 DevKit",
+        "qty": "1",
+        "estimated_cost": "$6-$10",
+        "notes": "USB board"
+      },
+      {
+        "part": "Left And Right Ir Line Sensors",
+        "qty": "1",
+        "estimated_cost": "$2-$10",
+        "notes": "Project input"
+      },
+      {
+        "part": "Motor Driver",
+        "qty": "1",
+        "estimated_cost": "$3-$12",
+        "notes": "Use low-voltage test hardware"
+      },
+      {
+        "part": "Breadboard and wires",
+        "qty": "1 set",
+        "estimated_cost": "$3-$5",
+        "notes": "Prototype wiring"
+      }
+    ],
+    "wiring": {
+      "illustration_alt": "ESP32 Line Following Robot wiring diagram",
+      "summary": "Wire the left and right IR line sensors first, verify readings, then connect the motor driver.",
+      "steps": [
+        "Unplug USB before placing modules on the breadboard.",
+        "Connect the left and right IR line sensors power pins to the correct 3.3 V or 5 V rail according to its module label.",
+        "Connect the left and right IR line sensors signal line to GPIO34/GPIO35.",
+        "Connect the motor driver control input to GPIO16-GPIO19 and share ground with the ESP32.",
+        "Power the ESP32 from USB and test the input reading before enabling the output."
+      ]
+    },
+    "gpio_map": [
+      {
+        "signal": "left and right IR line sensors",
+        "esp32_pin": "GPIO34/GPIO35",
+        "direction": "Input",
+        "notes": "Read before controlling output"
+      },
+      {
+        "signal": "motor driver",
+        "esp32_pin": "GPIO16-GPIO19",
+        "direction": "Output",
+        "notes": "Drive through a module or driver"
+      },
+      {
+        "signal": "Status LED",
+        "esp32_pin": "GPIO2",
+        "direction": "Output",
+        "notes": "Optional debug indicator"
+      },
+      {
+        "signal": "Serial Monitor",
+        "esp32_pin": "USB",
+        "direction": "Debug",
+        "notes": "115200 baud"
+      }
+    ],
+    "code": {
+      "filename": "line-following-robot.ino",
+      "content": "const int LEFT_SENSOR = 34;\nconst int RIGHT_SENSOR = 35;\nconst int L_IN1 = 16;\nconst int L_IN2 = 17;\nconst int R_IN1 = 18;\nconst int R_IN2 = 19;\nconst int LINE_THRESHOLD = 1800;\n\nvoid leftMotor(bool forward) {\n  digitalWrite(L_IN1, forward ? HIGH : LOW);\n  digitalWrite(L_IN2, forward ? LOW : HIGH);\n}\n\nvoid rightMotor(bool forward) {\n  digitalWrite(R_IN1, forward ? HIGH : LOW);\n  digitalWrite(R_IN2, forward ? LOW : HIGH);\n}\n\nvoid stopMotors() {\n  digitalWrite(L_IN1, LOW); digitalWrite(L_IN2, LOW);\n  digitalWrite(R_IN1, LOW); digitalWrite(R_IN2, LOW);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(L_IN1, OUTPUT); pinMode(L_IN2, OUTPUT);\n  pinMode(R_IN1, OUTPUT); pinMode(R_IN2, OUTPUT);\n}\n\nvoid loop() {\n  bool leftOnLine = analogRead(LEFT_SENSOR) > LINE_THRESHOLD;\n  bool rightOnLine = analogRead(RIGHT_SENSOR) > LINE_THRESHOLD;\n\n  if (leftOnLine && rightOnLine) { leftMotor(true); rightMotor(true); }\n  else if (leftOnLine) { stopMotors(); rightMotor(true); }\n  else if (rightOnLine) { leftMotor(true); stopMotors(); }\n  else { stopMotors(); }\n\n  Serial.printf(\"L:%d R:%d\\n\", leftOnLine, rightOnLine);\n  delay(40);\n}\n"
+    },
+    "expected_output": "Serial Monitor should show a changing reading. When the left and right IR line sensors reaches the test condition, the status LED and motor driver should switch state. If the reading changes but the output does not, debug the output wiring separately.",
+    "common_mistakes": [
+      {
+        "text": "Testing input and output for the first time together."
+      },
+      {
+        "text": "Using a GPIO pin that does not match the code constant."
+      },
+      {
+        "text": "Expecting an ESP32 GPIO to power a motor, pump, or lock directly."
+      },
+      {
+        "text": "Forgetting the shared ground between modules."
+      }
+    ],
+    "troubleshooting": [
+      {
+        "problem": "left and right IR line sensors never changes",
+        "fix": "Check power, ground, signal pin, and whether the sensor is analog or digital."
+      },
+      {
+        "problem": "motor driver does not switch",
+        "fix": "Test the output module with a simple blink-style sketch before using the full project."
+      },
+      {
+        "problem": "ESP32 resets under load",
+        "fix": "Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32."
+      },
+      {
+        "problem": "Behavior is reversed",
+        "fix": "Your module may be active LOW; invert the output logic after confirming with Serial Monitor."
+      }
+    ],
+    "upgrade_ideas": [
+      "Add OLED status feedback.",
+      "Add Wi-Fi dashboard or mobile alerts.",
+      "Store event history in flash or a cloud service.",
+      "Add calibration settings instead of hard-coded thresholds."
+    ],
+    "related_guides": [
+      {
+        "title": "Read Temperature with DHT22",
+        "href": "/guides/read-temperature-dht22.html",
+        "description": "Learn the sensor-reading workflow used in many ESP32 projects."
+      },
+      {
+        "title": "Connect an OLED Display",
+        "href": "/guides/connect-oled-esp32.html",
+        "description": "Add a local display for values, status, and debugging."
+      }
+    ],
+    "related_projects": [
+      {
+        "title": "ESP32 IoT Weather Station",
+        "href": "/projects/esp32-iot-weather-station.html",
+        "description": "Practice sensor readings and clean Serial output."
+      },
+      {
+        "title": "ESP32 Home Climate Automation",
+        "href": "/projects/esp32-home-climate-automation.html",
+        "description": "Turn measurements into automatic control decisions."
+      }
+    ],
+    "complete": {
+      "summary": "You built a real line-following robot and learned how to connect sensing, decision logic, and output control in one ESP32 project.",
+      "skills": [
+        "Wire and test left and right IR line sensors",
+        "Control motor driver from ESP32",
+        "Debug hardware with Serial Monitor",
+        "Improve the project safely"
+      ]
+    },
+    "story": "ESP32 Line Following Robot turns the ESP32 into a real object that senses something, decides what it means, and reacts in the physical world.\n\nThe important lesson is not only the finished line-following robot. You learn how to separate input, decision logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.",
+    "eli12": "Think of the ESP32 as the brain. The left and right IR line sensors is how it notices the world. The motor driver is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.",
+    "parent_safety": "This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming circuit. Do not use mains voltage on a breadboard.",
+    "learning_objectives": [
+      "Wire and test the left and right IR line sensors before connecting the rest of the circuit.",
+      "Map each signal to a named ESP32 GPIO and keep the code constants readable.",
+      "Control motor driver using a clear threshold or command instead of hidden magic numbers.",
+      "Use Serial Monitor as an engineering tool, not only as a success message.",
+      "Identify power, wiring, and timing faults using a repeatable test checklist."
+    ],
+    "circuit_explanation": "The circuit is split into an input side and an output side. The left and right IR line sensors tells the ESP32 what is happening. The motor driver receives a controlled signal from the ESP32, usually through a driver, relay, or module that can handle more current than a GPIO pin.",
+    "engineering_explanation": "A reliable line-following robot is built in layers. First prove the input, then prove the output, then join them with simple state logic. This prevents a common beginner problem where the robot, lock, or automation fails and every wire looks suspicious at the same time.",
+    "code_explanation": "The example uses named pins, reads the input, converts the reading into a true or false decision, and then updates the output and status LED. Replace the threshold with values measured from your own left and right IR line sensors because modules vary.",
+    "testing_checklist": [
+      "ESP32 appears on the correct port and accepts a basic blink upload.",
+      "Ground is shared between every module that exchanges signals with the ESP32.",
+      "Each GPIO in the code matches the wire connected on the breadboard.",
+      "Serial Monitor prints startup text at 115200 baud.",
+      "The left and right IR line sensors value changes when you create a real test condition.",
+      "The motor driver changes only when the expected condition is reached.",
+      "The circuit still behaves correctly after power is removed and restored."
+    ],
+    "build_photos": [
+      {
+        "title": "Breadboard overview",
+        "note": "Show the ESP32, module placement, and power rails clearly."
+      },
+      {
+        "title": "Close-up wiring",
+        "note": "Capture each GPIO wire so beginners can compare their build."
+      },
+      {
+        "title": "Working output",
+        "note": "Show the Serial Monitor, display, robot, pump, or lock state after the code runs."
+      }
+    ],
+    "downloads": [
+      {
+        "text": "ESP32 Line Following Robot Arduino sketch",
+        "note": "Use the code section as the downloadable source until file downloads are published."
+      },
+      {
+        "text": "Wiring checklist",
+        "note": "Match the GPIO table and wiring steps before powering the circuit."
+      },
+      {
+        "text": "Troubleshooting worksheet",
+        "note": "Record symptoms, Serial output, voltage checks, and fixes."
+      }
+    ],
+    "real_world_applications": [
+      "Classroom line-following robot trainer",
+      "STEM lab demonstration",
+      "Home automation prototype",
+      "Engineering debugging practice",
+      "IoT portfolio project"
+    ],
+    "faqs": [
+      {
+        "question": "Is ESP32 Line Following Robot good for beginners?",
+        "answer": "Yes. Start with USB power, build the wiring slowly, and test one signal at a time before adding the full line-following robot behavior."
+      },
+      {
+        "question": "Which ESP32 board should I use for ESP32 Line Following Robot?",
+        "answer": "A standard ESP32 DevKit is the safest choice because it has USB programming, many GPIO pins, and strong Arduino IDE support."
+      },
+      {
+        "question": "Can I power ESP32 Line Following Robot from a phone charger?",
+        "answer": "For bench testing, use the USB cable connected to your computer. Use a regulated 5 V supply only after the circuit works and the current requirement is known."
+      },
+      {
+        "question": "Why does my left and right IR line sensors reading look wrong?",
+        "answer": "Most wrong readings come from reversed power, loose breadboard rows, the wrong GPIO number in code, or reading the sensor before it has settled."
+      },
+      {
+        "question": "Can I change the GPIO pins?",
+        "answer": "Yes, but update the constants at the top of the sketch and avoid ESP32 boot strapping pins unless you understand their startup behavior."
+      },
+      {
+        "question": "Does ESP32 Line Following Robot need Wi-Fi?",
+        "answer": "The core lesson works locally. Wi-Fi is useful for dashboards, alerts, and remote control, but it should be added after the hardware is stable."
+      },
+      {
+        "question": "Can I use 5 V signals with ESP32 in ESP32 Line Following Robot?",
+        "answer": "Do not feed 5 V logic into an ESP32 GPIO. ESP32 pins are 3.3 V logic pins and can be damaged by 5 V signals."
+      },
+      {
+        "question": "Why does motor driver not respond?",
+        "answer": "Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the output module uses active HIGH or active LOW logic."
+      },
+      {
+        "question": "What should I test first?",
+        "answer": "Upload a tiny sketch that reads only left and right IR line sensors. Once that is reliable, add motor driver, then add the full decision logic."
+      },
+      {
+        "question": "How accurate is this project?",
+        "answer": "It is accurate enough for learning and prototypes. For production work you should calibrate sensors, protect wiring, and test across temperature and voltage changes."
+      },
+      {
+        "question": "Can this run on batteries?",
+        "answer": "Yes, but runtime depends on Wi-Fi usage, sensor current, output current, and sleep mode. First measure current with a multimeter."
+      },
+      {
+        "question": "Should I solder the circuit?",
+        "answer": "Use a breadboard while learning. Solder a final version only after every wire and GPIO has been tested for several sessions."
+      },
+      {
+        "question": "Why does the ESP32 reset randomly?",
+        "answer": "Random resets usually mean weak USB power, motor or relay noise, brownout from high current loads, or a loose breadboard power rail."
+      },
+      {
+        "question": "Can I use PlatformIO instead of Arduino IDE?",
+        "answer": "Yes. The same sketch structure works in PlatformIO after adding the required libraries to the project configuration."
+      },
+      {
+        "question": "How do I make ESP32 Line Following Robot safer?",
+        "answer": "Keep high-current loads isolated, unplug before rewiring, use fused supplies for motors or pumps, and never connect mains voltage on a breadboard."
+      },
+      {
+        "question": "What is the most common mistake?",
+        "answer": "Beginners often trust the breadboard rows without checking continuity. Always trace each signal from ESP32 pin to module pin."
+      },
+      {
+        "question": "Can I add an OLED display?",
+        "answer": "Yes. An I2C OLED can share GPIO21 and GPIO22 with other I2C sensors as long as every device has a unique address."
+      },
+      {
+        "question": "How do I debug the code?",
+        "answer": "Print each important value to Serial Monitor: raw sensor reading, threshold, decision state, and output state."
+      },
+      {
+        "question": "Can this become a real product?",
+        "answer": "The idea can, but a product also needs enclosure design, electrical protection, watchdog recovery, calibration, and long-term testing."
+      },
+      {
+        "question": "What should I build next after ESP32 Line Following Robot?",
+        "answer": "Add logging, a web dashboard, OTA updates, or a second sensor so the line-following robot system can make better decisions."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}

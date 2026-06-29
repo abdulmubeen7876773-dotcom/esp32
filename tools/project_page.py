@@ -203,6 +203,93 @@ def callout_list_section(section_id: str, icon: str, title: str, items: list, cs
 </section>"""
 
 
+def prose_section(section_id: str, icon: str, title: str, text: str) -> str:
+    text = (text or "").strip()
+    if not text:
+        return ""
+    return f"""<section class="project-section" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {project_section_heading(section_id, icon, title)}
+  <div class="project-prose">{_paragraphs(text)}</div>
+</section>"""
+
+
+def simple_list_section(section_id: str, icon: str, title: str, items: list, css_class: str = "") -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        text = item if isinstance(item, str) else item.get("text") or item.get("name", "")
+        note = "" if isinstance(item, str) else item.get("note", "")
+        note_html = f'<span class="project-part-note">{esc(note)}</span>' if note else ""
+        rows.append(f"<li>{esc(text)}{note_html}</li>")
+    extra = f" {css_class}" if css_class else ""
+    return f"""<section class="project-section{extra}" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {project_section_heading(section_id, icon, title)}
+  <ul class="project-callout-list">{"".join(rows)}</ul>
+</section>"""
+
+
+def table_section(section_id: str, icon: str, title: str, columns: list, rows: list) -> str:
+    if not rows:
+        return ""
+    head = "".join(f"<th>{esc(col)}</th>" for col in columns)
+    body = []
+    for row in rows:
+        if isinstance(row, dict):
+            cells = [row.get(col.lower().replace(" ", "_"), row.get(col, "")) for col in columns]
+        else:
+            cells = list(row)
+        body.append("<tr>" + "".join(f"<td>{esc(str(cell))}</td>" for cell in cells[: len(columns)]) + "</tr>")
+    return f"""<section class="project-section" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {project_section_heading(section_id, icon, title)}
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr>{head}</tr></thead>
+    <tbody>{"".join(body)}</tbody>
+  </table></div>
+</section>"""
+
+
+def faq_section(items: list) -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        q = item.get("question", "")
+        a = item.get("answer", "")
+        if q and a:
+            rows.append(
+                f"""<details class="accordion-item project-faq-item">
+  <summary class="accordion-header">{esc(q)}</summary>
+  <div class="accordion-content">{_paragraphs(a)}</div>
+</details>"""
+            )
+    if not rows:
+        return ""
+    return f"""<section class="project-section project-faqs" id="faqs" aria-labelledby="faqs-heading">
+  {project_section_heading("faqs", "FAQ", "FAQs")}
+  <div class="project-faq-list">{"".join(rows)}</div>
+</section>"""
+
+
+def build_photos_section(items: list) -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        title = item.get("title", "") if isinstance(item, dict) else str(item)
+        note = item.get("note", "") if isinstance(item, dict) else ""
+        rows.append(
+            f"""<li class="project-part-item"><span class="project-part-icon" aria-hidden="true">IMG</span>
+<span class="project-part-body"><span class="project-part-name">{esc(title)}</span><span class="project-part-note">{esc(note)}</span></span></li>"""
+        )
+    return f"""<section class="project-section" id="build-photos" aria-labelledby="build-photos-heading">
+  {project_section_heading("build-photos", "IMG", "Build Photos Placeholder")}
+  <ul class="project-parts-list">{"".join(rows)}</ul>
+</section>"""
+
+
 def troubleshooting_section(items: list) -> str:
     if not items:
         return ""
@@ -286,25 +373,36 @@ def render_project_body(p: dict) -> str:
 {eli12_section(p)}
 {parent_safety_section(p)}
 <section class="project-section" id="build" aria-labelledby="build-heading">
-  {project_section_heading("build", "🛠", "What You Will Build")}
+  {project_section_heading("build", "BUILD", "What You Will Build")}
   <div class="project-prose">{_paragraphs(proj.get("what_you_build", ""))}</div>
 </section>
+{simple_list_section("objectives", "OBJ", "Learning Objectives", proj.get("learning_objectives", []))}
 <section class="project-section" id="components" aria-labelledby="components-heading">
-  {project_section_heading("components", "🧰", "Components List")}
+  {project_section_heading("components", "PARTS", "Components List")}
   {components_list(components)}
 </section>
+{table_section("bom", "BOM", "Bill of Materials", ["Part", "Qty", "Estimated Cost", "Notes"], proj.get("bom", []))}
 {related_components_section(components)}
 {wiring_section(proj.get("wiring") or {})}
+{table_section("gpio-map", "GPIO", "GPIO Mapping", ["Signal", "ESP32 Pin", "Direction", "Notes"], proj.get("gpio_map", []))}
+{prose_section("circuit", "CIR", "Circuit Explanation", proj.get("circuit_explanation", ""))}
+{prose_section("engineering", "ENG", "Engineering Explanation", proj.get("engineering_explanation", ""))}
+{simple_list_section("libraries", "LIB", "Libraries", proj.get("libraries", []))}
 {code_section(p)}
+{prose_section("code-explanation", "CODE", "Code Explanation", proj.get("code_explanation", ""))}
 {output_section(proj.get("expected_output") or p.get("output", ""))}
+{build_photos_section(proj.get("build_photos", []))}
 {troubleshooting_section(proj.get("troubleshooting", []))}
-{callout_list_section("mistakes", "⚠️", "Common Mistakes", proj.get("common_mistakes", []), "project-mistakes")}
+{callout_list_section("mistakes", "WARN", "Common Mistakes", proj.get("common_mistakes", []), "project-mistakes")}
+{simple_list_section("testing", "TEST", "Testing Checklist", proj.get("testing_checklist", []), "project-testing")}
 {upgrade_section(proj.get("upgrade_ideas", []))}
-{related_links_section("guides", "📖", "Related Guides", proj.get("related_guides", []))}
-{related_links_section("projects", "🚀", "Related Projects", proj.get("related_projects", []))}
+{simple_list_section("applications", "APP", "Real-World Applications", proj.get("real_world_applications", []), "project-applications")}
+{simple_list_section("downloads", "DL", "Downloads", proj.get("downloads", []), "project-downloads")}
+{related_links_section("guides", "GUIDE", "Related Guides", proj.get("related_guides", []))}
+{related_links_section("projects", "PROJ", "Related Projects", proj.get("related_projects", []))}
+{faq_section(proj.get("faqs", []))}
 {complete_section(p)}
 </article>"""
-
 
 def project_hero_html(p: dict, category: str) -> str:
     proj = p.get("project") or {}
