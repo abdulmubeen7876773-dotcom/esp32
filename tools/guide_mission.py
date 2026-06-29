@@ -417,6 +417,41 @@ def challenge_section(challenge: str, items: list) -> str:
 </section>"""
 
 
+def common_problems_section(items: list) -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        if isinstance(item, str):
+            rows.append(f"<li>{esc(item)}</li>")
+            continue
+        title = item.get("problem") or item.get("title", "")
+        cause = item.get("cause", "")
+        fix = item.get("fix", "")
+        cause_html = f"<p><strong>Likely cause:</strong> {esc(cause)}</p>" if cause else ""
+        fix_html = f"<p><strong>Fix:</strong> {esc(fix)}</p>" if fix else ""
+        rows.append(f"<li><h3>{esc(title)}</h3>{cause_html}{fix_html}</li>")
+    return f"""<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  {section_heading("troubleshooting", "!", "Common Problems")}
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets">{"".join(rows)}</ul>
+</section>"""
+
+
+def mission_faq_section(items: list) -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        q = item.get("question") or item.get("q", "")
+        a = item.get("answer") or item.get("a", "")
+        rows.append(f"<li><h3>{esc(q)}</h3><p>{esc(a)}</p></li>")
+    return f"""<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  {section_heading("faqs", "?", "FAQs")}
+  <ul class="mission-bullets">{"".join(rows)}</ul>
+</section>"""
+
+
 def render_mission_guide(guide: dict) -> str:
     m = guide.get("mission") or {}
     intro_html = render_friendly_intro(guide, is_mission=True)
@@ -478,6 +513,8 @@ def render_mission_guide(guide: dict) -> str:
         m.get("challenge", "").strip(),
         m.get("challenge_items", []),
     )
+    common_problems_html = common_problems_section(m.get("common_problems", []))
+    faq_html = mission_faq_section(guide.get("faqs", []))
 
     complete = m.get("complete") or {}
     complete_summary = (complete.get("summary") or "").strip()
@@ -513,6 +550,8 @@ def render_mission_guide(guide: dict) -> str:
 {output_html}
 {quiz_html}
 {challenge_html}
+{common_problems_html}
+{faq_html}
 {complete_html}
 {next_html}
 </article>"""
