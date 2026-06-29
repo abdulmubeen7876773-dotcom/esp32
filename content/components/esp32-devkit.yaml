@@ -1,39 +1,456 @@
-slug: esp32-devkit
-name: ESP32 DevKit Board
-category: Boards
-difficulty: Beginner
-icon: 🖥
-image: https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg
-summary: The brain of your project — a powerful microcontroller with built-in Wi-Fi and Bluetooth.
-eli12: ESP32 DevKit is the computer chip that runs your projects. Plug it in with USB, write code on your
-  laptop, and it controls LEDs, sensors, motors, and even connects to the internet.
-specs:
-- Dual-core 240 MHz processor
-- Wi-Fi 802.11 b/g/n
-- Bluetooth 4.2 / BLE
-- 520 KB SRAM, 4 MB flash typical
-- 3.3 V logic, USB powered
-pins:
-- 3.3 V → Sensor power
-- GND → Common ground
-- GPIO → Sensors, LEDs, relays
-- USB → Power and programming
-library: Arduino ESP32 board package
-example_code: "void setup() {\n  pinMode(2, OUTPUT);\n}\nvoid loop() {\n  digitalWrite(2, HIGH);\n  delay(500);\n\
-  \  digitalWrite(2, LOW);\n  delay(500);\n}\n"
-output: Built-in LED blinks on and off every half second.
-applications:
-- Every ESP32 Engine project
-- IoT devices
-- Robotics controllers
-related_guides:
-- title: What Is ESP32?
-  href: /guides/what-is-esp32.html
-- title: Installing Arduino IDE for ESP32
-  href: /guides/installing-arduino-ide-esp32.html
-datasheet_url: https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf
-faqs:
-- question: Which board should I buy first?
-  answer: ESP32 DevKitC or ESP32-WROOM-32 with USB port and labeled pins.
-quality_status: legacy_import
-status: needs_polish
+{
+  "slug": "esp32-devkit",
+  "name": "ESP32 DevKit Board",
+  "category": "Boards",
+  "difficulty": "Beginner",
+  "icon": "🖥",
+  "image": "https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg",
+  "summary": "Beginner-friendly ESP32 development board with USB programming, Wi-Fi, Bluetooth, 3.3 V GPIO, and enough pins for real hardware projects.",
+  "applications": [
+    "First ESP32 learning board",
+    "Wi-Fi sensor node",
+    "Bluetooth controller",
+    "Robot brain",
+    "Home automation prototype",
+    "Classroom lab board",
+    "MQTT device",
+    "Low-cost IoT gateway"
+  ],
+  "eli12": "The ESP32 DevKit is the brain of your project. It is a small computer board that you plug into USB, program from Arduino IDE, and connect to real parts like LEDs, sensors, displays, buttons, and relays.\n\nThe metal module on the board contains the ESP32 chip, flash memory, radio antenna, and support parts. The DevKit adds USB programming, voltage regulation, reset buttons, and breadboard-friendly pins so beginners can build without designing a circuit board first.\n\nUse it when you want one board that can read the physical world, control outputs, and connect to Wi-Fi or Bluetooth.",
+  "quick_facts": [
+    {
+      "label": "Brain",
+      "value": "Dual-core ESP32 microcontroller",
+      "why": "Runs your code and handles timing, Wi-Fi, Bluetooth, and GPIO."
+    },
+    {
+      "label": "Logic level",
+      "value": "3.3 V GPIO",
+      "why": "ESP32 pins are not 5 V tolerant, so safe wiring matters."
+    },
+    {
+      "label": "Programming",
+      "value": "USB to serial",
+      "why": "A USB cable uploads sketches and powers beginner projects."
+    },
+    {
+      "label": "Wireless",
+      "value": "Wi-Fi and Bluetooth",
+      "why": "The board can send sensor data, host web pages, or talk to phones."
+    },
+    {
+      "label": "Best start",
+      "value": "ESP32-WROOM DevKit",
+      "why": "Common, cheap, well documented, and compatible with most tutorials."
+    },
+    {
+      "label": "Arduino support",
+      "value": "ESP32 board package",
+      "why": "Lets beginners write C++ sketches using familiar Arduino functions."
+    }
+  ],
+  "how_it_works": "The DevKit combines an ESP32 module with the support electronics needed for learning. USB power enters the board, a regulator creates 3.3 V, and the USB-to-serial chip converts computer USB signals into UART signals the ESP32 bootloader understands.\n\nWhen you click Upload, Arduino IDE compiles your sketch and sends it through USB. The board enters bootloader mode, writes the firmware into flash memory, then resets and starts running your program.\n\nGPIO pins are programmable connections to the outside world. Some pins can read digital inputs, some can output PWM, some can read analog voltage, and some are used by I2C, SPI, or UART. The key engineering rule is that GPIO pins are signal pins, not power supplies. They can control modules, but heavy loads need drivers, transistors, relays, or motor boards.\n\nThe wireless radio shares power with the rest of the board. When Wi-Fi transmits, current briefly rises. Weak USB cables, poor breadboards, or overloaded 3.3 V rails can cause resets.",
+  "specs": [
+    {
+      "name": "Main chip",
+      "value": "ESP32-WROOM family on most DevKit boards",
+      "why": "This is the common module used by most beginner tutorials."
+    },
+    {
+      "name": "CPU",
+      "value": "Dual-core Tensilica LX6 up to 240 MHz",
+      "why": "Enough processing power for sensors, displays, networking, and control logic."
+    },
+    {
+      "name": "Logic voltage",
+      "value": "3.3 V",
+      "why": "GPIO pins must not be driven with 5 V signals."
+    },
+    {
+      "name": "USB input",
+      "value": "5 V from USB",
+      "why": "USB powers the board and provides the programming connection."
+    },
+    {
+      "name": "Wireless",
+      "value": "2.4 GHz Wi-Fi 802.11 b/g/n and Bluetooth/BLE",
+      "why": "Allows web dashboards, MQTT, phone control, and wireless data logging."
+    },
+    {
+      "name": "Flash",
+      "value": "Usually 4 MB on common boards",
+      "why": "Stores your firmware and sometimes file-system data."
+    },
+    {
+      "name": "SRAM",
+      "value": "About 520 KB internal SRAM",
+      "why": "Enough for beginner projects; large web apps and images require care."
+    },
+    {
+      "name": "ADC",
+      "value": "Multiple 12-bit ADC-capable pins",
+      "why": "Reads analog sensors, but ADC2 conflicts with Wi-Fi on classic ESP32."
+    },
+    {
+      "name": "PWM",
+      "value": "LEDC PWM on many GPIOs",
+      "why": "Controls LED brightness, buzzers, servos, and motor drivers."
+    },
+    {
+      "name": "I2C",
+      "value": "Software-selectable pins; default GPIO21 SDA, GPIO22 SCL",
+      "why": "Shares two wires with sensors and displays."
+    },
+    {
+      "name": "SPI",
+      "value": "Hardware SPI buses available",
+      "why": "Useful for fast displays, SD cards, and radio modules."
+    },
+    {
+      "name": "Safe current",
+      "value": "Keep GPIO loads small; use drivers for motors/relays",
+      "why": "Protects the ESP32 from overheating or permanent damage."
+    }
+  ],
+  "pinout": [
+    {
+      "pin": "5V / VIN",
+      "role": "USB power rail",
+      "connects": "5 V modules or board input",
+      "note": "Not a GPIO. Use carefully and do not feed 5 V into signal pins."
+    },
+    {
+      "pin": "3V3",
+      "role": "Regulated output",
+      "connects": "3.3 V sensors",
+      "note": "Limited current. Do not power motors or large LED strips from this pin."
+    },
+    {
+      "pin": "GND",
+      "role": "Ground reference",
+      "connects": "All circuits",
+      "note": "Every sensor and module must share ground with the ESP32."
+    },
+    {
+      "pin": "EN",
+      "role": "Enable/reset",
+      "connects": "Usually left alone",
+      "note": "Pulling EN low resets the chip."
+    },
+    {
+      "pin": "GPIO0",
+      "role": "Boot strapping pin",
+      "connects": "Avoid for first projects",
+      "note": "Holding it low during reset enters bootloader mode."
+    },
+    {
+      "pin": "GPIO2",
+      "role": "GPIO with boot considerations",
+      "connects": "LED examples on some boards",
+      "note": "Can affect boot on some boards; use carefully."
+    },
+    {
+      "pin": "GPIO4, 5, 16, 17, 18, 19, 21, 22, 23",
+      "role": "General GPIO",
+      "connects": "Sensors and outputs",
+      "note": "Good beginner pins for many digital projects."
+    },
+    {
+      "pin": "GPIO21",
+      "role": "Default I2C SDA",
+      "connects": "OLED/BME280 SDA",
+      "note": "Can be changed in code but default is easiest."
+    },
+    {
+      "pin": "GPIO22",
+      "role": "Default I2C SCL",
+      "connects": "OLED/BME280 SCL",
+      "note": "Clock line for many I2C examples."
+    },
+    {
+      "pin": "GPIO34-39",
+      "role": "Input-only pins",
+      "connects": "Buttons or analog sensors",
+      "note": "Cannot drive LEDs or outputs."
+    },
+    {
+      "pin": "TX0/RX0",
+      "role": "USB serial pins",
+      "connects": "Programming/logging",
+      "note": "Avoid using them for beginner circuits while debugging over USB."
+    },
+    {
+      "pin": "GPIO12",
+      "role": "Boot strapping pin",
+      "connects": "Avoid for first projects",
+      "note": "Wrong level during boot can prevent startup."
+    }
+  ],
+  "wiring": {
+    "illustration_alt": "ESP32 DevKit on breadboard with USB power, GND shared, GPIO2 through resistor to LED, GPIO21/GPIO22 reserved for I2C",
+    "summary": "Start with one safe output circuit before connecting complex modules. Use USB for power, connect all grounds together, and never connect 5 V signals directly to GPIO pins.\n\nA simple LED on GPIO2 teaches the most important pattern: GPIO drives a small signal, a resistor limits current, and ground completes the circuit.",
+    "steps": [
+      "Unplug USB before wiring.",
+      "Place the ESP32 DevKit so each side of pins sits on a different breadboard half.",
+      "Connect a 220 ohm resistor from GPIO2 to the LED long leg.",
+      "Connect the LED short leg to GND.",
+      "Plug in USB and select the correct board and port in Arduino IDE.",
+      "Upload the blink code and confirm the LED changes state.",
+      "For sensors, connect VCC to 3.3 V unless the component guide says otherwise.",
+      "Always connect module GND to ESP32 GND."
+    ]
+  },
+  "library": "Arduino ESP32 board package",
+  "code": {
+    "filename": "esp32_devkit_blink_test.ino",
+    "notes": "This sketch proves that the board, USB cable, Arduino setup, selected port, and one GPIO pin all work.\n\nsetup() runs once and configures GPIO2 as an output. loop() toggles the pin without using any external libraries. If this sketch uploads and blinks, the board is ready for sensors, displays, and network projects.",
+    "content": "#define LED_PIN 2\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(LED_PIN, OUTPUT);\n  Serial.println(\"ESP32 DevKit blink test started\");\n}\n\nvoid loop() {\n  digitalWrite(LED_PIN, HIGH);\n  Serial.println(\"LED ON\");\n  delay(500);\n\n  digitalWrite(LED_PIN, LOW);\n  Serial.println(\"LED OFF\");\n  delay(500);\n}"
+  },
+  "output": "Serial Monitor at 115200 baud prints LED ON and LED OFF every half second. The external LED should blink at the same rhythm. Some DevKit boards also have an onboard LED, but the exact onboard LED pin varies by board.",
+  "common_mistakes": [
+    {
+      "text": "Using a charge-only USB cable."
+    },
+    {
+      "text": "Selecting the wrong COM port."
+    },
+    {
+      "text": "Forgetting to install the ESP32 board package."
+    },
+    {
+      "text": "Feeding 5 V into a GPIO pin."
+    },
+    {
+      "text": "Powering motors from the 3V3 pin."
+    },
+    {
+      "text": "Forgetting common ground."
+    },
+    {
+      "text": "Using input-only pins as outputs."
+    },
+    {
+      "text": "Using boot strapping pins without understanding startup behavior."
+    },
+    {
+      "text": "Expecting all ESP32 boards to have the same onboard LED pin."
+    },
+    {
+      "text": "Letting Wi-Fi current spikes brown out a weak USB power source."
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Board not detected",
+      "cause": "USB cable is charge-only, driver missing, or wrong port.",
+      "fix": "Use a known data cable, install CP210x/CH340 drivers if needed, and select the correct port."
+    },
+    {
+      "problem": "Upload stuck on Connecting",
+      "cause": "Board did not enter bootloader mode.",
+      "fix": "Hold BOOT while upload begins, then release when writing starts."
+    },
+    {
+      "problem": "Sketch uploads but nothing happens",
+      "cause": "Wrong GPIO, LED polarity, or resistor row.",
+      "fix": "Check LED long leg, GND, resistor placement, and LED_PIN value."
+    },
+    {
+      "problem": "Serial output is unreadable",
+      "cause": "Baud rate mismatch.",
+      "fix": "Set Serial Monitor to 115200 baud."
+    },
+    {
+      "problem": "Board resets when Wi-Fi starts",
+      "cause": "Weak USB supply or overloaded 3.3 V rail.",
+      "fix": "Use a better USB cable and do not power heavy loads from the board."
+    },
+    {
+      "problem": "Sensor gives nonsense",
+      "cause": "No common ground or wrong voltage.",
+      "fix": "Share GND and verify the component voltage requirement."
+    },
+    {
+      "problem": "GPIO will not output",
+      "cause": "You used input-only GPIO34-39.",
+      "fix": "Move output wiring to a normal GPIO such as 4, 16, 17, 18, 19, 21, 22, or 23."
+    },
+    {
+      "problem": "Board will not boot after wiring",
+      "cause": "A strapping pin is pulled to the wrong level.",
+      "fix": "Disconnect external wiring, boot again, and avoid GPIO0, GPIO2, GPIO12, GPIO15 for beginner circuits."
+    },
+    {
+      "problem": "Arduino IDE has no ESP32 boards",
+      "cause": "Board package URL not installed.",
+      "fix": "Install the Espressif ESP32 package in Boards Manager."
+    },
+    {
+      "problem": "Port disappears during upload",
+      "cause": "USB cable/connector is loose or power dips.",
+      "fix": "Use a short cable and avoid moving the board while uploading."
+    },
+    {
+      "problem": "Pin labels do not match tutorial",
+      "cause": "Different DevKit layouts use different printed labels.",
+      "fix": "Follow GPIO numbers, not physical pin position."
+    },
+    {
+      "problem": "Analog read changes with Wi-Fi",
+      "cause": "ADC2 pins are affected by Wi-Fi on classic ESP32.",
+      "fix": "Use ADC1 pins such as GPIO32-39 for analog sensors."
+    },
+    {
+      "problem": "Relay or motor does not work directly",
+      "cause": "GPIO cannot supply enough current.",
+      "fix": "Use a relay module, MOSFET, transistor, or motor driver."
+    },
+    {
+      "problem": "Board gets hot",
+      "cause": "Short circuit or overloaded regulator.",
+      "fix": "Unplug immediately and inspect 5 V, 3.3 V, and GND wiring."
+    },
+    {
+      "problem": "Random crashes",
+      "cause": "Floating input, memory issue, or unstable power.",
+      "fix": "Use pull-ups/pull-downs, simplify code, and check power wiring."
+    }
+  ],
+  "related_guides": [
+    {
+      "title": "What Is ESP32?",
+      "href": "/guides/what-is-esp32.html",
+      "description": "Understand the chip, pins, power, and project workflow."
+    },
+    {
+      "title": "Installing Arduino IDE for ESP32",
+      "href": "/guides/installing-arduino-ide-esp32.html",
+      "description": "Set up the software needed to upload sketches."
+    },
+    {
+      "title": "Blink an LED with ESP32",
+      "href": "/guides/blink-led-esp32.html",
+      "description": "Run your first safe GPIO output project."
+    }
+  ],
+  "related_projects": [
+    {
+      "title": "ESP32 Learning Trainer",
+      "href": "/projects/esp32-learning-trainer.html",
+      "description": "Practice GPIO, inputs, outputs, and debugging."
+    },
+    {
+      "title": "ESP32 IoT Weather Station",
+      "href": "/projects/esp32-iot-weather-station.html",
+      "description": "Use the DevKit as the controller for a real connected build."
+    },
+    {
+      "title": "ESP32 WiFi Robot Controller",
+      "href": "/projects/esp32-wifi-robot-controller.html",
+      "description": "Turn the board into a wireless robot brain."
+    }
+  ],
+  "related_components": [
+    {
+      "title": "BME280 Environmental Sensor",
+      "href": "/components/bme280.html",
+      "description": "Add weather readings over I2C."
+    },
+    {
+      "title": "SSD1306 OLED Display",
+      "href": "/components/ssd1306-oled.html",
+      "description": "Show project status without a computer."
+    },
+    {
+      "title": "Relay Module",
+      "href": "/components/relay-module.html",
+      "description": "Switch larger loads safely from a GPIO signal."
+    }
+  ],
+  "datasheet_url": "https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf",
+  "datasheet_note": "Espressif ESP32-WROOM datasheet for electrical limits, RF details, memory, boot pins, and module ratings.",
+  "faqs": [
+    {
+      "question": "Which ESP32 board should I buy first?",
+      "answer": "Choose an ESP32-WROOM DevKit with USB, labeled pins, and good documentation."
+    },
+    {
+      "question": "Is ESP32 an Arduino?",
+      "answer": "No. ESP32 is a microcontroller, but it can be programmed using Arduino IDE."
+    },
+    {
+      "question": "Can ESP32 use 5 V sensors?",
+      "answer": "Only if the signal into GPIO is shifted to 3.3 V. ESP32 GPIO pins are not 5 V tolerant."
+    },
+    {
+      "question": "What voltage powers the board?",
+      "answer": "USB provides 5 V to the board, and the onboard regulator creates 3.3 V for the ESP32."
+    },
+    {
+      "question": "Can I power motors from the ESP32?",
+      "answer": "No. Use a motor driver and separate power supply with common ground."
+    },
+    {
+      "question": "Why are there many GND pins?",
+      "answer": "They are all ground references. Use any convenient GND pin."
+    },
+    {
+      "question": "What is GPIO?",
+      "answer": "GPIO means general-purpose input/output, a pin your code can read or control."
+    },
+    {
+      "question": "Which pins are safe for beginners?",
+      "answer": "GPIO4, 5, 16, 17, 18, 19, 21, 22, 23, 25, 26, and 27 are common choices."
+    },
+    {
+      "question": "Which pins should beginners avoid?",
+      "answer": "Avoid strapping pins such as GPIO0, GPIO2, GPIO12, and GPIO15 until you understand boot behavior."
+    },
+    {
+      "question": "Why does upload need the BOOT button?",
+      "answer": "Some boards do not auto-enter bootloader mode reliably, so BOOT forces it."
+    },
+    {
+      "question": "What is EN?",
+      "answer": "EN is the enable/reset pin. Pulling it low resets the ESP32."
+    },
+    {
+      "question": "Can ESP32 connect to Wi-Fi?",
+      "answer": "Yes. Wi-Fi is built into the chip."
+    },
+    {
+      "question": "Can ESP32 use Bluetooth?",
+      "answer": "Classic ESP32 supports Bluetooth and BLE, though support varies on newer ESP32 families."
+    },
+    {
+      "question": "Why does my board reset randomly?",
+      "answer": "Common causes are weak USB power, wiring shorts, heavy loads, or unstable code."
+    },
+    {
+      "question": "Can I use MicroPython?",
+      "answer": "Yes. ESP32 supports MicroPython, but ESP32 Engine beginner content uses Arduino first."
+    },
+    {
+      "question": "What is flash memory?",
+      "answer": "Flash stores your uploaded program and sometimes files."
+    },
+    {
+      "question": "What is the difference between VIN and 3V3?",
+      "answer": "VIN/5V is the USB/input rail. 3V3 is regulated output for the ESP32 and small sensors."
+    },
+    {
+      "question": "Can I run ESP32 from battery?",
+      "answer": "Yes, but choose the right regulator and use deep sleep for long life."
+    },
+    {
+      "question": "Why does analogRead behave strangely?",
+      "answer": "ESP32 ADC is useful but not laboratory-grade; ADC2 also conflicts with Wi-Fi."
+    },
+    {
+      "question": "Can I connect many I2C devices?",
+      "answer": "Yes, if addresses are unique and wiring stays short and clean."
+    }
+  ],
+  "quality_status": "golden",
+  "status": "complete"
+}

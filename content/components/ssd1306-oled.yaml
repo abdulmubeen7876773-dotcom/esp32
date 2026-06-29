@@ -1,38 +1,403 @@
-slug: ssd1306-oled
-name: SSD1306 OLED Display
-category: Displays
-difficulty: Beginner
-icon: 📺
-image: https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg
-summary: A tiny bright screen that shows text, numbers, and simple graphics on your project.
-eli12: This little screen is like a mini TV for your ESP32. You can show temperature, smiley faces, or
-  messages — all on a glowing blue display smaller than your thumb.
-specs:
-- 'Resolution: 128×64 pixels'
-- 'Interface: I2C'
-- 'Operating voltage: 3.3 V to 5 V'
-- Blue or white monochrome
-pins:
-- VCC → 3.3 V
-- GND → GND
-- SDA → GPIO21
-- SCL → GPIO22
-library: Adafruit SSD1306 + Adafruit GFX
-example_code: "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\nAdafruit_SSD1306\
-  \ display(128, 64, &Wire, -1);\nvoid setup() {\n  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  display.clearDisplay();\n\
-  \  display.setTextSize(2);\n  display.setTextColor(SSD1306_WHITE);\n  display.setCursor(0, 20);\n  display.println(\"\
-  Hello!\");\n  display.display();\n}\nvoid loop() {}\n"
-output: OLED shows "Hello!" in large white text.
-applications:
-- Sensor readout displays
-- Menu interfaces
-- Status indicators
-related_projects:
-- title: ESP32 Distance Monitoring System
-  href: /projects/esp32-distance-monitoring-system.html
-datasheet_url: https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf
-faqs:
-- question: Screen stays blank?
-  answer: Check I2C address (usually 0x3C) and SDA/SCL wiring.
-quality_status: legacy_import
-status: needs_polish
+{
+  "slug": "ssd1306-oled",
+  "name": "SSD1306 OLED Display",
+  "category": "Displays",
+  "difficulty": "Beginner",
+  "icon": "📺",
+  "image": "https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg",
+  "summary": "Small monochrome I2C OLED display for showing ESP32 sensor readings, menus, status messages, icons, and debugging information.",
+  "applications": [
+    "Sensor dashboard",
+    "Weather display",
+    "Robot status screen",
+    "Wi-Fi connection indicator",
+    "Menu interface",
+    "Battery monitor",
+    "Classroom display demo",
+    "Debug screen without Serial Monitor"
+  ],
+  "eli12": "The SSD1306 OLED is a tiny screen for your ESP32. It can show words, numbers, icons, and simple drawings without needing a computer connected.\n\nOLED pixels make their own light, so the screen looks bright and clear. Most beginner modules are 128 pixels wide and 64 pixels tall. That sounds small, but it is enough for temperature, humidity, Wi-Fi status, battery voltage, or a simple menu.\n\nUse it when your project needs a face. A sensor becomes much easier to understand when the value appears directly on the device.",
+  "quick_facts": [
+    {
+      "label": "Resolution",
+      "value": "128 x 64 pixels",
+      "why": "Enough for several lines of text or small graphics."
+    },
+    {
+      "label": "Interface",
+      "value": "I2C on SDA/SCL",
+      "why": "Only two signal wires are needed."
+    },
+    {
+      "label": "Common address",
+      "value": "0x3C",
+      "why": "Most examples use this address; some modules use 0x3D."
+    },
+    {
+      "label": "Display type",
+      "value": "Monochrome OLED",
+      "why": "Pixels are on or off, usually white or blue."
+    },
+    {
+      "label": "ESP32 pins",
+      "value": "GPIO21 SDA, GPIO22 SCL",
+      "why": "Matches default ESP32 I2C wiring."
+    },
+    {
+      "label": "Best use",
+      "value": "Local project feedback",
+      "why": "Shows values when Serial Monitor is not available."
+    }
+  ],
+  "how_it_works": "The SSD1306 is a display controller chip. Your ESP32 does not control every OLED segment directly. Instead, it sends commands and screen data to the SSD1306 over I2C.\n\nThe display memory is like a tiny black-and-white image buffer. Libraries such as Adafruit SSD1306 let your code draw text, lines, rectangles, and pixels into a RAM buffer on the ESP32. Nothing appears until display.display() transfers that buffer to the screen.\n\nOLED pixels emit light directly, unlike LCD pixels that need a backlight. This makes the display readable and high-contrast, but it also means static images can cause burn-in over very long periods. For learning projects, this is rarely a problem, but production devices should avoid leaving the same bright screen forever.\n\nBecause the screen shares I2C, it can live on the same SDA/SCL wires as sensors like the BME280. Each device just needs a unique address.",
+  "specs": [
+    {
+      "name": "Resolution",
+      "value": "128 x 64 pixels typical",
+      "why": "Defines how much text and graphics fit on screen."
+    },
+    {
+      "name": "Controller",
+      "value": "SSD1306",
+      "why": "The chip that receives commands and drives the OLED panel."
+    },
+    {
+      "name": "Interface",
+      "value": "I2C on most beginner modules",
+      "why": "Keeps wiring simple with two signal wires."
+    },
+    {
+      "name": "I2C address",
+      "value": "Usually 0x3C, sometimes 0x3D",
+      "why": "Wrong address is the most common blank-screen cause."
+    },
+    {
+      "name": "Supply voltage",
+      "value": "3.3 V to 5 V on many modules",
+      "why": "Use 3.3 V with ESP32 unless your module documentation says otherwise."
+    },
+    {
+      "name": "Logic level",
+      "value": "3.3 V safe on typical I2C modules",
+      "why": "Matches ESP32 I2C signals."
+    },
+    {
+      "name": "Color",
+      "value": "Monochrome white or blue",
+      "why": "The library treats pixels as on/off, not full color."
+    },
+    {
+      "name": "Buffer memory",
+      "value": "1024 bytes for 128x64",
+      "why": "The ESP32 stores a screen buffer before sending it."
+    },
+    {
+      "name": "Refresh behavior",
+      "value": "Manual display.display() update",
+      "why": "Drawing commands update the buffer first, then the screen."
+    },
+    {
+      "name": "Viewing angle",
+      "value": "Wide OLED viewing angle",
+      "why": "Useful for small devices viewed from different directions."
+    },
+    {
+      "name": "Power",
+      "value": "Depends on lit pixels",
+      "why": "More bright pixels consume more current."
+    }
+  ],
+  "pinout": [
+    {
+      "pin": "VCC",
+      "role": "Power input",
+      "connects": "ESP32 3.3 V",
+      "note": "Many modules accept 5 V, but 3.3 V keeps logic simple and safe."
+    },
+    {
+      "pin": "GND",
+      "role": "Ground reference",
+      "connects": "ESP32 GND",
+      "note": "Must share ground with ESP32 and other I2C devices."
+    },
+    {
+      "pin": "SDA",
+      "role": "I2C data",
+      "connects": "ESP32 GPIO21",
+      "note": "Shared data line; can be used with other I2C modules."
+    },
+    {
+      "pin": "SCL",
+      "role": "I2C clock",
+      "connects": "ESP32 GPIO22",
+      "note": "Clock line from ESP32 I2C master."
+    }
+  ],
+  "wiring": {
+    "illustration_alt": "SSD1306 OLED VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22 on ESP32",
+    "summary": "Most SSD1306 beginner modules use four pins: VCC, GND, SDA, and SCL. The display can share the same I2C bus as a BME280 sensor because each device has its own address.\n\nKeep wires short while learning. If the screen is blank, run an I2C scanner before changing code randomly.",
+    "steps": [
+      "Unplug USB before wiring.",
+      "Connect OLED VCC to ESP32 3.3 V.",
+      "Connect OLED GND to ESP32 GND.",
+      "Connect OLED SDA to ESP32 GPIO21.",
+      "Connect OLED SCL to ESP32 GPIO22.",
+      "Install Adafruit SSD1306 and Adafruit GFX libraries.",
+      "Try address 0x3C first.",
+      "Open Serial Monitor to confirm whether display.begin() succeeds."
+    ]
+  },
+  "library": "Adafruit SSD1306 plus Adafruit GFX",
+  "code": {
+    "filename": "ssd1306_esp32_hello_status.ino",
+    "notes": "Wire.begin() starts I2C on the ESP32 default pins. The display object defines the screen size and reset behavior.\n\nsetup() initializes the display and prints a clear startup screen. loop() updates a counter once per second so you can prove the screen is refreshing, not just showing a static image.",
+    "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define SCREEN_WIDTH 128\n#define SCREEN_HEIGHT 64\n#define OLED_RESET -1\n#define OLED_ADDRESS 0x3C\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\nunsigned long counter = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {\n    Serial.println(\"SSD1306 not found. Check address, SDA, SCL, power, and ground.\");\n    while (true) delay(1000);\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n  Serial.println(\"OLED initialized\");\n}\n\nvoid loop() {\n  display.clearDisplay();\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"SSD1306 OLED\");\n  display.println(\"Status: running\");\n  display.print(\"Seconds: \");\n  display.println(counter++);\n  display.display();\n  delay(1000);\n}"
+  },
+  "output": "The OLED first shows ESP32 Engine and OLED ready. Then it refreshes once per second with a running seconds counter. Serial Monitor prints OLED initialized. If the display is blank and Serial Monitor reports not found, the address or I2C wiring is wrong.",
+  "common_mistakes": [
+    {
+      "text": "Using the wrong I2C address."
+    },
+    {
+      "text": "Swapping SDA and SCL."
+    },
+    {
+      "text": "Forgetting display.display()."
+    },
+    {
+      "text": "Installing Adafruit GFX but not Adafruit SSD1306."
+    },
+    {
+      "text": "Using text too large for the screen."
+    },
+    {
+      "text": "Powering from a noisy breadboard rail."
+    },
+    {
+      "text": "Expecting color graphics on a monochrome OLED."
+    },
+    {
+      "text": "Leaving static bright graphics forever in a finished device."
+    },
+    {
+      "text": "Using the wrong screen height in code."
+    },
+    {
+      "text": "Forgetting common ground."
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Screen stays blank",
+      "cause": "Wrong address, wiring, power, or missing display.display().",
+      "fix": "Run I2C scanner, verify 0x3C/0x3D, and confirm SDA/SCL."
+    },
+    {
+      "problem": "Code says allocation failed",
+      "cause": "Wrong display size or memory issue.",
+      "fix": "Use 128x64 or 128x32 to match your module."
+    },
+    {
+      "problem": "Text appears cut off",
+      "cause": "Cursor or text size too large.",
+      "fix": "Use smaller text or reposition with setCursor()."
+    },
+    {
+      "problem": "Only random pixels appear",
+      "cause": "Wrong controller, bad library settings, or poor wiring.",
+      "fix": "Confirm SSD1306 and screen size."
+    },
+    {
+      "problem": "OLED works alone but not with sensor",
+      "cause": "I2C bus wiring or address issue.",
+      "fix": "Scan bus with both devices connected."
+    },
+    {
+      "problem": "Display flickers",
+      "cause": "Refreshing too often or clearing unnecessarily.",
+      "fix": "Update at a slower rate and redraw only when needed."
+    },
+    {
+      "problem": "Serial works but screen does not",
+      "cause": "Library init failed.",
+      "fix": "Check display.begin return value and address."
+    },
+    {
+      "problem": "Screen is dim",
+      "cause": "Low contrast setting or weak power.",
+      "fix": "Use stable 3.3 V and default contrast first."
+    },
+    {
+      "problem": "Upload fails after wiring",
+      "cause": "Short or wrong rail connection.",
+      "fix": "Unplug and inspect VCC/GND rows."
+    },
+    {
+      "problem": "Garbled characters",
+      "cause": "Memory overwrite or wrong library.",
+      "fix": "Start from the minimal example and add code slowly."
+    },
+    {
+      "problem": "Screen rotated wrong",
+      "cause": "Display orientation not set.",
+      "fix": "Use setRotation() if needed."
+    },
+    {
+      "problem": "No I2C devices found",
+      "cause": "SDA/SCL swapped or no power.",
+      "fix": "Check GPIO21/GPIO22 and common ground."
+    },
+    {
+      "problem": "Address conflict",
+      "cause": "Two I2C devices use same address.",
+      "fix": "Change address if hardware allows or use another device."
+    },
+    {
+      "problem": "Burn-in concern",
+      "cause": "Static bright content for long periods.",
+      "fix": "Dim screen, move content, or blank when idle."
+    },
+    {
+      "problem": "Works on Uno not ESP32",
+      "cause": "Different I2C pins.",
+      "fix": "Use Wire.begin(21, 22) or wire to selected ESP32 pins."
+    }
+  ],
+  "related_guides": [
+    {
+      "title": "Connect OLED Display with ESP32",
+      "href": "/guides/connect-oled-esp32.html",
+      "description": "Step-by-step display mission."
+    },
+    {
+      "title": "Read Temperature with DHT22",
+      "href": "/guides/read-temperature-dht22.html",
+      "description": "Show sensor values on the OLED next."
+    },
+    {
+      "title": "What Is ESP32?",
+      "href": "/guides/what-is-esp32.html",
+      "description": "Understand the board that drives the display."
+    }
+  ],
+  "related_projects": [
+    {
+      "title": "ESP32 OLED Weather Clock",
+      "href": "/projects/esp32-oled-weather-clock.html",
+      "description": "Build a small display-based weather clock."
+    },
+    {
+      "title": "ESP32 IoT Weather Station",
+      "href": "/projects/esp32-iot-weather-station.html",
+      "description": "Show live environmental readings."
+    },
+    {
+      "title": "ESP32 Distance Monitoring System",
+      "href": "/projects/esp32-distance-monitoring-system.html",
+      "description": "Display distance values locally."
+    }
+  ],
+  "related_components": [
+    {
+      "title": "ESP32 DevKit Board",
+      "href": "/components/esp32-devkit.html",
+      "description": "The controller that sends display data."
+    },
+    {
+      "title": "BME280 Environmental Sensor",
+      "href": "/components/bme280.html",
+      "description": "Share the same I2C bus with an environmental sensor."
+    },
+    {
+      "title": "DHT22 Temperature & Humidity Sensor",
+      "href": "/components/dht22.html",
+      "description": "Show temperature and humidity readings on screen."
+    }
+  ],
+  "datasheet_url": "https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf",
+  "datasheet_note": "SSD1306 controller datasheet for command details, display memory, addressing modes, and electrical behavior.",
+  "faqs": [
+    {
+      "question": "What does SSD1306 mean?",
+      "answer": "SSD1306 is the display controller chip used by many small OLED modules."
+    },
+    {
+      "question": "Is it color?",
+      "answer": "Most beginner SSD1306 modules are monochrome, usually white or blue."
+    },
+    {
+      "question": "What address does it use?",
+      "answer": "Most I2C modules use 0x3C; some use 0x3D."
+    },
+    {
+      "question": "Which ESP32 pins should I use?",
+      "answer": "Use GPIO21 for SDA and GPIO22 for SCL for standard examples."
+    },
+    {
+      "question": "Can it share I2C with BME280?",
+      "answer": "Yes, if the addresses are different."
+    },
+    {
+      "question": "Why is my screen blank?",
+      "answer": "Common causes are wrong address, swapped SDA/SCL, missing power, or forgetting display.display()."
+    },
+    {
+      "question": "Do I need Adafruit GFX?",
+      "answer": "Yes, Adafruit SSD1306 depends on Adafruit GFX for drawing functions."
+    },
+    {
+      "question": "Can I show images?",
+      "answer": "Yes, but they must be converted to monochrome bitmaps."
+    },
+    {
+      "question": "Can I use large fonts?",
+      "answer": "Yes, but space is limited on 128x64 pixels."
+    },
+    {
+      "question": "Does OLED need a backlight?",
+      "answer": "No. OLED pixels emit their own light."
+    },
+    {
+      "question": "Can OLED burn in?",
+      "answer": "Long static images can age pixels, so finished devices should avoid permanent bright screens."
+    },
+    {
+      "question": "Is 3.3 V enough?",
+      "answer": "Usually yes for ESP32-compatible modules."
+    },
+    {
+      "question": "What is display.display()?",
+      "answer": "It sends the RAM buffer to the physical screen."
+    },
+    {
+      "question": "Why do drawings not appear immediately?",
+      "answer": "The library draws into memory first, then updates the screen when display.display() runs."
+    },
+    {
+      "question": "Can I use U8g2 library?",
+      "answer": "Yes. This page uses Adafruit libraries for beginner consistency."
+    },
+    {
+      "question": "Can it run on battery?",
+      "answer": "Yes, but lit pixels consume power, so dim or sleep the display."
+    },
+    {
+      "question": "Can I rotate the screen?",
+      "answer": "Yes, use setRotation()."
+    },
+    {
+      "question": "What is OLED_RESET -1?",
+      "answer": "It tells the library there is no separate reset pin connected."
+    },
+    {
+      "question": "Can I use SPI OLED?",
+      "answer": "Yes, but wiring and code are different from this I2C guide."
+    },
+    {
+      "question": "Why does text overlap?",
+      "answer": "You need to clear the display or overwrite old text carefully."
+    }
+  ],
+  "quality_status": "golden",
+  "status": "complete"
+}

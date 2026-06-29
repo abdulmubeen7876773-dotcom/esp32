@@ -1,42 +1,403 @@
-slug: hc-sr04
-name: HC-SR04 Ultrasonic Distance Sensor
-category: Sensors
-difficulty: Beginner
-icon: 📏
-image: https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg
-summary: Measures distance using sound waves. Great for robots, parking sensors, and level detectors.
-eli12: HC-SR04 is like a bat that sends out a tiny sound you can't hear. It listens for the echo and tells
-  your ESP32 how far away something is — like measuring how close your hand is to a wall.
-specs:
-- 'Range: 2 cm to 400 cm'
-- 'Operating voltage: 5 V'
-- Trigger and Echo pins
-- 'Accuracy: about 3 mm'
-pins:
-- VCC → 5 V
-- GND → GND
-- TRIG → GPIO5
-- ECHO → GPIO18 (via level shifter if needed)
-library: Built-in Arduino timing (or NewPing library)
-example_code: "#define TRIG 5\n#define ECHO 18\nvoid setup() { Serial.begin(115200); pinMode(TRIG, OUTPUT);\
-  \ pinMode(ECHO, INPUT); }\nvoid loop() {\n  digitalWrite(TRIG, LOW); delayMicroseconds(2);\n  digitalWrite(TRIG,\
-  \ HIGH); delayMicroseconds(10);\n  digitalWrite(TRIG, LOW);\n  long duration = pulseIn(ECHO, HIGH);\n\
-  \  float cm = duration * 0.034 / 2;\n  Serial.printf(\"Distance: %.1f cm\\n\", cm);\n  delay(500);\n\
-  }\n"
-output: Serial Monitor prints distance in centimeters.
-applications:
-- Robot obstacle avoidance
-- Water tank level sensing
-- Automatic door triggers
-related_projects:
-- title: ESP32 Distance Monitoring System
-  href: /projects/esp32-distance-monitoring-system.html
-related_guides:
-- title: What Is ESP32?
-  href: /guides/what-is-esp32.html
-datasheet_url: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
-faqs:
-- question: Why does it show 0 cm?
-  answer: The object may be too close (under 2 cm) or the sensor is angled wrong.
-quality_status: legacy_import
-status: needs_polish
+{
+  "slug": "hc-sr04",
+  "name": "HC-SR04 Ultrasonic Distance Sensor",
+  "category": "Sensors",
+  "difficulty": "Beginner",
+  "icon": "📏",
+  "image": "https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg",
+  "summary": "Low-cost ultrasonic distance sensor that measures nearby objects with sound pulses for ESP32 robots, parking aids, and level sensing.",
+  "applications": [
+    "Robot obstacle detection",
+    "Parking distance indicator",
+    "Tank level experiment",
+    "Hands-free trigger",
+    "Doorway people counter",
+    "Classroom echo demo",
+    "Trash-bin fill monitor",
+    "Distance alarm"
+  ],
+  "eli12": "The HC-SR04 measures distance using echoes. It sends a short burst of sound that humans cannot hear, then waits for the sound to bounce off an object and return.\n\nYour ESP32 measures how long the echo took. Sound moves through air at a known speed, so the code converts time into distance. If the echo returns quickly, the object is close. If it takes longer, the object is farther away.\n\nUse it for simple distance experiments and robots. Do not use it where soft fabric, angled surfaces, wind, rain, or tiny objects must be measured accurately.",
+  "quick_facts": [
+    {
+      "label": "Range",
+      "value": "About 2 cm to 400 cm",
+      "why": "Works best for medium-distance objects with hard surfaces."
+    },
+    {
+      "label": "Signal",
+      "value": "TRIG output and ECHO input",
+      "why": "One pin starts the ping, the other reports echo time."
+    },
+    {
+      "label": "Power",
+      "value": "5 V module power",
+      "why": "The transmitter needs 5 V on common HC-SR04 modules."
+    },
+    {
+      "label": "ESP32 safety",
+      "value": "Level shift ECHO to 3.3 V",
+      "why": "The ECHO pin can output 5 V, which is unsafe for ESP32 GPIO."
+    },
+    {
+      "label": "Best surface",
+      "value": "Flat and hard",
+      "why": "Sound reflects better from walls and boards than cloth or foam."
+    },
+    {
+      "label": "Timing",
+      "value": "Microsecond pulse measurement",
+      "why": "Distance comes from time-of-flight math."
+    }
+  ],
+  "how_it_works": "The sensor has two round cans. One is an ultrasonic transmitter and the other is a receiver. When the ESP32 sends a 10 microsecond pulse to TRIG, the module emits a short burst near 40 kHz.\n\nAfter transmitting, the ECHO pin goes HIGH. It stays HIGH until the reflected sound returns or the module times out. The ESP32 measures that HIGH time in microseconds.\n\nDistance equals speed times time, but the sound travels to the object and back. That is why code divides by two. At room temperature, sound travels about 0.0343 centimeters per microsecond, so distance in cm is roughly duration * 0.0343 / 2.\n\nThe ECHO pin on many HC-SR04 modules is 5 V. ESP32 input pins are 3.3 V only, so use a voltage divider or level shifter. This one detail is the difference between a safe beginner build and a damaged board.",
+  "specs": [
+    {
+      "name": "Supply voltage",
+      "value": "5 V typical",
+      "why": "Common modules need 5 V for the ultrasonic transmitter."
+    },
+    {
+      "name": "ESP32 input safety",
+      "value": "ECHO must be reduced to 3.3 V",
+      "why": "Protects the ESP32 GPIO from 5 V logic."
+    },
+    {
+      "name": "Range",
+      "value": "About 2 cm to 400 cm",
+      "why": "Objects too close or too far may produce invalid readings."
+    },
+    {
+      "name": "Best range",
+      "value": "Roughly 5 cm to 200 cm",
+      "why": "More reliable for beginner robots and classroom tests."
+    },
+    {
+      "name": "Accuracy",
+      "value": "About 3 mm under good conditions",
+      "why": "Real accuracy depends on angle, surface, and temperature."
+    },
+    {
+      "name": "Ultrasonic frequency",
+      "value": "Around 40 kHz",
+      "why": "Above human hearing, but still affected by surfaces and air."
+    },
+    {
+      "name": "Trigger pulse",
+      "value": "10 microseconds HIGH",
+      "why": "Starts one distance measurement."
+    },
+    {
+      "name": "Echo output",
+      "value": "Pulse width proportional to distance",
+      "why": "The ESP32 measures this time to calculate distance."
+    },
+    {
+      "name": "Field of view",
+      "value": "Roughly 15 degrees",
+      "why": "Wide enough to detect nearby obstacles but not a camera-like beam."
+    },
+    {
+      "name": "Update interval",
+      "value": "Use 50 ms or slower",
+      "why": "Gives echoes time to fade before the next ping."
+    },
+    {
+      "name": "Poor targets",
+      "value": "Cloth, foam, angled surfaces, small objects",
+      "why": "These absorb or deflect sound away from the receiver."
+    }
+  ],
+  "pinout": [
+    {
+      "pin": "VCC",
+      "role": "Power input",
+      "connects": "5 V",
+      "note": "Power the module from 5 V unless you have a special 3.3 V version."
+    },
+    {
+      "pin": "TRIG",
+      "role": "Trigger input",
+      "connects": "ESP32 GPIO5",
+      "note": "ESP32 output; 3.3 V HIGH is normally accepted by the module."
+    },
+    {
+      "pin": "ECHO",
+      "role": "Echo output",
+      "connects": "ESP32 GPIO18 through level shifter/divider",
+      "note": "Do not connect 5 V ECHO directly to ESP32."
+    },
+    {
+      "pin": "GND",
+      "role": "Ground reference",
+      "connects": "ESP32 GND",
+      "note": "Common ground is required for correct signal timing."
+    }
+  ],
+  "wiring": {
+    "illustration_alt": "HC-SR04 VCC to 5 V, GND to GND, TRIG to GPIO5, ECHO through voltage divider to GPIO18",
+    "summary": "The HC-SR04 uses 5 V power but the ESP32 uses 3.3 V logic. TRIG from ESP32 to sensor is usually safe, but ECHO from sensor to ESP32 must be level shifted.\n\nA simple voltage divider can use 1 k ohm from ECHO to the ESP32 input and 2 k ohm from the ESP32 input to GND. A logic level shifter is also fine.",
+    "steps": [
+      "Unplug USB before wiring.",
+      "Connect HC-SR04 VCC to 5 V or VIN on the ESP32 board.",
+      "Connect HC-SR04 GND to ESP32 GND.",
+      "Connect TRIG to ESP32 GPIO5.",
+      "Connect ECHO to a voltage divider or level shifter.",
+      "Connect the shifted ECHO signal to ESP32 GPIO18.",
+      "Point the sensor at a flat object at least 5 cm away.",
+      "Upload the code and open Serial Monitor at 115200 baud."
+    ]
+  },
+  "library": "Built-in Arduino timing with pulseIn",
+  "code": {
+    "filename": "hcsr04_esp32_distance_test.ino",
+    "notes": "TRIG is an ESP32 output. ECHO is an ESP32 input after level shifting. The timeout in pulseIn() prevents the sketch from waiting forever when no echo returns.\n\nThe code rejects distances outside the practical range so beginners do not trust impossible numbers. For robots, take several readings and use the median or average to reduce single bad echoes.",
+    "content": "#define TRIG_PIN 5\n#define ECHO_PIN 18\n\nconst unsigned long ECHO_TIMEOUT_US = 30000;\nconst float SOUND_CM_PER_US = 0.0343;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  digitalWrite(TRIG_PIN, LOW);\n  Serial.println(\"HC-SR04 ESP32 distance test\");\n}\n\nfloat readDistanceCm() {\n  digitalWrite(TRIG_PIN, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG_PIN, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n\n  unsigned long duration = pulseIn(ECHO_PIN, HIGH, ECHO_TIMEOUT_US);\n  if (duration == 0) {\n    return -1.0;\n  }\n\n  return (duration * SOUND_CM_PER_US) / 2.0;\n}\n\nvoid loop() {\n  float distanceCm = readDistanceCm();\n\n  if (distanceCm < 2 || distanceCm > 400) {\n    Serial.println(\"No reliable echo. Check target distance, angle, and wiring.\");\n  } else {\n    Serial.print(\"Distance: \");\n    Serial.print(distanceCm, 1);\n    Serial.println(\" cm\");\n  }\n\n  delay(100);\n}"
+  },
+  "output": "With a flat object in front of the sensor, Serial Monitor prints values such as Distance: 24.7 cm. Move your hand closer and the number decreases. Move it farther away and the number increases. If the object is too close, too soft, too angled, or missing, the sketch prints a no reliable echo message.",
+  "common_mistakes": [
+    {
+      "text": "Connecting ECHO directly to ESP32 without level shifting."
+    },
+    {
+      "text": "Forgetting common ground."
+    },
+    {
+      "text": "Measuring objects closer than 2 cm."
+    },
+    {
+      "text": "Pointing the sensor at cloth or angled surfaces."
+    },
+    {
+      "text": "Using delay too short between pings."
+    },
+    {
+      "text": "Expecting perfect readings outdoors in wind."
+    },
+    {
+      "text": "Powering the module from weak 3.3 V."
+    },
+    {
+      "text": "Swapping TRIG and ECHO."
+    },
+    {
+      "text": "Using pulseIn without timeout."
+    },
+    {
+      "text": "Mounting the sensor where robot vibration changes its angle."
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Always reads 0 or timeout",
+      "cause": "No echo, wrong wiring, or target out of range.",
+      "fix": "Check TRIG/ECHO pins, common GND, and place a flat object 20 cm away."
+    },
+    {
+      "problem": "ESP32 input damaged or unstable",
+      "cause": "ECHO connected directly at 5 V.",
+      "fix": "Use a voltage divider or level shifter before connecting ECHO."
+    },
+    {
+      "problem": "Distance is double or half",
+      "cause": "Formula forgot the divide-by-two or used wrong sound constant.",
+      "fix": "Use duration * 0.0343 / 2 for centimeters."
+    },
+    {
+      "problem": "Numbers jump wildly",
+      "cause": "Object angle, soft target, vibration, or electrical noise.",
+      "fix": "Aim at a flat hard surface and average several readings."
+    },
+    {
+      "problem": "Short distances fail",
+      "cause": "Object is inside the blind zone.",
+      "fix": "Keep targets at least 2 to 5 cm away."
+    },
+    {
+      "problem": "Long distances fail",
+      "cause": "Echo too weak or timeout too short.",
+      "fix": "Use larger flat target and timeout around 30000 us."
+    },
+    {
+      "problem": "Works on Arduino Uno but not ESP32",
+      "cause": "Voltage-level assumptions differ.",
+      "fix": "Level shift ECHO and confirm ESP32 GPIO numbers."
+    },
+    {
+      "problem": "Robot sees obstacles late",
+      "cause": "Sensor angle or update interval is wrong.",
+      "fix": "Mount level and read every 50-100 ms."
+    },
+    {
+      "problem": "False detections from floor",
+      "cause": "Sensor points downward.",
+      "fix": "Tilt sensor slightly up or adjust mounting height."
+    },
+    {
+      "problem": "No readings after adding motor",
+      "cause": "Motor noise or power dip.",
+      "fix": "Use separate motor power and common ground."
+    },
+    {
+      "problem": "Serial gibberish",
+      "cause": "Wrong baud rate.",
+      "fix": "Set Serial Monitor to 115200."
+    },
+    {
+      "problem": "Only works when USB connected",
+      "cause": "5 V supply missing on external power.",
+      "fix": "Provide stable 5 V to VCC and common GND."
+    },
+    {
+      "problem": "Outdoor readings poor",
+      "cause": "Wind and soft targets scatter sound.",
+      "fix": "Use infrared, LiDAR, or waterproof ultrasonic module for outdoor use."
+    },
+    {
+      "problem": "Multiple sensors interfere",
+      "cause": "Pings overlap.",
+      "fix": "Trigger sensors one at a time with delay between pings."
+    },
+    {
+      "problem": "Tank level reading wrong",
+      "cause": "Foam or angled liquid surface absorbs sound.",
+      "fix": "Use stilling tube or different level sensor."
+    }
+  ],
+  "related_guides": [
+    {
+      "title": "What Is ESP32?",
+      "href": "/guides/what-is-esp32.html",
+      "description": "Review GPIO, power, and safe wiring."
+    },
+    {
+      "title": "Blink an LED with ESP32",
+      "href": "/guides/blink-led-esp32.html",
+      "description": "Use distance thresholds to trigger an LED."
+    },
+    {
+      "title": "Installing Arduino IDE for ESP32",
+      "href": "/guides/installing-arduino-ide-esp32.html",
+      "description": "Set up upload tools before testing sensors."
+    }
+  ],
+  "related_projects": [
+    {
+      "title": "ESP32 Distance Monitoring System",
+      "href": "/projects/esp32-distance-monitoring-system.html",
+      "description": "Turn distance readings into a complete project."
+    },
+    {
+      "title": "ESP32 Smart Parking Sensor",
+      "href": "/projects/esp32-smart-parking-sensor.html",
+      "description": "Use ultrasonic distance for parking feedback."
+    },
+    {
+      "title": "ESP32 Line Following Robot",
+      "href": "/projects/esp32-line-following-robot.html",
+      "description": "Add obstacle detection to a robot platform."
+    }
+  ],
+  "related_components": [
+    {
+      "title": "ESP32 DevKit Board",
+      "href": "/components/esp32-devkit.html",
+      "description": "The controller that measures the echo pulse."
+    },
+    {
+      "title": "SSD1306 OLED Display",
+      "href": "/components/ssd1306-oled.html",
+      "description": "Show distance readings on a screen."
+    },
+    {
+      "title": "Relay Module",
+      "href": "/components/relay-module.html",
+      "description": "Switch an alert or actuator from distance thresholds."
+    }
+  ],
+  "datasheet_url": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf",
+  "datasheet_note": "HC-SR04 datasheet for timing, range, voltage, and mechanical notes.",
+  "faqs": [
+    {
+      "question": "What does HC-SR04 measure?",
+      "answer": "It measures distance to objects by timing ultrasonic echoes."
+    },
+    {
+      "question": "Can I connect ECHO directly to ESP32?",
+      "answer": "No. ECHO is often 5 V and should be level shifted to 3.3 V."
+    },
+    {
+      "question": "Does TRIG need level shifting?",
+      "answer": "Usually no. The ESP32 3.3 V HIGH is normally enough for the trigger input."
+    },
+    {
+      "question": "What pins should I use?",
+      "answer": "GPIO5 for TRIG and GPIO18 for ECHO are good beginner choices."
+    },
+    {
+      "question": "Why divide by two?",
+      "answer": "Sound travels to the object and back, so the measured time covers twice the distance."
+    },
+    {
+      "question": "What is the minimum distance?",
+      "answer": "About 2 cm, but 5 cm or more is more reliable for beginners."
+    },
+    {
+      "question": "What is the maximum distance?",
+      "answer": "About 400 cm under good conditions, less for small or soft targets."
+    },
+    {
+      "question": "Can it detect people?",
+      "answer": "Yes, but clothing and angle can make readings inconsistent."
+    },
+    {
+      "question": "Can it measure water level?",
+      "answer": "Sometimes, if the surface is calm and the sensor is protected from moisture."
+    },
+    {
+      "question": "Is it waterproof?",
+      "answer": "Standard HC-SR04 is not waterproof."
+    },
+    {
+      "question": "Why are readings noisy?",
+      "answer": "Surface angle, soft material, vibration, and power noise all affect echoes."
+    },
+    {
+      "question": "Can I use more than one sensor?",
+      "answer": "Yes, trigger them one at a time to avoid echo interference."
+    },
+    {
+      "question": "Does temperature affect readings?",
+      "answer": "Yes. Sound speed changes with temperature, but beginner projects often ignore the small error."
+    },
+    {
+      "question": "Can I use NewPing library?",
+      "answer": "Yes, but built-in pulseIn is enough for first ESP32 lessons."
+    },
+    {
+      "question": "Why do I get 0 cm?",
+      "answer": "The pulse timed out, wiring is wrong, or no valid echo returned."
+    },
+    {
+      "question": "Can it work through glass?",
+      "answer": "Usually not reliably because reflections occur at the glass surface."
+    },
+    {
+      "question": "Can it detect soft fabric?",
+      "answer": "Poorly. Fabric absorbs sound."
+    },
+    {
+      "question": "What power does it need?",
+      "answer": "Most HC-SR04 modules need 5 V power."
+    },
+    {
+      "question": "Can ESP32 power it from VIN?",
+      "answer": "Yes when USB supplies VIN/5V, but confirm your board pin labels."
+    },
+    {
+      "question": "Is it good for precise measurement?",
+      "answer": "It is good for learning and rough distance, not precision metrology."
+    }
+  ],
+  "quality_status": "golden",
+  "status": "complete"
+}

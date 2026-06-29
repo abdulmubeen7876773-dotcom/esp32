@@ -1,34 +1,404 @@
-slug: pir-sensor
-name: HC-SR501 PIR Motion Sensor
-category: Input Devices
-difficulty: Beginner
-icon: 👁
-image: https://cdn.sparkfun.com/assets/parts/1/0/3/1/0/101-10627-01.jpg
-summary: Detects movement and triggers alarms, lights, or notifications.
-eli12: PIR sensor is like a guard that watches for movement. When someone walks by, it sends a signal
-  to your ESP32 — perfect for security alarms or automatic lights.
-specs:
-- 'Detection range: up to 7 m'
-- 'Operating voltage: 5 V to 20 V'
-- 'Digital output: HIGH when motion detected'
-- Adjustable sensitivity and delay
-pins:
-- VCC → 5 V
-- GND → GND
-- OUT → GPIO27
-library: Built-in digitalRead
-example_code: "#define PIR 27\nvoid setup() { Serial.begin(115200); pinMode(PIR, INPUT); }\nvoid loop()\
-  \ {\n  if (digitalRead(PIR) == HIGH) Serial.println(\"Motion detected!\");\n  delay(200);\n}\n"
-output: Serial Monitor prints "Motion detected!" when someone moves nearby.
-applications:
-- Security alarms
-- Automatic lighting
-- Visitor counters
-related_projects:
-- title: ESP32 Motion Security Alert
-  href: /projects/esp32-motion-security-alert.html
-faqs:
-- question: It triggers randomly?
-  answer: Point it away from heat sources like windows and adjust sensitivity screw.
-quality_status: legacy_import
-status: needs_polish
+{
+  "slug": "pir-sensor",
+  "name": "HC-SR501 PIR Motion Sensor",
+  "category": "Input Devices",
+  "difficulty": "Beginner",
+  "icon": "👁",
+  "image": "https://cdn.sparkfun.com/assets/parts/1/0/3/1/0/101-10627-01.jpg",
+  "summary": "Passive infrared motion sensor module that gives an ESP32 a digital HIGH signal when warm objects move through its field of view.",
+  "applications": [
+    "Motion security alert",
+    "Automatic light trigger",
+    "Occupancy sensing",
+    "Visitor counter experiment",
+    "Wake-up trigger for battery nodes",
+    "Classroom infrared demo",
+    "Smart hallway light",
+    "Camera trap trigger"
+  ],
+  "eli12": "A PIR sensor watches for changes in heat. People, pets, and warm objects give off infrared energy. When a warm body moves across the sensor view, the module notices the change and sends a signal to the ESP32.\n\nIt does not see pictures like a camera. It only tells your board that motion happened. That makes it useful for simple alarms, lights, and wake-up triggers without recording anyone.\n\nUse it when you care about movement, not exact distance or identity.",
+  "quick_facts": [
+    {
+      "label": "Detects",
+      "value": "Moving warm bodies",
+      "why": "Great for people and animal motion, not static objects."
+    },
+    {
+      "label": "Output",
+      "value": "Digital HIGH/LOW",
+      "why": "Easy for ESP32 to read with digitalRead()."
+    },
+    {
+      "label": "Power",
+      "value": "Usually 5 V module input",
+      "why": "Common HC-SR501 boards regulate internally."
+    },
+    {
+      "label": "Warm-up",
+      "value": "30-60 seconds",
+      "why": "The sensor needs time to stabilize after power-up."
+    },
+    {
+      "label": "Adjustments",
+      "value": "Sensitivity and delay trimpots",
+      "why": "Lets you tune range and how long output stays HIGH."
+    },
+    {
+      "label": "Best use",
+      "value": "Motion trigger",
+      "why": "It detects changes, not exact position or distance."
+    }
+  ],
+  "how_it_works": "PIR means passive infrared. Passive means the sensor does not send energy out like an ultrasonic sensor. It only observes infrared energy already coming from objects.\n\nThe white dome is a Fresnel lens. It splits the room into zones and focuses infrared energy onto two sensing elements. When a warm body moves from one zone to another, the two elements see a changing heat pattern.\n\nThe module amplifies that tiny change and turns it into a digital output. HIGH means motion was detected. LOW means no recent motion. The onboard delay control decides how long the output stays HIGH after motion.\n\nBecause PIR detects change, a person standing perfectly still may stop triggering it. Heat sources, sunlight, HVAC airflow, and pets can also trigger it if the sensor points at them.",
+  "specs": [
+    {
+      "name": "Supply voltage",
+      "value": "Typically 5 V to 20 V module input",
+      "why": "Common HC-SR501 boards include regulation; use module documentation."
+    },
+    {
+      "name": "Output logic",
+      "value": "Digital HIGH on motion",
+      "why": "ESP32 can read the OUT pin as a digital input."
+    },
+    {
+      "name": "Output voltage",
+      "value": "Often about 3.3 V HIGH",
+      "why": "Usually ESP32-safe, but verify your module if uncertain."
+    },
+    {
+      "name": "Detection range",
+      "value": "Up to about 7 m",
+      "why": "Depends on sensitivity setting, lens, target size, and environment."
+    },
+    {
+      "name": "Field of view",
+      "value": "Roughly 100 degrees",
+      "why": "Wide coverage but not precise direction sensing."
+    },
+    {
+      "name": "Warm-up time",
+      "value": "30-60 seconds",
+      "why": "Readings can be unstable immediately after power-up."
+    },
+    {
+      "name": "Delay time",
+      "value": "Adjustable, often seconds to minutes",
+      "why": "Controls how long OUT remains HIGH after motion."
+    },
+    {
+      "name": "Sensitivity",
+      "value": "Adjustable by trimpot",
+      "why": "Helps reduce false triggers or extend range."
+    },
+    {
+      "name": "Trigger mode",
+      "value": "Repeatable or non-repeatable on some modules",
+      "why": "Jumper behavior changes output timing."
+    },
+    {
+      "name": "Best targets",
+      "value": "Moving warm bodies",
+      "why": "The sensor responds to infrared change, not visible motion."
+    }
+  ],
+  "pinout": [
+    {
+      "pin": "VCC",
+      "role": "Module power",
+      "connects": "5 V typical",
+      "note": "Powers the PIR module and onboard regulator."
+    },
+    {
+      "pin": "OUT",
+      "role": "Digital motion output",
+      "connects": "ESP32 GPIO27",
+      "note": "Usually HIGH when motion is detected."
+    },
+    {
+      "pin": "GND",
+      "role": "Ground reference",
+      "connects": "ESP32 GND",
+      "note": "Required for ESP32 to read OUT correctly."
+    },
+    {
+      "pin": "Delay trimpot",
+      "role": "Output hold adjustment",
+      "connects": "Turn gently with small screwdriver",
+      "note": "Changes how long OUT stays HIGH."
+    },
+    {
+      "pin": "Sensitivity trimpot",
+      "role": "Range adjustment",
+      "connects": "Turn gently with small screwdriver",
+      "note": "Changes detection range and false trigger tendency."
+    }
+  ],
+  "wiring": {
+    "illustration_alt": "HC-SR501 PIR VCC to 5 V, GND to ESP32 GND, OUT to ESP32 GPIO27",
+    "summary": "The PIR module has a control side only: VCC, OUT, and GND. OUT is a digital signal the ESP32 reads.\n\nAfter powering the sensor, wait at least 30 seconds before judging behavior. During warm-up, random triggers are normal.",
+    "steps": [
+      "Unplug USB before wiring.",
+      "Connect PIR VCC to 5 V or VIN on the ESP32 board.",
+      "Connect PIR GND to ESP32 GND.",
+      "Connect PIR OUT to ESP32 GPIO27.",
+      "Point the dome away from windows, heaters, and moving fans.",
+      "Power the ESP32 and wait 30-60 seconds for warm-up.",
+      "Open Serial Monitor at 115200 baud.",
+      "Walk across the sensor view and watch for motion messages."
+    ]
+  },
+  "library": "Built-in Arduino digitalRead",
+  "code": {
+    "filename": "pir_esp32_motion_test.ino",
+    "notes": "The PIR output is digital, so no special library is needed. The code watches for state changes instead of printing continuously.\n\nsetup() gives the sensor time to stabilize. loop() compares the current reading with the previous reading, then prints only when motion starts or clears. This keeps Serial Monitor readable.",
+    "content": "#define PIR_PIN 27\n\nint lastState = LOW;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(PIR_PIN, INPUT);\n  Serial.println(\"PIR motion sensor warming up...\");\n  delay(30000);\n  Serial.println(\"PIR ready. Walk across the sensor view.\");\n}\n\nvoid loop() {\n  int currentState = digitalRead(PIR_PIN);\n\n  if (currentState != lastState) {\n    if (currentState == HIGH) {\n      Serial.println(\"Motion detected\");\n    } else {\n      Serial.println(\"Motion cleared\");\n    }\n    lastState = currentState;\n  }\n\n  delay(100);\n}"
+  },
+  "output": "After a warm-up message and 30 second delay, Serial Monitor prints Motion detected when someone moves across the sensor view. Depending on the delay trimpot, it may print Motion cleared several seconds later. If it triggers while nobody is moving, check heat sources and sensitivity.",
+  "common_mistakes": [
+    {
+      "text": "Judging the sensor during warm-up."
+    },
+    {
+      "text": "Pointing it at windows or sunlight."
+    },
+    {
+      "text": "Pointing it at heaters, vents, or fans."
+    },
+    {
+      "text": "Expecting it to detect still people."
+    },
+    {
+      "text": "Using it as a distance sensor."
+    },
+    {
+      "text": "Forgetting common ground."
+    },
+    {
+      "text": "Turning trimpots aggressively."
+    },
+    {
+      "text": "Mounting behind glass or thick plastic."
+    },
+    {
+      "text": "Using delay setting without understanding hold time."
+    },
+    {
+      "text": "Printing continuously instead of detecting state changes."
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Triggers randomly",
+      "cause": "Heat source, sunlight, HVAC airflow, pets, or high sensitivity.",
+      "fix": "Point away from heat changes and reduce sensitivity."
+    },
+    {
+      "problem": "Never triggers",
+      "cause": "No power, wrong OUT pin, still target, or sensor blocked.",
+      "fix": "Check wiring, wait for warm-up, and walk across the lens."
+    },
+    {
+      "problem": "Always HIGH",
+      "cause": "Delay setting high, retrigger mode, or constant motion/heat.",
+      "fix": "Wait for timeout, reduce delay, and move away from heat sources."
+    },
+    {
+      "problem": "Always LOW",
+      "cause": "Power missing or OUT not connected to the coded GPIO.",
+      "fix": "Confirm VCC, GND, GPIO27, and Serial output."
+    },
+    {
+      "problem": "Works only sometimes",
+      "cause": "Target movement direction or range is poor.",
+      "fix": "Walk across the field of view, not straight toward the sensor."
+    },
+    {
+      "problem": "Triggers through window",
+      "cause": "Sunlight/heat changes affect the sensor.",
+      "fix": "Avoid aiming at windows."
+    },
+    {
+      "problem": "Does not detect through glass",
+      "cause": "Glass blocks much infrared energy.",
+      "fix": "Mount with clear view of the room."
+    },
+    {
+      "problem": "Motion cleared takes too long",
+      "cause": "Delay trimpot set high.",
+      "fix": "Turn delay adjustment lower carefully."
+    },
+    {
+      "problem": "Range too short",
+      "cause": "Sensitivity low or lens obstructed.",
+      "fix": "Increase sensitivity and check dome orientation."
+    },
+    {
+      "problem": "Pets trigger it",
+      "cause": "PIR sees warm moving animals.",
+      "fix": "Aim higher or mask part of the lens."
+    },
+    {
+      "problem": "ESP32 reads unstable",
+      "cause": "Floating input or poor ground.",
+      "fix": "Use common ground and stable wiring."
+    },
+    {
+      "problem": "False trigger when relay switches",
+      "cause": "Electrical noise or power dip.",
+      "fix": "Separate relay power and add filtering."
+    },
+    {
+      "problem": "No output after boot",
+      "cause": "Warm-up period not complete.",
+      "fix": "Wait 30-60 seconds."
+    },
+    {
+      "problem": "Board resets",
+      "cause": "Weak power supply.",
+      "fix": "Use stable USB power."
+    },
+    {
+      "problem": "Cannot tell direction",
+      "cause": "PIR only gives motion/no motion.",
+      "fix": "Use multiple sensors or another technology for direction."
+    }
+  ],
+  "related_guides": [
+    {
+      "title": "What Is ESP32?",
+      "href": "/guides/what-is-esp32.html",
+      "description": "Understand digital inputs and GPIO safety."
+    },
+    {
+      "title": "Blink an LED with ESP32",
+      "href": "/guides/blink-led-esp32.html",
+      "description": "Turn motion into a visible LED alert."
+    },
+    {
+      "title": "Installing Arduino IDE for ESP32",
+      "href": "/guides/installing-arduino-ide-esp32.html",
+      "description": "Prepare your upload environment."
+    }
+  ],
+  "related_projects": [
+    {
+      "title": "ESP32 Motion Security Alert",
+      "href": "/projects/esp32-motion-security-alert.html",
+      "description": "Build a motion-triggered alert system."
+    },
+    {
+      "title": "ESP32 Smart Door Lock",
+      "href": "/projects/esp32-smart-door-lock.html",
+      "description": "Use motion as part of entry awareness."
+    },
+    {
+      "title": "ESP32 Home Climate Automation",
+      "href": "/projects/esp32-home-climate-automation.html",
+      "description": "Combine occupancy with room automation."
+    }
+  ],
+  "related_components": [
+    {
+      "title": "ESP32 DevKit Board",
+      "href": "/components/esp32-devkit.html",
+      "description": "The controller that reads motion output."
+    },
+    {
+      "title": "Relay Module",
+      "href": "/components/relay-module.html",
+      "description": "Switch lights or sirens from motion."
+    },
+    {
+      "title": "SSD1306 OLED Display",
+      "href": "/components/ssd1306-oled.html",
+      "description": "Show motion status locally."
+    }
+  ],
+  "datasheet_url": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR501.pdf",
+  "datasheet_note": "HC-SR501 module references vary by manufacturer. Check your module markings, jumper mode, delay range, and sensitivity trimpot direction.",
+  "faqs": [
+    {
+      "question": "What does a PIR sensor detect?",
+      "answer": "It detects changes in infrared heat caused by moving warm bodies."
+    },
+    {
+      "question": "Can it see images?",
+      "answer": "No. It only outputs motion/no motion."
+    },
+    {
+      "question": "Does it detect still people?",
+      "answer": "Not reliably. PIR detects changes, so still people may disappear."
+    },
+    {
+      "question": "What voltage does it need?",
+      "answer": "Most HC-SR501 modules use 5 V input."
+    },
+    {
+      "question": "Is OUT safe for ESP32?",
+      "answer": "Most modules output about 3.3 V, but verify your module if uncertain."
+    },
+    {
+      "question": "Which GPIO should I use?",
+      "answer": "GPIO27 is a good beginner input pin."
+    },
+    {
+      "question": "Why wait after power-up?",
+      "answer": "The sensor amplifier needs time to stabilize."
+    },
+    {
+      "question": "What do the trimpots do?",
+      "answer": "One adjusts sensitivity/range and the other adjusts output hold delay."
+    },
+    {
+      "question": "Can it work outdoors?",
+      "answer": "Sometimes, but sunlight, temperature changes, and weather cause false triggers."
+    },
+    {
+      "question": "Can it detect through glass?",
+      "answer": "Usually poorly because glass blocks or changes infrared energy."
+    },
+    {
+      "question": "Can it detect pets?",
+      "answer": "Yes, warm moving pets can trigger it."
+    },
+    {
+      "question": "How far can it detect?",
+      "answer": "Up to about 7 m under good conditions."
+    },
+    {
+      "question": "Why does it trigger randomly?",
+      "answer": "Heat movement from windows, vents, heaters, pets, or high sensitivity."
+    },
+    {
+      "question": "Can it measure distance?",
+      "answer": "No. Use HC-SR04 or another distance sensor."
+    },
+    {
+      "question": "Can I use interrupts?",
+      "answer": "Yes, but polling is easier for beginners."
+    },
+    {
+      "question": "What is repeat trigger mode?",
+      "answer": "A jumper mode where motion can extend the HIGH output while movement continues."
+    },
+    {
+      "question": "Can PIR wake ESP32 from sleep?",
+      "answer": "Yes, with suitable wiring to a wake-capable pin and low-power design."
+    },
+    {
+      "question": "Why does motion cleared take long?",
+      "answer": "The delay trimpot holds output HIGH for the set time."
+    },
+    {
+      "question": "Can I connect multiple PIR sensors?",
+      "answer": "Yes, use separate GPIOs or combine signals carefully."
+    },
+    {
+      "question": "Is PIR privacy friendly?",
+      "answer": "It is more privacy friendly than a camera because it does not capture images."
+    }
+  ],
+  "quality_status": "golden",
+  "status": "complete"
+}
