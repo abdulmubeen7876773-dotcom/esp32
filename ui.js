@@ -120,6 +120,7 @@
   function loadAnalytics() {
     var id = window.SITE_GA4;
     if (!id) return;
+    if (document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) return;
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () {
       window.dataLayer.push(arguments);

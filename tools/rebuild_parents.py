@@ -32,6 +32,7 @@ from site_layout import (
     site_href,
     webpage_schema,
     UI_JS_SRC,
+    GOOGLE_TAG_HTML,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -364,6 +365,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
+{GOOGLE_TAG_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#6D28D9">
