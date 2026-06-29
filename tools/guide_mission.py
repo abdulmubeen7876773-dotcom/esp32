@@ -214,6 +214,25 @@ def gpio_table_section(rows: list) -> str:
 </section>"""
 
 
+def comparison_table_section(rows: list) -> str:
+    if not rows:
+        return ""
+    body = []
+    for row in rows:
+        mode = row.get("mode", "")
+        default = row.get("default_state", "")
+        wiring = row.get("wiring", "")
+        use = row.get("when_to_use", "")
+        body.append(f"<tr><td>{esc(mode)}</td><td>{esc(default)}</td><td>{esc(wiring)}</td><td>{esc(use)}</td></tr>")
+    return f"""<section class="mission-section" id="input-comparison" aria-labelledby="input-comparison-heading">
+  {section_heading("input-comparison", "COMPARE", "INPUT vs INPUT_PULLUP")}
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Mode</th><th>Default State</th><th>Typical Wiring</th><th>When to Use</th></tr></thead>
+    <tbody>{"".join(body)}</tbody>
+  </table></div>
+</section>"""
+
+
 def things_list(items: list) -> str:
     rows = []
     for item in items:
@@ -609,6 +628,10 @@ def render_mission_guide(guide: dict) -> str:
 </section>"""
     engineering_html = mission_prose_section("engineering", "ENG", "Engineering Explanation", m.get("engineering_explanation", ""))
     analogy_html = mission_prose_section("analogy", "REAL", "Real-Life Analogy", m.get("real_life_analogy", ""))
+    floating_recap_html = mission_prose_section("floating-recap", "RECAP", "Floating Pin Recap", m.get("floating_pin_recap", ""))
+    internal_resistor_html = mission_prose_section("internal-resistor", "INT", "Internal Pull-Up Resistor", m.get("internal_resistor_explanation", ""))
+    external_resistor_html = mission_prose_section("external-resistor", "EXT", "External Pull-Up and Pull-Down Resistors", m.get("external_resistor_explanation", ""))
+    comparison_html = comparison_table_section(m.get("comparison_table", []))
 
     wiring = m.get("wiring") or {}
     wiring_steps = wiring.get("steps", [])
@@ -677,6 +700,10 @@ def render_mission_guide(guide: dict) -> str:
 {concept_html}
 {engineering_html}
 {analogy_html}
+{floating_recap_html}
+{internal_resistor_html}
+{external_resistor_html}
+{comparison_html}
 {wiring_html}
 {gpio_html}
 {code_html}
