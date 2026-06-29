@@ -59,13 +59,18 @@ def component_card(c: dict) -> str:
 
 def index_html(components: list, categories: list) -> str:
     title = f"Component Encyclopedia | {SITE_NAME}"
-    desc = "Explore ESP32 components — sensors, displays, motors, and more. Simple explanations, wiring diagrams, and example code."
+    desc = "7 ESP32 components explained simply — DHT22, BME280, HC-SR04, PIR sensor, relay module, OLED display, and ESP32 DevKit. Wiring diagrams and example code included."
     crumbs = breadcrumb_schema([("Home", "/"), ("Components", "components.html")])
     schema = organization_schema() + webpage_schema(title, desc, "components.html") + crumbs
-    pills = "".join(f'<button type="button" class="category-pill" data-filter="{esc(cat)}">{esc(cat)}</button>' for cat in categories)
+    used_categories = []
+    for c in components:
+        cat = c.get("category", "")
+        if cat and cat not in used_categories:
+            used_categories.append(cat)
+    pills = "".join(f'<button type="button" class="category-pill" data-filter="{esc(cat)}">{esc(cat)}</button>' for cat in used_categories)
     cards = "".join(component_card(c) for c in components)
     featured = "".join(component_card(c) for c in components[:3])
-    category_count = len(categories)
+    category_count = len(used_categories)
     component_count = len(components)
     return f"""<!DOCTYPE html>
 <html lang="en">
