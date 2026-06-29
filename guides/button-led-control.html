@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Button Controls LED Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 02 - learn ESP32 digital input by wiring a push button that controls an LED. Understand INPUT_PULLUP, floating pins, digitalRead, and common wiring mistakes.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/button-led-control.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Button Controls LED Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 02 - learn ESP32 digital input by wiring a push button that controls an LED. Understand INPUT_PULLUP, floating pins, digitalRead, and common wiring mistakes.">
+<meta property="og:url" content="https://esp32engine.com/guides/button-led-control.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Button Controls LED Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 02 - learn ESP32 digital input by wiring a push button that controls an LED. Understand INPUT_PULLUP, floating pins, digitalRead, and common wiring mistakes.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Button Controls LED with ESP32","description":"Mission 02 - learn ESP32 digital input by wiring a push button that controls an LED. Understand INPUT_PULLUP, floating pins, digitalRead, and common wiring mistakes.","datePublished":"2026-06-29","dateModified":"2026-06-29","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/button-led-control.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 button LED, ESP32 digital input, ESP32 INPUT_PULLUP, ESP32 push button tutorial, ESP32 digitalRead"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Button Controls LED with ESP32","item":"https://esp32engine.com/guides/button-led-control.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why is my ESP32 button backwards?","acceptedAnswer":{"@type":"Answer","text":"With INPUT_PULLUP, the pin reads HIGH when the button is not pressed and LOW when the button is pressed. That feels backwards at first, but it is normal and reliable."}},{"@type":"Question","name":"Do I need an external resistor for this button?","acceptedAnswer":{"@type":"Answer","text":"No. This mission uses the ESP32 internal pull-up resistor by setting pinMode(BUTTON_PIN, INPUT_PULLUP). The button connects the pin to GND when pressed."}},{"@type":"Question","name":"Why does the LED flicker or change by itself?","acceptedAnswer":{"@type":"Answer","text":"That usually means the button input is floating. Use INPUT_PULLUP, connect one side of the button to GPIO, and connect the other side to GND."}},{"@type":"Question","name":"Can I use any ESP32 GPIO for a button?","acceptedAnswer":{"@type":"Answer","text":"Many GPIO pins work, but avoid boot strapping pins while learning. GPIO27 is a safe beginner choice for this mission."}},{"@type":"Question","name":"What does INPUT_PULLUP do?","acceptedAnswer":{"@type":"Answer","text":"INPUT_PULLUP enables a weak internal resistor to 3.3 V, so the input is stable when the button is released."}},{"@type":"Question","name":"What does the button read when pressed in this circuit?","acceptedAnswer":{"@type":"Answer","text":"The pressed button connects GPIO27 to GND, so digitalRead() returns LOW."}},{"@type":"Question","name":"Why should the LED use a resistor?","acceptedAnswer":{"@type":"Answer","text":"The resistor limits current through the LED and protects both the LED and the ESP32 pin."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">0 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">Button Controls LED with ESP32</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">Button Controls LED with ESP32</h1>
+      <p class="article-lead mission-hero-lead">Make your ESP32 react to your hand. In this mission a push button becomes an input, an LED becomes the output, and your code connects cause to effect.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 02</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">15-20 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">BTN</span>
+  <span class="mission-card-badge">Mission 02</span>
+  <h2 class="mission-card-title">Press a Button, Control a Light</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>Your ESP32 can already speak with an LED. Now it needs to listen.</p><p>A button is the simplest way for a human to talk to a microcontroller. Pressed means one thing. Released means another. This tiny idea appears everywhere: doorbells, keyboards, machine controls, robot bumpers, reset buttons, and safety switches.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>A button is like a tiny bridge. When you press it, it connects two points together. The ESP32 watches one pin and asks: is this pin HIGH or LOW right now?</p><p>The trick is that an unpressed button must still have a clear value. INPUT_PULLUP gives the pin a gentle built-in connection to 3.3 V, so it reads HIGH until the button pulls it down to GND.</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section academy-overview" id="academy-path" aria-labelledby="academy-path-heading">
+  <h2 id="academy-path-heading"><span class="mission-section-icon" aria-hidden="true">PATH</span><span class="mission-section-title">Academy Path</span></h2>
+  <div class="mission-build-panel">
+    <p><strong>Current mission:</strong> Mission 02 · Foundation</p>
+    <p><strong>Expected outcome:</strong> Pressing the button turns the LED on. Releasing the button turns it off.</p>
+    <p><strong>Mini challenge:</strong> Change the code so one button press toggles the LED state instead of holding it on.</p>
+  </div>
+  <h3>Required Knowledge</h3>
+  <ul class="guide-related-list"><li><a href="/guides/blink-led-esp32.html"><strong>Blink LED with ESP32</strong></a> <span class="meta">You should already know how to wire an LED and control a GPIO output.</span></li></ul>
+  <h3>Skills You Unlock</h3>
+  <ul class='mission-bullets'><li>Read a digital input with digitalRead()</li><li>Use INPUT_PULLUP to avoid floating button signals</li><li>Connect a button safely between GPIO and GND</li><li>Control an output from an input condition</li><li>Debug pressed and released states in Serial Monitor</li></ul>
+  <div class="next-mission-grid">
+    <div class="next-mission-card"><span class="next-mission-label">Previous</span><ul class="guide-related-list"><li><a href="/guides/blink-led-esp32.html"><strong>Blink LED with ESP32</strong></a> <span class="meta">Learn GPIO output before reading input.</span></li></ul></div>
+    <div class="next-mission-card"><span class="next-mission-label">Next</span><ul class="guide-related-list"><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">Move from a button input to a real sensor input.</span></li></ul></div>
+  </div>
+</section>
+<section class="mission-section mission-build" id="build" aria-labelledby="build-heading">
+  <h2 id="build-heading"><span class="mission-section-icon" aria-hidden="true">🛠</span><span class="mission-section-title">What You&#x27;ll Build</span></h2>
+  <div class="mission-build-panel"><ul class="mission-bullets"><li>A push button wired to ESP32 GPIO27.</li><li>An LED wired to ESP32 GPIO2 through a resistor.</li><li>Code that reads the button and turns the LED on while the button is pressed.</li><li>Serial Monitor messages that show PRESSED and RELEASED states.</li></ul></div>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">🧰</span><span class="mission-section-title">Things You&#x27;ll Need</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Any USB-programmable ESP32 board</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BTN</span><span class="mission-thing-body"><span class="mission-thing-name">Push button</span><span class="mission-thing-note">Standard 4-leg tactile button</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">LED</span><span class="mission-thing-body"><span class="mission-thing-name">LED</span><span class="mission-thing-note">Any color</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">R</span><span class="mission-thing-body"><span class="mission-thing-name">220 ohm resistor</span><span class="mission-thing-note">Protects the LED from too much current</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard and jumper wires</span><span class="mission-thing-note">For the button and LED circuit</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">For upload and Serial Monitor</span></span></li></ul>
+</section>
+<section class="mission-section mission-safety-section" id="safety" aria-labelledby="safety-heading">
+  <aside class="mission-safety" aria-label="Safety first">
+    <div class="mission-safety-head">
+      <span class="mission-safety-icon" aria-hidden="true">⚠️</span>
+      <h2 id="safety-heading">Safety First</h2>
+    </div>
+    <ul><li>Unplug USB before moving button or LED wires.</li><li>Use a resistor in series with the LED.</li><li>Connect the button input only to 3.3 V logic or GND, never 5 V.</li></ul>
+  </aside>
+</section>
+<section class="mission-section mission-components" id="components" aria-labelledby="components-heading">
+  <h2 id="components-heading"><span class="mission-section-icon" aria-hidden="true">🔌</span><span class="mission-section-title">Component Spotlight</span></h2>
+  <p class="mission-section-lead">This mission uses the ESP32 DevKit as both a listener and a controller.</p>
+  <div class="mission-component-grid"><a class="mission-component-card" href="/components/esp32-devkit.html">
+  <span class="mission-component-icon" aria-hidden="true">ESP32</span>
+  <div class="mission-component-body">
+    <h3>ESP32 DevKit board</h3>
+    <p>Any USB-programmable ESP32 board</p>
+    <span class="mission-component-cta">View component guide<span aria-hidden="true">→</span></span>
+  </div>
+</a></div>
+</section>
+<section class="mission-section" id="concept" aria-labelledby="concept-heading">
+  <h2 id="concept-heading"><span class="mission-section-icon" aria-hidden="true">💡</span><span class="mission-section-title">Digital Input, Pull-Up, and Floating Pins</span></h2>
+  <figure class="mission-illustration" aria-label="ESP32 GPIO27 connected to a push button that goes to GND, with internal pull-up enabled; GPIO2 drives an LED through a resistor to GND">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">💡</span>
+    <span class="mission-illustration-label">Concept Illustration</span>
+    <span class="mission-illustration-alt">ESP32 GPIO27 connected to a push button that goes to GND, with internal pull-up enabled; GPIO2 drives an LED through a resistor to GND</span>
+  </div>
+</figure>
+  <div class="mission-prose"><p>A digital input has only two useful states: HIGH or LOW. HIGH means the pin is near 3.3 V. LOW means the pin is near GND.</p><p>If a button pin is not connected to anything when released, it can float. A floating pin is like an unanswered question: it may randomly read HIGH or LOW because tiny electrical noise is enough to move it.</p><p>INPUT_PULLUP fixes that. The ESP32 connects a weak internal resistor from the pin to 3.3 V. When the button is released, the pin reads HIGH. When the button is pressed, the button connects the pin to GND, so it reads LOW.</p></div>
+</section>
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">🔗</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="Button one side to ESP32 GPIO27, other side to GND; LED long leg through 220 ohm resistor to GPIO2, LED short leg to GND">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">🔗</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">Button one side to ESP32 GPIO27, other side to GND; LED long leg through 220 ohm resistor to GPIO2, LED short leg to GND</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Place the push button across the center gap of the breadboard so its two sides are separated.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect one side of the button to ESP32 GPIO27.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect the opposite side of the button to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Place the LED on the breadboard with the long leg and short leg in separate rows.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Connect ESP32 GPIO2 to one end of the 220 ohm resistor.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Connect the other end of the resistor to the LED long leg row.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">8</span>
+    <p class="mission-step-text">Connect the LED short leg row to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">9</span>
+    <p class="mission-step-text">Plug USB back in and upload the code.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">button_controls_led.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino">const <span class="tok-kw">int</span> BUTTON_PIN = <span class="tok-num">27</span>;
+const <span class="tok-kw">int</span> LED_PIN = <span class="tok-num">2</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">pinMode</span>(BUTTON_PIN, <span class="tok-const">INPUT_PULLUP</span>);
+  <span class="tok-fn">pinMode</span>(LED_PIN, <span class="tok-const">OUTPUT</span>);
+  <span class="tok-fn">digitalWrite</span>(LED_PIN, <span class="tok-const">LOW</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button controls LED mission ready&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">int</span> buttonReading = <span class="tok-fn">digitalRead</span>(BUTTON_PIN);
+  bool buttonPressed = (buttonReading == <span class="tok-const">LOW</span>);
+
+  <span class="tok-fn">digitalWrite</span>(LED_PIN, buttonPressed ? <span class="tok-const">HIGH</span> : <span class="tok-const">LOW</span>);
+
+  <span class="tok-kw">if</span> (buttonPressed) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button: PRESSED | LED: ON&quot;);
+  } <span class="tok-kw">else</span> {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button: RELEASED | LED: OFF&quot;);
+  }
+
+  <span class="tok-fn">delay</span>(<span class="tok-num">100</span>);
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>Open Serial Monitor at 115200 baud.</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>INPUT_PULLUP makes the released button read HIGH.</li><li>Pressing the button connects GPIO27 to GND, so the reading becomes LOW.</li><li>The code converts that reading into a clear pressed variable.</li><li>Serial output helps you prove the button is working before trusting the LED.</li></ul></div>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">✨</span><span class="mission-section-title">Expected Output</span></h2>
+  <div class="mission-output-body"><p>Open Serial Monitor at 115200 baud.</p><p>When the button is not pressed, you should see:
+Button: RELEASED | LED: OFF</p><p>When you press and hold the button, you should see:
+Button: PRESSED | LED: ON</p><p>The LED should turn on only while the button is pressed.</p></div>
+</section>
+<section class="mission-section mission-quiz" id="quiz" aria-labelledby="quiz-heading">
+  <h2 id="quiz-heading"><span class="mission-section-icon" aria-hidden="true">❓</span><span class="mission-section-title">Mini Quiz</span></h2>
+  <p class="mission-section-lead">Quick check — no grades, just confidence!</p>
+  <div class="mission-quiz-list"><div class="quiz-question" data-quiz-q="0" data-explanation="INPUT_PULLUP enables a weak internal resistor to 3.3 V, so the input is stable when the button is released." data-correct-feedback="" data-wrong-feedback="">
+  <p class="quiz-q-text" id="quiz-q-0"><span class="quiz-q-num">Q1.</span> What does INPUT_PULLUP do?</p>
+  <div class="quiz-options" role="group" aria-labelledby="quiz-q-0"><button type="button" class="quiz-option" data-index="0" data-correct="1">It gives the input pin a default HIGH state</button><button type="button" class="quiz-option" data-index="1" data-correct="0">It makes the LED brighter</button><button type="button" class="quiz-option" data-index="2" data-correct="0">It turns a button into an analog sensor</button></div>
+  <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
+</div><div class="quiz-question" data-quiz-q="1" data-explanation="The pressed button connects GPIO27 to GND, so digitalRead() returns LOW." data-correct-feedback="" data-wrong-feedback="">
+  <p class="quiz-q-text" id="quiz-q-1"><span class="quiz-q-num">Q2.</span> What does the button read when pressed in this circuit?</p>
+  <div class="quiz-options" role="group" aria-labelledby="quiz-q-1"><button type="button" class="quiz-option" data-index="0" data-correct="1">LOW</button><button type="button" class="quiz-option" data-index="1" data-correct="0">HIGH</button><button type="button" class="quiz-option" data-index="2" data-correct="0">PWM</button></div>
+  <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
+</div><div class="quiz-question" data-quiz-q="2" data-explanation="The resistor limits current through the LED and protects both the LED and the ESP32 pin." data-correct-feedback="" data-wrong-feedback="">
+  <p class="quiz-q-text" id="quiz-q-2"><span class="quiz-q-num">Q3.</span> Why should the LED use a resistor?</p>
+  <div class="quiz-options" role="group" aria-labelledby="quiz-q-2"><button type="button" class="quiz-option" data-index="0" data-correct="1">To limit current and protect the LED</button><button type="button" class="quiz-option" data-index="1" data-correct="0">To make the button stable</button><button type="button" class="quiz-option" data-index="2" data-correct="0">To enable Wi-Fi</button></div>
+  <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
+</div></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Challenge Yourself</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">TOGGLE</span><span class="mission-challenge-text">Change the program so each button press toggles the LED on or off.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">DEBUG</span><span class="mission-challenge-text">Print only when the button changes state instead of printing every 100 ms.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">TIMER</span><span class="mission-challenge-text">Make the LED stay on for 3 seconds after the button is pressed.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">PROJECT</span><span class="mission-challenge-text">Replace the LED with a relay module after reading the relay component guide.</span></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Common Problems</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>Button always reads PRESSED</h3><p><strong>Likely cause:</strong> The GPIO may be connected to GND all the time, or the button legs are placed in the wrong breadboard rows.</p><p><strong>Fix:</strong> Rotate the button 90 degrees or move it across the breadboard center gap. Confirm one side goes to GPIO27 and the opposite side goes to GND.</p></li><li><h3>Button changes randomly</h3><p><strong>Likely cause:</strong> The input is floating because INPUT_PULLUP is missing or the wire is loose.</p><p><strong>Fix:</strong> Use pinMode(BUTTON_PIN, INPUT_PULLUP), tighten the jumper wires, and keep the circuit short.</p></li><li><h3>LED never turns on</h3><p><strong>Likely cause:</strong> The LED may be backwards, the resistor may not be in series, or the wire may not be on GPIO2.</p><p><strong>Fix:</strong> Check LED long leg to resistor, short leg to GND, and confirm LED_PIN is 2 in the code.</p></li><li><h3>Upload fails after wiring</h3><p><strong>Likely cause:</strong> A wire may be pulling a boot-sensitive pin into the wrong state during reset.</p><p><strong>Fix:</strong> Use GPIO27 for the button and GPIO2 for the LED as shown. Unplug and recheck wiring.</p></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>Why is my ESP32 button backwards?</h3><p>With INPUT_PULLUP, the pin reads HIGH when the button is not pressed and LOW when the button is pressed. That feels backwards at first, but it is normal and reliable.</p></li><li><h3>Do I need an external resistor for this button?</h3><p>No. This mission uses the ESP32 internal pull-up resistor by setting pinMode(BUTTON_PIN, INPUT_PULLUP). The button connects the pin to GND when pressed.</p></li><li><h3>Why does the LED flicker or change by itself?</h3><p>That usually means the button input is floating. Use INPUT_PULLUP, connect one side of the button to GPIO, and connect the other side to GND.</p></li><li><h3>Can I use any ESP32 GPIO for a button?</h3><p>Many GPIO pins work, but avoid boot strapping pins while learning. GPIO27 is a safe beginner choice for this mission.</p></li></ul>
+</section>
+<section class="mission-section mission-complete" id="complete" aria-labelledby="complete-heading">
+  <div class="mission-complete-panel">
+    <span class="mission-complete-badge" aria-hidden="true">🏆</span>
+    <h2 id="complete-heading">Mission Complete!</h2>
+    <p class="mission-complete-subtitle">Your ESP32 can now listen.</p>
+    <div class="mission-complete-body"><p>You learned the most important idea behind interactive electronics: read an input, make a decision, then control an output. This pattern powers alarms, robots, smart locks, thermostats, dashboards, and almost every real ESP32 project.</p></div>
+    <ul class='mission-skills'><li>Read digital input with digitalRead()</li><li>Use INPUT_PULLUP correctly</li><li>Avoid floating input pins</li><li>Control an LED from a button state</li><li>Use Serial Monitor to verify hardware behavior</li></ul>
+  </div>
+</section>
+<section class="mission-section academy-unlocks" id="unlocks" aria-labelledby="unlocks-heading">
+  <h2 id="unlocks-heading"><span class="mission-section-icon" aria-hidden="true">KEY</span><span class="mission-section-title">What This Unlocks</span></h2>
+  <h3>Unlocked Components</h3>
+  <ul class="guide-related-list"><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The board that reads the button and drives the LED.</span></li></ul>
+  <h3>Unlocked Projects</h3>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-motion-security-alert.html"><strong>ESP32 Motion Security Alert</strong></a> <span class="meta">A PIR sensor is a digital input, just like a button with a smarter trigger.</span></li><li><a href="/projects/esp32-smart-door-lock.html"><strong>ESP32 Smart Door Lock</strong></a> <span class="meta">Access systems depend on reading inputs and controlling outputs reliably.</span></li><li><a href="/projects/esp32-rfid-access-control-system.html"><strong>ESP32 RFID Access Control System</strong></a> <span class="meta">A larger input-to-decision-to-output project.</span></li></ul>
+  <h3>Continue Learning</h3>
+  <ul class="guide-related-list"><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">Use the same input thinking with a real digital sensor.</span></li><li><a href="/guides/connect-oled-esp32.html"><strong>Connect OLED Display with ESP32</strong></a> <span class="meta">Show button or sensor state on a small display.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="next-mission" aria-labelledby="next-heading">
+  <h2 id="next-heading"><span class="mission-section-icon" aria-hidden="true">🚀</span><span class="mission-section-title">Continue Your Journey</span></h2>
+  <div class="next-mission-grid"><a class="next-mission-card" href="/guides/read-temperature-dht22.html">
+  <span class="next-mission-label">Up Next</span>
+  <h3>Read Temperature with DHT22</h3>
+  <p>Move from a button input to a real sensor input.</p>
+  <span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span>
+</a><a class="next-mission-card" href="/guides/connect-oled-esp32.html">
+  <span class="next-mission-label">Also Try</span>
+  <h3>Connect OLED Display with ESP32</h3>
+  <p>Display input states and sensor values on a tiny screen.</p>
+  <span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span>
+</a></div>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn | Build | Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>

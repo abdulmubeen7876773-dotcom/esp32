@@ -58,6 +58,9 @@ def illustration_block(
 
 
 def mission_number_label(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    if academy.get("mission_id"):
+        return str(academy["mission_id"])
     n = guide.get("mission_number")
     if n is not None:
         return f"Mission {int(n):02d}"
@@ -81,8 +84,10 @@ def mission_reading_label(guide: dict) -> str:
 
 def mission_meta_badges_html(guide: dict, include_trust: bool = True, compact: bool = False) -> str:
     level = guide.get("proficiency_level", "Beginner")
+    academy = guide.get("academy") or {}
     parts = [
         f'<span class="badge badge-mission">{esc(mission_number_label(guide))}</span>',
+        f'<span class="badge badge-cat">{esc(academy.get("level", "Academy"))}</span>' if academy.get("level") else "",
         f'<span class="badge {badge_class(level)}">{esc(level)}</span>',
         f'<span class="badge badge-time">{esc(mission_reading_label(guide))}</span>',
     ]
@@ -91,6 +96,80 @@ def mission_meta_badges_html(guide: dict, include_trust: bool = True, compact: b
         parts.append('<span class="badge badge-teacher-friendly">Teacher Friendly</span>')
     cls = "mission-meta-row mission-meta-row-compact" if compact else "mission-meta-row"
     return f'<div class="{cls}">{"".join(parts)}</div>'
+
+
+def academy_link_list(items: list, fallback_prefix: str = "guides") -> str:
+    rows = []
+    for item in items:
+        if isinstance(item, str):
+            title = item.replace("-", " ").title()
+            href = site_href(f"{fallback_prefix}/{item}.html")
+            desc = ""
+        else:
+            title = item.get("title") or item.get("name") or item.get("slug", "")
+            href = item.get("href", "")
+            slug = item.get("slug", "")
+            desc = item.get("description", "")
+            if not href and slug:
+                href = site_href(f"{fallback_prefix}/{slug}.html")
+        desc_html = f'<span class="meta">{esc(desc)}</span>' if desc else ""
+        if href:
+            rows.append(f'<li><a href="{esc(href)}"><strong>{esc(title)}</strong></a> {desc_html}</li>')
+        else:
+            rows.append(f"<li><strong>{esc(title)}</strong> {desc_html}</li>")
+    return f'<ul class="guide-related-list">{"".join(rows)}</ul>' if rows else ""
+
+
+def academy_overview_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    if not academy:
+        return ""
+    current = academy.get("mission_id") or mission_number_label(guide)
+    previous = academy.get("previous_mission")
+    next_item = academy.get("next_mission")
+    previous_html = academy_link_list([previous], "guides") if previous else "<p>Start here.</p>"
+    next_html = academy_link_list([next_item], "guides") if next_item else "<p>This path continues through projects and advanced topics.</p>"
+    prereq_html = academy_link_list(academy.get("prerequisites", []), "guides") or "<p>No prerequisites.</p>"
+    skills = academy.get("skills_learned", [])
+    skills_html = "".join(f"<li>{esc(s)}</li>" for s in skills)
+    outcome = academy.get("expected_outcome", "")
+    challenge = academy.get("mini_challenge", "")
+    return f"""<section class="mission-section academy-overview" id="academy-path" aria-labelledby="academy-path-heading">
+  {section_heading("academy-path", "PATH", "Academy Path")}
+  <div class="mission-build-panel">
+    <p><strong>Current mission:</strong> {esc(current)} · {esc(academy.get("level", "ESP32 Academy"))}</p>
+    <p><strong>Expected outcome:</strong> {esc(outcome)}</p>
+    <p><strong>Mini challenge:</strong> {esc(challenge)}</p>
+  </div>
+  <h3>Required Knowledge</h3>
+  {prereq_html}
+  <h3>Skills You Unlock</h3>
+  {"<ul class='mission-bullets'>" + skills_html + "</ul>" if skills_html else "<p>Skills are listed in the mission complete section.</p>"}
+  <div class="next-mission-grid">
+    <div class="next-mission-card"><span class="next-mission-label">Previous</span>{previous_html}</div>
+    <div class="next-mission-card"><span class="next-mission-label">Next</span>{next_html}</div>
+  </div>
+</section>"""
+
+
+def academy_unlocks_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    if not academy:
+        return ""
+    components = academy.get("unlocked_components", [])
+    projects = academy.get("unlocked_projects", [])
+    future = academy.get("future_paths", [])
+    if not components and not projects and not future:
+        return ""
+    return f"""<section class="mission-section academy-unlocks" id="unlocks" aria-labelledby="unlocks-heading">
+  {section_heading("unlocks", "KEY", "What This Unlocks")}
+  <h3>Unlocked Components</h3>
+  {academy_link_list(components, "components") or "<p>No new components in this mission.</p>"}
+  <h3>Unlocked Projects</h3>
+  {academy_link_list(projects, "projects") or "<p>Complete the next mission to unlock projects.</p>"}
+  <h3>Continue Learning</h3>
+  {academy_link_list(future, "guides") or "<p>Continue with the next mission.</p>"}
+</section>"""
 
 
 def things_list(items: list) -> str:
@@ -455,6 +534,7 @@ def mission_faq_section(items: list) -> str:
 def render_mission_guide(guide: dict) -> str:
     m = guide.get("mission") or {}
     intro_html = render_friendly_intro(guide, is_mission=True)
+    academy_html = academy_overview_section(guide)
 
     build = m.get("what_you_build", "").strip()
     build_html = ""
@@ -537,9 +617,11 @@ def render_mission_guide(guide: dict) -> str:
 </section>"""
 
     next_html = next_mission_cards(m.get("next_missions", []))
+    unlocks_html = academy_unlocks_section(guide)
 
     return f"""<article class="mission-journey">
 {intro_html}
+{academy_html}
 {build_html}
 {things_html}
 {safety_html}
@@ -553,6 +635,7 @@ def render_mission_guide(guide: dict) -> str:
 {common_problems_html}
 {faq_html}
 {complete_html}
+{unlocks_html}
 {next_html}
 </article>"""
 
