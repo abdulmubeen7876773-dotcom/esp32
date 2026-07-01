@@ -1,0 +1,391 @@
+{
+  "format": "mission",
+  "phase": 1,
+  "sort_order": 7,
+  "mission_number": 7,
+  "slug": "pwm-fundamentals",
+  "title": "ESP32 PWM Fundamentals Tutorial | ESP32 Engine",
+  "headline": "PWM Fundamentals",
+  "meta_description": "Mission 07 - learn what PWM is, how duty cycle controls LED brightness, why PWM is different from digital HIGH and LOW, and where PWM is used in real projects.",
+  "lead": "Digital pins can switch fully ON or fully OFF. PWM teaches the ESP32 to create useful in-between effects such as dim light and slower motor speed.",
+  "keywords": "ESP32 PWM tutorial, ESP32 LED brightness, duty cycle explained, ESP32 analogWrite alternative, ESP32 motor speed PWM",
+  "proficiency_level": "Beginner",
+  "reading_time": "30-35 min",
+  "date_published": "2026-07-01",
+  "date_modified": "2026-07-01",
+  "academy": {
+    "mission_id": "Mission 07",
+    "level": "Foundation",
+    "prerequisites": [
+      {
+        "slug": "multiple-buttons-state-detection",
+        "title": "Multiple Buttons & State Detection",
+        "description": "You should understand digital inputs, events, and the difference between simple ON/OFF logic and structured control."
+      }
+    ],
+    "skills_learned": [
+      "Explain PWM in plain English",
+      "Describe the difference between digital ON/OFF and PWM output",
+      "Understand duty cycle as the percentage of time an output is ON",
+      "Use PWM to control LED brightness",
+      "Explain why PWM can control motor speed conceptually"
+    ],
+    "components_required": [
+      "ESP32 DevKit",
+      "LED",
+      "220 ohm or 330 ohm resistor",
+      "Breadboard",
+      "Jumper wires",
+      "USB data cable"
+    ],
+    "estimated_time": "30-35 min",
+    "difficulty": "Beginner",
+    "expected_outcome": "You will fade an LED smoothly and understand why PWM feels like an in-between output even though the ESP32 pin is still switching ON and OFF.",
+    "mini_challenge": "Change the duty cycle steps and delay values until you can make the LED fade slowly, quickly, and in clear brightness levels.",
+    "previous_mission": {
+      "slug": "multiple-buttons-state-detection",
+      "title": "Multiple Buttons & State Detection",
+      "description": "You learned how reliable digital events can control future output behavior."
+    },
+    "next_mission": {
+      "title": "Mission 08 - Reading the Analog World (ADC)",
+      "description": "Next you will learn how the ESP32 reads real-world values that are not simply ON or OFF."
+    },
+    "unlocked_components": [
+      {
+        "title": "ESP32 DevKit Board",
+        "href": "/components/esp32-devkit.html",
+        "description": "The ESP32 generates PWM signals on many GPIO pins."
+      },
+      {
+        "title": "Relay Module",
+        "href": "/components/relay-module.html",
+        "description": "Relays are ON/OFF devices, which helps compare digital control with PWM control."
+      }
+    ],
+    "unlocked_projects": [
+      {
+        "title": "ESP32 RGB LED Pattern Controller",
+        "href": "/projects/esp32-rgb-led-pattern-controller.html",
+        "description": "RGB brightness mixing depends on PWM."
+      },
+      {
+        "title": "ESP32 WiFi Robot Controller",
+        "href": "/projects/esp32-wifi-robot-controller.html",
+        "description": "Robot speed control often uses PWM signals sent to motor drivers."
+      },
+      {
+        "title": "ESP32 Smart Street Light",
+        "href": "/projects/esp32-smart-street-light.html",
+        "description": "Street light dimming is a practical PWM-style output problem."
+      }
+    ],
+    "future_paths": [
+      {
+        "slug": "blink-led-esp32",
+        "title": "Blink an LED with ESP32",
+        "description": "Review simple digital ON/OFF before comparing it with PWM."
+      },
+      {
+        "slug": "multiple-buttons-state-detection",
+        "title": "Multiple Buttons & State Detection",
+        "description": "Use reliable button events later to change PWM brightness levels."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "What does PWM mean?",
+      "answer": "PWM means Pulse Width Modulation. It controls how long a digital output stays ON during a repeating cycle."
+    },
+    {
+      "question": "Is PWM real analog voltage?",
+      "answer": "No. PWM is still digital switching. It creates an analog-like effect by switching ON and OFF very quickly."
+    },
+    {
+      "question": "Why does PWM make an LED look dimmer?",
+      "answer": "Your eyes average the fast blinking. If the LED is ON for less of each cycle, it looks dimmer."
+    },
+    {
+      "question": "What is duty cycle?",
+      "answer": "Duty cycle is the percentage of each PWM cycle that the signal is ON. 25% duty means ON for one quarter of the cycle."
+    },
+    {
+      "question": "What does 0% duty cycle do?",
+      "answer": "0% duty cycle means the output is always OFF, so the LED is off."
+    },
+    {
+      "question": "What does 100% duty cycle do?",
+      "answer": "100% duty cycle means the output is always ON, so the LED is at full brightness."
+    },
+    {
+      "question": "What is PWM frequency?",
+      "answer": "Frequency is how many PWM cycles happen each second. For beginners, think of it as how fast the ON/OFF switching repeats."
+    },
+    {
+      "question": "Does higher frequency always mean brighter LED?",
+      "answer": "No. Brightness mostly follows duty cycle. Frequency controls how fast the switching happens."
+    },
+    {
+      "question": "Can PWM control motor speed?",
+      "answer": "Yes, conceptually. A motor driver can receive PWM so the motor gets power in fast pulses, making the average speed lower or higher."
+    },
+    {
+      "question": "Can I connect a motor directly to an ESP32 PWM pin?",
+      "answer": "No. Motors need more current than a GPIO pin can safely provide. Use a motor driver or transistor circuit."
+    },
+    {
+      "question": "Do I still need a resistor for a PWM LED?",
+      "answer": "Yes. PWM changes average brightness, but the LED still needs a current-limiting resistor when it is ON."
+    },
+    {
+      "question": "Why not just use delay() to blink fast?",
+      "answer": "Manual delay blinking blocks your program and is not smooth. Hardware PWM keeps the timing steady while your code does other work."
+    },
+    {
+      "question": "Does ESP32 use analogWrite() like Arduino Uno?",
+      "answer": "Newer ESP32 Arduino cores may support analogWrite(), but learning ledcWrite() teaches the ESP32's native PWM system more clearly."
+    },
+    {
+      "question": "Which ESP32 pins can use PWM?",
+      "answer": "Many output-capable ESP32 GPIOs can generate PWM. Avoid input-only pins and boot-sensitive pins when you are just starting."
+    },
+    {
+      "question": "Why does my LED flicker?",
+      "answer": "The PWM frequency may be too low, the wiring may be loose, or the code may be repeatedly changing duty cycle too slowly."
+    }
+  ],
+  "mission": {
+    "badge": "Mission 07",
+    "icon": "PWM",
+    "title": "Control Brightness with Fast Switching",
+    "story": "So far your ESP32 outputs have mostly been simple: ON or OFF. That is useful for blinking an LED, reading button states, and making clear digital decisions.\n\nBut many real projects need more than ON and OFF. A lamp may need to be half bright. A small fan may need to run slowly. A robot motor may need gentle speed control. PWM is the beginner-friendly bridge between digital switching and smooth-looking control.",
+    "eli12": "PWM is like tapping a light switch very, very fast.\n\nIf the switch is ON almost all the time, the light looks bright. If it is ON only a little bit of the time, the light looks dim. The ESP32 is not sending a magic half-voltage to the LED. It is switching so quickly that your eyes see the average effect.",
+    "mission_goal": "Fade an LED with PWM and understand duty cycle well enough to explain how fast ON/OFF pulses can create brightness and speed control.",
+    "learning_objectives": [
+      "Explain what PWM means and why it exists.",
+      "Compare digital HIGH/LOW output with PWM output.",
+      "Describe duty cycle as ON-time percentage.",
+      "Use ESP32 PWM to fade an LED smoothly.",
+      "Explain motor speed control conceptually without wiring a motor directly."
+    ],
+    "what_you_build": "- An LED connected to a safe ESP32 PWM-capable GPIO.\n- A fade sketch that changes brightness from off to full brightness and back.\n- Serial Monitor output showing duty cycle values.\n- A mental model for using PWM in dimmers, fans, robots, buzzers, and RGB lights.",
+    "things_you_need": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Generates the PWM signal",
+        "link": "/components/esp32-devkit.html",
+        "icon": "ESP32"
+      },
+      {
+        "item": "LED",
+        "note": "Shows brightness changes visually",
+        "icon": "LED"
+      },
+      {
+        "item": "220 ohm or 330 ohm resistor",
+        "note": "Limits LED current",
+        "icon": "R"
+      },
+      {
+        "item": "Breadboard",
+        "note": "Holds the LED and resistor",
+        "icon": "BOARD"
+      },
+      {
+        "item": "Jumper wires",
+        "note": "Connect GPIO18, resistor, LED, and GND",
+        "icon": "WIRE"
+      },
+      {
+        "item": "USB data cable",
+        "note": "Upload code and watch Serial Monitor",
+        "icon": "USB"
+      }
+    ],
+    "safety": [
+      {
+        "text": "Unplug USB before moving LED or resistor wires."
+      },
+      {
+        "text": "Always use a resistor in series with the LED."
+      },
+      {
+        "text": "Do not connect motors directly to ESP32 GPIO pins. This mission uses an LED only."
+      }
+    ],
+    "component_spotlight_lead": "This mission uses a basic LED because brightness is the easiest way to see PWM with your own eyes.",
+    "concept": {
+      "title": "Digital Output vs PWM",
+      "illustration_alt": "ESP32 PWM waveform showing 25 percent, 50 percent, and 75 percent duty cycles controlling LED brightness",
+      "body": "A normal digital output has two steady choices: LOW or HIGH. LOW is off. HIGH is on.\n\nPWM repeats a fast pattern instead. During each cycle, the output is ON for part of the time and OFF for the rest. The duty cycle tells you how much of that cycle is ON.\n\n25% duty cycle looks dim. 50% duty cycle looks medium. 90% duty cycle looks bright. The pin is still digital, but the effect feels adjustable."
+    },
+    "engineering_explanation": "PWM stands for Pulse Width Modulation. A pulse is a short ON signal. Width means how long that ON part lasts. Modulation means changing it.\n\nThe ESP32 creates a repeating waveform. At the start of each cycle the output turns ON. After the duty-cycle time passes, the output turns OFF until the next cycle begins. If the ON time is short, the average energy sent to the LED is low. If the ON time is long, the average energy is high.\n\nFrequency is how often the cycle repeats each second. In this mission, the exact frequency is not the main lesson. You only need the beginner idea: the switching is fast enough that the LED does not look like it is blinking slowly.\n\nFor a motor, PWM is similar in concept, but you must use a motor driver. The ESP32 PWM pin tells the driver how much power to deliver on average. More duty cycle means more average power and usually more speed. Less duty cycle means less average power and usually slower speed.\n\nPWM is everywhere because microcontrollers are excellent at digital switching. Instead of creating a true adjustable voltage, they switch quickly and let the load, your eyes, the motor, or a filter respond to the average.",
+    "real_life_analogy": "Imagine watering a plant with a hose that can only be fully open or fully closed. If you open it for 1 second and close it for 9 seconds, the plant gets a little water. If you open it for 8 seconds and close it for 2 seconds, the plant gets much more. The hose is never halfway open, but the average water amount changes.\n\nPWM works the same way with electricity. The ESP32 pin is fully ON or fully OFF, but the average ON time changes.\n\nAnother analogy is a ceiling fan controlled by quick bursts of power. Short bursts feel like low speed. Longer bursts feel like higher speed. The beginner lesson is not the motor physics; it is the idea of controlling average power with fast switching.",
+    "wiring": {
+      "illustration_alt": "ESP32 GPIO18 connected through a resistor to the LED anode, with the LED cathode connected to GND",
+      "steps": [
+        "Unplug the ESP32 USB cable before wiring.",
+        "Place the LED on the breadboard.",
+        "Connect ESP32 GPIO18 to one side of a 220 ohm or 330 ohm resistor.",
+        "Connect the other side of the resistor to the LED anode, the longer LED leg.",
+        "Connect the LED cathode, the shorter leg, to ESP32 GND.",
+        "Check that the resistor is in series with the LED, not beside it doing nothing.",
+        "Plug USB back in, upload the sketch, and open Serial Monitor at 115200 baud."
+      ]
+    },
+    "gpio_table": [
+      {
+        "signal": "PWM LED output",
+        "esp32_pin": "GPIO18",
+        "mode": "PWM output",
+        "notes": "Drives LED brightness through a current-limiting resistor."
+      },
+      {
+        "signal": "LED ground",
+        "esp32_pin": "GND",
+        "mode": "Ground",
+        "notes": "Completes the LED circuit."
+      },
+      {
+        "signal": "Serial debug",
+        "esp32_pin": "USB",
+        "mode": "Serial",
+        "notes": "Shows duty values while brightness changes."
+      }
+    ],
+    "code": {
+      "filename": "pwm_led_fade.ino",
+      "notes": "- GPIO18 drives the LED through a resistor.\n- PWM resolution is 8 bits, so duty ranges from 0 to 255.\n- 0 means always OFF and 255 means almost/full ON.\n- The fade changes duty cycle gradually so you can see brightness change.",
+      "content": "const int LED_PIN = 18;\n\nconst int PWM_CHANNEL = 0;\nconst int PWM_FREQUENCY = 5000;\nconst int PWM_RESOLUTION = 8;\n\nvoid setup() {\n  Serial.begin(115200);\n\n  ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);\n  ledcAttachPin(LED_PIN, PWM_CHANNEL);\n\n  Serial.println(\"Mission 07: PWM LED fade ready\");\n}\n\nvoid loop() {\n  for (int duty = 0; duty <= 255; duty += 5) {\n    ledcWrite(PWM_CHANNEL, duty);\n    Serial.print(\"Duty value: \");\n    Serial.println(duty);\n    delay(25);\n  }\n\n  for (int duty = 255; duty >= 0; duty -= 5) {\n    ledcWrite(PWM_CHANNEL, duty);\n    Serial.print(\"Duty value: \");\n    Serial.println(duty);\n    delay(25);\n  }\n}\n"
+    },
+    "code_explanation": [
+      {
+        "text": "LED_PIN is GPIO18, the pin connected to the LED through the resistor."
+      },
+      {
+        "text": "PWM_CHANNEL chooses one ESP32 PWM channel. The channel is like a small hardware helper that creates the repeated pulses."
+      },
+      {
+        "text": "PWM_FREQUENCY is 5000 Hz, which means the PWM cycle repeats 5000 times per second."
+      },
+      {
+        "text": "PWM_RESOLUTION is 8 bits, so the duty value can range from 0 to 255."
+      },
+      {
+        "text": "ledcSetup() configures the PWM channel with the chosen frequency and resolution."
+      },
+      {
+        "text": "ledcAttachPin() connects GPIO18 to that PWM channel."
+      },
+      {
+        "text": "The first for loop increases duty from 0 to 255, making the LED fade brighter."
+      },
+      {
+        "text": "ledcWrite() changes the duty cycle. It does not stop the program to blink manually."
+      },
+      {
+        "text": "The second for loop decreases duty from 255 to 0, making the LED fade dimmer."
+      }
+    ],
+    "expected_output": "The LED should fade smoothly from off to bright, then bright back to off. Serial Monitor should print changing duty values:\n\nMission 07: PWM LED fade ready\nDuty value: 0\nDuty value: 5\nDuty value: 10\n...\nDuty value: 255\nDuty value: 250\n...\nDuty value: 0\n\nThe LED is not receiving a true half-voltage. It is receiving fast ON/OFF pulses that your eyes average into brightness.",
+    "common_mistakes": [
+      {
+        "problem": "Forgetting the LED resistor",
+        "cause": "PWM can make the LED look dimmer, but the pin still drives full current during each ON pulse.",
+        "fix": "Always keep a 220 ohm or 330 ohm resistor in series with the LED."
+      },
+      {
+        "problem": "Thinking PWM is analog voltage",
+        "cause": "The brightness looks smooth, so it feels like the voltage must be smoothly changing.",
+        "fix": "Remember that the pin is switching fully ON and OFF very quickly."
+      },
+      {
+        "problem": "Using a motor directly on the GPIO pin",
+        "cause": "PWM motor speed examples can make beginners think the PWM pin powers the motor.",
+        "fix": "Use a motor driver or transistor circuit for motors. GPIO pins are signal pins, not motor power supplies."
+      },
+      {
+        "problem": "Choosing a poor GPIO pin",
+        "cause": "Some ESP32 pins are input-only or affect boot behavior.",
+        "fix": "Use GPIO18 for this mission unless you know why you are changing it."
+      },
+      {
+        "problem": "Confusing frequency with brightness",
+        "cause": "Both are PWM settings, but they do different jobs.",
+        "fix": "Use duty cycle for brightness. Treat frequency as the switching speed."
+      }
+    ],
+    "common_problems": [
+      {
+        "problem": "LED does not turn on",
+        "cause": "The LED may be backwards, the resistor may be in the wrong row, or the wire may not be on GPIO18.",
+        "fix": "Check LED polarity, place the resistor in series, and trace GPIO18 to the resistor and LED anode."
+      },
+      {
+        "problem": "LED is always full bright",
+        "cause": "The LED may be connected to 3.3 V instead of the PWM pin, or ledcWrite() may always receive 255.",
+        "fix": "Confirm the LED circuit starts at GPIO18 and watch Serial Monitor for changing duty values."
+      },
+      {
+        "problem": "LED flickers visibly",
+        "cause": "The frequency may be too low if you changed it, or delay values may make the fade look jumpy.",
+        "fix": "Return PWM_FREQUENCY to 5000 and use small duty steps such as 5."
+      },
+      {
+        "problem": "Code does not compile",
+        "cause": "Some ESP32 Arduino core versions changed PWM helper support.",
+        "fix": "Confirm you selected an ESP32 board in Arduino IDE. If needed, update the ESP32 board package."
+      },
+      {
+        "problem": "Serial Monitor shows text but LED does nothing",
+        "cause": "The sketch is running, so the issue is likely wiring or pin choice.",
+        "fix": "Move the LED circuit back to GPIO18 and GND, then test the LED orientation."
+      }
+    ],
+    "engineer_tip": "PWM does not create real analog voltage. It creates a controlled illusion by switching fast. Once you understand the illusion, LED dimming, motor speed control, fan control, buzzers, and RGB color mixing all become easier to reason about.",
+    "remember_forever": "PWM is not halfway ON.\n\nIt is fully ON, then fully OFF, so fast that the average feels like control.",
+    "challenge_items": [
+      {
+        "icon": "25",
+        "text": "Change the fade delay from 25 ms to 5 ms and describe how the fade feels different."
+      },
+      {
+        "icon": "STEP",
+        "text": "Change duty steps from 5 to 25 and notice whether the fade becomes smoother or more jumpy."
+      },
+      {
+        "icon": "LEVEL",
+        "text": "Replace the fade with five fixed brightness levels: 0, 64, 128, 192, and 255."
+      },
+      {
+        "icon": "BTN",
+        "text": "Plan how Mission 06 button events could increase or decrease PWM brightness later."
+      }
+    ],
+    "complete": {
+      "subtitle": "Your ESP32 can now create more than simple ON and OFF effects.",
+      "summary": "You learned that PWM is fast digital switching with a controlled ON-time. Duty cycle changes the average energy sent to the load, which makes an LED appear dimmer or brighter.\n\nThis idea is one of the most useful foundations in embedded systems. PWM shows up in lights, motors, fans, buzzers, displays, robots, and power control. It lets a digital microcontroller create smooth-looking behavior without needing a true analog output.",
+      "skills": [
+        "Explain PWM",
+        "Understand duty cycle",
+        "Compare digital output with PWM output",
+        "Fade an LED with ESP32 PWM",
+        "Describe PWM motor speed conceptually"
+      ]
+    },
+    "next_missions": [
+      {
+        "title": "Mission 08 - Reading the Analog World (ADC)",
+        "description": "Next you will learn how the ESP32 reads values that change gradually instead of only ON and OFF."
+      },
+      {
+        "slug": "multiple-buttons-state-detection",
+        "title": "Multiple Buttons & State Detection",
+        "description": "Review button events before using inputs to change PWM levels."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}

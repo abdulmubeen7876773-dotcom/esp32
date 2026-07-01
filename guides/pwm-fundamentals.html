@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 PWM Fundamentals Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 07 - learn what PWM is, how duty cycle controls LED brightness, why PWM is different from digital HIGH and LOW, and where PWM is used in real projects.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/pwm-fundamentals.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 PWM Fundamentals Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 07 - learn what PWM is, how duty cycle controls LED brightness, why PWM is different from digital HIGH and LOW, and where PWM is used in real projects.">
+<meta property="og:url" content="https://esp32engine.com/guides/pwm-fundamentals.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 PWM Fundamentals Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 07 - learn what PWM is, how duty cycle controls LED brightness, why PWM is different from digital HIGH and LOW, and where PWM is used in real projects.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"PWM Fundamentals","description":"Mission 07 - learn what PWM is, how duty cycle controls LED brightness, why PWM is different from digital HIGH and LOW, and where PWM is used in real projects.","datePublished":"2026-07-01","dateModified":"2026-07-01","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/pwm-fundamentals.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 PWM tutorial, ESP32 LED brightness, duty cycle explained, ESP32 analogWrite alternative, ESP32 motor speed PWM"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"PWM Fundamentals","item":"https://esp32engine.com/guides/pwm-fundamentals.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does PWM mean?","acceptedAnswer":{"@type":"Answer","text":"PWM means Pulse Width Modulation. It controls how long a digital output stays ON during a repeating cycle."}},{"@type":"Question","name":"Is PWM real analog voltage?","acceptedAnswer":{"@type":"Answer","text":"No. PWM is still digital switching. It creates an analog-like effect by switching ON and OFF very quickly."}},{"@type":"Question","name":"Why does PWM make an LED look dimmer?","acceptedAnswer":{"@type":"Answer","text":"Your eyes average the fast blinking. If the LED is ON for less of each cycle, it looks dimmer."}},{"@type":"Question","name":"What is duty cycle?","acceptedAnswer":{"@type":"Answer","text":"Duty cycle is the percentage of each PWM cycle that the signal is ON. 25% duty means ON for one quarter of the cycle."}},{"@type":"Question","name":"What does 0% duty cycle do?","acceptedAnswer":{"@type":"Answer","text":"0% duty cycle means the output is always OFF, so the LED is off."}},{"@type":"Question","name":"What does 100% duty cycle do?","acceptedAnswer":{"@type":"Answer","text":"100% duty cycle means the output is always ON, so the LED is at full brightness."}},{"@type":"Question","name":"What is PWM frequency?","acceptedAnswer":{"@type":"Answer","text":"Frequency is how many PWM cycles happen each second. For beginners, think of it as how fast the ON/OFF switching repeats."}},{"@type":"Question","name":"Does higher frequency always mean brighter LED?","acceptedAnswer":{"@type":"Answer","text":"No. Brightness mostly follows duty cycle. Frequency controls how fast the switching happens."}},{"@type":"Question","name":"Can PWM control motor speed?","acceptedAnswer":{"@type":"Answer","text":"Yes, conceptually. A motor driver can receive PWM so the motor gets power in fast pulses, making the average speed lower or higher."}},{"@type":"Question","name":"Can I connect a motor directly to an ESP32 PWM pin?","acceptedAnswer":{"@type":"Answer","text":"No. Motors need more current than a GPIO pin can safely provide. Use a motor driver or transistor circuit."}},{"@type":"Question","name":"Do I still need a resistor for a PWM LED?","acceptedAnswer":{"@type":"Answer","text":"Yes. PWM changes average brightness, but the LED still needs a current-limiting resistor when it is ON."}},{"@type":"Question","name":"Why not just use delay() to blink fast?","acceptedAnswer":{"@type":"Answer","text":"Manual delay blinking blocks your program and is not smooth. Hardware PWM keeps the timing steady while your code does other work."}},{"@type":"Question","name":"Does ESP32 use analogWrite() like Arduino Uno?","acceptedAnswer":{"@type":"Answer","text":"Newer ESP32 Arduino cores may support analogWrite(), but learning ledcWrite() teaches the ESP32's native PWM system more clearly."}},{"@type":"Question","name":"Which ESP32 pins can use PWM?","acceptedAnswer":{"@type":"Answer","text":"Many output-capable ESP32 GPIOs can generate PWM. Avoid input-only pins and boot-sensitive pins when you are just starting."}},{"@type":"Question","name":"Why does my LED flicker?","acceptedAnswer":{"@type":"Answer","text":"The PWM frequency may be too low, the wiring may be loose, or the code may be repeatedly changing duty cycle too slowly."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">PWM Fundamentals</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">PWM Fundamentals</h1>
+      <p class="article-lead mission-hero-lead">Digital pins can switch fully ON or fully OFF. PWM teaches the ESP32 to create useful in-between effects such as dim light and slower motor speed.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 07</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">30-35 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">PWM</span>
+  <span class="mission-card-badge">Mission 07</span>
+  <h2 class="mission-card-title">Control Brightness with Fast Switching</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>So far your ESP32 outputs have mostly been simple: ON or OFF. That is useful for blinking an LED, reading button states, and making clear digital decisions.</p><p>But many real projects need more than ON and OFF. A lamp may need to be half bright. A small fan may need to run slowly. A robot motor may need gentle speed control. PWM is the beginner-friendly bridge between digital switching and smooth-looking control.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>PWM is like tapping a light switch very, very fast.</p><p>If the switch is ON almost all the time, the light looks bright. If it is ON only a little bit of the time, the light looks dim. The ESP32 is not sending a magic half-voltage to the LED. It is switching so quickly that your eyes see the average effect.</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">GOAL</span><span class="mission-section-title">Mission Goal</span></h2>
+  <div class="mission-build-panel"><p>Fade an LED with PWM and understand duty cycle well enough to explain how fast ON/OFF pulses can create brightness and speed control.</p></div>
+</section>
+<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
+  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">TIME</span><span class="mission-section-title">Estimated Time</span></h2>
+  <div class="mission-prose"><p>30-35 min</p></div>
+</section>
+<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
+  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">LEVEL</span><span class="mission-section-title">Difficulty</span></h2>
+  <div class="mission-prose"><p>Beginner</p></div>
+</section>
+<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">PRE</span><span class="mission-section-title">Prerequisites</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/multiple-buttons-state-detection.html"><strong>Multiple Buttons &amp; State Detection</strong></a> <span class="meta">You should understand digital inputs, events, and the difference between simple ON/OFF logic and structured control.</span></li></ul>
+</section>
+<section class="mission-section" id="skills" aria-labelledby="skills-heading">
+  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">SKILL</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <ul class="mission-bullets"><li>Explain PWM in plain English</li><li>Describe the difference between digital ON/OFF and PWM output</li><li>Understand duty cycle as the percentage of time an output is ON</li><li>Use PWM to control LED brightness</li><li>Explain why PWM can control motor speed conceptually</li></ul>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Components Required</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Generates the PWM signal</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">LED</span><span class="mission-thing-body"><span class="mission-thing-name">LED</span><span class="mission-thing-note">Shows brightness changes visually</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">R</span><span class="mission-thing-body"><span class="mission-thing-name">220 ohm or 330 ohm resistor</span><span class="mission-thing-note">Limits LED current</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BOARD</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard</span><span class="mission-thing-note">Holds the LED and resistor</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Jumper wires</span><span class="mission-thing-note">Connect GPIO18, resistor, LED, and GND</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload code and watch Serial Monitor</span></span></li></ul>
+</section>
+<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">ENG</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <div class="mission-prose"><p>PWM stands for Pulse Width Modulation. A pulse is a short ON signal. Width means how long that ON part lasts. Modulation means changing it.</p><p>The ESP32 creates a repeating waveform. At the start of each cycle the output turns ON. After the duty-cycle time passes, the output turns OFF until the next cycle begins. If the ON time is short, the average energy sent to the LED is low. If the ON time is long, the average energy is high.</p><p>Frequency is how often the cycle repeats each second. In this mission, the exact frequency is not the main lesson. You only need the beginner idea: the switching is fast enough that the LED does not look like it is blinking slowly.</p><p>For a motor, PWM is similar in concept, but you must use a motor driver. The ESP32 PWM pin tells the driver how much power to deliver on average. More duty cycle means more average power and usually more speed. Less duty cycle means less average power and usually slower speed.</p><p>PWM is everywhere because microcontrollers are excellent at digital switching. Instead of creating a true adjustable voltage, they switch quickly and let the load, your eyes, the motor, or a filter respond to the average.</p></div>
+</section>
+<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
+  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">REAL</span><span class="mission-section-title">Real-World Analogy</span></h2>
+  <div class="mission-prose"><p>Imagine watering a plant with a hose that can only be fully open or fully closed. If you open it for 1 second and close it for 9 seconds, the plant gets a little water. If you open it for 8 seconds and close it for 2 seconds, the plant gets much more. The hose is never halfway open, but the average water amount changes.</p><p>PWM works the same way with electricity. The ESP32 pin is fully ON or fully OFF, but the average ON time changes.</p><p>Another analogy is a ceiling fan controlled by quick bursts of power. Short bursts feel like low speed. Longer bursts feel like higher speed. The beginner lesson is not the motor physics; it is the idea of controlling average power with fast switching.</p></div>
+</section>
+
+
+
+
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">WIRE</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="ESP32 GPIO18 connected through a resistor to the LED anode, with the LED cathode connected to GND">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">WIRE</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32 GPIO18 connected through a resistor to the LED anode, with the LED cathode connected to GND</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Place the LED on the breadboard.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect ESP32 GPIO18 to one side of a 220 ohm or 330 ohm resistor.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect the other side of the resistor to the LED anode, the longer LED leg.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Connect the LED cathode, the shorter leg, to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Check that the resistor is in series with the LED, not beside it doing nothing.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Plug USB back in, upload the sketch, and open Serial Monitor at 115200 baud.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
+  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>PWM LED output</td><td>GPIO18</td><td>PWM output</td><td>Drives LED brightness through a current-limiting resistor.</td></tr><tr><td>LED ground</td><td>GND</td><td>Ground</td><td>Completes the LED circuit.</td></tr><tr><td>Serial debug</td><td>USB</td><td>Serial</td><td>Shows duty values while brightness changes.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">pwm_led_fade.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino">const <span class="tok-kw">int</span> LED_PIN = <span class="tok-num">18</span>;
+
+const <span class="tok-kw">int</span> PWM_CHANNEL = <span class="tok-num">0</span>;
+const <span class="tok-kw">int</span> PWM_FREQUENCY = <span class="tok-num">5000</span>;
+const <span class="tok-kw">int</span> PWM_RESOLUTION = <span class="tok-num">8</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+
+  ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
+  ledcAttachPin(LED_PIN, PWM_CHANNEL);
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">07</span>: PWM LED fade ready&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> duty = <span class="tok-num">0</span>; duty &lt;= <span class="tok-num">255</span>; duty += <span class="tok-num">5</span>) {
+    ledcWrite(PWM_CHANNEL, duty);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Duty value: &quot;);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(duty);
+    <span class="tok-fn">delay</span>(<span class="tok-num">25</span>);
+  }
+
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> duty = <span class="tok-num">255</span>; duty &gt;= <span class="tok-num">0</span>; duty -= <span class="tok-num">5</span>) {
+    ledcWrite(PWM_CHANNEL, duty);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Duty value: &quot;);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(duty);
+    <span class="tok-fn">delay</span>(<span class="tok-num">25</span>);
+  }
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>The LED should fade smoothly from off to bright, then bright back to off. Serial Monitor should print changing duty values:</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>GPIO18 drives the LED through a resistor.</li><li>PWM resolution is 8 bits, so duty ranges from 0 to 255.</li><li>0 means always OFF and 255 means almost/full ON.</li><li>The fade changes duty cycle gradually so you can see brightness change.</li></ul></div>
+</section>
+<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">CODE</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
+  <ul class="mission-bullets"><li>LED_PIN is GPIO18, the pin connected to the LED through the resistor.</li><li>PWM_CHANNEL chooses one ESP32 PWM channel. The channel is like a small hardware helper that creates the repeated pulses.</li><li>PWM_FREQUENCY is 5000 Hz, which means the PWM cycle repeats 5000 times per second.</li><li>PWM_RESOLUTION is 8 bits, so the duty value can range from 0 to 255.</li><li>ledcSetup() configures the PWM channel with the chosen frequency and resolution.</li><li>ledcAttachPin() connects GPIO18 to that PWM channel.</li><li>The first for loop increases duty from 0 to 255, making the LED fade brighter.</li><li>ledcWrite() changes the duty cycle. It does not stop the program to blink manually.</li><li>The second for loop decreases duty from 255 to 0, making the LED fade dimmer.</li></ul>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">OUT</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>The LED should fade smoothly from off to bright, then bright back to off. Serial Monitor should print changing duty values:</p><p>Mission 07: PWM LED fade ready
+Duty value: 0
+Duty value: 5
+Duty value: 10
+...
+Duty value: 255
+Duty value: 250
+...
+Duty value: 0</p><p>The LED is not receiving a true half-voltage. It is receiving fast ON/OFF pulses that your eyes average into brightness.</p></div>
+</section>
+
+<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">WARN</span><span class="mission-section-title">Common Mistakes</span></h2>
+  <ul class="mission-bullets"><li><h3>Forgetting the LED resistor</h3><p>PWM can make the LED look dimmer, but the pin still drives full current during each ON pulse.</p></li><li><h3>Thinking PWM is analog voltage</h3><p>The brightness looks smooth, so it feels like the voltage must be smoothly changing.</p></li><li><h3>Using a motor directly on the GPIO pin</h3><p>PWM motor speed examples can make beginners think the PWM pin powers the motor.</p></li><li><h3>Choosing a poor GPIO pin</h3><p>Some ESP32 pins are input-only or affect boot behavior.</p></li><li><h3>Confusing frequency with brightness</h3><p>Both are PWM settings, but they do different jobs.</p></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>LED does not turn on</h3><p><strong>Likely cause:</strong> The LED may be backwards, the resistor may be in the wrong row, or the wire may not be on GPIO18.</p><p><strong>Fix:</strong> Check LED polarity, place the resistor in series, and trace GPIO18 to the resistor and LED anode.</p></li><li><h3>LED is always full bright</h3><p><strong>Likely cause:</strong> The LED may be connected to 3.3 V instead of the PWM pin, or ledcWrite() may always receive 255.</p><p><strong>Fix:</strong> Confirm the LED circuit starts at GPIO18 and watch Serial Monitor for changing duty values.</p></li><li><h3>LED flickers visibly</h3><p><strong>Likely cause:</strong> The frequency may be too low if you changed it, or delay values may make the fade look jumpy.</p><p><strong>Fix:</strong> Return PWM_FREQUENCY to 5000 and use small duty steps such as 5.</p></li><li><h3>Code does not compile</h3><p><strong>Likely cause:</strong> Some ESP32 Arduino core versions changed PWM helper support.</p><p><strong>Fix:</strong> Confirm you selected an ESP32 board in Arduino IDE. If needed, update the ESP32 board package.</p></li><li><h3>Serial Monitor shows text but LED does nothing</h3><p><strong>Likely cause:</strong> The sketch is running, so the issue is likely wiring or pin choice.</p><p><strong>Fix:</strong> Move the LED circuit back to GPIO18 and GND, then test the LED orientation.</p></li></ul>
+</section>
+<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
+  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">TIP</span><span class="mission-section-title">Engineer Tip</span></h2>
+  <div class="mission-prose"><p>PWM does not create real analog voltage. It creates a controlled illusion by switching fast. Once you understand the illusion, LED dimming, motor speed control, fan control, buzzers, and RGB color mixing all become easier to reason about.</p></div>
+</section>
+<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">REM</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <div class="mission-build-panel"><p>PWM is not halfway ON.</p><p>It is fully ON, then fully OFF, so fast that the average feels like control.</p></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">25</span><span class="mission-challenge-text">Change the fade delay from 25 ms to 5 ms and describe how the fade feels different.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">STEP</span><span class="mission-challenge-text">Change duty steps from 5 to 25 and notice whether the fade becomes smoother or more jumpy.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">LEVEL</span><span class="mission-challenge-text">Replace the fade with five fixed brightness levels: 0, 64, 128, 192, and 255.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">BTN</span><span class="mission-challenge-text">Plan how Mission 06 button events could increase or decrease PWM brightness later.</span></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>What does PWM mean?</h3><p>PWM means Pulse Width Modulation. It controls how long a digital output stays ON during a repeating cycle.</p></li><li><h3>Is PWM real analog voltage?</h3><p>No. PWM is still digital switching. It creates an analog-like effect by switching ON and OFF very quickly.</p></li><li><h3>Why does PWM make an LED look dimmer?</h3><p>Your eyes average the fast blinking. If the LED is ON for less of each cycle, it looks dimmer.</p></li><li><h3>What is duty cycle?</h3><p>Duty cycle is the percentage of each PWM cycle that the signal is ON. 25% duty means ON for one quarter of the cycle.</p></li><li><h3>What does 0% duty cycle do?</h3><p>0% duty cycle means the output is always OFF, so the LED is off.</p></li><li><h3>What does 100% duty cycle do?</h3><p>100% duty cycle means the output is always ON, so the LED is at full brightness.</p></li><li><h3>What is PWM frequency?</h3><p>Frequency is how many PWM cycles happen each second. For beginners, think of it as how fast the ON/OFF switching repeats.</p></li><li><h3>Does higher frequency always mean brighter LED?</h3><p>No. Brightness mostly follows duty cycle. Frequency controls how fast the switching happens.</p></li><li><h3>Can PWM control motor speed?</h3><p>Yes, conceptually. A motor driver can receive PWM so the motor gets power in fast pulses, making the average speed lower or higher.</p></li><li><h3>Can I connect a motor directly to an ESP32 PWM pin?</h3><p>No. Motors need more current than a GPIO pin can safely provide. Use a motor driver or transistor circuit.</p></li><li><h3>Do I still need a resistor for a PWM LED?</h3><p>Yes. PWM changes average brightness, but the LED still needs a current-limiting resistor when it is ON.</p></li><li><h3>Why not just use delay() to blink fast?</h3><p>Manual delay blinking blocks your program and is not smooth. Hardware PWM keeps the timing steady while your code does other work.</p></li><li><h3>Does ESP32 use analogWrite() like Arduino Uno?</h3><p>Newer ESP32 Arduino cores may support analogWrite(), but learning ledcWrite() teaches the ESP32&#x27;s native PWM system more clearly.</p></li><li><h3>Which ESP32 pins can use PWM?</h3><p>Many output-capable ESP32 GPIOs can generate PWM. Avoid input-only pins and boot-sensitive pins when you are just starting.</p></li><li><h3>Why does my LED flicker?</h3><p>The PWM frequency may be too low, the wiring may be loose, or the code may be repeatedly changing duty cycle too slowly.</p></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Related Components</span></h2>
+  <ul class="guide-related-list"><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The ESP32 generates PWM signals on many GPIO pins.</span></li><li><a href="/components/relay-module.html"><strong>Relay Module</strong></a> <span class="meta">Relays are ON/OFF devices, which helps compare digital control with PWM control.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">PROJ</span><span class="mission-section-title">Related Projects</span></h2>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-rgb-led-pattern-controller.html"><strong>ESP32 RGB LED Pattern Controller</strong></a> <span class="meta">RGB brightness mixing depends on PWM.</span></li><li><a href="/projects/esp32-wifi-robot-controller.html"><strong>ESP32 WiFi Robot Controller</strong></a> <span class="meta">Robot speed control often uses PWM signals sent to motor drivers.</span></li><li><a href="/projects/esp32-smart-street-light.html"><strong>ESP32 Smart Street Light</strong></a> <span class="meta">Street light dimming is a practical PWM-style output problem.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
+  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">PREV</span><span class="mission-section-title">Previous Mission</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/multiple-buttons-state-detection.html"><strong>Multiple Buttons &amp; State Detection</strong></a> <span class="meta">You learned how reliable digital events can control future output behavior.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
+  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Next Mission</span></h2>
+  <ul class="guide-related-list"><li><strong>Mission 08 - Reading the Analog World (ADC)</strong> <span class="meta">Next you will learn how the ESP32 reads real-world values that are not simply ON or OFF.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Continue Learning</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/blink-led-esp32.html"><strong>Blink an LED with ESP32</strong></a> <span class="meta">Review simple digital ON/OFF before comparing it with PWM.</span></li><li><a href="/guides/multiple-buttons-state-detection.html"><strong>Multiple Buttons &amp; State Detection</strong></a> <span class="meta">Use reliable button events later to change PWM brightness levels.</span></li></ul>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>
