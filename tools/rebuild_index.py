@@ -296,6 +296,7 @@ def home_html(projects):
 <html lang="en">
 <head>
 {head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True)}
+<link rel="preload" as="image" href="/assets/images/heroes/home-hero.webp" type="image/webp" fetchpriority="high">
 </head>
 <body class="home-page">
 <main>

@@ -290,10 +290,15 @@ def render_guides_index(guides: list[dict]) -> str:
     <div class="guide-index-grid reference-guide-grid">{legacy_cards}</div>
   </section>"""
     body = f"""  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li aria-current="page">Guides</li></ol></nav>
-  <p class="hero-eyebrow">Learn by doing</p>
+  <section class="premium-page-hero">
+    <div class="premium-page-copy">
+      <p class="hero-eyebrow">Learn by doing</p>
   <h1>ESP32 Learning Guides</h1>
   <p class="article-lead">Start with Mission Journeys — fun step-by-step builds for kids and beginners. Reference Guides are here when you want extra background.</p>
   <p class="guide-count-summary meta">{len(missions)} mission journeys · {len(legacy)} reference guides</p>
+    </div>
+    <div class="premium-page-visual"><img src="/assets/images/heroes/guides-hero.webp" alt="ESP32 guide workspace with development board, laptop, and printed wiring notes" width="1024" height="576" loading="eager" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;"></div>
+  </section>
 {missions_html}
 {legacy_html}
   <p class="meta guide-index-footer"><a href="{site_href('learning.html')}">View learning paths →</a> · <a href="{site_href('projects.html')}">Browse projects →</a></p>"""
