@@ -1,0 +1,371 @@
+{
+  "format": "mission",
+  "phase": 1,
+  "sort_order": 5,
+  "mission_number": 5,
+  "slug": "debouncing-buttons",
+  "title": "ESP32 Button Debouncing Tutorial | ESP32 Engine",
+  "headline": "Button Debouncing",
+  "meta_description": "Mission 05 - learn why one ESP32 button press can trigger many times, what switch bounce is, and how to debounce buttons in Arduino code.",
+  "lead": "Your button now has a stable default state. The next problem is speed: the ESP32 can see tiny mechanical bounces that your finger cannot feel.",
+  "keywords": "ESP32 button debounce, ESP32 debouncing tutorial, Arduino debounce ESP32, switch bounce explained, ESP32 button multiple presses",
+  "proficiency_level": "Beginner",
+  "reading_time": "20-25 min",
+  "date_published": "2026-07-01",
+  "date_modified": "2026-07-01",
+  "academy": {
+    "mission_id": "Mission 05",
+    "level": "Foundation",
+    "prerequisites": [
+      {
+        "slug": "pull-up-vs-pull-down-resistors",
+        "title": "Pull-up vs Pull-down Resistors",
+        "description": "You should understand INPUT_PULLUP and why the button reads LOW when pressed."
+      }
+    ],
+    "skills_learned": [
+      "Explain why one physical button press can create many electrical changes",
+      "Describe switch bounce in plain English",
+      "Use millis() to debounce without freezing the ESP32",
+      "Count one clean press instead of every contact bounce",
+      "Choose a practical debounce delay and test it in Serial Monitor"
+    ],
+    "components_required": [
+      "ESP32 DevKit",
+      "Push button",
+      "Breadboard",
+      "Jumper wires",
+      "USB data cable"
+    ],
+    "estimated_time": "20-25 min",
+    "difficulty": "Beginner",
+    "expected_outcome": "You will build a button counter that counts each intentional press once, even when the mechanical contacts bounce.",
+    "mini_challenge": "Try debounce delays of 10 ms, 30 ms, 50 ms, and 120 ms. Watch Serial Monitor and find the shortest delay that still counts reliably.",
+    "previous_mission": {
+      "slug": "pull-up-vs-pull-down-resistors",
+      "title": "Pull-up vs Pull-down Resistors",
+      "description": "You learned how to give a button input a stable default state."
+    },
+    "next_mission": {
+      "title": "Mission 06 - Digital Outputs Practice",
+      "description": "Next you will use clean input events to control more output patterns."
+    },
+    "unlocked_components": [
+      {
+        "title": "ESP32 DevKit Board",
+        "href": "/components/esp32-devkit.html",
+        "description": "The board reading the button and timing the debounce window."
+      },
+      {
+        "title": "Relay Module",
+        "href": "/components/relay-module.html",
+        "description": "Relay controls often need debounced manual buttons."
+      }
+    ],
+    "unlocked_projects": [
+      {
+        "title": "ESP32 Smart Door Lock",
+        "href": "/projects/esp32-smart-door-lock.html",
+        "description": "Door unlock buttons must trigger once, not five times."
+      },
+      {
+        "title": "ESP32 RFID Access Control System",
+        "href": "/projects/esp32-rfid-access-control-system.html",
+        "description": "Access systems use clean events for buttons, resets, and override controls."
+      },
+      {
+        "title": "ESP32 Learning Trainer Board",
+        "href": "/projects/esp32-learning-trainer.html",
+        "description": "A trainer board is a good place to practice reliable button inputs."
+      }
+    ],
+    "future_paths": [
+      {
+        "slug": "button-led-control",
+        "title": "Button Controls LED with ESP32",
+        "description": "Review the original button mission and notice what debounce improves."
+      },
+      {
+        "slug": "pull-up-vs-pull-down-resistors",
+        "title": "Pull-up vs Pull-down Resistors",
+        "description": "Review the stable default state before debugging bounce."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "What is button debounce?",
+      "answer": "Debounce is the process of ignoring the tiny rapid HIGH/LOW changes that happen when a mechanical button contact is settling."
+    },
+    {
+      "question": "Is button bounce a hardware fault?",
+      "answer": "No. Bounce is normal in mechanical switches. Even good buttons can bounce for a few milliseconds."
+    },
+    {
+      "question": "Why does one press trigger multiple times?",
+      "answer": "The ESP32 reads the pin much faster than your finger moves. If the contacts touch, separate, and touch again during one press, software can see several changes."
+    },
+    {
+      "question": "How long does button bounce last?",
+      "answer": "Many small buttons settle within about 5 to 50 milliseconds. The exact time depends on the switch, wiring, and how it is pressed."
+    },
+    {
+      "question": "Do pull-up resistors fix bounce?",
+      "answer": "No. Pull-ups and pull-downs fix floating inputs. Debouncing fixes contact chatter after the input already has a stable default state."
+    },
+    {
+      "question": "Should I use delay() for debounce?",
+      "answer": "Avoid delay() in real projects because it freezes the whole program. Using millis() lets the ESP32 keep doing other work."
+    },
+    {
+      "question": "Do I need to debounce button release too?",
+      "answer": "Yes. The contacts can bounce when they open as well as when they close."
+    },
+    {
+      "question": "Can hardware debounce solve the problem?",
+      "answer": "Yes. Resistor-capacitor filters or dedicated circuits can reduce bounce, but software debounce is easier for beginners and common in firmware."
+    },
+    {
+      "question": "Is 50 ms a good debounce delay?",
+      "answer": "50 ms is a safe starting point for many beginner projects. You can tune it shorter after testing your actual button."
+    },
+    {
+      "question": "Does debounce make the ESP32 slower?",
+      "answer": "No. Good debounce logic only delays trusting that one input. The rest of the program can keep running."
+    },
+    {
+      "question": "Why does my counter jump by 2 or 3?",
+      "answer": "That is usually switch bounce. The software is counting several contact changes from one physical press."
+    },
+    {
+      "question": "Do all physical buttons bounce?",
+      "answer": "Yes. Every mechanical button has some contact settling. The amount may be tiny, but professional firmware still accounts for it."
+    }
+  ],
+  "mission": {
+    "badge": "Mission 05",
+    "icon": "BTN",
+    "title": "Count One Clean Button Press",
+    "story": "Mission 04 gave your button a reliable default state. Released is HIGH, pressed is LOW, and the input no longer floats.\n\nBut one more real-world problem remains. A mechanical button does not move from open to closed in one perfect instant. Inside the switch, tiny metal contacts hit each other, bounce apart, and settle. Your finger feels one press. The ESP32 may see many.",
+    "eli12": "Pressing a button feels simple because your finger is slow compared with electronics. To the ESP32, that same press can look like a rapid burst: pressed, released, pressed, released, pressed.\n\nDebouncing means the ESP32 waits a short moment before trusting the final answer. It is like saying, 'I saw the first change. Now I will ignore the tiny shaking and count this as one real press.'",
+    "mission_goal": "Build a button counter that increases by exactly one count for each intentional button press, even though the physical button contacts bounce for a few milliseconds.",
+    "learning_objectives": [
+      "Explain why mechanical buttons bounce.",
+      "Show why one physical press can become several software events.",
+      "Debounce a button using millis() instead of delay().",
+      "Count a clean button press only after the input has been stable.",
+      "Tune the debounce delay by observing Serial Monitor."
+    ],
+    "what_you_build": "- A button wired with INPUT_PULLUP, just like Mission 04.\n- A Serial Monitor counter that increases once per real press.\n- Non-blocking debounce logic using millis().\n- A small experiment for finding a reliable debounce delay.",
+    "things_you_need": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Runs the debounce timing logic",
+        "link": "/components/esp32-devkit.html",
+        "icon": "ESP32"
+      },
+      {
+        "item": "Push button",
+        "note": "Any standard tactile button works",
+        "icon": "BTN"
+      },
+      {
+        "item": "Breadboard",
+        "note": "Holds the button firmly",
+        "icon": "BOARD"
+      },
+      {
+        "item": "Jumper wires",
+        "note": "For GPIO27 and GND",
+        "icon": "WIRE"
+      },
+      {
+        "item": "USB data cable",
+        "note": "Upload code and watch Serial Monitor",
+        "icon": "USB"
+      }
+    ],
+    "safety": [
+      {
+        "text": "Unplug USB before moving button wires."
+      },
+      {
+        "text": "Use GPIO27 and GND for this INPUT_PULLUP circuit."
+      },
+      {
+        "text": "Do not connect ESP32 GPIO pins to 5 V."
+      }
+    ],
+    "component_spotlight_lead": "This mission uses the same ESP32 DevKit and push button pattern from Mission 04.",
+    "concept": {
+      "title": "Why Buttons Bounce",
+      "illustration_alt": "ESP32 GPIO27 connected to a button to GND, showing one physical press producing several fast electrical transitions before settling",
+      "body": "A button is a mechanical part. Inside it, two small metal contacts touch when you press down. They do not always land perfectly on the first try.\n\nFor a few milliseconds, the contacts can chatter: touch, separate, touch again, separate again, then finally settle. That chatter is switch bounce.\n\nHumans cannot feel these tiny movements, but the ESP32 can read GPIO pins thousands of times per second. If your code trusts every change immediately, one press can look like many presses."
+    },
+    "engineering_explanation": "A pull-up resistor gives the input a default HIGH state. Pressing the button connects the GPIO to GND, so the intended pressed state is LOW. That solves floating, but it does not solve bounce.\n\nDuring a real press, the raw input may jump LOW-HIGH-LOW-HIGH-LOW before settling LOW. During release, it may jump HIGH-LOW-HIGH before settling HIGH. Each jump is real electricity, not a software mistake.\n\nSoftware debounce uses time as a filter. When the raw reading changes, the code starts a timer. Only if the new reading remains stable for the debounce window does the program accept it as the real button state. This lets the ESP32 ignore contact chatter while still responding quickly to normal button presses.\n\nProfessional firmware does this because physical switches are never perfect. Any button that controls a lock, menu, relay, alarm, counter, or robot mode should be debounced before the action is trusted.",
+    "real_life_analogy": "Drop a basketball on the floor. You dropped it once, but it touches the floor several times before it stops bouncing. A button contact behaves the same way electrically: one press can create several tiny touches before the final stable touch.\n\nA light switch can do something similar. When metal contacts close, they may flicker for a split second before staying connected. Your eyes may not notice, but a microcontroller can.\n\nA car going over a speed bump is another version of the same idea. The bump is one event, but the car suspension moves up and down before settling. Debounce waits for the settling before making a decision.",
+    "wiring": {
+      "illustration_alt": "ESP32 GPIO27 connected to one side of a push button, the other side of the button connected to GND, using internal INPUT_PULLUP",
+      "steps": [
+        "Unplug the ESP32 USB cable before wiring.",
+        "Place the push button across the breadboard center gap.",
+        "Connect one side of the button to ESP32 GPIO27.",
+        "Connect the opposite side of the button to ESP32 GND.",
+        "Leave out the external resistor because this mission uses INPUT_PULLUP.",
+        "Plug USB back in and upload the debounce sketch.",
+        "Open Serial Monitor at 115200 baud.",
+        "Press the button several times and watch the counter increase once per press."
+      ]
+    },
+    "gpio_table": [
+      {
+        "signal": "Button input",
+        "esp32_pin": "GPIO27",
+        "mode": "INPUT_PULLUP",
+        "notes": "Released reads HIGH. Pressed reads LOW."
+      },
+      {
+        "signal": "Button ground",
+        "esp32_pin": "GND",
+        "mode": "Ground",
+        "notes": "Pressing the button connects GPIO27 to GND."
+      },
+      {
+        "signal": "Serial debug",
+        "esp32_pin": "USB",
+        "mode": "Serial",
+        "notes": "Shows raw changes, stable state, and press count."
+      }
+    ],
+    "code": {
+      "filename": "button_debounce_counter.ino",
+      "notes": "- INPUT_PULLUP keeps the released button stable at HIGH.\n- The raw reading can still bounce during press and release.\n- millis() measures time without freezing the whole program.\n- The counter increases only when a debounced press is accepted.",
+      "content": "const int BUTTON_PIN = 27;\n\nconst unsigned long DEBOUNCE_DELAY = 50;\n\nint lastRawReading = HIGH;\nint stableButtonState = HIGH;\nunsigned long lastChangeTime = 0;\nint pressCount = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  Serial.println(\"Mission 05: Button debounce counter ready\");\n  Serial.println(\"Press the button and watch the count increase once.\");\n}\n\nvoid loop() {\n  int rawReading = digitalRead(BUTTON_PIN);\n\n  if (rawReading != lastRawReading) {\n    lastChangeTime = millis();\n    lastRawReading = rawReading;\n  }\n\n  bool readingHasSettled = (millis() - lastChangeTime) > DEBOUNCE_DELAY;\n\n  if (readingHasSettled && rawReading != stableButtonState) {\n    stableButtonState = rawReading;\n\n    if (stableButtonState == LOW) {\n      pressCount++;\n      Serial.print(\"Clean press count: \");\n      Serial.println(pressCount);\n    } else {\n      Serial.println(\"Button released cleanly\");\n    }\n  }\n}\n"
+    },
+    "code_explanation": [
+      {
+        "text": "BUTTON_PIN is GPIO27, the same safe button input used in earlier missions."
+      },
+      {
+        "text": "DEBOUNCE_DELAY is the waiting window. 50 ms is a reliable beginner starting point."
+      },
+      {
+        "text": "lastRawReading stores the most recent immediate reading from digitalRead()."
+      },
+      {
+        "text": "stableButtonState stores the trusted debounced state that the program believes."
+      },
+      {
+        "text": "lastChangeTime records when the raw input last changed."
+      },
+      {
+        "text": "If the raw reading changes, the timer restarts because the contact may still be bouncing."
+      },
+      {
+        "text": "readingHasSettled becomes true only after the raw reading stays unchanged longer than the debounce delay."
+      },
+      {
+        "text": "The counter increases only when the debounced state becomes LOW, which means a clean press in INPUT_PULLUP wiring."
+      }
+    ],
+    "expected_output": "When you press the button once, Serial Monitor should show one count:\n\nClean press count: 1\nButton released cleanly\nClean press count: 2\nButton released cleanly\n\nIf the debounce delay is too short, you may see one physical press count twice. If the delay is too long, the button may feel slow or miss very fast presses.",
+    "common_mistakes": [
+      {
+        "problem": "Using delay() for debounce",
+        "cause": "delay() is simple, but it freezes the whole loop while waiting.",
+        "fix": "Use millis() timing so the ESP32 can keep running other code."
+      },
+      {
+        "problem": "Thinking INPUT_PULLUP fixes bounce",
+        "cause": "INPUT_PULLUP fixes floating, not mechanical contact chatter.",
+        "fix": "Use INPUT_PULLUP for the default state and debounce logic for contact bounce."
+      },
+      {
+        "problem": "Debouncing only the press",
+        "cause": "Release can bounce too, especially with older or loosely pressed buttons.",
+        "fix": "Track stable state changes so both press and release settle before being accepted."
+      },
+      {
+        "problem": "Setting the debounce delay too short",
+        "cause": "Bounce may still be happening when the code accepts the reading.",
+        "fix": "Try 30 ms, 50 ms, and 80 ms while watching Serial Monitor."
+      },
+      {
+        "problem": "Setting the debounce delay too long",
+        "cause": "A long delay can make the interface feel slow or miss very fast taps.",
+        "fix": "Use the shortest value that stays reliable with your actual button."
+      }
+    ],
+    "common_problems": [
+      {
+        "problem": "Counter still jumps by 2 or 3",
+        "cause": "The debounce delay may be too short or the wiring may be loose.",
+        "fix": "Increase DEBOUNCE_DELAY to 80 ms, press the button firmly, and check GPIO27/GND wiring."
+      },
+      {
+        "problem": "Counter never increases",
+        "cause": "The button may not connect GPIO27 to GND, or Serial Monitor may be on the wrong baud rate.",
+        "fix": "Confirm one button side goes to GPIO27, the opposite side goes to GND, and Serial Monitor is set to 115200 baud."
+      },
+      {
+        "problem": "Button feels slow",
+        "cause": "The debounce delay may be too long for the way you are pressing.",
+        "fix": "Try reducing DEBOUNCE_DELAY from 120 ms to 50 ms or 30 ms."
+      },
+      {
+        "problem": "Released prints many times",
+        "cause": "The code may have been changed to print every loop instead of only when the stable state changes.",
+        "fix": "Keep the print statements inside the stable state change block."
+      },
+      {
+        "problem": "Upload fails after wiring",
+        "cause": "The board, port, cable, or wiring may be wrong.",
+        "fix": "Unplug, check wiring, reconnect USB, select the ESP32 port, and upload again."
+      }
+    ],
+    "engineer_tip": "Professional embedded systems never trust a mechanical button immediately. Every physical button bounces, so firmware treats the raw GPIO as a noisy signal and waits for a stable answer before triggering an action.",
+    "remember_forever": "Your finger presses once.\n\nThe metal contacts may answer several times.\n\nDebouncing teaches the ESP32 to wait for the answer that stays.",
+    "challenge_items": [
+      {
+        "icon": "10MS",
+        "text": "Change DEBOUNCE_DELAY to 10 ms and press quickly. Watch whether extra counts appear."
+      },
+      {
+        "icon": "50MS",
+        "text": "Change it to 50 ms and compare the count reliability."
+      },
+      {
+        "icon": "120MS",
+        "text": "Change it to 120 ms and notice whether the button feels slower."
+      },
+      {
+        "icon": "TUNE",
+        "text": "Find the shortest debounce delay that still counts one physical press as one clean press."
+      }
+    ],
+    "complete": {
+      "subtitle": "Your button now behaves like one clean event.",
+      "summary": "You learned why a button can trigger several times even when the wiring is correct. Switch bounce is physical, normal, and too fast for humans to feel. The ESP32 is fast enough to see it, so your code must decide when the input has truly settled.\n\nWith debounce logic, you can build counters, menus, locks, relays, and robot controls that respond once per real press instead of reacting to contact chatter.",
+      "skills": [
+        "Explain switch bounce",
+        "Debounce with millis()",
+        "Avoid delay() for real button handling",
+        "Count clean button presses",
+        "Tune debounce timing through testing"
+      ]
+    },
+    "next_missions": [
+      {
+        "title": "Mission 06 - Digital Outputs Practice",
+        "description": "Next you will use reliable button events to control more output patterns."
+      },
+      {
+        "slug": "button-led-control",
+        "title": "Button Controls LED with ESP32",
+        "description": "Revisit Mission 02 and notice how debouncing improves button behavior."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}

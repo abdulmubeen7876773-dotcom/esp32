@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Button Debouncing Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 05 - learn why one ESP32 button press can trigger many times, what switch bounce is, and how to debounce buttons in Arduino code.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/debouncing-buttons.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Button Debouncing Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 05 - learn why one ESP32 button press can trigger many times, what switch bounce is, and how to debounce buttons in Arduino code.">
+<meta property="og:url" content="https://esp32engine.com/guides/debouncing-buttons.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Button Debouncing Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 05 - learn why one ESP32 button press can trigger many times, what switch bounce is, and how to debounce buttons in Arduino code.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Button Debouncing","description":"Mission 05 - learn why one ESP32 button press can trigger many times, what switch bounce is, and how to debounce buttons in Arduino code.","datePublished":"2026-07-01","dateModified":"2026-07-01","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/debouncing-buttons.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 button debounce, ESP32 debouncing tutorial, Arduino debounce ESP32, switch bounce explained, ESP32 button multiple presses"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Button Debouncing","item":"https://esp32engine.com/guides/debouncing-buttons.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is button debounce?","acceptedAnswer":{"@type":"Answer","text":"Debounce is the process of ignoring the tiny rapid HIGH/LOW changes that happen when a mechanical button contact is settling."}},{"@type":"Question","name":"Is button bounce a hardware fault?","acceptedAnswer":{"@type":"Answer","text":"No. Bounce is normal in mechanical switches. Even good buttons can bounce for a few milliseconds."}},{"@type":"Question","name":"Why does one press trigger multiple times?","acceptedAnswer":{"@type":"Answer","text":"The ESP32 reads the pin much faster than your finger moves. If the contacts touch, separate, and touch again during one press, software can see several changes."}},{"@type":"Question","name":"How long does button bounce last?","acceptedAnswer":{"@type":"Answer","text":"Many small buttons settle within about 5 to 50 milliseconds. The exact time depends on the switch, wiring, and how it is pressed."}},{"@type":"Question","name":"Do pull-up resistors fix bounce?","acceptedAnswer":{"@type":"Answer","text":"No. Pull-ups and pull-downs fix floating inputs. Debouncing fixes contact chatter after the input already has a stable default state."}},{"@type":"Question","name":"Should I use delay() for debounce?","acceptedAnswer":{"@type":"Answer","text":"Avoid delay() in real projects because it freezes the whole program. Using millis() lets the ESP32 keep doing other work."}},{"@type":"Question","name":"Do I need to debounce button release too?","acceptedAnswer":{"@type":"Answer","text":"Yes. The contacts can bounce when they open as well as when they close."}},{"@type":"Question","name":"Can hardware debounce solve the problem?","acceptedAnswer":{"@type":"Answer","text":"Yes. Resistor-capacitor filters or dedicated circuits can reduce bounce, but software debounce is easier for beginners and common in firmware."}},{"@type":"Question","name":"Is 50 ms a good debounce delay?","acceptedAnswer":{"@type":"Answer","text":"50 ms is a safe starting point for many beginner projects. You can tune it shorter after testing your actual button."}},{"@type":"Question","name":"Does debounce make the ESP32 slower?","acceptedAnswer":{"@type":"Answer","text":"No. Good debounce logic only delays trusting that one input. The rest of the program can keep running."}},{"@type":"Question","name":"Why does my counter jump by 2 or 3?","acceptedAnswer":{"@type":"Answer","text":"That is usually switch bounce. The software is counting several contact changes from one physical press."}},{"@type":"Question","name":"Do all physical buttons bounce?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every mechanical button has some contact settling. The amount may be tiny, but professional firmware still accounts for it."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">Button Debouncing</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">Button Debouncing</h1>
+      <p class="article-lead mission-hero-lead">Your button now has a stable default state. The next problem is speed: the ESP32 can see tiny mechanical bounces that your finger cannot feel.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 05</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">20-25 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">BTN</span>
+  <span class="mission-card-badge">Mission 05</span>
+  <h2 class="mission-card-title">Count One Clean Button Press</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>Mission 04 gave your button a reliable default state. Released is HIGH, pressed is LOW, and the input no longer floats.</p><p>But one more real-world problem remains. A mechanical button does not move from open to closed in one perfect instant. Inside the switch, tiny metal contacts hit each other, bounce apart, and settle. Your finger feels one press. The ESP32 may see many.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>Pressing a button feels simple because your finger is slow compared with electronics. To the ESP32, that same press can look like a rapid burst: pressed, released, pressed, released, pressed.</p><p>Debouncing means the ESP32 waits a short moment before trusting the final answer. It is like saying, &#x27;I saw the first change. Now I will ignore the tiny shaking and count this as one real press.&#x27;</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">GOAL</span><span class="mission-section-title">Mission Goal</span></h2>
+  <div class="mission-build-panel"><p>Build a button counter that increases by exactly one count for each intentional button press, even though the physical button contacts bounce for a few milliseconds.</p></div>
+</section>
+<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
+  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">TIME</span><span class="mission-section-title">Estimated Time</span></h2>
+  <div class="mission-prose"><p>20-25 min</p></div>
+</section>
+<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
+  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">LEVEL</span><span class="mission-section-title">Difficulty</span></h2>
+  <div class="mission-prose"><p>Beginner</p></div>
+</section>
+<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">PRE</span><span class="mission-section-title">Prerequisites</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/pull-up-vs-pull-down-resistors.html"><strong>Pull-up vs Pull-down Resistors</strong></a> <span class="meta">You should understand INPUT_PULLUP and why the button reads LOW when pressed.</span></li></ul>
+</section>
+<section class="mission-section" id="skills" aria-labelledby="skills-heading">
+  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">SKILL</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <ul class="mission-bullets"><li>Explain why one physical button press can create many electrical changes</li><li>Describe switch bounce in plain English</li><li>Use millis() to debounce without freezing the ESP32</li><li>Count one clean press instead of every contact bounce</li><li>Choose a practical debounce delay and test it in Serial Monitor</li></ul>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Components Required</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Runs the debounce timing logic</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BTN</span><span class="mission-thing-body"><span class="mission-thing-name">Push button</span><span class="mission-thing-note">Any standard tactile button works</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BOARD</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard</span><span class="mission-thing-note">Holds the button firmly</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Jumper wires</span><span class="mission-thing-note">For GPIO27 and GND</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload code and watch Serial Monitor</span></span></li></ul>
+</section>
+<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">ENG</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <div class="mission-prose"><p>A pull-up resistor gives the input a default HIGH state. Pressing the button connects the GPIO to GND, so the intended pressed state is LOW. That solves floating, but it does not solve bounce.</p><p>During a real press, the raw input may jump LOW-HIGH-LOW-HIGH-LOW before settling LOW. During release, it may jump HIGH-LOW-HIGH before settling HIGH. Each jump is real electricity, not a software mistake.</p><p>Software debounce uses time as a filter. When the raw reading changes, the code starts a timer. Only if the new reading remains stable for the debounce window does the program accept it as the real button state. This lets the ESP32 ignore contact chatter while still responding quickly to normal button presses.</p><p>Professional firmware does this because physical switches are never perfect. Any button that controls a lock, menu, relay, alarm, counter, or robot mode should be debounced before the action is trusted.</p></div>
+</section>
+<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
+  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">REAL</span><span class="mission-section-title">Real-World Analogy</span></h2>
+  <div class="mission-prose"><p>Drop a basketball on the floor. You dropped it once, but it touches the floor several times before it stops bouncing. A button contact behaves the same way electrically: one press can create several tiny touches before the final stable touch.</p><p>A light switch can do something similar. When metal contacts close, they may flicker for a split second before staying connected. Your eyes may not notice, but a microcontroller can.</p><p>A car going over a speed bump is another version of the same idea. The bump is one event, but the car suspension moves up and down before settling. Debounce waits for the settling before making a decision.</p></div>
+</section>
+
+
+
+
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">WIRE</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="ESP32 GPIO27 connected to one side of a push button, the other side of the button connected to GND, using internal INPUT_PULLUP">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">WIRE</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32 GPIO27 connected to one side of a push button, the other side of the button connected to GND, using internal INPUT_PULLUP</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Place the push button across the breadboard center gap.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect one side of the button to ESP32 GPIO27.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect the opposite side of the button to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Leave out the external resistor because this mission uses INPUT_PULLUP.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Plug USB back in and upload the debounce sketch.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Open Serial Monitor at 115200 baud.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">8</span>
+    <p class="mission-step-text">Press the button several times and watch the counter increase once per press.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
+  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>Button input</td><td>GPIO27</td><td>INPUT_PULLUP</td><td>Released reads HIGH. Pressed reads LOW.</td></tr><tr><td>Button ground</td><td>GND</td><td>Ground</td><td>Pressing the button connects GPIO27 to GND.</td></tr><tr><td>Serial debug</td><td>USB</td><td>Serial</td><td>Shows raw changes, stable state, and press count.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">button_debounce_counter.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino">const <span class="tok-kw">int</span> BUTTON_PIN = <span class="tok-num">27</span>;
+
+const unsigned <span class="tok-kw">long</span> DEBOUNCE_DELAY = <span class="tok-num">50</span>;
+
+<span class="tok-kw">int</span> lastRawReading = <span class="tok-const">HIGH</span>;
+<span class="tok-kw">int</span> stableButtonState = <span class="tok-const">HIGH</span>;
+unsigned <span class="tok-kw">long</span> lastChangeTime = <span class="tok-num">0</span>;
+<span class="tok-kw">int</span> pressCount = <span class="tok-num">0</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">pinMode</span>(BUTTON_PIN, <span class="tok-const">INPUT_PULLUP</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">05</span>: Button debounce counter ready&quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Press the button and watch the count increase once.&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">int</span> rawReading = <span class="tok-fn">digitalRead</span>(BUTTON_PIN);
+
+  <span class="tok-kw">if</span> (rawReading != lastRawReading) {
+    lastChangeTime = millis();
+    lastRawReading = rawReading;
+  }
+
+  bool readingHasSettled = (millis() - lastChangeTime) &gt; DEBOUNCE_DELAY;
+
+  <span class="tok-kw">if</span> (readingHasSettled &amp;&amp; rawReading != stableButtonState) {
+    stableButtonState = rawReading;
+
+    <span class="tok-kw">if</span> (stableButtonState == <span class="tok-const">LOW</span>) {
+      pressCount++;
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Clean press count: &quot;);
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(pressCount);
+    } <span class="tok-kw">else</span> {
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button released cleanly&quot;);
+    }
+  }
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>When you press the button once, Serial Monitor should show one count:</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>INPUT_PULLUP keeps the released button stable at HIGH.</li><li>The raw reading can still bounce during press and release.</li><li>millis() measures time without freezing the whole program.</li><li>The counter increases only when a debounced press is accepted.</li></ul></div>
+</section>
+<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">CODE</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
+  <ul class="mission-bullets"><li>BUTTON_PIN is GPIO27, the same safe button input used in earlier missions.</li><li>DEBOUNCE_DELAY is the waiting window. 50 ms is a reliable beginner starting point.</li><li>lastRawReading stores the most recent immediate reading from digitalRead().</li><li>stableButtonState stores the trusted debounced state that the program believes.</li><li>lastChangeTime records when the raw input last changed.</li><li>If the raw reading changes, the timer restarts because the contact may still be bouncing.</li><li>readingHasSettled becomes true only after the raw reading stays unchanged longer than the debounce delay.</li><li>The counter increases only when the debounced state becomes LOW, which means a clean press in INPUT_PULLUP wiring.</li></ul>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">OUT</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>When you press the button once, Serial Monitor should show one count:</p><p>Clean press count: 1
+Button released cleanly
+Clean press count: 2
+Button released cleanly</p><p>If the debounce delay is too short, you may see one physical press count twice. If the delay is too long, the button may feel slow or miss very fast presses.</p></div>
+</section>
+
+<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">WARN</span><span class="mission-section-title">Common Mistakes</span></h2>
+  <ul class="mission-bullets"><li><h3>Using delay() for debounce</h3><p>delay() is simple, but it freezes the whole loop while waiting.</p></li><li><h3>Thinking INPUT_PULLUP fixes bounce</h3><p>INPUT_PULLUP fixes floating, not mechanical contact chatter.</p></li><li><h3>Debouncing only the press</h3><p>Release can bounce too, especially with older or loosely pressed buttons.</p></li><li><h3>Setting the debounce delay too short</h3><p>Bounce may still be happening when the code accepts the reading.</p></li><li><h3>Setting the debounce delay too long</h3><p>A long delay can make the interface feel slow or miss very fast taps.</p></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>Counter still jumps by 2 or 3</h3><p><strong>Likely cause:</strong> The debounce delay may be too short or the wiring may be loose.</p><p><strong>Fix:</strong> Increase DEBOUNCE_DELAY to 80 ms, press the button firmly, and check GPIO27/GND wiring.</p></li><li><h3>Counter never increases</h3><p><strong>Likely cause:</strong> The button may not connect GPIO27 to GND, or Serial Monitor may be on the wrong baud rate.</p><p><strong>Fix:</strong> Confirm one button side goes to GPIO27, the opposite side goes to GND, and Serial Monitor is set to 115200 baud.</p></li><li><h3>Button feels slow</h3><p><strong>Likely cause:</strong> The debounce delay may be too long for the way you are pressing.</p><p><strong>Fix:</strong> Try reducing DEBOUNCE_DELAY from 120 ms to 50 ms or 30 ms.</p></li><li><h3>Released prints many times</h3><p><strong>Likely cause:</strong> The code may have been changed to print every loop instead of only when the stable state changes.</p><p><strong>Fix:</strong> Keep the print statements inside the stable state change block.</p></li><li><h3>Upload fails after wiring</h3><p><strong>Likely cause:</strong> The board, port, cable, or wiring may be wrong.</p><p><strong>Fix:</strong> Unplug, check wiring, reconnect USB, select the ESP32 port, and upload again.</p></li></ul>
+</section>
+<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
+  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">TIP</span><span class="mission-section-title">Engineer Tip</span></h2>
+  <div class="mission-prose"><p>Professional embedded systems never trust a mechanical button immediately. Every physical button bounces, so firmware treats the raw GPIO as a noisy signal and waits for a stable answer before triggering an action.</p></div>
+</section>
+<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">REM</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <div class="mission-build-panel"><p>Your finger presses once.</p><p>The metal contacts may answer several times.</p><p>Debouncing teaches the ESP32 to wait for the answer that stays.</p></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">10MS</span><span class="mission-challenge-text">Change DEBOUNCE_DELAY to 10 ms and press quickly. Watch whether extra counts appear.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">50MS</span><span class="mission-challenge-text">Change it to 50 ms and compare the count reliability.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">120MS</span><span class="mission-challenge-text">Change it to 120 ms and notice whether the button feels slower.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">TUNE</span><span class="mission-challenge-text">Find the shortest debounce delay that still counts one physical press as one clean press.</span></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>What is button debounce?</h3><p>Debounce is the process of ignoring the tiny rapid HIGH/LOW changes that happen when a mechanical button contact is settling.</p></li><li><h3>Is button bounce a hardware fault?</h3><p>No. Bounce is normal in mechanical switches. Even good buttons can bounce for a few milliseconds.</p></li><li><h3>Why does one press trigger multiple times?</h3><p>The ESP32 reads the pin much faster than your finger moves. If the contacts touch, separate, and touch again during one press, software can see several changes.</p></li><li><h3>How long does button bounce last?</h3><p>Many small buttons settle within about 5 to 50 milliseconds. The exact time depends on the switch, wiring, and how it is pressed.</p></li><li><h3>Do pull-up resistors fix bounce?</h3><p>No. Pull-ups and pull-downs fix floating inputs. Debouncing fixes contact chatter after the input already has a stable default state.</p></li><li><h3>Should I use delay() for debounce?</h3><p>Avoid delay() in real projects because it freezes the whole program. Using millis() lets the ESP32 keep doing other work.</p></li><li><h3>Do I need to debounce button release too?</h3><p>Yes. The contacts can bounce when they open as well as when they close.</p></li><li><h3>Can hardware debounce solve the problem?</h3><p>Yes. Resistor-capacitor filters or dedicated circuits can reduce bounce, but software debounce is easier for beginners and common in firmware.</p></li><li><h3>Is 50 ms a good debounce delay?</h3><p>50 ms is a safe starting point for many beginner projects. You can tune it shorter after testing your actual button.</p></li><li><h3>Does debounce make the ESP32 slower?</h3><p>No. Good debounce logic only delays trusting that one input. The rest of the program can keep running.</p></li><li><h3>Why does my counter jump by 2 or 3?</h3><p>That is usually switch bounce. The software is counting several contact changes from one physical press.</p></li><li><h3>Do all physical buttons bounce?</h3><p>Yes. Every mechanical button has some contact settling. The amount may be tiny, but professional firmware still accounts for it.</p></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Related Components</span></h2>
+  <ul class="guide-related-list"><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The board reading the button and timing the debounce window.</span></li><li><a href="/components/relay-module.html"><strong>Relay Module</strong></a> <span class="meta">Relay controls often need debounced manual buttons.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">PROJ</span><span class="mission-section-title">Related Projects</span></h2>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-smart-door-lock.html"><strong>ESP32 Smart Door Lock</strong></a> <span class="meta">Door unlock buttons must trigger once, not five times.</span></li><li><a href="/projects/esp32-rfid-access-control-system.html"><strong>ESP32 RFID Access Control System</strong></a> <span class="meta">Access systems use clean events for buttons, resets, and override controls.</span></li><li><a href="/projects/esp32-learning-trainer.html"><strong>ESP32 Learning Trainer Board</strong></a> <span class="meta">A trainer board is a good place to practice reliable button inputs.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
+  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">PREV</span><span class="mission-section-title">Previous Mission</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/pull-up-vs-pull-down-resistors.html"><strong>Pull-up vs Pull-down Resistors</strong></a> <span class="meta">You learned how to give a button input a stable default state.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
+  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Next Mission</span></h2>
+  <ul class="guide-related-list"><li><strong>Mission 06 - Digital Outputs Practice</strong> <span class="meta">Next you will use clean input events to control more output patterns.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Continue Learning</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/button-led-control.html"><strong>Button Controls LED with ESP32</strong></a> <span class="meta">Review the original button mission and notice what debounce improves.</span></li><li><a href="/guides/pull-up-vs-pull-down-resistors.html"><strong>Pull-up vs Pull-down Resistors</strong></a> <span class="meta">Review the stable default state before debugging bounce.</span></li></ul>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>
