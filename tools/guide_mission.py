@@ -393,7 +393,7 @@ def quiz_block(questions: list) -> str:
 </div>"""
         )
     return f"""<section class="mission-section mission-quiz" id="quiz" aria-labelledby="quiz-heading">
-  {section_heading("quiz", "❓", "Mini Quiz")}
+  {section_heading("quiz", "❓", "Knowledge Check")}
   <p class="mission-section-lead">Quick check — no grades, just confidence!</p>
   <div class="mission-quiz-list">{"".join(blocks)}</div>
 </section>"""
@@ -418,6 +418,158 @@ def next_mission_cards(missions: list) -> str:
     return f"""<section class="mission-section mission-next" id="next-mission" aria-labelledby="next-heading">
   {section_heading("next", "🚀", "Continue Your Journey")}
   <div class="next-mission-grid">{"".join(cards)}</div>
+</section>"""
+
+
+def mission_goal_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    m = guide.get("mission") or {}
+    goal = (m.get("mission_goal") or academy.get("expected_outcome") or guide.get("lead") or "").strip()
+    if not goal:
+        return ""
+    return f"""<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  {section_heading("mission-goal", "GOAL", "Mission Goal")}
+  <div class="mission-build-panel">{_rich_content(goal)}</div>
+</section>"""
+
+
+def mission_value_section(section_id: str, icon: str, title: str, value: str) -> str:
+    value = (value or "").strip()
+    if not value:
+        return ""
+    return f"""<section class="mission-section" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {section_heading(section_id, icon, title)}
+  <div class="mission-prose"><p>{esc(value)}</p></div>
+</section>"""
+
+
+def mission_prerequisites_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    return f"""<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  {section_heading("prerequisites", "PRE", "Prerequisites")}
+  {academy_link_list(academy.get("prerequisites", []), "guides") or "<p>No prerequisites.</p>"}
+</section>"""
+
+
+def mission_skills_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    skills = academy.get("skills_learned", [])
+    if not skills:
+        skills = ((guide.get("mission") or {}).get("complete") or {}).get("skills", [])
+    return mission_list_section("skills", "SKILL", "Skills You'll Learn", skills)
+
+
+def mission_components_required_section(guide: dict) -> str:
+    m = guide.get("mission") or {}
+    things = m.get("things_you_need", [])
+    academy = guide.get("academy") or {}
+    if not things:
+        things = [{"item": item} for item in academy.get("components_required", [])]
+    if not things:
+        return ""
+    return f"""<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  {section_heading("parts", "PARTS", "Components Required")}
+  {things_list(things)}
+</section>"""
+
+
+def common_mistakes_section(items: list) -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        if isinstance(item, str):
+            rows.append(f"<li>{esc(item)}</li>")
+            continue
+        title = item.get("mistake") or item.get("problem") or item.get("title", "")
+        why = item.get("why") or item.get("cause", "")
+        why_html = f"<p>{esc(why)}</p>" if why else ""
+        rows.append(f"<li><h3>{esc(title)}</h3>{why_html}</li>")
+    return f"""<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  {section_heading("common-mistakes", "WARN", "Common Mistakes")}
+  <ul class="mission-bullets">{"".join(rows)}</ul>
+</section>"""
+
+
+def troubleshooting_section(items: list) -> str:
+    if not items:
+        return ""
+    rows = []
+    for item in items:
+        if isinstance(item, str):
+            rows.append(f"<li>{esc(item)}</li>")
+            continue
+        title = item.get("problem") or item.get("title", "")
+        cause = item.get("cause", "")
+        fix = item.get("fix", "")
+        cause_html = f"<p><strong>Likely cause:</strong> {esc(cause)}</p>" if cause else ""
+        fix_html = f"<p><strong>Fix:</strong> {esc(fix)}</p>" if fix else ""
+        rows.append(f"<li><h3>{esc(title)}</h3>{cause_html}{fix_html}</li>")
+    return f"""<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  {section_heading("troubleshooting", "!", "Troubleshooting")}
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets">{"".join(rows)}</ul>
+</section>"""
+
+
+def remember_forever_section(text: str) -> str:
+    text = (text or "").strip()
+    if not text:
+        return ""
+    return f"""<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  {section_heading("remember", "REM", "Remember This Forever")}
+  <div class="mission-build-panel">{_rich_content(text)}</div>
+</section>"""
+
+
+def related_components_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    components = academy.get("unlocked_components", [])
+    if not components:
+        linked = [item for item in ((guide.get("mission") or {}).get("things_you_need", [])) if isinstance(item, dict) and item.get("link")]
+        components = [{"title": item.get("item", ""), "href": item.get("link", ""), "description": item.get("note", "")} for item in linked]
+    if not components:
+        return ""
+    return f"""<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  {section_heading("related-components", "PARTS", "Related Components")}
+  {academy_link_list(components, "components")}
+</section>"""
+
+
+def related_projects_section(guide: dict) -> str:
+    projects = (guide.get("academy") or {}).get("unlocked_projects", [])
+    if not projects:
+        return ""
+    return f"""<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  {section_heading("related-projects", "PROJ", "Related Projects")}
+  {academy_link_list(projects, "projects")}
+</section>"""
+
+
+def mission_nav_section(section_id: str, icon: str, title: str, item: dict | None, fallback: str = "") -> str:
+    if item:
+        return f"""<section class="mission-section academy-unlocks" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {section_heading(section_id, icon, title)}
+  {academy_link_list([item], "guides")}
+</section>"""
+    if fallback:
+        return f"""<section class="mission-section academy-unlocks" id="{section_id}" aria-labelledby="{section_id}-heading">
+  {section_heading(section_id, icon, title)}
+  <p>{esc(fallback)}</p>
+</section>"""
+    return ""
+
+
+def continue_learning_section(guide: dict) -> str:
+    academy = guide.get("academy") or {}
+    future = academy.get("future_paths", [])
+    if not future:
+        future = (guide.get("mission") or {}).get("next_missions", [])
+    if not future:
+        return ""
+    return f"""<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  {section_heading("continue-learning", "NEXT", "Continue Learning")}
+  {academy_link_list(future, "guides")}
 </section>"""
 
 
@@ -524,7 +676,7 @@ def code_section(code: dict, output: str) -> str:
   <div class="mission-code-preview-body">{_rich_content(preview)}</div>
 </aside>"""
     return f"""<section class="mission-section" id="code" aria-labelledby="code-heading">
-  {section_heading("code", "⌨️", "Code")}
+  {section_heading("code", "⌨️", "Arduino Code")}
   <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
   <div class="mission-code-layout">
     <div class="mission-code-main">{code_panel(code)}</div>
@@ -551,7 +703,7 @@ def challenge_section(challenge: str, items: list) -> str:
     else:
         return ""
     return f"""<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
-  {section_heading("challenge", "🎯", "Challenge Yourself")}
+  {section_heading("challenge", "🎯", "Mini Challenge")}
   <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
   {body}
 </section>"""
@@ -594,40 +746,31 @@ def mission_faq_section(items: list) -> str:
 
 def render_mission_guide(guide: dict) -> str:
     m = guide.get("mission") or {}
+    academy = guide.get("academy") or {}
     intro_html = render_friendly_intro(guide, is_mission=True)
-    academy_html = academy_overview_section(guide)
-    objectives_html = mission_list_section("objectives", "OBJ", "Learning Objectives", m.get("learning_objectives", []))
 
-    build = m.get("what_you_build", "").strip()
-    build_html = ""
-    if build:
-        build_html = f"""<section class="mission-section mission-build" id="build" aria-labelledby="build-heading">
-  {section_heading("build", "BUILD", "What You'll Build")}
-  <div class="mission-build-panel">{_rich_content(build)}</div>
-</section>"""
-
-    things = m.get("things_you_need", [])
-    things_html = ""
-    if things:
-        things_html = f"""<section class="mission-section" id="parts" aria-labelledby="parts-heading">
-  {section_heading("parts", "PARTS", "Things You'll Need")}
-  {things_list(things)}
-</section>"""
-
-    safety_html = safety_block(m.get("safety", []))
-    components_html = component_cards_section(things, m.get("component_spotlight_lead", ""))
+    goal_html = mission_goal_section(guide)
+    estimated_time_html = mission_value_section(
+        "estimated-time",
+        "TIME",
+        "Estimated Time",
+        academy.get("estimated_time") or guide.get("reading_time", ""),
+    )
+    difficulty_html = mission_value_section(
+        "difficulty",
+        "LEVEL",
+        "Difficulty",
+        academy.get("difficulty") or guide.get("proficiency_level", ""),
+    )
+    prerequisites_html = mission_prerequisites_section(guide)
+    skills_html = mission_skills_section(guide)
+    components_required_html = mission_components_required_section(guide)
 
     concept = m.get("concept") or {}
     concept_body = (concept.get("body") or "").strip()
-    concept_html = ""
-    if concept_body or concept.get("illustration_alt"):
-        concept_html = f"""<section class="mission-section" id="concept" aria-labelledby="concept-heading">
-  {section_heading("concept", "IDEA", concept.get("title", "The Concept"))}
-  {illustration_block(concept.get("illustration_alt", "Concept diagram"), "Concept Illustration", "IDEA", concept.get("image", ""))}
-  <div class="mission-prose">{_rich_content(concept_body)}</div>
-</section>"""
-    engineering_html = mission_prose_section("engineering", "ENG", "Engineering Explanation", m.get("engineering_explanation", ""))
-    analogy_html = mission_prose_section("analogy", "REAL", "Real-Life Analogy", m.get("real_life_analogy", ""))
+    engineering_text = m.get("engineering_explanation", "") or concept_body
+    engineering_html = mission_prose_section("engineering", "ENG", "Engineering Explanation", engineering_text)
+    analogy_html = mission_prose_section("analogy", "REAL", "Real-World Analogy", m.get("real_life_analogy", "") or m.get("eli12", ""))
     engineer_tip_html = mission_prose_section("engineer-tip", "TIP", "Engineer Tip", m.get("engineer_tip", ""))
     floating_recap_html = mission_prose_section("floating-recap", "RECAP", "Floating Pin Recap", m.get("floating_pin_recap", ""))
     internal_resistor_html = mission_prose_section("internal-resistor", "INT", "Internal Pull-Up Resistor", m.get("internal_resistor_explanation", ""))
@@ -639,7 +782,7 @@ def render_mission_guide(guide: dict) -> str:
     wiring_html = ""
     if wiring_steps or wiring.get("illustration_alt"):
         wiring_html = f"""<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
-  {section_heading("wiring", "WIRE", "Breadboard Wiring")}
+  {section_heading("wiring", "WIRE", "Wiring Diagram")}
   <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
   {illustration_block(wiring.get("illustration_alt", "Wiring diagram"), "Wiring Diagram", "WIRE", wiring.get("image", ""))}
   {wiring_steps_html(wiring_steps)}
@@ -649,59 +792,48 @@ def render_mission_guide(guide: dict) -> str:
     code = m.get("code") or {}
     output = m.get("expected_output", "").strip()
     code_html = code_section(code, output)
-    code_explanation_html = mission_list_section("code-explanation", "CODE", "Line-by-Line Code Explanation", m.get("code_explanation", []))
+    code_explanation_items = m.get("code_explanation", [])
+    if not code_explanation_items and code.get("notes"):
+        code_explanation_items = [{"text": line[2:].strip()} for line in code.get("notes", "").splitlines() if line.strip().startswith("- ")]
+    code_explanation_html = mission_list_section("code-explanation", "CODE", "Line-by-line Explanation", code_explanation_items)
 
     output_html = ""
     if output:
         output_html = f"""<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
-  {section_heading("output", "OUT", "Expected Serial Monitor Output")}
+  {section_heading("output", "OUT", "Expected Behaviour")}
   <div class="mission-output-body">{_rich_content(output)}</div>
 </section>"""
     experiment_html = mission_prose_section("experiment", "EXP", "Experiment: Leave the Input Floating", m.get("experiment", ""))
 
-    quiz_html = quiz_block(m.get("quiz", []))
+    problems = m.get("common_problems", [])
+    common_mistakes_html = common_mistakes_section(m.get("common_mistakes", []) or problems)
+    troubleshooting_html = troubleshooting_section(m.get("troubleshooting", []) or problems)
     challenge_html = challenge_section(
         m.get("challenge", "").strip(),
         m.get("challenge_items", []),
     )
-    common_problems_html = common_problems_section(m.get("common_problems", []))
+    remember_html = remember_forever_section(m.get("remember_forever", ""))
+    quiz_html = quiz_block(m.get("quiz", []))
     faq_html = mission_faq_section(guide.get("faqs", []))
-
-    complete = m.get("complete") or {}
-    complete_summary = (complete.get("summary") or "").strip()
-    complete_subtitle = (complete.get("subtitle") or "").strip()
-    skills = complete.get("skills", [])
-    skills_html = "".join(f"<li>{esc(s)}</li>" for s in skills)
-    subtitle_html = (
-        f'<p class="mission-complete-subtitle">{esc(complete_subtitle)}</p>'
-        if complete_subtitle
-        else ""
-    )
-    complete_html = f"""<section class="mission-section mission-complete" id="complete" aria-labelledby="complete-heading">
-  <div class="mission-complete-panel">
-    <span class="mission-complete-badge" aria-hidden="true">DONE</span>
-    <h2 id="complete-heading">Mission Complete!</h2>
-    {subtitle_html}
-    <div class="mission-complete-body">{_rich_content(complete_summary)}</div>
-    {"<ul class='mission-skills'>" + skills_html + "</ul>" if skills_html else ""}
-  </div>
-</section>"""
-
-    next_html = next_mission_cards(m.get("next_missions", []))
-    unlocks_html = academy_unlocks_section(guide)
+    related_components_html = related_components_section(guide)
+    related_projects_html = related_projects_section(guide)
+    previous_html = mission_nav_section("previous-mission", "PREV", "Previous Mission", academy.get("previous_mission"), "Start here.")
+    next_item = academy.get("next_mission")
+    if not next_item and m.get("next_missions"):
+        next_item = m.get("next_missions", [])[0]
+    next_html = mission_nav_section("next-mission", "NEXT", "Next Mission", next_item, "Continue with projects and advanced topics.")
+    continue_html = continue_learning_section(guide)
 
     return f"""<article class="mission-journey">
 {intro_html}
-{academy_html}
-{objectives_html}
-{build_html}
-{things_html}
-{safety_html}
-{components_html}
-{concept_html}
+{goal_html}
+{estimated_time_html}
+{difficulty_html}
+{prerequisites_html}
+{skills_html}
+{components_required_html}
 {engineering_html}
 {analogy_html}
-{engineer_tip_html}
 {floating_recap_html}
 {internal_resistor_html}
 {external_resistor_html}
@@ -712,13 +844,18 @@ def render_mission_guide(guide: dict) -> str:
 {code_explanation_html}
 {output_html}
 {experiment_html}
-{quiz_html}
+{common_mistakes_html}
+{troubleshooting_html}
+{engineer_tip_html}
+{remember_html}
 {challenge_html}
-{common_problems_html}
+{quiz_html}
 {faq_html}
-{complete_html}
-{unlocks_html}
+{related_components_html}
+{related_projects_html}
+{previous_html}
 {next_html}
+{continue_html}
 </article>"""
 
 def mission_index_card(guide: dict) -> str:

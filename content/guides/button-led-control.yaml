@@ -164,6 +164,8 @@
       "illustration_alt": "ESP32 GPIO27 connected to a push button that goes to GND, with internal pull-up enabled; GPIO2 drives an LED through a resistor to GND",
       "body": "A digital input has only two useful states: HIGH or LOW. HIGH means the pin is near 3.3 V. LOW means the pin is near GND.\n\nIf a button pin is not connected to anything when released, it can float. A floating pin is like an unanswered question: it may randomly read HIGH or LOW because tiny electrical noise is enough to move it.\n\nINPUT_PULLUP fixes that. The ESP32 connects a weak internal resistor from the pin to 3.3 V. When the button is released, the pin reads HIGH. When the button is pressed, the button connects the pin to GND, so it reads LOW."
     },
+    "engineering_explanation": "This mission combines one input and one output. GPIO27 is configured as an input so the ESP32 listens to the button. GPIO2 is configured as an output so the ESP32 can drive the LED.\n\nThe button uses INPUT_PULLUP. That enables a weak internal resistor inside the ESP32, holding GPIO27 HIGH when the button is open. Pressing the button connects GPIO27 to GND, so the input reads LOW.\n\nThe code turns that electrical state into a clear software idea: buttonPressed is true when digitalRead(BUTTON_PIN) equals LOW. After that, the LED logic becomes easy to read.",
+    "real_life_analogy": "Think of the button like a simple yes/no switch at a desk. When nobody presses it, the ESP32 hears the default answer from INPUT_PULLUP. When you press it, you intentionally change the answer.\n\nThe LED is the response. The ESP32 listens first, decides second, and acts third. That listen-decide-act pattern appears in alarms, thermostats, robots, locks, and almost every interactive embedded system.",
     "wiring": {
       "illustration_alt": "Button one side to ESP32 GPIO27, other side to GND; LED long leg through 220 ohm resistor to GPIO2, LED short leg to GND",
       "steps": [
@@ -178,12 +180,60 @@
         "Plug USB back in and upload the code."
       ]
     },
+    "gpio_table": [
+      {
+        "signal": "Button input",
+        "esp32_pin": "GPIO27",
+        "mode": "INPUT_PULLUP",
+        "notes": "Reads HIGH when released and LOW when pressed."
+      },
+      {
+        "signal": "LED output",
+        "esp32_pin": "GPIO2",
+        "mode": "OUTPUT",
+        "notes": "Turns the LED on when the button is pressed."
+      },
+      {
+        "signal": "Button ground",
+        "esp32_pin": "GND",
+        "mode": "Ground",
+        "notes": "Pressing the button connects GPIO27 to GND."
+      },
+      {
+        "signal": "LED ground return",
+        "esp32_pin": "GND",
+        "mode": "Ground",
+        "notes": "Completes the LED circuit."
+      }
+    ],
     "code": {
       "filename": "button_controls_led.ino",
       "notes": "- INPUT_PULLUP makes the released button read HIGH.\n- Pressing the button connects GPIO27 to GND, so the reading becomes LOW.\n- The code converts that reading into a clear pressed variable.\n- Serial output helps you prove the button is working before trusting the LED.",
       "content": "const int BUTTON_PIN = 27;\nconst int LED_PIN = 2;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  pinMode(LED_PIN, OUTPUT);\n  digitalWrite(LED_PIN, LOW);\n  Serial.println(\"Button controls LED mission ready\");\n}\n\nvoid loop() {\n  int buttonReading = digitalRead(BUTTON_PIN);\n  bool buttonPressed = (buttonReading == LOW);\n\n  digitalWrite(LED_PIN, buttonPressed ? HIGH : LOW);\n\n  if (buttonPressed) {\n    Serial.println(\"Button: PRESSED | LED: ON\");\n  } else {\n    Serial.println(\"Button: RELEASED | LED: OFF\");\n  }\n\n  delay(100);\n}\n"
     },
+    "code_explanation": [
+      {
+        "text": "const int BUTTON_PIN = 27; and const int LED_PIN = 2; give the hardware pins readable names."
+      },
+      {
+        "text": "pinMode(BUTTON_PIN, INPUT_PULLUP); enables the ESP32 internal pull-up resistor for a stable released state."
+      },
+      {
+        "text": "pinMode(LED_PIN, OUTPUT); lets the ESP32 control the LED."
+      },
+      {
+        "text": "digitalRead(BUTTON_PIN); reads the actual electrical state on GPIO27."
+      },
+      {
+        "text": "buttonPressed is true when the reading is LOW because this INPUT_PULLUP circuit is active-low."
+      },
+      {
+        "text": "digitalWrite(LED_PIN, buttonPressed ? HIGH : LOW); turns the LED on only while the button is pressed."
+      }
+    ],
     "expected_output": "Open Serial Monitor at 115200 baud.\n\nWhen the button is not pressed, you should see:\nButton: RELEASED | LED: OFF\n\nWhen you press and hold the button, you should see:\nButton: PRESSED | LED: ON\n\nThe LED should turn on only while the button is pressed.",
+    "engineer_tip": "Name the software meaning, not just the raw voltage. A variable called buttonPressed is easier to trust than repeatedly checking whether LOW means pressed.",
+    "remember_forever": "Inputs let the ESP32 listen.\n\nOutputs let the ESP32 act.\n\nA useful embedded system usually does both: read the world, make a decision, then control something.",
     "quiz": [
       {
         "question": "What does INPUT_PULLUP do?",
