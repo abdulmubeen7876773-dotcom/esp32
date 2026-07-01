@@ -106,17 +106,6 @@ def guide_schema(guide: dict, faqs: list[dict]) -> str:
         faq_entities.append(
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
         )
-    for item in (guide.get("mission") or {}).get("quiz", []):
-        faq_entities.append(
-            {
-                "@type": "Question",
-                "name": item.get("question", ""),
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": item.get("explanation", item.get("options", [""])[int(item.get("correct", 0))]),
-                },
-            }
-        )
     article = {
         "@context": "https://schema.org",
         "@type": "LearningResource",
@@ -269,7 +258,7 @@ def render_guides_index(guides: list[dict]) -> str:
     title = f"ESP32 Missions — Learn by Building | {SITE_NAME}"
     desc = (
         "Step-by-step ESP32 missions for kids and beginners. Each guide is a journey — "
-        "story, wiring, code, quiz, and your next challenge."
+        "story, wiring, code, teacher-friendly notes, and your next challenge."
     )
     list_items = [
         {
@@ -289,7 +278,7 @@ def render_guides_index(guides: list[dict]) -> str:
     if missions:
         missions_html = f"""  <section class="guide-missions-block" id="missions">
     <h2>Mission Journeys</h2>
-    <p class="section-sub">{len(missions)} hands-on missions with stories, safety tips, wiring, code, and quizzes — start here if you're new.</p>
+    <p class="section-sub">{len(missions)} hands-on missions with stories, safety tips, wiring, code, and practical challenges — start here if you're new.</p>
     <div class="mission-index-grid">{mission_cards}</div>
   </section>"""
     legacy_html = ""

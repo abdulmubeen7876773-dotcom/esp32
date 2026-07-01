@@ -813,7 +813,6 @@ def render_mission_guide(guide: dict) -> str:
         m.get("challenge_items", []),
     )
     remember_html = remember_forever_section(m.get("remember_forever", ""))
-    quiz_html = quiz_block(m.get("quiz", []))
     faq_html = mission_faq_section(guide.get("faqs", []))
     related_components_html = related_components_section(guide)
     related_projects_html = related_projects_section(guide)
@@ -849,7 +848,6 @@ def render_mission_guide(guide: dict) -> str:
 {engineer_tip_html}
 {remember_html}
 {challenge_html}
-{quiz_html}
 {faq_html}
 {related_components_html}
 {related_projects_html}
