@@ -160,7 +160,8 @@ TOP_PROJECT_SLUGS = [
     "esp32-smart-thermostat",
     "esp32-line-following-robot",
 ]
-TOP_GUIDE_SLUGS = ["blink-led-esp32", "read-temperature-dht22", "what-is-esp32"]
+TOP_GUIDE_SLUGS = ["blink-led-esp32", "button-led-control", "digital-inputs-floating-pins"]
+FOUNDATION_HOME_MISSION_SLUGS = ["blink-led-esp32", "button-led-control", "digital-inputs-floating-pins"]
 TOP_COMPONENT_SLUGS = ["dht22", "bme280", "esp32-devkit"]
 
 
@@ -1026,8 +1027,8 @@ def home_v2_engine(guides: list) -> str:
     """Section 3 — Homepage v2: The Engine (methodology)."""
     from guide_mission import mission_meta_badges_html  # noqa: F401 – kept for parity
 
-    mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
-    ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))[:3]
+    by_slug = {g.get("slug", ""): g for g in guides}
+    ordered = [by_slug[slug] for slug in FOUNDATION_HOME_MISSION_SLUGS if slug in by_slug]
 
     pillars = [
         ("LEARN", "Focused Theory", "Only what you need for the next step — no filler, no detours."),
@@ -1208,8 +1209,8 @@ def home_v3_journey() -> str:
 
 def home_v3_roadmap(guides: list) -> str:
     """Section 4 — Homepage v3: Learning Roadmap (LEARN/BUILD/SHIP + mission arc). Off-white bg."""
-    mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
-    ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))[:3]
+    by_slug = {g.get("slug", ""): g for g in guides}
+    ordered = [by_slug[slug] for slug in FOUNDATION_HOME_MISSION_SLUGS if slug in by_slug]
 
     PILLARS = [
         ("01", "Learn", "Only what you need for the next step — focused theory through guided missions, not textbook chapters."),
@@ -1554,7 +1555,7 @@ def home_v3_progress(
     """Section 9 — Homepage v3: Community Progress (large stat numbers). Deep dark bg."""
     STATS = [
         (str(project_count), "Projects"),
-        (str(guide_count), "Missions"),
+        (str(len(FOUNDATION_HOME_MISSION_SLUGS)), "Academy Missions"),
         (str(component_count), "Components"),
         ("100%", "Free"),
     ]
