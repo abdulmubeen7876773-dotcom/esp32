@@ -1,0 +1,459 @@
+{
+  "format": "mission",
+  "phase": 1,
+  "sort_order": 9,
+  "mission_number": 9,
+  "slug": "oled-display-esp32",
+  "title": "ESP32 OLED Display Tutorial | ESP32 Engine",
+  "headline": "OLED Display with ESP32",
+  "meta_description": "Mission 09 - connect an SSD1306 OLED display to ESP32, learn I2C basics, display text, and show live analog values on a tiny screen.",
+  "lead": "Serial Monitor is useful while your ESP32 is connected to a computer. An OLED display lets your project explain itself without needing the Arduino IDE open.",
+  "keywords": "ESP32 OLED display, SSD1306 ESP32, ESP32 I2C OLED, ESP32 GPIO21 GPIO22, ESP32 display sensor values",
+  "proficiency_level": "Beginner",
+  "reading_time": "40-45 min",
+  "date_published": "2026-07-01",
+  "date_modified": "2026-07-01",
+  "academy": {
+    "mission_id": "Mission 09",
+    "level": "Foundation",
+    "prerequisites": [
+      {
+        "slug": "analog-inputs",
+        "title": "Analog Inputs",
+        "description": "You should understand how the ESP32 reads changing values before showing those values on a display."
+      }
+    ],
+    "skills_learned": [
+      "Explain what an OLED display is",
+      "Wire an SSD1306 I2C OLED to the ESP32 default I2C pins",
+      "Describe SDA, SCL, and a simple I2C address",
+      "Install and use the Adafruit SSD1306 and GFX libraries",
+      "Display text and live analog values on the OLED"
+    ],
+    "components_required": [
+      "ESP32 DevKit",
+      "SSD1306 0.96 inch I2C OLED display",
+      "10 kOhm potentiometer",
+      "Breadboard",
+      "Jumper wires",
+      "USB data cable"
+    ],
+    "estimated_time": "40-45 min",
+    "difficulty": "Beginner",
+    "expected_outcome": "You will wire an SSD1306 OLED to GPIO21 and GPIO22, then display a title, live ADC value, and percent value on the screen.",
+    "mini_challenge": "Change the OLED layout so it shows raw ADC value on one line and a human-friendly percent value on another line.",
+    "previous_mission": {
+      "slug": "analog-inputs",
+      "title": "Analog Inputs",
+      "description": "You learned how a potentiometer creates changing ADC values from 0 to 4095."
+    },
+    "next_mission": {
+      "title": "Mission 10 - I2C Communication",
+      "description": "Next you will learn the bus idea behind OLED displays, sensors, and many smart modules."
+    },
+    "unlocked_components": [
+      {
+        "title": "SSD1306 OLED Display",
+        "href": "/components/ssd1306-oled.html",
+        "description": "A small I2C screen for showing text, numbers, icons, and project status."
+      },
+      {
+        "title": "ESP32 DevKit Board",
+        "href": "/components/esp32-devkit.html",
+        "description": "The ESP32 talks to the OLED using its default I2C pins, GPIO21 and GPIO22."
+      },
+      {
+        "title": "BME280 Environmental Sensor",
+        "href": "/components/bme280.html",
+        "description": "A smart I2C sensor that pairs naturally with an OLED display."
+      }
+    ],
+    "unlocked_projects": [
+      {
+        "title": "ESP32 OLED Weather Clock",
+        "href": "/projects/esp32-oled-weather-clock.html",
+        "description": "Use an OLED to show time, weather, and sensor data."
+      },
+      {
+        "title": "ESP32 IoT Weather Station",
+        "href": "/projects/esp32-iot-weather-station.html",
+        "description": "Display local sensor readings before sending them to a dashboard."
+      },
+      {
+        "title": "ESP32 Smart Thermostat",
+        "href": "/projects/esp32-smart-thermostat.html",
+        "description": "Use a local screen to show temperature, setpoint, and system state."
+      }
+    ],
+    "future_paths": [
+      {
+        "slug": "analog-inputs",
+        "title": "Analog Inputs",
+        "description": "Use analog readings as the live data shown on the OLED."
+      },
+      {
+        "slug": "read-temperature-dht22",
+        "title": "Read Temperature with DHT22",
+        "description": "Display real temperature and humidity values instead of a potentiometer value."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "What is an OLED display?",
+      "answer": "An OLED display is a small screen where each pixel can create its own light. The SSD1306 module is popular because it is low power, sharp, and easy to control over I2C."
+    },
+    {
+      "question": "Why use an OLED instead of Serial Monitor?",
+      "answer": "Serial Monitor is only visible on your computer. An OLED lets the ESP32 project show information when it is running on a desk, wall, robot, or enclosure."
+    },
+    {
+      "question": "What does SSD1306 mean?",
+      "answer": "SSD1306 is the display controller chip used on many 0.96 inch OLED modules. Your Arduino code talks to this controller, and the controller updates the pixels."
+    },
+    {
+      "question": "What is I2C?",
+      "answer": "I2C is a communication bus that lets the ESP32 talk to smart parts using two signal wires: SDA for data and SCL for clock."
+    },
+    {
+      "question": "Which ESP32 pins should I use for I2C OLED?",
+      "answer": "For a typical ESP32 DevKit, use GPIO21 for SDA and GPIO22 for SCL. Those are the default I2C pins used in this mission."
+    },
+    {
+      "question": "What OLED I2C address should I use?",
+      "answer": "Most SSD1306 0.96 inch OLED modules use address 0x3C. Some use 0x3D. If the screen stays blank, address mismatch is one of the first things to check."
+    },
+    {
+      "question": "Should OLED VCC connect to 3.3 V or 5 V?",
+      "answer": "Use 3.3 V for this mission. Many modules tolerate 5 V on VCC, but the ESP32 GPIO signals are 3.3 V, so 3.3 V wiring is the safer beginner choice."
+    },
+    {
+      "question": "Why does the code call display.display()?",
+      "answer": "The library first draws into a memory buffer. display.display() sends that buffer to the real screen, so the pixels actually update."
+    },
+    {
+      "question": "Why do we clear the display before drawing again?",
+      "answer": "If you do not clear the display, old text can remain behind new text. clearDisplay() gives each refresh a clean screen."
+    },
+    {
+      "question": "Can the OLED show sensor values?",
+      "answer": "Yes. Any value you can print to Serial Monitor can usually be printed to the OLED, including temperature, humidity, light level, distance, and ADC readings."
+    },
+    {
+      "question": "Why does the OLED flicker if I refresh too fast?",
+      "answer": "Refreshing too often can make updates look unstable. Update only as fast as the user needs to read the value, such as a few times per second."
+    },
+    {
+      "question": "What libraries do I need?",
+      "answer": "Install Adafruit SSD1306 and Adafruit GFX from the Arduino Library Manager. The Wire library is included with the ESP32 Arduino core."
+    },
+    {
+      "question": "Can I use a different OLED size?",
+      "answer": "Yes, but you must match the screen width, height, and driver. This mission assumes a 128x64 SSD1306 OLED."
+    },
+    {
+      "question": "Can many I2C devices share GPIO21 and GPIO22?",
+      "answer": "Yes, if each device has a different I2C address and the wiring is clean. That is one reason I2C is useful."
+    },
+    {
+      "question": "What should I do if the screen is blank?",
+      "answer": "Check VCC, GND, SDA, SCL, the I2C address, library installation, and whether your module is really SSD1306."
+    }
+  ],
+  "mission": {
+    "badge": "Mission 09",
+    "icon": "OLED",
+    "title": "Show ESP32 Data on a Tiny Screen",
+    "story": "So far, your ESP32 has mostly talked through Serial Monitor. That is perfect while learning, but real embedded products cannot depend on a laptop window.\n\nA thermostat needs to show the temperature. A weather station needs to show readings. A robot might show battery level or mode. Mission 09 gives your ESP32 a small local display so your project can communicate directly with the person using it.",
+    "eli12": "Serial Monitor is like whispering information to your computer. An OLED is like giving your ESP32 a little face.\n\nThe OLED does not measure anything by itself. It shows the information your code sends to it. In this mission, the ESP32 reads the potentiometer from Mission 08 and prints that value on the screen.",
+    "mission_goal": "Connect an SSD1306 I2C OLED display to ESP32 and show both text and live analog values on the screen.",
+    "learning_objectives": [
+      "Describe why embedded projects need local displays.",
+      "Explain OLED, I2C, SDA, SCL, and address in beginner language.",
+      "Wire an SSD1306 OLED to ESP32 GPIO21 and GPIO22.",
+      "Install the correct Arduino libraries for SSD1306 displays.",
+      "Write text and live ADC values to the OLED without relying only on Serial Monitor."
+    ],
+    "what_you_build": "- An SSD1306 128x64 OLED connected to the ESP32 over I2C.\n- A potentiometer connected to GPIO34 as a live data source.\n- A screen that shows a title, raw ADC value, and percent value.\n- Serial Monitor output that confirms the same value the OLED is showing.",
+    "things_you_need": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Controls the OLED and reads the potentiometer",
+        "link": "/components/esp32-devkit.html",
+        "icon": "ESP32"
+      },
+      {
+        "item": "SSD1306 0.96 inch I2C OLED display",
+        "note": "Shows text and live values",
+        "link": "/components/ssd1306-oled.html",
+        "icon": "OLED"
+      },
+      {
+        "item": "10 kOhm potentiometer",
+        "note": "Provides a changing analog value from Mission 08",
+        "icon": "POT"
+      },
+      {
+        "item": "Breadboard and jumper wires",
+        "note": "Connect 3.3 V, GND, SDA, SCL, and the analog input",
+        "icon": "WIRE"
+      },
+      {
+        "item": "USB data cable",
+        "note": "Upload code and compare OLED output with Serial Monitor",
+        "icon": "USB"
+      }
+    ],
+    "safety": [
+      {
+        "text": "Unplug USB before moving OLED or potentiometer wires."
+      },
+      {
+        "text": "Use 3.3 V for the OLED VCC in this mission."
+      },
+      {
+        "text": "Do not connect OLED signal pins to 5 V logic."
+      },
+      {
+        "text": "Keep SDA on GPIO21 and SCL on GPIO22 unless your code is changed to match."
+      }
+    ],
+    "component_spotlight_lead": "The SSD1306 OLED is the beginner-friendly display that turns a hidden microcontroller program into something you can read at a glance.",
+    "concept": {
+      "title": "The OLED Is a Tiny Output Device",
+      "illustration_alt": "ESP32 connected to an SSD1306 OLED over I2C using GPIO21 SDA and GPIO22 SCL, showing ADC value on screen",
+      "body": "An OLED display is an output device. It does not decide what to show. Your ESP32 code decides what text and numbers to draw.\n\nMost small SSD1306 OLED modules use I2C. That means the ESP32 does not need many wires. It sends commands and display data over two signal lines: SDA and SCL.\n\nThe important beginner idea is simple: Serial Monitor shows data on your computer, while an OLED shows data on the project itself."
+    },
+    "engineering_explanation": "The SSD1306 OLED module contains a display panel and a controller chip. The controller remembers what each pixel should do, and the OLED panel lights those pixels.\n\nThe ESP32 communicates with the controller over I2C. SDA carries the data bits. SCL is the clock signal that keeps both sides moving together. The OLED also has an I2C address, usually 0x3C. The address tells the ESP32 which device on the bus should listen.\n\nThe Adafruit SSD1306 library hides most of the low-level commands. Your sketch draws into a screen buffer in memory using functions such as setCursor(), print(), and println(). When you call display.display(), the library sends the buffer to the OLED controller and the visible screen updates.\n\nThis is why clearDisplay() matters. The screen buffer keeps old pixels until you clear or overwrite them. A clean refresh usually means: clear the buffer, draw the new text, then send it to the screen.",
+    "real_life_analogy": "Think of I2C like a classroom with one teacher and several students. The teacher is the ESP32. The students are devices such as displays and sensors. Everyone hears the same two wires, but the teacher says an address first. Only the student with that address answers.\n\nThe OLED buffer is like writing on a small whiteboard before showing it to the class. You prepare the message, then hold it up. display.display() is the moment the class sees the whiteboard.\n\nThe Serial Monitor is like a notebook on your desk. Useful while learning, but the OLED is like a label on the product itself. Anyone can read it without opening your computer.",
+    "wiring": {
+      "illustration_alt": "ESP32 OLED wiring with VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22, and potentiometer wiper to GPIO34",
+      "steps": [
+        "Unplug the ESP32 USB cable before wiring.",
+        "Connect OLED VCC to ESP32 3.3 V.",
+        "Connect OLED GND to ESP32 GND.",
+        "Connect OLED SDA to ESP32 GPIO21.",
+        "Connect OLED SCL to ESP32 GPIO22.",
+        "Connect one outer potentiometer pin to 3.3 V.",
+        "Connect the other outer potentiometer pin to GND.",
+        "Connect the potentiometer middle pin to GPIO34.",
+        "Install Adafruit SSD1306 and Adafruit GFX libraries in Arduino IDE.",
+        "Plug USB back in, upload the sketch, and open Serial Monitor at 115200 baud."
+      ]
+    },
+    "gpio_table": [
+      {
+        "signal": "OLED VCC",
+        "esp32_pin": "3V3",
+        "mode": "Power",
+        "notes": "Powers the OLED module safely from the ESP32 3.3 V rail."
+      },
+      {
+        "signal": "OLED GND",
+        "esp32_pin": "GND",
+        "mode": "Ground",
+        "notes": "The OLED and ESP32 must share ground."
+      },
+      {
+        "signal": "OLED SDA",
+        "esp32_pin": "GPIO21",
+        "mode": "I2C data",
+        "notes": "Default ESP32 I2C data pin used by the OLED."
+      },
+      {
+        "signal": "OLED SCL",
+        "esp32_pin": "GPIO22",
+        "mode": "I2C clock",
+        "notes": "Default ESP32 I2C clock pin used by the OLED."
+      },
+      {
+        "signal": "Potentiometer wiper",
+        "esp32_pin": "GPIO34",
+        "mode": "Analog input",
+        "notes": "Provides the live value shown on the OLED."
+      }
+    ],
+    "code": {
+      "filename": "oled_display_values.ino",
+      "notes": "- Install Adafruit SSD1306 and Adafruit GFX before compiling.\n- The OLED address is set to 0x3C, the most common SSD1306 address.\n- GPIO21 is SDA and GPIO22 is SCL.\n- GPIO34 reads the potentiometer value from Mission 08.",
+      "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\nconst int SCREEN_WIDTH = 128;\nconst int SCREEN_HEIGHT = 64;\nconst int OLED_RESET = -1;\nconst int POT_PIN = 34;\n\nconst int I2C_SDA = 21;\nconst int I2C_SCL = 22;\nconst int OLED_ADDRESS = 0x3C;\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\n\nvoid setup() {\n  Serial.begin(115200);\n\n  Wire.begin(I2C_SDA, I2C_SCL);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {\n    Serial.println(\"OLED not found. Check wiring and I2C address.\");\n    while (true) {\n      delay(1000);\n    }\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n\n  delay(1500);\n}\n\nvoid loop() {\n  int rawValue = analogRead(POT_PIN);\n  int percent = map(rawValue, 0, 4095, 0, 100);\n\n  Serial.print(\"ADC: \");\n  Serial.print(rawValue);\n  Serial.print(\" | Percent: \");\n  Serial.print(percent);\n  Serial.println(\"%\");\n\n  display.clearDisplay();\n\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"Mission 09 OLED\");\n\n  display.setCursor(0, 18);\n  display.print(\"ADC: \");\n  display.println(rawValue);\n\n  display.setCursor(0, 34);\n  display.print(\"Dial: \");\n  display.print(percent);\n  display.println(\"%\");\n\n  display.setCursor(0, 52);\n  display.println(\"GPIO34 -> screen\");\n\n  display.display();\n  delay(250);\n}\n"
+    },
+    "code_explanation": [
+      {
+        "text": "Wire.h gives the ESP32 I2C communication functions."
+      },
+      {
+        "text": "Adafruit_GFX provides drawing and text functions used by many Adafruit display libraries."
+      },
+      {
+        "text": "Adafruit_SSD1306 knows how to talk to the SSD1306 OLED controller."
+      },
+      {
+        "text": "SCREEN_WIDTH and SCREEN_HEIGHT match a common 128x64 OLED module."
+      },
+      {
+        "text": "POT_PIN is GPIO34, the analog input from Mission 08."
+      },
+      {
+        "text": "Wire.begin(21, 22) starts I2C using the ESP32 default SDA and SCL pins."
+      },
+      {
+        "text": "display.begin() checks whether the OLED responds at address 0x3C."
+      },
+      {
+        "text": "If the OLED is not found, the sketch prints a clear error and stops so you do not miss the wiring problem."
+      },
+      {
+        "text": "analogRead() gets the raw ADC value from the potentiometer."
+      },
+      {
+        "text": "map() converts the raw 0 to 4095 range into a friendlier 0 to 100 percent range."
+      },
+      {
+        "text": "clearDisplay() clears the screen buffer before drawing the next frame."
+      },
+      {
+        "text": "setCursor() chooses where the next text will appear."
+      },
+      {
+        "text": "print() and println() add text and numbers to the screen buffer."
+      },
+      {
+        "text": "display.display() sends the finished buffer to the OLED so the visible pixels update."
+      }
+    ],
+    "expected_output": "The OLED first shows:\n\nESP32 Engine\nOLED ready\n\nAfter the short startup message, the screen updates several times per second:\n\nMission 09 OLED\nADC: 1875\nDial: 45%\nGPIO34 -> screen\n\nWhen you turn the potentiometer, the ADC and percent values change on both the OLED and Serial Monitor.\n\nSerial Monitor should show lines like:\n\nADC: 32 | Percent: 0%\nADC: 1040 | Percent: 25%\nADC: 2198 | Percent: 53%\nADC: 4090 | Percent: 99%",
+    "common_mistakes": [
+      {
+        "problem": "SDA and SCL swapped",
+        "cause": "The OLED cannot understand the bus when data and clock are reversed.",
+        "fix": "Use SDA on GPIO21 and SCL on GPIO22 for this mission."
+      },
+      {
+        "problem": "Wrong I2C address",
+        "cause": "Most OLEDs use 0x3C, but some modules use 0x3D.",
+        "fix": "If wiring is correct and the screen is blank, try changing OLED_ADDRESS to 0x3D or run an I2C scanner later."
+      },
+      {
+        "problem": "Missing libraries",
+        "cause": "Arduino IDE cannot compile the display code without Adafruit SSD1306 and Adafruit GFX.",
+        "fix": "Install both libraries from Library Manager."
+      },
+      {
+        "problem": "Forgetting display.display()",
+        "cause": "The code draws into memory but never sends the buffer to the physical OLED.",
+        "fix": "Call display.display() after drawing the content."
+      },
+      {
+        "problem": "Old text remains on the screen",
+        "cause": "New text is drawn over old pixels without clearing them first.",
+        "fix": "Call display.clearDisplay() before drawing each refreshed screen."
+      },
+      {
+        "problem": "Using 5 V signal logic",
+        "cause": "The ESP32 GPIO pins are 3.3 V pins.",
+        "fix": "Power and signal the OLED in a 3.3 V-friendly way for this beginner circuit."
+      },
+      {
+        "problem": "Potentiometer value does not change",
+        "cause": "The middle pin may not be connected to GPIO34, or the outer pins may not go to 3.3 V and GND.",
+        "fix": "Trace all three potentiometer pins and compare with the GPIO table."
+      },
+      {
+        "problem": "Screen updates too fast to read",
+        "cause": "A very short delay can refresh the text more often than a human needs.",
+        "fix": "Use a modest delay such as 250 ms for beginner display updates."
+      },
+      {
+        "problem": "Tiny text is hard to read",
+        "cause": "Text size 1 fits more content but is small.",
+        "fix": "Try setTextSize(2) for important values and reduce the amount of text on screen."
+      },
+      {
+        "problem": "Confusing display coordinates",
+        "cause": "The top-left pixel is coordinate 0,0, and y increases downward.",
+        "fix": "Move one line at a time and test small coordinate changes."
+      }
+    ],
+    "common_problems": [
+      {
+        "problem": "OLED stays completely blank",
+        "cause": "Power, ground, SDA, SCL, address, or library setup may be wrong.",
+        "fix": "Check 3.3 V, GND, GPIO21, GPIO22, OLED_ADDRESS, and installed libraries."
+      },
+      {
+        "problem": "Serial Monitor says OLED not found",
+        "cause": "The ESP32 did not receive a response from the display at address 0x3C.",
+        "fix": "Check wiring first, then try 0x3D if your module uses a different address."
+      },
+      {
+        "problem": "Code compiles but upload fails",
+        "cause": "Wrong board, wrong port, or boot mode issue in Arduino IDE.",
+        "fix": "Select the correct ESP32 board and port, then hold BOOT during upload if your board requires it."
+      },
+      {
+        "problem": "OLED works but analog value is random",
+        "cause": "GPIO34 may be floating if the potentiometer wiper is not connected.",
+        "fix": "Reconnect the potentiometer exactly like Mission 08."
+      },
+      {
+        "problem": "OLED shows strange characters",
+        "cause": "The display type, I2C address, or memory update may not match the module.",
+        "fix": "Confirm the module is SSD1306 128x64 and use the correct address."
+      },
+      {
+        "problem": "Values change on Serial Monitor but not OLED",
+        "cause": "The display buffer may not be refreshed after printing the new value.",
+        "fix": "Make sure display.display() runs after all OLED print statements in loop()."
+      }
+    ],
+    "engineer_tip": "Professional embedded products usually separate measurement from presentation. First read the sensor cleanly. Then decide what the user needs to see. Then update the display at a readable rate. A screen is for communication, not for dumping every variable as fast as possible.",
+    "remember_forever": "Serial Monitor helps you debug the project.\n\nAn OLED helps the project speak for itself.",
+    "challenge_items": [
+      {
+        "icon": "BIG",
+        "text": "Make the percent value use setTextSize(2) so it becomes the main number on the display."
+      },
+      {
+        "icon": "BAR",
+        "text": "Draw a simple text bar using ten blocks or characters based on the percent value."
+      },
+      {
+        "icon": "ADDR",
+        "text": "Change OLED_ADDRESS from 0x3C to 0x3D and observe what happens if your display uses 0x3C."
+      },
+      {
+        "icon": "SLOW",
+        "text": "Change the refresh delay to 1000 ms and decide whether the display feels easier or slower to read."
+      },
+      {
+        "icon": "DATA",
+        "text": "Replace the potentiometer label with a pretend sensor label such as Light, Moisture, or Battery."
+      }
+    ],
+    "complete": {
+      "subtitle": "Your ESP32 can now show information without depending on a computer window.",
+      "summary": "You connected an SSD1306 OLED display to the ESP32 using the default I2C pins, GPIO21 and GPIO22. You learned that SDA carries data, SCL provides the clock, and the OLED usually listens at address 0x3C.\n\nYou also learned the display refresh pattern: clear the buffer, draw the new content, then call display.display(). That pattern will come back in weather stations, clocks, dashboards, robots, and any project where the user needs local feedback.",
+      "skills": [
+        "Wire an SSD1306 OLED",
+        "Understand SDA and SCL",
+        "Use the OLED I2C address",
+        "Display text with Arduino",
+        "Show live ESP32 values on screen"
+      ]
+    },
+    "next_missions": [
+      {
+        "title": "Mission 10 - I2C Communication",
+        "description": "Next you will learn the communication idea behind OLED displays and many smart ESP32 sensors."
+      },
+      {
+        "slug": "analog-inputs",
+        "title": "Mission 08 - Analog Inputs",
+        "description": "Review the potentiometer reading that this OLED mission displays."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}

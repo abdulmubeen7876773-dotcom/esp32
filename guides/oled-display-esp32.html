@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 OLED Display Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 09 - connect an SSD1306 OLED display to ESP32, learn I2C basics, display text, and show live analog values on a tiny screen.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/oled-display-esp32.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 OLED Display Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 09 - connect an SSD1306 OLED display to ESP32, learn I2C basics, display text, and show live analog values on a tiny screen.">
+<meta property="og:url" content="https://esp32engine.com/guides/oled-display-esp32.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 OLED Display Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 09 - connect an SSD1306 OLED display to ESP32, learn I2C basics, display text, and show live analog values on a tiny screen.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"OLED Display with ESP32","description":"Mission 09 - connect an SSD1306 OLED display to ESP32, learn I2C basics, display text, and show live analog values on a tiny screen.","datePublished":"2026-07-01","dateModified":"2026-07-01","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/oled-display-esp32.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 OLED display, SSD1306 ESP32, ESP32 I2C OLED, ESP32 GPIO21 GPIO22, ESP32 display sensor values"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"OLED Display with ESP32","item":"https://esp32engine.com/guides/oled-display-esp32.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is an OLED display?","acceptedAnswer":{"@type":"Answer","text":"An OLED display is a small screen where each pixel can create its own light. The SSD1306 module is popular because it is low power, sharp, and easy to control over I2C."}},{"@type":"Question","name":"Why use an OLED instead of Serial Monitor?","acceptedAnswer":{"@type":"Answer","text":"Serial Monitor is only visible on your computer. An OLED lets the ESP32 project show information when it is running on a desk, wall, robot, or enclosure."}},{"@type":"Question","name":"What does SSD1306 mean?","acceptedAnswer":{"@type":"Answer","text":"SSD1306 is the display controller chip used on many 0.96 inch OLED modules. Your Arduino code talks to this controller, and the controller updates the pixels."}},{"@type":"Question","name":"What is I2C?","acceptedAnswer":{"@type":"Answer","text":"I2C is a communication bus that lets the ESP32 talk to smart parts using two signal wires: SDA for data and SCL for clock."}},{"@type":"Question","name":"Which ESP32 pins should I use for I2C OLED?","acceptedAnswer":{"@type":"Answer","text":"For a typical ESP32 DevKit, use GPIO21 for SDA and GPIO22 for SCL. Those are the default I2C pins used in this mission."}},{"@type":"Question","name":"What OLED I2C address should I use?","acceptedAnswer":{"@type":"Answer","text":"Most SSD1306 0.96 inch OLED modules use address 0x3C. Some use 0x3D. If the screen stays blank, address mismatch is one of the first things to check."}},{"@type":"Question","name":"Should OLED VCC connect to 3.3 V or 5 V?","acceptedAnswer":{"@type":"Answer","text":"Use 3.3 V for this mission. Many modules tolerate 5 V on VCC, but the ESP32 GPIO signals are 3.3 V, so 3.3 V wiring is the safer beginner choice."}},{"@type":"Question","name":"Why does the code call display.display()?","acceptedAnswer":{"@type":"Answer","text":"The library first draws into a memory buffer. display.display() sends that buffer to the real screen, so the pixels actually update."}},{"@type":"Question","name":"Why do we clear the display before drawing again?","acceptedAnswer":{"@type":"Answer","text":"If you do not clear the display, old text can remain behind new text. clearDisplay() gives each refresh a clean screen."}},{"@type":"Question","name":"Can the OLED show sensor values?","acceptedAnswer":{"@type":"Answer","text":"Yes. Any value you can print to Serial Monitor can usually be printed to the OLED, including temperature, humidity, light level, distance, and ADC readings."}},{"@type":"Question","name":"Why does the OLED flicker if I refresh too fast?","acceptedAnswer":{"@type":"Answer","text":"Refreshing too often can make updates look unstable. Update only as fast as the user needs to read the value, such as a few times per second."}},{"@type":"Question","name":"What libraries do I need?","acceptedAnswer":{"@type":"Answer","text":"Install Adafruit SSD1306 and Adafruit GFX from the Arduino Library Manager. The Wire library is included with the ESP32 Arduino core."}},{"@type":"Question","name":"Can I use a different OLED size?","acceptedAnswer":{"@type":"Answer","text":"Yes, but you must match the screen width, height, and driver. This mission assumes a 128x64 SSD1306 OLED."}},{"@type":"Question","name":"Can many I2C devices share GPIO21 and GPIO22?","acceptedAnswer":{"@type":"Answer","text":"Yes, if each device has a different I2C address and the wiring is clean. That is one reason I2C is useful."}},{"@type":"Question","name":"What should I do if the screen is blank?","acceptedAnswer":{"@type":"Answer","text":"Check VCC, GND, SDA, SCL, the I2C address, library installation, and whether your module is really SSD1306."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">OLED Display with ESP32</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">OLED Display with ESP32</h1>
+      <p class="article-lead mission-hero-lead">Serial Monitor is useful while your ESP32 is connected to a computer. An OLED display lets your project explain itself without needing the Arduino IDE open.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 09</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">40-45 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">OLED</span>
+  <span class="mission-card-badge">Mission 09</span>
+  <h2 class="mission-card-title">Show ESP32 Data on a Tiny Screen</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>So far, your ESP32 has mostly talked through Serial Monitor. That is perfect while learning, but real embedded products cannot depend on a laptop window.</p><p>A thermostat needs to show the temperature. A weather station needs to show readings. A robot might show battery level or mode. Mission 09 gives your ESP32 a small local display so your project can communicate directly with the person using it.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>Serial Monitor is like whispering information to your computer. An OLED is like giving your ESP32 a little face.</p><p>The OLED does not measure anything by itself. It shows the information your code sends to it. In this mission, the ESP32 reads the potentiometer from Mission 08 and prints that value on the screen.</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">GOAL</span><span class="mission-section-title">Mission Goal</span></h2>
+  <div class="mission-build-panel"><p>Connect an SSD1306 I2C OLED display to ESP32 and show both text and live analog values on the screen.</p></div>
+</section>
+<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
+  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">TIME</span><span class="mission-section-title">Estimated Time</span></h2>
+  <div class="mission-prose"><p>40-45 min</p></div>
+</section>
+<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
+  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">LEVEL</span><span class="mission-section-title">Difficulty</span></h2>
+  <div class="mission-prose"><p>Beginner</p></div>
+</section>
+<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">PRE</span><span class="mission-section-title">Prerequisites</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/analog-inputs.html"><strong>Analog Inputs</strong></a> <span class="meta">You should understand how the ESP32 reads changing values before showing those values on a display.</span></li></ul>
+</section>
+<section class="mission-section" id="skills" aria-labelledby="skills-heading">
+  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">SKILL</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <ul class="mission-bullets"><li>Explain what an OLED display is</li><li>Wire an SSD1306 I2C OLED to the ESP32 default I2C pins</li><li>Describe SDA, SCL, and a simple I2C address</li><li>Install and use the Adafruit SSD1306 and GFX libraries</li><li>Display text and live analog values on the OLED</li></ul>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Components Required</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Controls the OLED and reads the potentiometer</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">OLED</span><span class="mission-thing-body"><a href="/components/ssd1306-oled.html" class="mission-thing-name">SSD1306 0.96 inch I2C OLED display</a><span class="mission-thing-note">Shows text and live values</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">POT</span><span class="mission-thing-body"><span class="mission-thing-name">10 kOhm potentiometer</span><span class="mission-thing-note">Provides a changing analog value from Mission 08</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard and jumper wires</span><span class="mission-thing-note">Connect 3.3 V, GND, SDA, SCL, and the analog input</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload code and compare OLED output with Serial Monitor</span></span></li></ul>
+</section>
+<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">ENG</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <div class="mission-prose"><p>The SSD1306 OLED module contains a display panel and a controller chip. The controller remembers what each pixel should do, and the OLED panel lights those pixels.</p><p>The ESP32 communicates with the controller over I2C. SDA carries the data bits. SCL is the clock signal that keeps both sides moving together. The OLED also has an I2C address, usually 0x3C. The address tells the ESP32 which device on the bus should listen.</p><p>The Adafruit SSD1306 library hides most of the low-level commands. Your sketch draws into a screen buffer in memory using functions such as setCursor(), print(), and println(). When you call display.display(), the library sends the buffer to the OLED controller and the visible screen updates.</p><p>This is why clearDisplay() matters. The screen buffer keeps old pixels until you clear or overwrite them. A clean refresh usually means: clear the buffer, draw the new text, then send it to the screen.</p></div>
+</section>
+<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
+  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">REAL</span><span class="mission-section-title">Real-World Analogy</span></h2>
+  <div class="mission-prose"><p>Think of I2C like a classroom with one teacher and several students. The teacher is the ESP32. The students are devices such as displays and sensors. Everyone hears the same two wires, but the teacher says an address first. Only the student with that address answers.</p><p>The OLED buffer is like writing on a small whiteboard before showing it to the class. You prepare the message, then hold it up. display.display() is the moment the class sees the whiteboard.</p><p>The Serial Monitor is like a notebook on your desk. Useful while learning, but the OLED is like a label on the product itself. Anyone can read it without opening your computer.</p></div>
+</section>
+
+
+
+
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">WIRE</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="ESP32 OLED wiring with VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22, and potentiometer wiper to GPIO34">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">WIRE</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32 OLED wiring with VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22, and potentiometer wiper to GPIO34</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Connect OLED VCC to ESP32 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect OLED GND to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect OLED SDA to ESP32 GPIO21.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Connect OLED SCL to ESP32 GPIO22.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Connect one outer potentiometer pin to 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Connect the other outer potentiometer pin to GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">8</span>
+    <p class="mission-step-text">Connect the potentiometer middle pin to GPIO34.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">9</span>
+    <p class="mission-step-text">Install Adafruit SSD1306 and Adafruit GFX libraries in Arduino IDE.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">10</span>
+    <p class="mission-step-text">Plug USB back in, upload the sketch, and open Serial Monitor at 115200 baud.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
+  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>OLED VCC</td><td>3V3</td><td>Power</td><td>Powers the OLED module safely from the ESP32 3.3 V rail.</td></tr><tr><td>OLED GND</td><td>GND</td><td>Ground</td><td>The OLED and ESP32 must share ground.</td></tr><tr><td>OLED SDA</td><td>GPIO21</td><td>I2C data</td><td>Default ESP32 I2C data pin used by the OLED.</td></tr><tr><td>OLED SCL</td><td>GPIO22</td><td>I2C clock</td><td>Default ESP32 I2C clock pin used by the OLED.</td></tr><tr><td>Potentiometer wiper</td><td>GPIO34</td><td>Analog input</td><td>Provides the live value shown on the OLED.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">oled_display_values.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-pre">#include &lt;Wire.h&gt;</span>
+<span class="tok-pre">#include &lt;Adafruit_GFX.h&gt;</span>
+<span class="tok-pre">#include &lt;Adafruit_SSD1306.h&gt;</span>
+
+const <span class="tok-kw">int</span> SCREEN_WIDTH = <span class="tok-num">128</span>;
+const <span class="tok-kw">int</span> SCREEN_HEIGHT = <span class="tok-num">64</span>;
+const <span class="tok-kw">int</span> OLED_RESET = -<span class="tok-num">1</span>;
+const <span class="tok-kw">int</span> POT_PIN = <span class="tok-num">34</span>;
+
+const <span class="tok-kw">int</span> I2C_SDA = <span class="tok-num">21</span>;
+const <span class="tok-kw">int</span> I2C_SCL = <span class="tok-num">22</span>;
+const <span class="tok-kw">int</span> OLED_ADDRESS = 0x3C;
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &amp;Wire, OLED_RESET);
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+
+  Wire.<span class="tok-fn">begin</span>(I2C_SDA, I2C_SCL);
+
+  <span class="tok-kw">if</span> (!display.<span class="tok-fn">begin</span>(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;OLED not found. Check wiring and I2C address.&quot;);
+    <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) {
+      <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+    }
+  }
+
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(<span class="tok-num">1</span>);
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">0</span>);
+  display.<span class="tok-fn">println</span>(&quot;ESP32 Engine&quot;);
+  display.<span class="tok-fn">println</span>(&quot;OLED ready&quot;);
+  display.display();
+
+  <span class="tok-fn">delay</span>(<span class="tok-num">1500</span>);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">int</span> rawValue = <span class="tok-fn">analogRead</span>(POT_PIN);
+  <span class="tok-kw">int</span> percent = map(rawValue, <span class="tok-num">0</span>, <span class="tok-num">4095</span>, <span class="tok-num">0</span>, <span class="tok-num">100</span>);
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;ADC: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(rawValue);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot; | Percent: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(percent);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;%&quot;);
+
+  display.clearDisplay();
+
+  display.setTextSize(<span class="tok-num">1</span>);
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">0</span>);
+  display.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">09</span> OLED&quot;);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">18</span>);
+  display.<span class="tok-fn">print</span>(&quot;ADC: &quot;);
+  display.<span class="tok-fn">println</span>(rawValue);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">34</span>);
+  display.<span class="tok-fn">print</span>(&quot;Dial: &quot;);
+  display.<span class="tok-fn">print</span>(percent);
+  display.<span class="tok-fn">println</span>(&quot;%&quot;);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">52</span>);
+  display.<span class="tok-fn">println</span>(&quot;GPIO34 -&gt; screen&quot;);
+
+  display.display();
+  <span class="tok-fn">delay</span>(<span class="tok-num">250</span>);
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>The OLED first shows:</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>Install Adafruit SSD1306 and Adafruit GFX before compiling.</li><li>The OLED address is set to 0x3C, the most common SSD1306 address.</li><li>GPIO21 is SDA and GPIO22 is SCL.</li><li>GPIO34 reads the potentiometer value from Mission 08.</li></ul></div>
+</section>
+<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">CODE</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
+  <ul class="mission-bullets"><li>Wire.h gives the ESP32 I2C communication functions.</li><li>Adafruit_GFX provides drawing and text functions used by many Adafruit display libraries.</li><li>Adafruit_SSD1306 knows how to talk to the SSD1306 OLED controller.</li><li>SCREEN_WIDTH and SCREEN_HEIGHT match a common 128x64 OLED module.</li><li>POT_PIN is GPIO34, the analog input from Mission 08.</li><li>Wire.begin(21, 22) starts I2C using the ESP32 default SDA and SCL pins.</li><li>display.begin() checks whether the OLED responds at address 0x3C.</li><li>If the OLED is not found, the sketch prints a clear error and stops so you do not miss the wiring problem.</li><li>analogRead() gets the raw ADC value from the potentiometer.</li><li>map() converts the raw 0 to 4095 range into a friendlier 0 to 100 percent range.</li><li>clearDisplay() clears the screen buffer before drawing the next frame.</li><li>setCursor() chooses where the next text will appear.</li><li>print() and println() add text and numbers to the screen buffer.</li><li>display.display() sends the finished buffer to the OLED so the visible pixels update.</li></ul>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">OUT</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>The OLED first shows:</p><p>ESP32 Engine
+OLED ready</p><p>After the short startup message, the screen updates several times per second:</p><p>Mission 09 OLED
+ADC: 1875
+Dial: 45%
+GPIO34 -&gt; screen</p><p>When you turn the potentiometer, the ADC and percent values change on both the OLED and Serial Monitor.</p><p>Serial Monitor should show lines like:</p><p>ADC: 32 | Percent: 0%
+ADC: 1040 | Percent: 25%
+ADC: 2198 | Percent: 53%
+ADC: 4090 | Percent: 99%</p></div>
+</section>
+
+<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">WARN</span><span class="mission-section-title">Common Mistakes</span></h2>
+  <ul class="mission-bullets"><li><h3>SDA and SCL swapped</h3><p>The OLED cannot understand the bus when data and clock are reversed.</p></li><li><h3>Wrong I2C address</h3><p>Most OLEDs use 0x3C, but some modules use 0x3D.</p></li><li><h3>Missing libraries</h3><p>Arduino IDE cannot compile the display code without Adafruit SSD1306 and Adafruit GFX.</p></li><li><h3>Forgetting display.display()</h3><p>The code draws into memory but never sends the buffer to the physical OLED.</p></li><li><h3>Old text remains on the screen</h3><p>New text is drawn over old pixels without clearing them first.</p></li><li><h3>Using 5 V signal logic</h3><p>The ESP32 GPIO pins are 3.3 V pins.</p></li><li><h3>Potentiometer value does not change</h3><p>The middle pin may not be connected to GPIO34, or the outer pins may not go to 3.3 V and GND.</p></li><li><h3>Screen updates too fast to read</h3><p>A very short delay can refresh the text more often than a human needs.</p></li><li><h3>Tiny text is hard to read</h3><p>Text size 1 fits more content but is small.</p></li><li><h3>Confusing display coordinates</h3><p>The top-left pixel is coordinate 0,0, and y increases downward.</p></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>OLED stays completely blank</h3><p><strong>Likely cause:</strong> Power, ground, SDA, SCL, address, or library setup may be wrong.</p><p><strong>Fix:</strong> Check 3.3 V, GND, GPIO21, GPIO22, OLED_ADDRESS, and installed libraries.</p></li><li><h3>Serial Monitor says OLED not found</h3><p><strong>Likely cause:</strong> The ESP32 did not receive a response from the display at address 0x3C.</p><p><strong>Fix:</strong> Check wiring first, then try 0x3D if your module uses a different address.</p></li><li><h3>Code compiles but upload fails</h3><p><strong>Likely cause:</strong> Wrong board, wrong port, or boot mode issue in Arduino IDE.</p><p><strong>Fix:</strong> Select the correct ESP32 board and port, then hold BOOT during upload if your board requires it.</p></li><li><h3>OLED works but analog value is random</h3><p><strong>Likely cause:</strong> GPIO34 may be floating if the potentiometer wiper is not connected.</p><p><strong>Fix:</strong> Reconnect the potentiometer exactly like Mission 08.</p></li><li><h3>OLED shows strange characters</h3><p><strong>Likely cause:</strong> The display type, I2C address, or memory update may not match the module.</p><p><strong>Fix:</strong> Confirm the module is SSD1306 128x64 and use the correct address.</p></li><li><h3>Values change on Serial Monitor but not OLED</h3><p><strong>Likely cause:</strong> The display buffer may not be refreshed after printing the new value.</p><p><strong>Fix:</strong> Make sure display.display() runs after all OLED print statements in loop().</p></li></ul>
+</section>
+<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
+  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">TIP</span><span class="mission-section-title">Engineer Tip</span></h2>
+  <div class="mission-prose"><p>Professional embedded products usually separate measurement from presentation. First read the sensor cleanly. Then decide what the user needs to see. Then update the display at a readable rate. A screen is for communication, not for dumping every variable as fast as possible.</p></div>
+</section>
+<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">REM</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <div class="mission-build-panel"><p>Serial Monitor helps you debug the project.</p><p>An OLED helps the project speak for itself.</p></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">BIG</span><span class="mission-challenge-text">Make the percent value use setTextSize(2) so it becomes the main number on the display.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">BAR</span><span class="mission-challenge-text">Draw a simple text bar using ten blocks or characters based on the percent value.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">ADDR</span><span class="mission-challenge-text">Change OLED_ADDRESS from 0x3C to 0x3D and observe what happens if your display uses 0x3C.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">SLOW</span><span class="mission-challenge-text">Change the refresh delay to 1000 ms and decide whether the display feels easier or slower to read.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">DATA</span><span class="mission-challenge-text">Replace the potentiometer label with a pretend sensor label such as Light, Moisture, or Battery.</span></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>What is an OLED display?</h3><p>An OLED display is a small screen where each pixel can create its own light. The SSD1306 module is popular because it is low power, sharp, and easy to control over I2C.</p></li><li><h3>Why use an OLED instead of Serial Monitor?</h3><p>Serial Monitor is only visible on your computer. An OLED lets the ESP32 project show information when it is running on a desk, wall, robot, or enclosure.</p></li><li><h3>What does SSD1306 mean?</h3><p>SSD1306 is the display controller chip used on many 0.96 inch OLED modules. Your Arduino code talks to this controller, and the controller updates the pixels.</p></li><li><h3>What is I2C?</h3><p>I2C is a communication bus that lets the ESP32 talk to smart parts using two signal wires: SDA for data and SCL for clock.</p></li><li><h3>Which ESP32 pins should I use for I2C OLED?</h3><p>For a typical ESP32 DevKit, use GPIO21 for SDA and GPIO22 for SCL. Those are the default I2C pins used in this mission.</p></li><li><h3>What OLED I2C address should I use?</h3><p>Most SSD1306 0.96 inch OLED modules use address 0x3C. Some use 0x3D. If the screen stays blank, address mismatch is one of the first things to check.</p></li><li><h3>Should OLED VCC connect to 3.3 V or 5 V?</h3><p>Use 3.3 V for this mission. Many modules tolerate 5 V on VCC, but the ESP32 GPIO signals are 3.3 V, so 3.3 V wiring is the safer beginner choice.</p></li><li><h3>Why does the code call display.display()?</h3><p>The library first draws into a memory buffer. display.display() sends that buffer to the real screen, so the pixels actually update.</p></li><li><h3>Why do we clear the display before drawing again?</h3><p>If you do not clear the display, old text can remain behind new text. clearDisplay() gives each refresh a clean screen.</p></li><li><h3>Can the OLED show sensor values?</h3><p>Yes. Any value you can print to Serial Monitor can usually be printed to the OLED, including temperature, humidity, light level, distance, and ADC readings.</p></li><li><h3>Why does the OLED flicker if I refresh too fast?</h3><p>Refreshing too often can make updates look unstable. Update only as fast as the user needs to read the value, such as a few times per second.</p></li><li><h3>What libraries do I need?</h3><p>Install Adafruit SSD1306 and Adafruit GFX from the Arduino Library Manager. The Wire library is included with the ESP32 Arduino core.</p></li><li><h3>Can I use a different OLED size?</h3><p>Yes, but you must match the screen width, height, and driver. This mission assumes a 128x64 SSD1306 OLED.</p></li><li><h3>Can many I2C devices share GPIO21 and GPIO22?</h3><p>Yes, if each device has a different I2C address and the wiring is clean. That is one reason I2C is useful.</p></li><li><h3>What should I do if the screen is blank?</h3><p>Check VCC, GND, SDA, SCL, the I2C address, library installation, and whether your module is really SSD1306.</p></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Related Components</span></h2>
+  <ul class="guide-related-list"><li><a href="/components/ssd1306-oled.html"><strong>SSD1306 OLED Display</strong></a> <span class="meta">A small I2C screen for showing text, numbers, icons, and project status.</span></li><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The ESP32 talks to the OLED using its default I2C pins, GPIO21 and GPIO22.</span></li><li><a href="/components/bme280.html"><strong>BME280 Environmental Sensor</strong></a> <span class="meta">A smart I2C sensor that pairs naturally with an OLED display.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">PROJ</span><span class="mission-section-title">Related Projects</span></h2>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-oled-weather-clock.html"><strong>ESP32 OLED Weather Clock</strong></a> <span class="meta">Use an OLED to show time, weather, and sensor data.</span></li><li><a href="/projects/esp32-iot-weather-station.html"><strong>ESP32 IoT Weather Station</strong></a> <span class="meta">Display local sensor readings before sending them to a dashboard.</span></li><li><a href="/projects/esp32-smart-thermostat.html"><strong>ESP32 Smart Thermostat</strong></a> <span class="meta">Use a local screen to show temperature, setpoint, and system state.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
+  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">PREV</span><span class="mission-section-title">Previous Mission</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/analog-inputs.html"><strong>Analog Inputs</strong></a> <span class="meta">You learned how a potentiometer creates changing ADC values from 0 to 4095.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
+  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Next Mission</span></h2>
+  <ul class="guide-related-list"><li><strong>Mission 10 - I2C Communication</strong> <span class="meta">Next you will learn the bus idea behind OLED displays, sensors, and many smart modules.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Continue Learning</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/analog-inputs.html"><strong>Analog Inputs</strong></a> <span class="meta">Use analog readings as the live data shown on the OLED.</span></li><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">Display real temperature and humidity values instead of a potentiometer value.</span></li></ul>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>
