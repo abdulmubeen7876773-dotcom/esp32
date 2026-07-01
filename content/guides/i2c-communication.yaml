@@ -1,0 +1,434 @@
+{
+  "format": "mission",
+  "phase": 1,
+  "sort_order": 10,
+  "mission_number": 10,
+  "slug": "i2c-communication",
+  "title": "ESP32 I2C Communication Tutorial | ESP32 Engine",
+  "headline": "I2C Communication",
+  "meta_description": "Mission 10 - learn how ESP32 I2C communication works, use SDA and SCL, understand device addresses, and scan an OLED and BME280 on one bus.",
+  "lead": "I2C is the reason one ESP32 can talk to a display, a sensor, and other smart modules using the same two signal wires.",
+  "keywords": "ESP32 I2C tutorial, ESP32 SDA SCL, ESP32 I2C scanner, ESP32 OLED BME280 I2C, ESP32 GPIO21 GPIO22",
+  "proficiency_level": "Beginner",
+  "reading_time": "45-50 min",
+  "date_published": "2026-07-01",
+  "date_modified": "2026-07-01",
+  "academy": {
+    "mission_id": "Mission 10",
+    "level": "Foundation",
+    "prerequisites": [
+      {
+        "slug": "oled-display-esp32",
+        "title": "OLED Display with ESP32",
+        "description": "You should have wired an SSD1306 OLED to GPIO21 and GPIO22 before learning the bus behind it."
+      }
+    ],
+    "skills_learned": [
+      "Explain what a communication protocol is",
+      "Describe I2C in beginner-friendly language",
+      "Identify SDA, SCL, device address, controller, and peripheral roles",
+      "Wire an OLED and BME280 to the same ESP32 I2C bus",
+      "Run an I2C scanner sketch and interpret detected addresses"
+    ],
+    "components_required": [
+      "ESP32 DevKit",
+      "SSD1306 0.96 inch I2C OLED display",
+      "BME280 environmental sensor module",
+      "Breadboard",
+      "Jumper wires",
+      "USB data cable"
+    ],
+    "estimated_time": "45-50 min",
+    "difficulty": "Beginner",
+    "expected_outcome": "You will wire an OLED and BME280 to the same SDA/SCL pins, run an I2C scanner, and see their addresses printed in Serial Monitor.",
+    "mini_challenge": "Disconnect one I2C device, run the scanner again, and explain why one address disappears while the other remains.",
+    "previous_mission": {
+      "slug": "oled-display-esp32",
+      "title": "OLED Display with ESP32",
+      "description": "You used I2C pins to control a screen before learning how the bus works."
+    },
+    "next_mission": {
+      "title": "Mission 11 - Sensor Integration",
+      "description": "Next you will use I2C knowledge to read real BME280 sensor data and display useful values."
+    },
+    "unlocked_components": [
+      {
+        "title": "SSD1306 OLED Display",
+        "href": "/components/ssd1306-oled.html",
+        "description": "A common I2C display that usually appears at address 0x3C."
+      },
+      {
+        "title": "BME280 Environmental Sensor",
+        "href": "/components/bme280.html",
+        "description": "A smart I2C sensor that often appears at address 0x76 or 0x77."
+      },
+      {
+        "title": "ESP32 DevKit Board",
+        "href": "/components/esp32-devkit.html",
+        "description": "The ESP32 acts as the I2C controller using GPIO21 for SDA and GPIO22 for SCL."
+      }
+    ],
+    "unlocked_projects": [
+      {
+        "title": "ESP32 OLED Weather Clock",
+        "href": "/projects/esp32-oled-weather-clock.html",
+        "description": "A project that combines an I2C display with sensor readings."
+      },
+      {
+        "title": "ESP32 IoT Weather Station",
+        "href": "/projects/esp32-iot-weather-station.html",
+        "description": "Weather stations commonly use I2C sensors such as the BME280."
+      },
+      {
+        "title": "ESP32 Home Climate Automation",
+        "href": "/projects/esp32-home-climate-automation.html",
+        "description": "Smart climate projects depend on reliable sensor communication."
+      }
+    ],
+    "future_paths": [
+      {
+        "slug": "oled-display-esp32",
+        "title": "OLED Display with ESP32",
+        "description": "Review how the OLED used GPIO21 and GPIO22."
+      },
+      {
+        "slug": "read-temperature-dht22",
+        "title": "Read Temperature with DHT22",
+        "description": "Compare a one-wire style digital sensor with multi-device I2C communication."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "What is a communication protocol?",
+      "answer": "A communication protocol is an agreed set of rules for how devices send and receive information. Without a protocol, the ESP32 and a sensor would not know how to understand each other."
+    },
+    {
+      "question": "What does I2C mean?",
+      "answer": "I2C means Inter-Integrated Circuit. It is a two-wire communication bus used by many displays, sensors, clocks, memory chips, and small modules."
+    },
+    {
+      "question": "Which pins does ESP32 use for I2C?",
+      "answer": "A common ESP32 DevKit uses GPIO21 as SDA and GPIO22 as SCL by default. This mission uses those pins."
+    },
+    {
+      "question": "What is SDA?",
+      "answer": "SDA is the data line. It carries the bits that represent addresses, commands, and data."
+    },
+    {
+      "question": "What is SCL?",
+      "answer": "SCL is the clock line. It provides timing so devices know when each data bit should be read."
+    },
+    {
+      "question": "What is an I2C address?",
+      "answer": "An I2C address is a small number that identifies one device on the bus. The ESP32 sends the address first so only the selected device responds."
+    },
+    {
+      "question": "Why can multiple devices share SDA and SCL?",
+      "answer": "They can share the wires because each device listens for its own address. The ESP32 talks to one addressed device at a time."
+    },
+    {
+      "question": "What address does an SSD1306 OLED usually use?",
+      "answer": "Most SSD1306 0.96 inch OLED modules use 0x3C. Some use 0x3D."
+    },
+    {
+      "question": "What address does a BME280 usually use?",
+      "answer": "Many BME280 modules use 0x76 or 0x77 depending on the module wiring."
+    },
+    {
+      "question": "What is an I2C scanner?",
+      "answer": "An I2C scanner is a small sketch that tests addresses and prints the devices that answer. It is one of the best first debugging tools for I2C wiring."
+    },
+    {
+      "question": "Do I need pull-up resistors for I2C?",
+      "answer": "Yes, I2C needs pull-up resistors on SDA and SCL. Many breakout modules already include them, but long wires or many modules can still cause problems."
+    },
+    {
+      "question": "Can I use 5 V I2C modules with ESP32?",
+      "answer": "Be careful. ESP32 GPIO pins are 3.3 V pins. Use 3.3 V-compatible modules or a proper level shifter when needed."
+    },
+    {
+      "question": "Why does the scanner show no devices?",
+      "answer": "The most common causes are missing power, missing ground, swapped SDA/SCL, wrong pins, or a module that is not I2C."
+    },
+    {
+      "question": "Can two I2C devices have the same address?",
+      "answer": "Not on the same bus unless you use extra hardware such as an I2C multiplexer or can change one device address."
+    },
+    {
+      "question": "Is I2C good for long cables?",
+      "answer": "I2C is best for short connections on the same board or inside the same small device. Long wires can make the signals unreliable."
+    }
+  ],
+  "mission": {
+    "badge": "Mission 10",
+    "icon": "I2C",
+    "title": "Make ESP32 Talk to Smart Modules",
+    "story": "In Mission 09, the OLED worked because the ESP32 knew how to send instructions over two wires. That was I2C at work.\n\nNow you will slow down and learn the rule system behind that connection. Once I2C makes sense, displays, environmental sensors, clocks, expanders, and many other modules stop feeling mysterious.",
+    "eli12": "Imagine one teacher and several students sitting in the same classroom. The teacher calls a student's name before asking a question. Everyone hears the question, but only the student with that name answers.\n\nI2C works like that. The ESP32 speaks on shared wires, says an address, and the device with that address responds.",
+    "mission_goal": "Understand how I2C communication works and use an I2C scanner to find an OLED and BME280 connected to the same ESP32 bus.",
+    "learning_objectives": [
+      "Explain why microcontrollers need communication protocols.",
+      "Describe I2C as a shared two-wire bus.",
+      "Identify SDA, SCL, and device addresses.",
+      "Understand the common master/slave terms and the clearer controller/peripheral names.",
+      "Connect an SSD1306 OLED and BME280 to GPIO21 and GPIO22.",
+      "Run an I2C scanner and interpret the addresses it finds."
+    ],
+    "what_you_build": "- One ESP32 I2C bus using GPIO21 for SDA and GPIO22 for SCL.\n- An SSD1306 OLED and BME280 connected to the same two signal wires.\n- A scanner sketch that searches the bus and prints each detected address.\n- A practical debugging workflow for future I2C projects.",
+    "things_you_need": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Acts as the I2C controller",
+        "link": "/components/esp32-devkit.html",
+        "icon": "ESP32"
+      },
+      {
+        "item": "SSD1306 0.96 inch I2C OLED display",
+        "note": "Common I2C display, usually address 0x3C",
+        "link": "/components/ssd1306-oled.html",
+        "icon": "OLED"
+      },
+      {
+        "item": "BME280 sensor module",
+        "note": "I2C environmental sensor, usually address 0x76 or 0x77",
+        "link": "/components/bme280.html",
+        "icon": "BME"
+      },
+      {
+        "item": "Breadboard and jumper wires",
+        "note": "Connect shared power, ground, SDA, and SCL",
+        "icon": "WIRE"
+      },
+      {
+        "item": "USB data cable",
+        "note": "Upload the scanner and read Serial Monitor",
+        "icon": "USB"
+      }
+    ],
+    "safety": [
+      {
+        "text": "Unplug USB before adding or removing I2C modules."
+      },
+      {
+        "text": "Power the OLED and BME280 from 3.3 V for this mission."
+      },
+      {
+        "text": "Do not connect ESP32 GPIO21 or GPIO22 to 5 V logic."
+      },
+      {
+        "text": "Make sure every I2C module shares the ESP32 GND."
+      }
+    ],
+    "component_spotlight_lead": "I2C matters because it lets one ESP32 talk to several smart parts without using a separate pin for every signal.",
+    "concept": {
+      "title": "I2C Is a Shared Conversation Bus",
+      "illustration_alt": "ESP32 I2C bus with GPIO21 SDA and GPIO22 SCL shared by an SSD1306 OLED and BME280 sensor",
+      "body": "A protocol is a rulebook for communication. It defines who talks, when they talk, how bits are timed, and how the receiver knows the message is meant for it.\n\nI2C uses two signal wires. SDA carries data. SCL carries the clock. The ESP32 usually controls the conversation, and the connected modules respond when their address is called.\n\nOlder tutorials often say master and slave. You will still see those words in datasheets and library code. A clearer modern way to say the same idea is controller and peripheral. In this mission, the ESP32 is the controller. The OLED and BME280 are peripherals."
+    },
+    "engineering_explanation": "The ESP32 needs protocols because raw wires are not enough. A GPIO can be HIGH or LOW, but a display or sensor needs structured information: start here, send this address, write this command, read these bytes, stop now.\n\nI2C solves that with a bus. The bus is shared by all connected I2C devices. The controller pulls the clock line to create timing. The data line changes in sync with that clock. At the start of a transaction, the controller sends a device address. Only the peripheral with that address should respond.\n\nThis is why the OLED and BME280 can both use GPIO21 and GPIO22. They are not connected to private signal wires. They share the same bus, but they use different addresses. The OLED might answer at 0x3C, while the BME280 might answer at 0x76 or 0x77.\n\nI2C lines normally rest HIGH because of pull-up resistors. Devices communicate by pulling the lines LOW at the right times. Many modules already include pull-up resistors, which is why beginner circuits often work without adding extra resistors. But if the wires are long, the modules are many, or the pull-ups are missing, the bus can become unreliable.\n\nI2C is excellent for short, low-pin-count communication inside a project. It is not the best choice for long cables, very high speed, or devices that all have the same fixed address.",
+    "real_life_analogy": "Think of I2C like an apartment building intercom. Everyone is connected to the same intercom system, but the visitor presses one apartment number. Only that apartment should answer.\n\nSDA is the spoken message. SCL is the rhythm that keeps the message understandable, like a metronome.\n\nThe address is the apartment number. Without the address, every device would hear noise and nobody would know who should respond.",
+    "wiring": {
+      "illustration_alt": "ESP32 GPIO21 SDA and GPIO22 SCL connected in parallel to SSD1306 OLED and BME280, with both modules powered from 3.3 V and GND",
+      "steps": [
+        "Unplug the ESP32 USB cable before wiring.",
+        "Connect OLED VCC to ESP32 3.3 V.",
+        "Connect OLED GND to ESP32 GND.",
+        "Connect OLED SDA to ESP32 GPIO21.",
+        "Connect OLED SCL to ESP32 GPIO22.",
+        "Connect BME280 VIN or VCC to ESP32 3.3 V.",
+        "Connect BME280 GND to ESP32 GND.",
+        "Connect BME280 SDA to the same GPIO21 SDA row used by the OLED.",
+        "Connect BME280 SCL to the same GPIO22 SCL row used by the OLED.",
+        "Plug USB back in, upload the scanner sketch, and open Serial Monitor at 115200 baud."
+      ]
+    },
+    "gpio_table": [
+      {
+        "signal": "I2C SDA",
+        "esp32_pin": "GPIO21",
+        "mode": "I2C data",
+        "notes": "Shared by the OLED SDA pin and BME280 SDA pin."
+      },
+      {
+        "signal": "I2C SCL",
+        "esp32_pin": "GPIO22",
+        "mode": "I2C clock",
+        "notes": "Shared by the OLED SCL pin and BME280 SCL pin."
+      },
+      {
+        "signal": "OLED power",
+        "esp32_pin": "3V3 and GND",
+        "mode": "Power",
+        "notes": "Powers the SSD1306 OLED module."
+      },
+      {
+        "signal": "BME280 power",
+        "esp32_pin": "3V3 and GND",
+        "mode": "Power",
+        "notes": "Powers the BME280 sensor module."
+      },
+      {
+        "signal": "Serial debug",
+        "esp32_pin": "USB",
+        "mode": "Serial",
+        "notes": "Prints detected I2C addresses in Serial Monitor."
+      }
+    ],
+    "code": {
+      "filename": "i2c_scanner_esp32.ino",
+      "notes": "- This is the complete Mission 10 scanner sketch.\n- It uses only the built-in Wire library.\n- GPIO21 is SDA and GPIO22 is SCL.\n- Run this before larger OLED or BME280 programs to prove the bus is wired correctly.",
+      "content": "#include <Wire.h>\n\nconst int I2C_SDA = 21;\nconst int I2C_SCL = 22;\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n\n  Wire.begin(I2C_SDA, I2C_SCL);\n\n  Serial.println(\"Mission 10: ESP32 I2C scanner\");\n  Serial.println(\"Scanning GPIO21 SDA and GPIO22 SCL...\");\n}\n\nvoid loop() {\n  byte foundDevices = 0;\n\n  for (byte address = 1; address < 127; address++) {\n    Wire.beginTransmission(address);\n    byte error = Wire.endTransmission();\n\n    if (error == 0) {\n      Serial.print(\"I2C device found at address 0x\");\n\n      if (address < 16) {\n        Serial.print(\"0\");\n      }\n\n      Serial.print(address, HEX);\n\n      if (address == 0x3C || address == 0x3D) {\n        Serial.print(\"  likely SSD1306 OLED\");\n      } else if (address == 0x76 || address == 0x77) {\n        Serial.print(\"  likely BME280\");\n      }\n\n      Serial.println();\n      foundDevices++;\n    }\n  }\n\n  if (foundDevices == 0) {\n    Serial.println(\"No I2C devices found. Check power, ground, SDA, and SCL.\");\n  } else {\n    Serial.print(\"Scan complete. Devices found: \");\n    Serial.println(foundDevices);\n  }\n\n  Serial.println();\n  delay(5000);\n}\n"
+    },
+    "code_explanation": [
+      {
+        "text": "Wire.h gives the ESP32 Arduino core its I2C functions."
+      },
+      {
+        "text": "I2C_SDA is set to GPIO21, the default ESP32 SDA pin used in this mission."
+      },
+      {
+        "text": "I2C_SCL is set to GPIO22, the default ESP32 SCL pin used in this mission."
+      },
+      {
+        "text": "Serial.begin(115200) starts Serial Monitor so you can see the scan results."
+      },
+      {
+        "text": "Wire.begin(I2C_SDA, I2C_SCL) starts the I2C bus on the selected ESP32 pins."
+      },
+      {
+        "text": "The for loop tests every normal 7-bit I2C address from 1 to 126."
+      },
+      {
+        "text": "Wire.beginTransmission(address) prepares a message to one possible address."
+      },
+      {
+        "text": "Wire.endTransmission() sends the address and returns an error code."
+      },
+      {
+        "text": "If the error code is 0, a device answered at that address."
+      },
+      {
+        "text": "The sketch labels common OLED addresses, 0x3C and 0x3D, and common BME280 addresses, 0x76 and 0x77."
+      }
+    ],
+    "expected_output": "With an SSD1306 OLED and BME280 connected correctly, Serial Monitor may show:\n\nMission 10: ESP32 I2C scanner\nScanning GPIO21 SDA and GPIO22 SCL...\nI2C device found at address 0x3C  likely SSD1306 OLED\nI2C device found at address 0x76  likely BME280\nScan complete. Devices found: 2\n\nYour exact addresses may differ. Some OLED modules use 0x3D. Some BME280 modules use 0x77.\n\nIf only one address appears, one device is probably wired correctly and the other needs checking. If no addresses appear, start with power, ground, SDA, and SCL.",
+    "common_mistakes": [
+      {
+        "problem": "Swapping SDA and SCL",
+        "cause": "The clock and data lines have different jobs.",
+        "fix": "Connect every SDA pin to GPIO21 and every SCL pin to GPIO22."
+      },
+      {
+        "problem": "Forgetting common ground",
+        "cause": "The ESP32 and modules need the same voltage reference.",
+        "fix": "Connect every module GND to ESP32 GND."
+      },
+      {
+        "problem": "Using a non-I2C OLED",
+        "cause": "Some displays use SPI and have more pins.",
+        "fix": "Use an SSD1306 I2C OLED with VCC, GND, SDA, and SCL pins for this mission."
+      },
+      {
+        "problem": "Expecting all BME280 modules to use the same address",
+        "cause": "Module boards can configure the address pin differently.",
+        "fix": "Accept 0x76 or 0x77 as normal BME280 addresses."
+      },
+      {
+        "problem": "Two devices share the same fixed address",
+        "cause": "I2C addresses must be unique on one bus.",
+        "fix": "Change one address if possible, or use an I2C multiplexer for advanced projects."
+      },
+      {
+        "problem": "Using long jumper wires",
+        "cause": "I2C is sensitive to wiring length, capacitance, and weak pull-ups.",
+        "fix": "Keep wires short for beginner breadboard projects."
+      },
+      {
+        "problem": "Thinking the scanner reads sensor data",
+        "cause": "The scanner only checks whether a device answers at an address.",
+        "fix": "Use the scanner for bus debugging, then use a device-specific library to read real data."
+      },
+      {
+        "problem": "Ignoring address output",
+        "cause": "Copying a tutorial address without checking the real module can cause blank screens or failed sensors.",
+        "fix": "Run the scanner and use the address your hardware reports."
+      }
+    ],
+    "common_problems": [
+      {
+        "problem": "Scanner prints no devices",
+        "cause": "Power, ground, SDA, SCL, or pin selection is wrong.",
+        "fix": "Check 3.3 V, GND, GPIO21, GPIO22, and make sure Wire.begin(21, 22) is used."
+      },
+      {
+        "problem": "Only OLED address appears",
+        "cause": "The BME280 may be unpowered, wired incorrectly, or not really a BME280.",
+        "fix": "Check the BME280 VIN/VCC, GND, SDA, SCL, and module label."
+      },
+      {
+        "problem": "Only BME280 address appears",
+        "cause": "The OLED may have swapped SDA/SCL, wrong power, or a damaged connection.",
+        "fix": "Check OLED VCC, GND, SDA to GPIO21, and SCL to GPIO22."
+      },
+      {
+        "problem": "Addresses appear sometimes but disappear later",
+        "cause": "Loose breadboard wires, long wires, or weak pull-ups can make the bus unstable.",
+        "fix": "Shorten wires, reseat jumpers, and test one module at a time."
+      },
+      {
+        "problem": "Code uploads but Serial Monitor shows unreadable text",
+        "cause": "Serial Monitor baud rate does not match the sketch.",
+        "fix": "Set Serial Monitor to 115200 baud."
+      }
+    ],
+    "engineer_tip": "Before debugging a complex display or sensor program, run an I2C scanner. It separates wiring problems from code problems. If the scanner cannot see the device, a bigger library example will not fix the hardware connection.",
+    "remember_forever": "I2C is not many private conversations.\n\nIt is one shared conversation where each device answers only when its address is called.",
+    "challenge_items": [
+      {
+        "icon": "ONE",
+        "text": "Run the scanner with only the OLED connected and write down the address."
+      },
+      {
+        "icon": "TWO",
+        "text": "Add the BME280 to the same SDA and SCL wires, then confirm the scanner finds two addresses."
+      },
+      {
+        "icon": "SWAP",
+        "text": "With USB unplugged, intentionally swap SDA and SCL on one module, then predict what the scanner will show before testing."
+      },
+      {
+        "icon": "ADDR",
+        "text": "Find whether your BME280 reports 0x76 or 0x77 and save that value for the next mission."
+      },
+      {
+        "icon": "WHY",
+        "text": "Explain why two devices can share GPIO21 and GPIO22 but cannot share the same fixed address."
+      }
+    ],
+    "complete": {
+      "subtitle": "You now understand the shared bus behind many ESP32 modules.",
+      "summary": "You learned that I2C is a two-wire communication protocol. SDA carries data, SCL provides timing, and each device answers only when its address is called.\n\nYou also learned a practical debugging habit: run a scanner before blaming a library. When the ESP32 can see the OLED and BME280 addresses, you know the wiring and bus are alive. That makes future sensor and display projects much easier to debug.",
+      "skills": [
+        "Explain I2C communication",
+        "Use GPIO21 and GPIO22 for ESP32 I2C",
+        "Understand device addresses",
+        "Wire multiple I2C modules on one bus",
+        "Run and interpret an I2C scanner"
+      ]
+    },
+    "next_missions": [
+      {
+        "title": "Mission 11 - Sensor Integration",
+        "description": "Next you will use the BME280 address to read real temperature, humidity, and pressure data."
+      },
+      {
+        "slug": "oled-display-esp32",
+        "title": "Mission 09 - OLED Display with ESP32",
+        "description": "Review the display mission if SDA, SCL, or OLED addresses still feel unclear."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}

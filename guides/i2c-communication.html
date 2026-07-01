@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 I2C Communication Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 10 - learn how ESP32 I2C communication works, use SDA and SCL, understand device addresses, and scan an OLED and BME280 on one bus.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/i2c-communication.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 I2C Communication Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 10 - learn how ESP32 I2C communication works, use SDA and SCL, understand device addresses, and scan an OLED and BME280 on one bus.">
+<meta property="og:url" content="https://esp32engine.com/guides/i2c-communication.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 I2C Communication Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 10 - learn how ESP32 I2C communication works, use SDA and SCL, understand device addresses, and scan an OLED and BME280 on one bus.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"I2C Communication","description":"Mission 10 - learn how ESP32 I2C communication works, use SDA and SCL, understand device addresses, and scan an OLED and BME280 on one bus.","datePublished":"2026-07-01","dateModified":"2026-07-01","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/i2c-communication.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 I2C tutorial, ESP32 SDA SCL, ESP32 I2C scanner, ESP32 OLED BME280 I2C, ESP32 GPIO21 GPIO22"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"I2C Communication","item":"https://esp32engine.com/guides/i2c-communication.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a communication protocol?","acceptedAnswer":{"@type":"Answer","text":"A communication protocol is an agreed set of rules for how devices send and receive information. Without a protocol, the ESP32 and a sensor would not know how to understand each other."}},{"@type":"Question","name":"What does I2C mean?","acceptedAnswer":{"@type":"Answer","text":"I2C means Inter-Integrated Circuit. It is a two-wire communication bus used by many displays, sensors, clocks, memory chips, and small modules."}},{"@type":"Question","name":"Which pins does ESP32 use for I2C?","acceptedAnswer":{"@type":"Answer","text":"A common ESP32 DevKit uses GPIO21 as SDA and GPIO22 as SCL by default. This mission uses those pins."}},{"@type":"Question","name":"What is SDA?","acceptedAnswer":{"@type":"Answer","text":"SDA is the data line. It carries the bits that represent addresses, commands, and data."}},{"@type":"Question","name":"What is SCL?","acceptedAnswer":{"@type":"Answer","text":"SCL is the clock line. It provides timing so devices know when each data bit should be read."}},{"@type":"Question","name":"What is an I2C address?","acceptedAnswer":{"@type":"Answer","text":"An I2C address is a small number that identifies one device on the bus. The ESP32 sends the address first so only the selected device responds."}},{"@type":"Question","name":"Why can multiple devices share SDA and SCL?","acceptedAnswer":{"@type":"Answer","text":"They can share the wires because each device listens for its own address. The ESP32 talks to one addressed device at a time."}},{"@type":"Question","name":"What address does an SSD1306 OLED usually use?","acceptedAnswer":{"@type":"Answer","text":"Most SSD1306 0.96 inch OLED modules use 0x3C. Some use 0x3D."}},{"@type":"Question","name":"What address does a BME280 usually use?","acceptedAnswer":{"@type":"Answer","text":"Many BME280 modules use 0x76 or 0x77 depending on the module wiring."}},{"@type":"Question","name":"What is an I2C scanner?","acceptedAnswer":{"@type":"Answer","text":"An I2C scanner is a small sketch that tests addresses and prints the devices that answer. It is one of the best first debugging tools for I2C wiring."}},{"@type":"Question","name":"Do I need pull-up resistors for I2C?","acceptedAnswer":{"@type":"Answer","text":"Yes, I2C needs pull-up resistors on SDA and SCL. Many breakout modules already include them, but long wires or many modules can still cause problems."}},{"@type":"Question","name":"Can I use 5 V I2C modules with ESP32?","acceptedAnswer":{"@type":"Answer","text":"Be careful. ESP32 GPIO pins are 3.3 V pins. Use 3.3 V-compatible modules or a proper level shifter when needed."}},{"@type":"Question","name":"Why does the scanner show no devices?","acceptedAnswer":{"@type":"Answer","text":"The most common causes are missing power, missing ground, swapped SDA/SCL, wrong pins, or a module that is not I2C."}},{"@type":"Question","name":"Can two I2C devices have the same address?","acceptedAnswer":{"@type":"Answer","text":"Not on the same bus unless you use extra hardware such as an I2C multiplexer or can change one device address."}},{"@type":"Question","name":"Is I2C good for long cables?","acceptedAnswer":{"@type":"Answer","text":"I2C is best for short connections on the same board or inside the same small device. Long wires can make the signals unreliable."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">I2C Communication</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">I2C Communication</h1>
+      <p class="article-lead mission-hero-lead">I2C is the reason one ESP32 can talk to a display, a sensor, and other smart modules using the same two signal wires.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 10</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">45-50 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">I2C</span>
+  <span class="mission-card-badge">Mission 10</span>
+  <h2 class="mission-card-title">Make ESP32 Talk to Smart Modules</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>In Mission 09, the OLED worked because the ESP32 knew how to send instructions over two wires. That was I2C at work.</p><p>Now you will slow down and learn the rule system behind that connection. Once I2C makes sense, displays, environmental sensors, clocks, expanders, and many other modules stop feeling mysterious.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>Imagine one teacher and several students sitting in the same classroom. The teacher calls a student&#x27;s name before asking a question. Everyone hears the question, but only the student with that name answers.</p><p>I2C works like that. The ESP32 speaks on shared wires, says an address, and the device with that address responds.</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">GOAL</span><span class="mission-section-title">Mission Goal</span></h2>
+  <div class="mission-build-panel"><p>Understand how I2C communication works and use an I2C scanner to find an OLED and BME280 connected to the same ESP32 bus.</p></div>
+</section>
+<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
+  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">TIME</span><span class="mission-section-title">Estimated Time</span></h2>
+  <div class="mission-prose"><p>45-50 min</p></div>
+</section>
+<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
+  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">LEVEL</span><span class="mission-section-title">Difficulty</span></h2>
+  <div class="mission-prose"><p>Beginner</p></div>
+</section>
+<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">PRE</span><span class="mission-section-title">Prerequisites</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/oled-display-esp32.html"><strong>OLED Display with ESP32</strong></a> <span class="meta">You should have wired an SSD1306 OLED to GPIO21 and GPIO22 before learning the bus behind it.</span></li></ul>
+</section>
+<section class="mission-section" id="skills" aria-labelledby="skills-heading">
+  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">SKILL</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <ul class="mission-bullets"><li>Explain what a communication protocol is</li><li>Describe I2C in beginner-friendly language</li><li>Identify SDA, SCL, device address, controller, and peripheral roles</li><li>Wire an OLED and BME280 to the same ESP32 I2C bus</li><li>Run an I2C scanner sketch and interpret detected addresses</li></ul>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Components Required</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Acts as the I2C controller</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">OLED</span><span class="mission-thing-body"><a href="/components/ssd1306-oled.html" class="mission-thing-name">SSD1306 0.96 inch I2C OLED display</a><span class="mission-thing-note">Common I2C display, usually address 0x3C</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BME</span><span class="mission-thing-body"><a href="/components/bme280.html" class="mission-thing-name">BME280 sensor module</a><span class="mission-thing-note">I2C environmental sensor, usually address 0x76 or 0x77</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard and jumper wires</span><span class="mission-thing-note">Connect shared power, ground, SDA, and SCL</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload the scanner and read Serial Monitor</span></span></li></ul>
+</section>
+<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">ENG</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <div class="mission-prose"><p>The ESP32 needs protocols because raw wires are not enough. A GPIO can be HIGH or LOW, but a display or sensor needs structured information: start here, send this address, write this command, read these bytes, stop now.</p><p>I2C solves that with a bus. The bus is shared by all connected I2C devices. The controller pulls the clock line to create timing. The data line changes in sync with that clock. At the start of a transaction, the controller sends a device address. Only the peripheral with that address should respond.</p><p>This is why the OLED and BME280 can both use GPIO21 and GPIO22. They are not connected to private signal wires. They share the same bus, but they use different addresses. The OLED might answer at 0x3C, while the BME280 might answer at 0x76 or 0x77.</p><p>I2C lines normally rest HIGH because of pull-up resistors. Devices communicate by pulling the lines LOW at the right times. Many modules already include pull-up resistors, which is why beginner circuits often work without adding extra resistors. But if the wires are long, the modules are many, or the pull-ups are missing, the bus can become unreliable.</p><p>I2C is excellent for short, low-pin-count communication inside a project. It is not the best choice for long cables, very high speed, or devices that all have the same fixed address.</p></div>
+</section>
+<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
+  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">REAL</span><span class="mission-section-title">Real-World Analogy</span></h2>
+  <div class="mission-prose"><p>Think of I2C like an apartment building intercom. Everyone is connected to the same intercom system, but the visitor presses one apartment number. Only that apartment should answer.</p><p>SDA is the spoken message. SCL is the rhythm that keeps the message understandable, like a metronome.</p><p>The address is the apartment number. Without the address, every device would hear noise and nobody would know who should respond.</p></div>
+</section>
+
+
+
+
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">WIRE</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="ESP32 GPIO21 SDA and GPIO22 SCL connected in parallel to SSD1306 OLED and BME280, with both modules powered from 3.3 V and GND">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">WIRE</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32 GPIO21 SDA and GPIO22 SCL connected in parallel to SSD1306 OLED and BME280, with both modules powered from 3.3 V and GND</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Connect OLED VCC to ESP32 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect OLED GND to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect OLED SDA to ESP32 GPIO21.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Connect OLED SCL to ESP32 GPIO22.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Connect BME280 VIN or VCC to ESP32 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Connect BME280 GND to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">8</span>
+    <p class="mission-step-text">Connect BME280 SDA to the same GPIO21 SDA row used by the OLED.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">9</span>
+    <p class="mission-step-text">Connect BME280 SCL to the same GPIO22 SCL row used by the OLED.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">10</span>
+    <p class="mission-step-text">Plug USB back in, upload the scanner sketch, and open Serial Monitor at 115200 baud.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
+  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>I2C SDA</td><td>GPIO21</td><td>I2C data</td><td>Shared by the OLED SDA pin and BME280 SDA pin.</td></tr><tr><td>I2C SCL</td><td>GPIO22</td><td>I2C clock</td><td>Shared by the OLED SCL pin and BME280 SCL pin.</td></tr><tr><td>OLED power</td><td>3V3 and GND</td><td>Power</td><td>Powers the SSD1306 OLED module.</td></tr><tr><td>BME280 power</td><td>3V3 and GND</td><td>Power</td><td>Powers the BME280 sensor module.</td></tr><tr><td>Serial debug</td><td>USB</td><td>Serial</td><td>Prints detected I2C addresses in Serial Monitor.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">i2c_scanner_esp32.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-pre">#include &lt;Wire.h&gt;</span>
+
+const <span class="tok-kw">int</span> I2C_SDA = <span class="tok-num">21</span>;
+const <span class="tok-kw">int</span> I2C_SCL = <span class="tok-num">22</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+
+  Wire.<span class="tok-fn">begin</span>(I2C_SDA, I2C_SCL);
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">10</span>: ESP32 I2C scanner&quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Scanning GPIO21 SDA and GPIO22 SCL...&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">byte</span> foundDevices = <span class="tok-num">0</span>;
+
+  <span class="tok-kw">for</span> (<span class="tok-kw">byte</span> address = <span class="tok-num">1</span>; address &lt; <span class="tok-num">127</span>; address++) {
+    Wire.beginTransmission(address);
+    <span class="tok-kw">byte</span> error = Wire.endTransmission();
+
+    <span class="tok-kw">if</span> (error == <span class="tok-num">0</span>) {
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;I2C device found at address 0x&quot;);
+
+      <span class="tok-kw">if</span> (address &lt; <span class="tok-num">16</span>) {
+        <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;<span class="tok-num">0</span>&quot;);
+      }
+
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(address, HEX);
+
+      <span class="tok-kw">if</span> (address == 0x3C || address == 0x3D) {
+        <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;  likely SSD1306 OLED&quot;);
+      } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (address == 0x76 || address == 0x77) {
+        <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;  likely BME280&quot;);
+      }
+
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>();
+      foundDevices++;
+    }
+  }
+
+  <span class="tok-kw">if</span> (foundDevices == <span class="tok-num">0</span>) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;No I2C devices found. Check power, ground, SDA, and SCL.&quot;);
+  } <span class="tok-kw">else</span> {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Scan complete. Devices found: &quot;);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(foundDevices);
+  }
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>();
+  <span class="tok-fn">delay</span>(<span class="tok-num">5000</span>);
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>With an SSD1306 OLED and BME280 connected correctly, Serial Monitor may show:</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>This is the complete Mission 10 scanner sketch.</li><li>It uses only the built-in Wire library.</li><li>GPIO21 is SDA and GPIO22 is SCL.</li><li>Run this before larger OLED or BME280 programs to prove the bus is wired correctly.</li></ul></div>
+</section>
+<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">CODE</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
+  <ul class="mission-bullets"><li>Wire.h gives the ESP32 Arduino core its I2C functions.</li><li>I2C_SDA is set to GPIO21, the default ESP32 SDA pin used in this mission.</li><li>I2C_SCL is set to GPIO22, the default ESP32 SCL pin used in this mission.</li><li>Serial.begin(115200) starts Serial Monitor so you can see the scan results.</li><li>Wire.begin(I2C_SDA, I2C_SCL) starts the I2C bus on the selected ESP32 pins.</li><li>The for loop tests every normal 7-bit I2C address from 1 to 126.</li><li>Wire.beginTransmission(address) prepares a message to one possible address.</li><li>Wire.endTransmission() sends the address and returns an error code.</li><li>If the error code is 0, a device answered at that address.</li><li>The sketch labels common OLED addresses, 0x3C and 0x3D, and common BME280 addresses, 0x76 and 0x77.</li></ul>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">OUT</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>With an SSD1306 OLED and BME280 connected correctly, Serial Monitor may show:</p><p>Mission 10: ESP32 I2C scanner
+Scanning GPIO21 SDA and GPIO22 SCL...
+I2C device found at address 0x3C  likely SSD1306 OLED
+I2C device found at address 0x76  likely BME280
+Scan complete. Devices found: 2</p><p>Your exact addresses may differ. Some OLED modules use 0x3D. Some BME280 modules use 0x77.</p><p>If only one address appears, one device is probably wired correctly and the other needs checking. If no addresses appear, start with power, ground, SDA, and SCL.</p></div>
+</section>
+
+<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">WARN</span><span class="mission-section-title">Common Mistakes</span></h2>
+  <ul class="mission-bullets"><li><h3>Swapping SDA and SCL</h3><p>The clock and data lines have different jobs.</p></li><li><h3>Forgetting common ground</h3><p>The ESP32 and modules need the same voltage reference.</p></li><li><h3>Using a non-I2C OLED</h3><p>Some displays use SPI and have more pins.</p></li><li><h3>Expecting all BME280 modules to use the same address</h3><p>Module boards can configure the address pin differently.</p></li><li><h3>Two devices share the same fixed address</h3><p>I2C addresses must be unique on one bus.</p></li><li><h3>Using long jumper wires</h3><p>I2C is sensitive to wiring length, capacitance, and weak pull-ups.</p></li><li><h3>Thinking the scanner reads sensor data</h3><p>The scanner only checks whether a device answers at an address.</p></li><li><h3>Ignoring address output</h3><p>Copying a tutorial address without checking the real module can cause blank screens or failed sensors.</p></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>Scanner prints no devices</h3><p><strong>Likely cause:</strong> Power, ground, SDA, SCL, or pin selection is wrong.</p><p><strong>Fix:</strong> Check 3.3 V, GND, GPIO21, GPIO22, and make sure Wire.begin(21, 22) is used.</p></li><li><h3>Only OLED address appears</h3><p><strong>Likely cause:</strong> The BME280 may be unpowered, wired incorrectly, or not really a BME280.</p><p><strong>Fix:</strong> Check the BME280 VIN/VCC, GND, SDA, SCL, and module label.</p></li><li><h3>Only BME280 address appears</h3><p><strong>Likely cause:</strong> The OLED may have swapped SDA/SCL, wrong power, or a damaged connection.</p><p><strong>Fix:</strong> Check OLED VCC, GND, SDA to GPIO21, and SCL to GPIO22.</p></li><li><h3>Addresses appear sometimes but disappear later</h3><p><strong>Likely cause:</strong> Loose breadboard wires, long wires, or weak pull-ups can make the bus unstable.</p><p><strong>Fix:</strong> Shorten wires, reseat jumpers, and test one module at a time.</p></li><li><h3>Code uploads but Serial Monitor shows unreadable text</h3><p><strong>Likely cause:</strong> Serial Monitor baud rate does not match the sketch.</p><p><strong>Fix:</strong> Set Serial Monitor to 115200 baud.</p></li></ul>
+</section>
+<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
+  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">TIP</span><span class="mission-section-title">Engineer Tip</span></h2>
+  <div class="mission-prose"><p>Before debugging a complex display or sensor program, run an I2C scanner. It separates wiring problems from code problems. If the scanner cannot see the device, a bigger library example will not fix the hardware connection.</p></div>
+</section>
+<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">REM</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <div class="mission-build-panel"><p>I2C is not many private conversations.</p><p>It is one shared conversation where each device answers only when its address is called.</p></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">ONE</span><span class="mission-challenge-text">Run the scanner with only the OLED connected and write down the address.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">TWO</span><span class="mission-challenge-text">Add the BME280 to the same SDA and SCL wires, then confirm the scanner finds two addresses.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">SWAP</span><span class="mission-challenge-text">With USB unplugged, intentionally swap SDA and SCL on one module, then predict what the scanner will show before testing.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">ADDR</span><span class="mission-challenge-text">Find whether your BME280 reports 0x76 or 0x77 and save that value for the next mission.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">WHY</span><span class="mission-challenge-text">Explain why two devices can share GPIO21 and GPIO22 but cannot share the same fixed address.</span></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>What is a communication protocol?</h3><p>A communication protocol is an agreed set of rules for how devices send and receive information. Without a protocol, the ESP32 and a sensor would not know how to understand each other.</p></li><li><h3>What does I2C mean?</h3><p>I2C means Inter-Integrated Circuit. It is a two-wire communication bus used by many displays, sensors, clocks, memory chips, and small modules.</p></li><li><h3>Which pins does ESP32 use for I2C?</h3><p>A common ESP32 DevKit uses GPIO21 as SDA and GPIO22 as SCL by default. This mission uses those pins.</p></li><li><h3>What is SDA?</h3><p>SDA is the data line. It carries the bits that represent addresses, commands, and data.</p></li><li><h3>What is SCL?</h3><p>SCL is the clock line. It provides timing so devices know when each data bit should be read.</p></li><li><h3>What is an I2C address?</h3><p>An I2C address is a small number that identifies one device on the bus. The ESP32 sends the address first so only the selected device responds.</p></li><li><h3>Why can multiple devices share SDA and SCL?</h3><p>They can share the wires because each device listens for its own address. The ESP32 talks to one addressed device at a time.</p></li><li><h3>What address does an SSD1306 OLED usually use?</h3><p>Most SSD1306 0.96 inch OLED modules use 0x3C. Some use 0x3D.</p></li><li><h3>What address does a BME280 usually use?</h3><p>Many BME280 modules use 0x76 or 0x77 depending on the module wiring.</p></li><li><h3>What is an I2C scanner?</h3><p>An I2C scanner is a small sketch that tests addresses and prints the devices that answer. It is one of the best first debugging tools for I2C wiring.</p></li><li><h3>Do I need pull-up resistors for I2C?</h3><p>Yes, I2C needs pull-up resistors on SDA and SCL. Many breakout modules already include them, but long wires or many modules can still cause problems.</p></li><li><h3>Can I use 5 V I2C modules with ESP32?</h3><p>Be careful. ESP32 GPIO pins are 3.3 V pins. Use 3.3 V-compatible modules or a proper level shifter when needed.</p></li><li><h3>Why does the scanner show no devices?</h3><p>The most common causes are missing power, missing ground, swapped SDA/SCL, wrong pins, or a module that is not I2C.</p></li><li><h3>Can two I2C devices have the same address?</h3><p>Not on the same bus unless you use extra hardware such as an I2C multiplexer or can change one device address.</p></li><li><h3>Is I2C good for long cables?</h3><p>I2C is best for short connections on the same board or inside the same small device. Long wires can make the signals unreliable.</p></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Related Components</span></h2>
+  <ul class="guide-related-list"><li><a href="/components/ssd1306-oled.html"><strong>SSD1306 OLED Display</strong></a> <span class="meta">A common I2C display that usually appears at address 0x3C.</span></li><li><a href="/components/bme280.html"><strong>BME280 Environmental Sensor</strong></a> <span class="meta">A smart I2C sensor that often appears at address 0x76 or 0x77.</span></li><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The ESP32 acts as the I2C controller using GPIO21 for SDA and GPIO22 for SCL.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">PROJ</span><span class="mission-section-title">Related Projects</span></h2>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-oled-weather-clock.html"><strong>ESP32 OLED Weather Clock</strong></a> <span class="meta">A project that combines an I2C display with sensor readings.</span></li><li><a href="/projects/esp32-iot-weather-station.html"><strong>ESP32 IoT Weather Station</strong></a> <span class="meta">Weather stations commonly use I2C sensors such as the BME280.</span></li><li><a href="/projects/esp32-home-climate-automation.html"><strong>ESP32 Home Climate Automation</strong></a> <span class="meta">Smart climate projects depend on reliable sensor communication.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
+  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">PREV</span><span class="mission-section-title">Previous Mission</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/oled-display-esp32.html"><strong>OLED Display with ESP32</strong></a> <span class="meta">You used I2C pins to control a screen before learning how the bus works.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
+  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Next Mission</span></h2>
+  <ul class="guide-related-list"><li><strong>Mission 11 - Sensor Integration</strong> <span class="meta">Next you will use I2C knowledge to read real BME280 sensor data and display useful values.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Continue Learning</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/oled-display-esp32.html"><strong>OLED Display with ESP32</strong></a> <span class="meta">Review how the OLED used GPIO21 and GPIO22.</span></li><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">Compare a one-wire style digital sensor with multi-device I2C communication.</span></li></ul>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>
