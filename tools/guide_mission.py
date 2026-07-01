@@ -628,6 +628,7 @@ def render_mission_guide(guide: dict) -> str:
 </section>"""
     engineering_html = mission_prose_section("engineering", "ENG", "Engineering Explanation", m.get("engineering_explanation", ""))
     analogy_html = mission_prose_section("analogy", "REAL", "Real-Life Analogy", m.get("real_life_analogy", ""))
+    engineer_tip_html = mission_prose_section("engineer-tip", "TIP", "Engineer Tip", m.get("engineer_tip", ""))
     floating_recap_html = mission_prose_section("floating-recap", "RECAP", "Floating Pin Recap", m.get("floating_pin_recap", ""))
     internal_resistor_html = mission_prose_section("internal-resistor", "INT", "Internal Pull-Up Resistor", m.get("internal_resistor_explanation", ""))
     external_resistor_html = mission_prose_section("external-resistor", "EXT", "External Pull-Up and Pull-Down Resistors", m.get("external_resistor_explanation", ""))
@@ -700,6 +701,7 @@ def render_mission_guide(guide: dict) -> str:
 {concept_html}
 {engineering_html}
 {analogy_html}
+{engineer_tip_html}
 {floating_recap_html}
 {internal_resistor_html}
 {external_resistor_html}
