@@ -1,0 +1,405 @@
+{
+  "format": "mission",
+  "phase": 1,
+  "sort_order": 6,
+  "mission_number": 6,
+  "slug": "multiple-buttons-state-detection",
+  "title": "ESP32 Multiple Buttons and State Detection Tutorial | ESP32 Engine",
+  "headline": "Multiple Buttons & State Detection",
+  "meta_description": "Mission 06 - learn how to read multiple ESP32 buttons, track button states, detect press and release events, and avoid repeated triggers.",
+  "lead": "One debounced button is useful. Real projects often need several buttons, and each one needs its own clean state, timing, and purpose.",
+  "keywords": "ESP32 multiple buttons, ESP32 button state detection, Arduino multiple button debounce, ESP32 press release detection, ESP32 button events",
+  "proficiency_level": "Beginner",
+  "reading_time": "25-30 min",
+  "date_published": "2026-07-01",
+  "date_modified": "2026-07-01",
+  "academy": {
+    "mission_id": "Mission 06",
+    "level": "Foundation",
+    "prerequisites": [
+      {
+        "slug": "debouncing-buttons",
+        "title": "Button Debouncing",
+        "description": "You should understand how one button becomes one clean software event."
+      }
+    ],
+    "skills_learned": [
+      "Read more than one button without mixing up the inputs",
+      "Give every button its own pin, name, state, and debounce timer",
+      "Detect the difference between held state and new press event",
+      "Handle press and release actions separately",
+      "Use arrays and small helper functions to keep button code organized"
+    ],
+    "components_required": [
+      "ESP32 DevKit",
+      "Three push buttons",
+      "Breadboard",
+      "Jumper wires",
+      "USB data cable"
+    ],
+    "estimated_time": "25-30 min",
+    "difficulty": "Beginner",
+    "expected_outcome": "You will build a three-button input panel that reports exactly which button was pressed or released without repeated triggers.",
+    "mini_challenge": "Add a fourth button, give it a clear name, and make Serial Monitor report it without duplicating large blocks of code.",
+    "previous_mission": {
+      "slug": "debouncing-buttons",
+      "title": "Button Debouncing",
+      "description": "You learned how to count one clean press from one mechanical button."
+    },
+    "next_mission": {
+      "title": "Mission 07 - PWM Fundamentals",
+      "description": "Next you will use reliable button events to control output strength instead of only ON and OFF."
+    },
+    "unlocked_components": [
+      {
+        "title": "ESP32 DevKit Board",
+        "href": "/components/esp32-devkit.html",
+        "description": "The ESP32 reads several GPIO pins and remembers a separate state for each one."
+      },
+      {
+        "title": "Relay Module",
+        "href": "/components/relay-module.html",
+        "description": "Manual relay panels often use several debounced buttons for ON, OFF, and mode control."
+      },
+      {
+        "title": "PIR Motion Sensor",
+        "href": "/components/pir-sensor.html",
+        "description": "Sensor inputs use the same idea of current state versus changed event."
+      }
+    ],
+    "unlocked_projects": [
+      {
+        "title": "ESP32 Smart Door Lock",
+        "href": "/projects/esp32-smart-door-lock.html",
+        "description": "Door locks need clean state logic for enter, reset, and manual unlock buttons."
+      },
+      {
+        "title": "ESP32 WiFi Robot Controller",
+        "href": "/projects/esp32-wifi-robot-controller.html",
+        "description": "Robot controls depend on several commands being tracked without mixing them up."
+      },
+      {
+        "title": "ESP32 Learning Trainer Board",
+        "href": "/projects/esp32-learning-trainer.html",
+        "description": "A trainer board is ideal for practicing multiple buttons, LEDs, and modes."
+      }
+    ],
+    "future_paths": [
+      {
+        "slug": "debouncing-buttons",
+        "title": "Button Debouncing",
+        "description": "Review the one-button version before expanding the pattern to several inputs."
+      },
+      {
+        "slug": "button-led-control",
+        "title": "Button Controls LED with ESP32",
+        "description": "Compare simple held-button logic with event-based multi-button logic."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "Can two buttons share one GPIO pin?",
+      "answer": "Not if you want to know which button was pressed. Each normal button should use its own GPIO pin so the ESP32 can read it independently."
+    },
+    {
+      "question": "Do I need separate debounce timing for each button?",
+      "answer": "Yes. Each mechanical button bounces on its own schedule, so each button needs its own last reading, stable state, and change time."
+    },
+    {
+      "question": "Will pressing two buttons at once damage the ESP32?",
+      "answer": "No. With the INPUT_PULLUP wiring in this mission, pressing two buttons at once is safe. Your code simply needs to decide how to respond."
+    },
+    {
+      "question": "Is reading multiple buttons much slower than reading one?",
+      "answer": "No. Reading a few GPIO pins takes a tiny amount of time. The bigger challenge is keeping the code organized and the states separate."
+    },
+    {
+      "question": "What is the difference between button state and button event?",
+      "answer": "State means what the button is doing right now, such as pressed or released. Event means something just changed, such as a new press or a new release."
+    },
+    {
+      "question": "Why does my code trigger again while I hold the button?",
+      "answer": "That usually happens when the code reacts to the current pressed state every loop instead of reacting only to the moment the state changes."
+    },
+    {
+      "question": "Can I copy the same debounce code three times?",
+      "answer": "You can, but it becomes easy to make mistakes. Arrays and a small helper function keep the same logic consistent for every button."
+    },
+    {
+      "question": "Should all buttons use INPUT_PULLUP?",
+      "answer": "For beginner projects, yes. Keeping all buttons wired the same way reduces confusion because released means HIGH and pressed means LOW for every button."
+    },
+    {
+      "question": "What happens if I mix up the wire order?",
+      "answer": "The wrong button name will appear in Serial Monitor or the wrong action will run. Label your pins and test one button at a time."
+    },
+    {
+      "question": "Can I detect both press and release?",
+      "answer": "Yes. A press event happens when the debounced state changes to LOW. A release event happens when it changes back to HIGH."
+    },
+    {
+      "question": "Why use arrays for buttons?",
+      "answer": "Arrays let one piece of code handle several buttons. Instead of writing the same logic over and over, the loop can check each button by index."
+    },
+    {
+      "question": "Do I need interrupts for multiple buttons?",
+      "answer": "No. For beginner button panels, checking the buttons in loop() is simpler, reliable, and easier to debug."
+    },
+    {
+      "question": "What if two buttons are pressed at exactly the same time?",
+      "answer": "The ESP32 can detect both. Your program should define what that means, such as allowing both actions or giving one action priority."
+    },
+    {
+      "question": "Why not use the same variable for every button?",
+      "answer": "One variable can only remember one thing at a time. If several buttons share the same state variable, one button can overwrite another button's information."
+    },
+    {
+      "question": "How should I name buttons in code?",
+      "answer": "Use names that describe purpose, such as START, STOP, and MODE, instead of vague names like btn1 and btn2."
+    }
+  ],
+  "mission": {
+    "badge": "Mission 06",
+    "icon": "3BTN",
+    "title": "Read Several Buttons Reliably",
+    "story": "Mission 05 taught your ESP32 to trust one button only after it settles. That is the foundation for real control panels.\n\nNow the project grows up. Instead of one button, you will read three buttons. Each button has its own pin, its own state, its own debounce timer, and its own meaning. The goal is not just to add more wires. The goal is to keep several inputs clean, separate, and predictable.",
+    "eli12": "Imagine a piano. Pressing one key does not move the other keys. Each key has its own job.\n\nESP32 buttons should work the same way. Button A, Button B, and Button C are separate little worlds. The ESP32 checks each one quickly, remembers what each one was doing before, and notices when one of them changes.\n\nThat change is the important part. A button being held down is a state. A button that just became pressed is an event.",
+    "mission_goal": "Build a three-button input panel that detects clean press and release events for each button without repeated triggers while the button is held.",
+    "learning_objectives": [
+      "Read multiple ESP32 GPIO inputs in one program.",
+      "Track separate raw readings, stable states, and debounce timers.",
+      "Explain the difference between current state and new event.",
+      "Detect press events and release events cleanly.",
+      "Use arrays to avoid messy copy-paste button code."
+    ],
+    "what_you_build": "- Three push buttons wired to GPIO25, GPIO26, and GPIO27.\n- INPUT_PULLUP wiring for all buttons.\n- A reusable debounce function that checks one button at a time.\n- Serial Monitor messages for press and release events.\n- A clean structure you can reuse for menus, games, robots, and control panels.",
+    "things_you_need": [
+      {
+        "item": "ESP32 DevKit board",
+        "note": "Reads three independent button inputs",
+        "link": "/components/esp32-devkit.html",
+        "icon": "ESP32"
+      },
+      {
+        "item": "Three push buttons",
+        "note": "Use the same type if possible",
+        "icon": "BTN"
+      },
+      {
+        "item": "Breadboard",
+        "note": "Keeps each button in its own rows",
+        "icon": "BOARD"
+      },
+      {
+        "item": "Jumper wires",
+        "note": "For GPIO25, GPIO26, GPIO27, and GND",
+        "icon": "WIRE"
+      },
+      {
+        "item": "USB data cable",
+        "note": "Upload code and watch Serial Monitor",
+        "icon": "USB"
+      }
+    ],
+    "safety": [
+      {
+        "text": "Unplug USB before moving button wires."
+      },
+      {
+        "text": "Use 3.3 V logic only. This mission wires buttons to GND with INPUT_PULLUP."
+      },
+      {
+        "text": "Keep each GPIO wire on a separate button row so two buttons do not accidentally share one input."
+      }
+    ],
+    "component_spotlight_lead": "This mission still uses simple push buttons, but the software pattern becomes much closer to a real embedded control panel.",
+    "concept": {
+      "title": "State vs Event",
+      "illustration_alt": "Three ESP32 buttons connected to GPIO25, GPIO26, and GPIO27, each with its own state and debounce timer",
+      "body": "A state answers: what is true right now? Button A is pressed. Button B is released. Button C is released.\n\nAn event answers: what just changed? Button A was just pressed. Button B was just released.\n\nThis difference matters because loop() runs again and again. If you run an action whenever a button is currently pressed, the action may repeat hundreds of times while your finger is still down. If you run the action only when the button changes from released to pressed, the action happens once."
+    },
+    "engineering_explanation": "With one button, you tracked one raw reading, one stable state, and one last-change time. With three buttons, you need the same information three times.\n\nThe beginner mistake is to reuse one variable for everything. That mixes the buttons together. If Button A changes, it can overwrite the timing or state that Button B needed. Reliable multi-input code keeps each button independent.\n\nThis mission uses arrays. An array is a numbered list. buttonPins[0] stores the first GPIO pin, buttonPins[1] stores the second, and buttonPins[2] stores the third. Matching arrays store the raw readings, stable states, and debounce times for the same button number.\n\nThe loop checks each button one by one. For each button, the code reads the GPIO, restarts that button's debounce timer if the raw value changed, and accepts a new stable state only after the reading has stayed still long enough. When the accepted state changes to LOW, that is a press event. When it changes to HIGH, that is a release event.\n\nThis pattern scales. Three buttons, five buttons, and ten buttons use the same idea: separate identity, separate state, repeated clean logic.",
+    "real_life_analogy": "A teacher taking attendance does not ask, 'Is anyone here?' and stop. She checks each student by name: Ali, Sara, Mina, Omar. The ESP32 must do the same thing with buttons. It checks GPIO25, then GPIO26, then GPIO27, and remembers each result separately.\n\nA piano is another good picture. Pressing C does not press D. Each key is independent, even though the musician can press several keys together. Your buttons should be wired and tracked the same way.\n\nA traffic-light control panel also works like this. Each switch has a label and a job. If two switches share the wrong wire, one action can accidentally trigger another. Clean button systems keep the wiring and code labels matched.",
+    "wiring": {
+      "illustration_alt": "ESP32 GPIO25, GPIO26, and GPIO27 each connected to one side of a push button, with the other side of each button connected to GND",
+      "steps": [
+        "Unplug the ESP32 USB cable before wiring.",
+        "Place three push buttons across the breadboard center gap.",
+        "Connect one side of Button 1 to ESP32 GPIO25.",
+        "Connect one side of Button 2 to ESP32 GPIO26.",
+        "Connect one side of Button 3 to ESP32 GPIO27.",
+        "Connect the opposite side of each button to GND.",
+        "Do not add external resistors; the sketch uses INPUT_PULLUP for all three buttons.",
+        "Plug USB back in, upload the sketch, and open Serial Monitor at 115200 baud."
+      ]
+    },
+    "gpio_table": [
+      {
+        "signal": "Button 1",
+        "esp32_pin": "GPIO25",
+        "mode": "INPUT_PULLUP",
+        "notes": "Released reads HIGH. Pressed reads LOW."
+      },
+      {
+        "signal": "Button 2",
+        "esp32_pin": "GPIO26",
+        "mode": "INPUT_PULLUP",
+        "notes": "Tracked separately from Button 1."
+      },
+      {
+        "signal": "Button 3",
+        "esp32_pin": "GPIO27",
+        "mode": "INPUT_PULLUP",
+        "notes": "Uses its own debounce timer."
+      },
+      {
+        "signal": "Common ground",
+        "esp32_pin": "GND",
+        "mode": "Ground",
+        "notes": "The other side of every button connects to GND."
+      }
+    ],
+    "code": {
+      "filename": "multiple_buttons_state_detection.ino",
+      "notes": "- Each button has its own pin, name, raw reading, stable state, and debounce timer.\n- INPUT_PULLUP means released is HIGH and pressed is LOW.\n- A press event is detected only when the debounced state changes from HIGH to LOW.\n- A release event is detected when the debounced state changes from LOW to HIGH.",
+      "content": "const byte BUTTON_COUNT = 3;\n\nconst byte buttonPins[BUTTON_COUNT] = {25, 26, 27};\nconst char* buttonNames[BUTTON_COUNT] = {\"START\", \"STOP\", \"MODE\"};\n\nconst unsigned long DEBOUNCE_DELAY = 50;\n\nint lastRawReading[BUTTON_COUNT] = {HIGH, HIGH, HIGH};\nint stableState[BUTTON_COUNT] = {HIGH, HIGH, HIGH};\nunsigned long lastChangeTime[BUTTON_COUNT] = {0, 0, 0};\n\nvoid setup() {\n  Serial.begin(115200);\n\n  for (byte i = 0; i < BUTTON_COUNT; i++) {\n    pinMode(buttonPins[i], INPUT_PULLUP);\n  }\n\n  Serial.println(\"Mission 06: Multiple buttons ready\");\n  Serial.println(\"Press START, STOP, or MODE.\");\n}\n\nvoid loop() {\n  for (byte i = 0; i < BUTTON_COUNT; i++) {\n    checkButton(i);\n  }\n}\n\nvoid checkButton(byte index) {\n  int rawReading = digitalRead(buttonPins[index]);\n\n  if (rawReading != lastRawReading[index]) {\n    lastChangeTime[index] = millis();\n    lastRawReading[index] = rawReading;\n  }\n\n  bool readingHasSettled = (millis() - lastChangeTime[index]) > DEBOUNCE_DELAY;\n\n  if (readingHasSettled && rawReading != stableState[index]) {\n    stableState[index] = rawReading;\n\n    if (stableState[index] == LOW) {\n      Serial.print(buttonNames[index]);\n      Serial.println(\" pressed\");\n    } else {\n      Serial.print(buttonNames[index]);\n      Serial.println(\" released\");\n    }\n  }\n}\n"
+    },
+    "code_explanation": [
+      {
+        "text": "BUTTON_COUNT tells the program how many buttons are in the panel."
+      },
+      {
+        "text": "buttonPins stores the GPIO number for each button. Button 0 uses GPIO25, button 1 uses GPIO26, and button 2 uses GPIO27."
+      },
+      {
+        "text": "buttonNames stores human-friendly labels so Serial Monitor prints START, STOP, and MODE instead of only numbers."
+      },
+      {
+        "text": "lastRawReading keeps the latest immediate digitalRead() value for each button."
+      },
+      {
+        "text": "stableState keeps the trusted debounced state for each button."
+      },
+      {
+        "text": "lastChangeTime keeps a separate debounce timer for each button so one button's bounce does not affect another button."
+      },
+      {
+        "text": "setup() uses a for loop to set every button pin to INPUT_PULLUP."
+      },
+      {
+        "text": "loop() checks every button every time it runs. The ESP32 is fast enough that this feels instant for a small button panel."
+      },
+      {
+        "text": "checkButton(index) runs the same debounce logic for whichever button number is passed in."
+      },
+      {
+        "text": "When the debounced state becomes LOW, the code prints a press event. When it becomes HIGH, the code prints a release event."
+      }
+    ],
+    "expected_output": "Press each button once. Serial Monitor should show one press event and one release event for the correct button name:\n\nSTART pressed\nSTART released\nSTOP pressed\nSTOP released\nMODE pressed\nMODE released\n\nIf you hold START down, it should not print START pressed again and again. It prints once when the press begins, then once when the release happens.",
+    "common_mistakes": [
+      {
+        "problem": "Using one state variable for all buttons",
+        "cause": "The code cannot remember three independent states in one variable.",
+        "fix": "Use arrays or separate clearly named variables for every button."
+      },
+      {
+        "problem": "Giving two buttons the same GPIO pin",
+        "cause": "Copy-paste or wiring notes were not updated.",
+        "fix": "Check the GPIO table and confirm each button has its own pin."
+      },
+      {
+        "problem": "Forgetting a separate debounce timer",
+        "cause": "One shared timer makes one button's bounce affect the others.",
+        "fix": "Use lastChangeTime[index] so each button keeps its own timing."
+      },
+      {
+        "problem": "Triggering actions while the button is held",
+        "cause": "The program reacts to current state every loop instead of reacting to the change event.",
+        "fix": "Run the action only when stableState changes."
+      },
+      {
+        "problem": "Mixing pull-up and pull-down wiring styles",
+        "cause": "Some buttons are wired to GND and others to 3.3 V.",
+        "fix": "Keep all beginner buttons wired to GND with INPUT_PULLUP unless you have a specific reason."
+      },
+      {
+        "problem": "Testing all buttons at once first",
+        "cause": "Multiple mistakes can hide each other.",
+        "fix": "Test START alone, then STOP alone, then MODE alone before pressing combinations."
+      }
+    ],
+    "common_problems": [
+      {
+        "problem": "Wrong button name appears",
+        "cause": "The physical wire order does not match the buttonPins and buttonNames arrays.",
+        "fix": "Trace each wire from the GPIO pin to the button and update either the wiring or the array order."
+      },
+      {
+        "problem": "One button never prints",
+        "cause": "That GPIO wire may be in the wrong breadboard row or the button may not cross the center gap.",
+        "fix": "Move the button across the breadboard gap and test the pin with a single-button sketch if needed."
+      },
+      {
+        "problem": "A button prints many presses",
+        "cause": "Its debounce timer may not be separate, or the delay may be too short for that physical button.",
+        "fix": "Confirm lastChangeTime is indexed and try DEBOUNCE_DELAY = 80."
+      },
+      {
+        "problem": "Two buttons trigger together",
+        "cause": "Their GPIO wires or ground rows may be accidentally connected.",
+        "fix": "Separate the wires, check breadboard rows, and test each input one at a time."
+      },
+      {
+        "problem": "Serial Monitor prints nothing",
+        "cause": "The baud rate may be wrong, upload may have failed, or all buttons may be wired to the wrong side.",
+        "fix": "Use 115200 baud, upload again, and confirm every button connects its GPIO pin to GND when pressed."
+      }
+    ],
+    "engineer_tip": "Give every physical input its own identity: pin number, name, purpose, state, and debounce timer. Professional firmware stays reliable because it never lets one input overwrite another input's memory.",
+    "remember_forever": "A button state says what is true now.\n\nA button event says what just changed.\n\nReliable projects act on events, remember states, and keep every input separate.",
+    "challenge_items": [
+      {
+        "icon": "ADD",
+        "text": "Add a fourth button on GPIO33 and name it RESET."
+      },
+      {
+        "icon": "TEST",
+        "text": "Press two buttons at the same time and describe what Serial Monitor reports."
+      },
+      {
+        "icon": "LAST",
+        "text": "Create a lastButtonPressed variable and print which button was pressed most recently."
+      },
+      {
+        "icon": "ORDER",
+        "text": "Build a tiny password game where START, MODE, STOP must be pressed in that order."
+      }
+    ],
+    "complete": {
+      "subtitle": "Your ESP32 can now listen to a real control panel.",
+      "summary": "You learned that multiple buttons are not one large mystery. They are several small input problems running side by side. Each button needs a separate pin, a separate state, and a separate debounce timer.\n\nYou also learned the difference between a state and an event. That idea matters far beyond buttons. Menus, robots, alarms, game controllers, and smart home panels all depend on knowing what is true now and what just changed.",
+      "skills": [
+        "Read several buttons",
+        "Track independent input states",
+        "Detect press and release events",
+        "Avoid repeated held-button triggers",
+        "Use arrays for cleaner embedded code"
+      ]
+    },
+    "next_missions": [
+      {
+        "title": "Mission 07 - PWM Fundamentals",
+        "description": "Next you will learn how the ESP32 creates output levels between fully OFF and fully ON."
+      },
+      {
+        "slug": "debouncing-buttons",
+        "title": "Button Debouncing",
+        "description": "Review the one-button debounce pattern if the array version feels too fast."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}
