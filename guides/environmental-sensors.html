@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Environmental Sensors Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 11 - read BME280 temperature, humidity, and pressure with ESP32, show values on an SSD1306 OLED, and understand real-world sensor data.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/environmental-sensors.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Environmental Sensors Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 11 - read BME280 temperature, humidity, and pressure with ESP32, show values on an SSD1306 OLED, and understand real-world sensor data.">
+<meta property="og:url" content="https://esp32engine.com/guides/environmental-sensors.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Environmental Sensors Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 11 - read BME280 temperature, humidity, and pressure with ESP32, show values on an SSD1306 OLED, and understand real-world sensor data.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Reading Environmental Sensors","description":"Mission 11 - read BME280 temperature, humidity, and pressure with ESP32, show values on an SSD1306 OLED, and understand real-world sensor data.","datePublished":"2026-07-01","dateModified":"2026-07-01","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/environmental-sensors.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 BME280 tutorial, ESP32 environmental sensor, ESP32 OLED sensor display, BME280 temperature humidity pressure, ESP32 weather sensor"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Reading Environmental Sensors","item":"https://esp32engine.com/guides/environmental-sensors.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is an environmental sensor?","acceptedAnswer":{"@type":"Answer","text":"An environmental sensor measures conditions around the device, such as temperature, humidity, air pressure, light, air quality, or moisture."}},{"@type":"Question","name":"Why use the BME280 in this mission?","acceptedAnswer":{"@type":"Answer","text":"The BME280 is a compact I2C sensor that can measure temperature, humidity, and atmospheric pressure with one module."}},{"@type":"Question","name":"How is the BME280 different from the DHT22?","acceptedAnswer":{"@type":"Answer","text":"The DHT22 measures temperature and humidity. The BME280 also measures pressure and uses I2C, which makes it fit naturally after the I2C mission."}},{"@type":"Question","name":"Why do sensor readings keep changing?","acceptedAnswer":{"@type":"Answer","text":"Real air is always moving, electronics have small noise, and sensors have limited precision. Small changes are normal, not a sign that the sensor is broken."}},{"@type":"Question","name":"What is sensor accuracy?","acceptedAnswer":{"@type":"Answer","text":"Accuracy describes how close a reading is to the true value. A sensor can be stable but still slightly wrong."}},{"@type":"Question","name":"What is sensor precision?","acceptedAnswer":{"@type":"Answer","text":"Precision describes how repeatable the readings are. A sensor can show very consistent numbers even if they are offset from the true value."}},{"@type":"Question","name":"What is calibration?","acceptedAnswer":{"@type":"Answer","text":"Calibration means comparing sensor readings with a trusted reference and adjusting your interpretation or code so the result is more useful."}},{"@type":"Question","name":"Why does pressure change during the day?","acceptedAnswer":{"@type":"Answer","text":"Atmospheric pressure changes as weather systems move, air temperature changes, and air masses rise or sink. Indoor pressure usually follows outdoor pressure slowly."}},{"@type":"Question","name":"Why does my sensor not match a weather app?","acceptedAnswer":{"@type":"Answer","text":"Weather apps usually use outdoor station data or forecasts. Your BME280 measures the air at your desk, inside your room, near your electronics."}},{"@type":"Question","name":"Are cheap sensors useful?","acceptedAnswer":{"@type":"Answer","text":"Yes. Cheap sensors are excellent for trends, learning, automation triggers, and relative changes, even when they are not laboratory instruments."}},{"@type":"Question","name":"Why do engineers average sensor readings?","acceptedAnswer":{"@type":"Answer","text":"Averaging reduces small random changes so decisions are based on the general trend instead of one noisy sample."}},{"@type":"Question","name":"How often should I read a BME280?","acceptedAnswer":{"@type":"Answer","text":"For a beginner environment monitor, every 1 to 5 seconds is usually enough. Reading too quickly often creates noise without adding useful information."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">Reading Environmental Sensors</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">Reading Environmental Sensors</h1>
+      <p class="article-lead mission-hero-lead">Embedded systems become useful when they observe the physical world. In this mission, your ESP32 reads air conditions and shows them on a local OLED screen.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 11</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">50-60 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">BME</span>
+  <span class="mission-card-badge">Mission 11</span>
+  <h2 class="mission-card-title">Read the Air Around Your ESP32</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>Blinking an LED proves your ESP32 can control an output. Reading a sensor proves it can observe the world.</p><p>In this mission, the ESP32 measures temperature, humidity, and pressure with a BME280. Then it shows those values on both Serial Monitor and an OLED display. This is the foundation of weather stations, indoor comfort monitors, greenhouse controllers, and smart home climate systems.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>A sensor is like a sense organ for your ESP32. A button lets it feel a press. A potentiometer lets it measure a dial. A BME280 lets it sense the air.</p><p>The BME280 does not just say hot or cold. It gives numbers. Your job as an engineer is to read those numbers, format them clearly, and decide what they mean.</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">GOAL</span><span class="mission-section-title">Mission Goal</span></h2>
+  <div class="mission-build-panel"><p>Read temperature, humidity, and pressure from a BME280 sensor, then display the data on an SSD1306 OLED and Serial Monitor.</p></div>
+</section>
+<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
+  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">TIME</span><span class="mission-section-title">Estimated Time</span></h2>
+  <div class="mission-prose"><p>50-60 min</p></div>
+</section>
+<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
+  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">LEVEL</span><span class="mission-section-title">Difficulty</span></h2>
+  <div class="mission-prose"><p>Beginner</p></div>
+</section>
+<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">PRE</span><span class="mission-section-title">Prerequisites</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/i2c-communication.html"><strong>I2C Communication</strong></a> <span class="meta">You should understand SDA, SCL, device addresses, and how the ESP32 talks to I2C modules.</span></li></ul>
+</section>
+<section class="mission-section" id="skills" aria-labelledby="skills-heading">
+  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">SKILL</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <ul class="mission-bullets"><li>Read environmental data from a BME280 sensor</li><li>Explain temperature, humidity, and atmospheric pressure</li><li>Display sensor values on an SSD1306 OLED and Serial Monitor</li><li>Understand accuracy, precision, calibration, sampling, and refresh rate</li><li>Recognize why real sensor readings constantly change</li></ul>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Components Required</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit V1</a><span class="mission-thing-note">Reads the sensor and controls the display</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BME</span><span class="mission-thing-body"><a href="/components/bme280.html" class="mission-thing-name">BME280 environmental sensor</a><span class="mission-thing-note">Measures temperature, humidity, and pressure</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">OLED</span><span class="mission-thing-body"><a href="/components/ssd1306-oled.html" class="mission-thing-name">SSD1306 OLED display</a><span class="mission-thing-note">Shows the live readings</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard and jumper wires</span><span class="mission-thing-note">Connect shared 3.3 V, GND, SDA, and SCL</span></span></li></ul>
+</section>
+<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">ENG</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <div class="mission-prose"><p>The BME280 contains tiny sensing elements and internal electronics. It measures physical effects, converts them into digital values, and makes those values available over I2C. Because Mission 10 introduced SDA, SCL, and addresses, you can now treat the BME280 as another smart I2C device on the same bus as the OLED.</p><p>Temperature readings are affected by real air temperature and heat near the sensor. If the sensor sits close to the ESP32 voltage regulator, USB chip, your hand, or direct sunlight, it may read warmer than the room.</p><p>Humidity is relative humidity. It depends on both water vapor and temperature. That is why humidity can change when a room warms or cools, even if no water was added.</p><p>Pressure changes because the atmosphere is not fixed. Weather systems move, air masses rise and sink, and local conditions shift through the day. Indoors, pressure usually follows outdoor pressure, but temperature and humidity may be very different because walls, windows, people, and air conditioning shape the room.</p><p>Accuracy means how close the reading is to the true value. Precision means how repeatable the readings are. Calibration means comparing readings with a trusted reference and correcting your interpretation. Cheap sensors are still useful because many projects care about trends: warmer than before, humidity rising, pressure falling, or the room becoming uncomfortable.</p><p>Common misconceptions are worth clearing up now. A sensor is not broken because values wiggle. Two sensors rarely match perfectly. A weather app is not measuring your desk. More decimal places do not always mean more truth. Faster sampling does not automatically mean better information. Engineers often average readings because one sample can wiggle, but several samples reveal the trend.</p></div>
+</section>
+<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
+  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">REAL</span><span class="mission-section-title">Real-World Analogy</span></h2>
+  <div class="mission-prose"><p>A thermometer on a wall is one environmental sensor. It does not control the room by itself; it gives information so a person or thermostat can decide what to do.</p><p>A kitchen scale explains accuracy and precision. If it always reads 5 grams high, it is precise but not accurate. If it jumps around randomly, it is not precise. Sensors have the same two ideas.</p><p>A weather report is like a city-wide measurement, while your BME280 is like a measurement at your desk. Both can be useful, but they answer different questions.</p><p>Pressure is like the weight of a tall invisible stack of air above you. When weather systems move, that stack changes slightly, so the pressure number moves too.</p><p>Averaging sensor readings is like asking several people to estimate the same temperature and using the general agreement instead of trusting the loudest single answer.</p></div>
+</section>
+
+
+
+
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">WIRE</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="ESP32 GPIO21 SDA and GPIO22 SCL connected to both BME280 and SSD1306 OLED, with 3.3 V and GND shared">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">WIRE</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32 GPIO21 SDA and GPIO22 SCL connected to both BME280 and SSD1306 OLED, with 3.3 V and GND shared</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Connect BME280 VIN or VCC to ESP32 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect BME280 GND to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect BME280 SDA to ESP32 GPIO21.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Connect BME280 SCL to ESP32 GPIO22.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Connect OLED VCC to ESP32 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Connect OLED GND to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">8</span>
+    <p class="mission-step-text">Connect OLED SDA to the same GPIO21 SDA row.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">9</span>
+    <p class="mission-step-text">Connect OLED SCL to the same GPIO22 SCL row.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">10</span>
+    <p class="mission-step-text">Install Adafruit BME280, Adafruit Unified Sensor, Adafruit SSD1306, and Adafruit GFX from Arduino Library Manager.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
+  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>I2C SDA</td><td>GPIO21</td><td>I2C data</td><td>Shared by BME280 SDA and OLED SDA.</td></tr><tr><td>I2C SCL</td><td>GPIO22</td><td>I2C clock</td><td>Shared by BME280 SCL and OLED SCL.</td></tr><tr><td>BME280 power</td><td>3V3 and GND</td><td>Power</td><td>Use 3.3 V wiring for this beginner build.</td></tr><tr><td>OLED power</td><td>3V3 and GND</td><td>Power</td><td>The display shares power and ground with the sensor.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">environmental_sensor_oled.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-pre">#include &lt;Wire.h&gt;</span>
+<span class="tok-pre">#include &lt;Adafruit_GFX.h&gt;</span>
+<span class="tok-pre">#include &lt;Adafruit_SSD1306.h&gt;</span>
+<span class="tok-pre">#include &lt;Adafruit_BME280.h&gt;</span>
+
+const <span class="tok-kw">int</span> I2C_SDA = <span class="tok-num">21</span>;
+const <span class="tok-kw">int</span> I2C_SCL = <span class="tok-num">22</span>;
+
+const <span class="tok-kw">int</span> SCREEN_WIDTH = <span class="tok-num">128</span>;
+const <span class="tok-kw">int</span> SCREEN_HEIGHT = <span class="tok-num">64</span>;
+const <span class="tok-kw">int</span> OLED_RESET = -<span class="tok-num">1</span>;
+const <span class="tok-kw">int</span> OLED_ADDRESS = 0x3C;
+
+const unsigned <span class="tok-kw">long</span> SAMPLE_INTERVAL_MS = <span class="tok-num">2000</span>;
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &amp;Wire, OLED_RESET);
+Adafruit_BME280 bme;
+
+unsigned <span class="tok-kw">long</span> lastSampleTime = <span class="tok-num">0</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+
+  Wire.<span class="tok-fn">begin</span>(I2C_SDA, I2C_SCL);
+
+  <span class="tok-kw">if</span> (!display.<span class="tok-fn">begin</span>(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;OLED not found. Check address, SDA, and SCL.&quot;);
+    <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) {
+      <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+    }
+  }
+
+  bool bmeReady = bme.<span class="tok-fn">begin</span>(0x76);
+
+  <span class="tok-kw">if</span> (!bmeReady) {
+    bmeReady = bme.<span class="tok-fn">begin</span>(0x77);
+  }
+
+  <span class="tok-kw">if</span> (!bmeReady) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;BME280 not found at 0x76 or 0x77.&quot;);
+    showMessage(&quot;BME280 not found&quot;, &quot;Check wiring&quot;);
+    <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) {
+      <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+    }
+  }
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">11</span>: Environmental sensor ready&quot;);
+  showMessage(&quot;ESP32 Engine&quot;, &quot;BME280 ready&quot;);
+  <span class="tok-fn">delay</span>(<span class="tok-num">1500</span>);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  unsigned <span class="tok-kw">long</span> now = millis();
+
+  <span class="tok-kw">if</span> (now - lastSampleTime &gt;= SAMPLE_INTERVAL_MS) {
+    lastSampleTime = now;
+
+    <span class="tok-kw">float</span> temperatureC = bme.readTemperature();
+    <span class="tok-kw">float</span> humidity = bme.readHumidity();
+    <span class="tok-kw">float</span> pressureHpa = bme.readPressure() / <span class="tok-num">100.0</span>;
+
+    printToSerial(temperatureC, humidity, pressureHpa);
+    showOnDisplay(temperatureC, humidity, pressureHpa);
+  }
+}
+
+<span class="tok-kw">void</span> printToSerial(<span class="tok-kw">float</span> temperatureC, <span class="tok-kw">float</span> humidity, <span class="tok-kw">float</span> pressureHpa) {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Temperature: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(temperatureC, <span class="tok-num">1</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot; C | Humidity: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(humidity, <span class="tok-num">1</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot; % | Pressure: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(pressureHpa, <span class="tok-num">1</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot; hPa&quot;);
+}
+
+<span class="tok-kw">void</span> showOnDisplay(<span class="tok-kw">float</span> temperatureC, <span class="tok-kw">float</span> humidity, <span class="tok-kw">float</span> pressureHpa) {
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(<span class="tok-num">1</span>);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">0</span>);
+  display.<span class="tok-fn">println</span>(&quot;Environment&quot;);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">16</span>);
+  display.<span class="tok-fn">print</span>(&quot;Temp: &quot;);
+  display.<span class="tok-fn">print</span>(temperatureC, <span class="tok-num">1</span>);
+  display.<span class="tok-fn">println</span>(&quot; C&quot;);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">32</span>);
+  display.<span class="tok-fn">print</span>(&quot;Hum:  &quot;);
+  display.<span class="tok-fn">print</span>(humidity, <span class="tok-num">1</span>);
+  display.<span class="tok-fn">println</span>(&quot; %&quot;);
+
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">48</span>);
+  display.<span class="tok-fn">print</span>(&quot;Pres: &quot;);
+  display.<span class="tok-fn">print</span>(pressureHpa, <span class="tok-num">1</span>);
+  display.<span class="tok-fn">println</span>(&quot; hPa&quot;);
+
+  display.display();
+}
+
+<span class="tok-kw">void</span> showMessage(const <span class="tok-kw">char</span>* line1, const <span class="tok-kw">char</span>* line2) {
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(<span class="tok-num">1</span>);
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">12</span>);
+  display.<span class="tok-fn">println</span>(line1);
+  display.setCursor(<span class="tok-num">0</span>, <span class="tok-num">32</span>);
+  display.<span class="tok-fn">println</span>(line2);
+  display.display();
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>The OLED should show a compact live dashboard:</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>Required libraries: Adafruit BME280, Adafruit Unified Sensor, Adafruit SSD1306, and Adafruit GFX.</li><li>Install them from Arduino IDE Library Manager before compiling.</li><li>The sketch tries BME280 address 0x76 first, then 0x77.</li><li>OLED address is set to 0x3C, the most common SSD1306 address.</li><li>Sensor readings update every 2 seconds to keep the display readable.</li></ul></div>
+</section>
+<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">CODE</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
+  <ul class="mission-bullets"><li>Wire.h starts the I2C bus used by both the BME280 and OLED.</li><li>Adafruit_GFX and Adafruit_SSD1306 control the OLED display.</li><li>Adafruit_BME280 reads temperature, humidity, and pressure from the sensor.</li><li>I2C_SDA and I2C_SCL keep the ESP32 on GPIO21 and GPIO22, matching Mission 10.</li><li>SAMPLE_INTERVAL_MS sets how often the ESP32 reads the sensor. Two seconds is readable and calm.</li><li>display.begin() checks that the OLED responds at address 0x3C.</li><li>bme.begin(0x76) tries the common BME280 address first.</li><li>If 0x76 fails, the sketch tries 0x77 because many BME280 modules use that address.</li><li>millis() is used to sample every 2 seconds without needing a long blocking delay in the main loop.</li><li>readTemperature() returns temperature in degrees Celsius.</li><li>readHumidity() returns relative humidity as a percent.</li><li>readPressure() returns pressure in pascals, so the code divides by 100 to display hPa.</li><li>printToSerial() formats the values for debugging on your computer.</li><li>showOnDisplay() formats the same values for the OLED so the project can stand alone.</li></ul>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">OUT</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>The OLED should show a compact live dashboard:</p><p>Environment
+Temp: 24.6 C
+Hum:  48.3 %
+Pres: 1012.7 hPa</p><p>Serial Monitor should print matching lines about every two seconds:</p><p>Mission 11: Environmental sensor ready
+Temperature: 24.6 C | Humidity: 48.3 % | Pressure: 1012.7 hPa
+Temperature: 24.7 C | Humidity: 48.1 % | Pressure: 1012.6 hPa</p><p>Do not expect every line to be identical. Real air moves, the sensor has noise, and pressure changes through the day.</p></div>
+</section>
+
+<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">WARN</span><span class="mission-section-title">Common Mistakes</span></h2>
+  <ul class="mission-bullets"><li><h3>Misconception: a stable room should give identical readings</h3><p>Real measurements include air movement, sensor noise, and tiny electrical changes.</p></li><li><h3>Misconception: more decimals mean more truth</h3><p>Extra digits can suggest more certainty than the sensor really provides.</p></li><li><h3>Confusing accuracy with precision</h3><p>A stable reading can still be offset from the true value.</p></li><li><h3>Touching the sensor during testing</h3><p>Your finger warms the board and changes humidity around the sensor.</p></li><li><h3>Putting the sensor beside the ESP32 regulator</h3><p>Board heat can make temperature read too high.</p></li><li><h3>Using the wrong BME280 address</h3><p>Some modules use 0x76 and others use 0x77.</p></li><li><h3>Reading too fast</h3><p>Fast updates can make normal noise look like a problem.</p></li><li><h3>Comparing indoor values directly with weather apps</h3><p>Weather apps report outdoor station data, not the air next to your desk.</p></li><li><h3>Ignoring humidity temperature relationship</h3><p>Relative humidity can change when temperature changes.</p></li><li><h3>Expecting two sensors to match exactly</h3><p>Every sensor has tolerance, placement differences, and calibration differences.</p></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>OLED works but BME280 is not found</h3><p><strong>Likely cause:</strong> The display is on the bus, but the sensor wiring or address is wrong.</p><p><strong>Fix:</strong> Check BME280 3.3 V, GND, SDA, SCL, then run the I2C scanner.</p></li><li><h3>BME280 works but OLED is blank</h3><p><strong>Likely cause:</strong> The sensor is responding, but the OLED address or display wiring is wrong.</p><p><strong>Fix:</strong> Check OLED VCC, GND, GPIO21, GPIO22, and address 0x3C or 0x3D.</p></li><li><h3>Compilation fails for Adafruit_BME280.h</h3><p><strong>Likely cause:</strong> The BME280 library is not installed.</p><p><strong>Fix:</strong> Install Adafruit BME280 and Adafruit Unified Sensor from Library Manager.</p></li><li><h3>Compilation fails for Adafruit_SSD1306.h</h3><p><strong>Likely cause:</strong> The OLED display library is not installed.</p><p><strong>Fix:</strong> Install Adafruit SSD1306 and Adafruit GFX from Library Manager.</p></li><li><h3>Temperature seems too high</h3><p><strong>Likely cause:</strong> The sensor may be warmed by the ESP32, USB power, your hand, or sunlight.</p><p><strong>Fix:</strong> Move the sensor away from heat and wait a few minutes.</p></li><li><h3>Pressure looks unfamiliar</h3><p><strong>Likely cause:</strong> Pressure is shown in hPa, which is common for weather-style readings.</p><p><strong>Fix:</strong> Normal sea-level pressure is often near 1013 hPa, but your local value changes with weather and altitude.</p></li></ul>
+</section>
+<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
+  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">TIP</span><span class="mission-section-title">Engineer Tip</span></h2>
+  <div class="mission-prose"><ul class="mission-bullets"><li>Place the sensor where it measures the environment, not heat from the ESP32.</li><li>Use a sampling interval that matches the real system. Room climate does not need millisecond updates.</li><li>Average readings when one noisy value should not trigger a decision.</li><li>Label units clearly: C, %, and hPa are part of the data.</li><li>Debug with Serial Monitor even when the OLED is working.</li></ul></div>
+</section>
+<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">REM</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <div class="mission-build-panel"><p>A sensor reading is not a perfect fact.</p><p>It is the sensor&#x27;s best measurement of a changing world.</p></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">AVG</span><span class="mission-challenge-text">Take five temperature readings and calculate a simple average before printing.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">TIME</span><span class="mission-challenge-text">Change SAMPLE_INTERVAL_MS to 1000, 5000, and 10000. Decide which feels best for a room display.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">PLACE</span><span class="mission-challenge-text">Move the sensor near your hand for 20 seconds, then move it away and watch it recover.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">OLED</span><span class="mission-challenge-text">Make the OLED show only one large value, then rotate between temperature, humidity, and pressure.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">COMPARE</span><span class="mission-challenge-text">Compare the BME280 temperature with a DHT22 or room thermometer and explain why they may differ.</span></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>What is an environmental sensor?</h3><p>An environmental sensor measures conditions around the device, such as temperature, humidity, air pressure, light, air quality, or moisture.</p></li><li><h3>Why use the BME280 in this mission?</h3><p>The BME280 is a compact I2C sensor that can measure temperature, humidity, and atmospheric pressure with one module.</p></li><li><h3>How is the BME280 different from the DHT22?</h3><p>The DHT22 measures temperature and humidity. The BME280 also measures pressure and uses I2C, which makes it fit naturally after the I2C mission.</p></li><li><h3>Why do sensor readings keep changing?</h3><p>Real air is always moving, electronics have small noise, and sensors have limited precision. Small changes are normal, not a sign that the sensor is broken.</p></li><li><h3>What is sensor accuracy?</h3><p>Accuracy describes how close a reading is to the true value. A sensor can be stable but still slightly wrong.</p></li><li><h3>What is sensor precision?</h3><p>Precision describes how repeatable the readings are. A sensor can show very consistent numbers even if they are offset from the true value.</p></li><li><h3>What is calibration?</h3><p>Calibration means comparing sensor readings with a trusted reference and adjusting your interpretation or code so the result is more useful.</p></li><li><h3>Why does pressure change during the day?</h3><p>Atmospheric pressure changes as weather systems move, air temperature changes, and air masses rise or sink. Indoor pressure usually follows outdoor pressure slowly.</p></li><li><h3>Why does my sensor not match a weather app?</h3><p>Weather apps usually use outdoor station data or forecasts. Your BME280 measures the air at your desk, inside your room, near your electronics.</p></li><li><h3>Are cheap sensors useful?</h3><p>Yes. Cheap sensors are excellent for trends, learning, automation triggers, and relative changes, even when they are not laboratory instruments.</p></li><li><h3>Why do engineers average sensor readings?</h3><p>Averaging reduces small random changes so decisions are based on the general trend instead of one noisy sample.</p></li><li><h3>How often should I read a BME280?</h3><p>For a beginner environment monitor, every 1 to 5 seconds is usually enough. Reading too quickly often creates noise without adding useful information.</p></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Related Components</span></h2>
+  <ul class="guide-related-list"><li><a href="/components/bme280.html"><strong>BME280 Environmental Sensor</strong></a> <span class="meta">The primary sensor for temperature, humidity, and pressure in this mission.</span></li><li><a href="/components/ssd1306-oled.html"><strong>SSD1306 OLED Display</strong></a> <span class="meta">Shows live environmental values without needing Serial Monitor.</span></li><li><a href="/components/dht22.html"><strong>DHT22 Temperature Sensor</strong></a> <span class="meta">A simpler temperature and humidity sensor that helps compare sensor tradeoffs.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">PROJ</span><span class="mission-section-title">Related Projects</span></h2>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-iot-weather-station.html"><strong>ESP32 IoT Weather Station</strong></a> <span class="meta">Collects environmental data and can send it to a dashboard.</span></li><li><a href="/projects/esp32-oled-weather-clock.html"><strong>ESP32 OLED Weather Clock</strong></a> <span class="meta">Combines OLED display skills with weather-style data.</span></li><li><a href="/projects/esp32-home-climate-automation.html"><strong>ESP32 Home Climate Automation</strong></a> <span class="meta">Uses environmental readings to make climate-control decisions.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
+  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">PREV</span><span class="mission-section-title">Previous Mission</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/i2c-communication.html"><strong>I2C Communication</strong></a> <span class="meta">You learned how the ESP32 finds and talks to I2C devices on GPIO21 and GPIO22.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
+  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Next Mission</span></h2>
+  <ul class="guide-related-list"><li><strong>Mission 12 - Smart Environment Monitor</strong> <span class="meta">Next you will combine sensing, display, thresholds, and user-friendly behaviour into a capstone monitor.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Continue Learning</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/i2c-communication.html"><strong>I2C Communication</strong></a> <span class="meta">Review the bus before adding more I2C modules.</span></li><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">Compare a simpler digital sensor with the BME280.</span></li></ul>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>

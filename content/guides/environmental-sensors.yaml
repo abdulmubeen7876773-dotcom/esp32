@@ -1,0 +1,438 @@
+{
+  "format": "mission",
+  "phase": 1,
+  "sort_order": 11,
+  "mission_number": 11,
+  "slug": "environmental-sensors",
+  "title": "ESP32 Environmental Sensors Tutorial | ESP32 Engine",
+  "headline": "Reading Environmental Sensors",
+  "meta_description": "Mission 11 - read BME280 temperature, humidity, and pressure with ESP32, show values on an SSD1306 OLED, and understand real-world sensor data.",
+  "lead": "Embedded systems become useful when they observe the physical world. In this mission, your ESP32 reads air conditions and shows them on a local OLED screen.",
+  "keywords": "ESP32 BME280 tutorial, ESP32 environmental sensor, ESP32 OLED sensor display, BME280 temperature humidity pressure, ESP32 weather sensor",
+  "proficiency_level": "Beginner",
+  "reading_time": "50-60 min",
+  "date_published": "2026-07-01",
+  "date_modified": "2026-07-01",
+  "academy": {
+    "mission_id": "Mission 11",
+    "level": "Foundation",
+    "prerequisites": [
+      {
+        "slug": "i2c-communication",
+        "title": "I2C Communication",
+        "description": "You should understand SDA, SCL, device addresses, and how the ESP32 talks to I2C modules."
+      }
+    ],
+    "skills_learned": [
+      "Read environmental data from a BME280 sensor",
+      "Explain temperature, humidity, and atmospheric pressure",
+      "Display sensor values on an SSD1306 OLED and Serial Monitor",
+      "Understand accuracy, precision, calibration, sampling, and refresh rate",
+      "Recognize why real sensor readings constantly change"
+    ],
+    "components_required": [
+      "ESP32 DevKit V1",
+      "BME280 environmental sensor module",
+      "SSD1306 OLED display",
+      "Breadboard",
+      "Jumper wires",
+      "USB data cable"
+    ],
+    "estimated_time": "50-60 min",
+    "difficulty": "Beginner",
+    "expected_outcome": "You will read temperature, humidity, and pressure from a BME280, display formatted values on an OLED, and print the same data to Serial Monitor.",
+    "mini_challenge": "Change the sampling interval, watch how quickly the display updates, and decide what update rate feels useful instead of noisy.",
+    "previous_mission": {
+      "slug": "i2c-communication",
+      "title": "I2C Communication",
+      "description": "You learned how the ESP32 finds and talks to I2C devices on GPIO21 and GPIO22."
+    },
+    "next_mission": {
+      "title": "Mission 12 - Smart Environment Monitor",
+      "description": "Next you will combine sensing, display, thresholds, and user-friendly behaviour into a capstone monitor."
+    },
+    "unlocked_components": [
+      {
+        "title": "BME280 Environmental Sensor",
+        "href": "/components/bme280.html",
+        "description": "The primary sensor for temperature, humidity, and pressure in this mission."
+      },
+      {
+        "title": "SSD1306 OLED Display",
+        "href": "/components/ssd1306-oled.html",
+        "description": "Shows live environmental values without needing Serial Monitor."
+      },
+      {
+        "title": "DHT22 Temperature Sensor",
+        "href": "/components/dht22.html",
+        "description": "A simpler temperature and humidity sensor that helps compare sensor tradeoffs."
+      }
+    ],
+    "unlocked_projects": [
+      {
+        "title": "ESP32 IoT Weather Station",
+        "href": "/projects/esp32-iot-weather-station.html",
+        "description": "Collects environmental data and can send it to a dashboard."
+      },
+      {
+        "title": "ESP32 OLED Weather Clock",
+        "href": "/projects/esp32-oled-weather-clock.html",
+        "description": "Combines OLED display skills with weather-style data."
+      },
+      {
+        "title": "ESP32 Home Climate Automation",
+        "href": "/projects/esp32-home-climate-automation.html",
+        "description": "Uses environmental readings to make climate-control decisions."
+      }
+    ],
+    "future_paths": [
+      {
+        "slug": "i2c-communication",
+        "title": "I2C Communication",
+        "description": "Review the bus before adding more I2C modules."
+      },
+      {
+        "slug": "read-temperature-dht22",
+        "title": "Read Temperature with DHT22",
+        "description": "Compare a simpler digital sensor with the BME280."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "What is an environmental sensor?",
+      "answer": "An environmental sensor measures conditions around the device, such as temperature, humidity, air pressure, light, air quality, or moisture."
+    },
+    {
+      "question": "Why use the BME280 in this mission?",
+      "answer": "The BME280 is a compact I2C sensor that can measure temperature, humidity, and atmospheric pressure with one module."
+    },
+    {
+      "question": "How is the BME280 different from the DHT22?",
+      "answer": "The DHT22 measures temperature and humidity. The BME280 also measures pressure and uses I2C, which makes it fit naturally after the I2C mission."
+    },
+    {
+      "question": "Why do sensor readings keep changing?",
+      "answer": "Real air is always moving, electronics have small noise, and sensors have limited precision. Small changes are normal, not a sign that the sensor is broken."
+    },
+    {
+      "question": "What is sensor accuracy?",
+      "answer": "Accuracy describes how close a reading is to the true value. A sensor can be stable but still slightly wrong."
+    },
+    {
+      "question": "What is sensor precision?",
+      "answer": "Precision describes how repeatable the readings are. A sensor can show very consistent numbers even if they are offset from the true value."
+    },
+    {
+      "question": "What is calibration?",
+      "answer": "Calibration means comparing sensor readings with a trusted reference and adjusting your interpretation or code so the result is more useful."
+    },
+    {
+      "question": "Why does pressure change during the day?",
+      "answer": "Atmospheric pressure changes as weather systems move, air temperature changes, and air masses rise or sink. Indoor pressure usually follows outdoor pressure slowly."
+    },
+    {
+      "question": "Why does my sensor not match a weather app?",
+      "answer": "Weather apps usually use outdoor station data or forecasts. Your BME280 measures the air at your desk, inside your room, near your electronics."
+    },
+    {
+      "question": "Are cheap sensors useful?",
+      "answer": "Yes. Cheap sensors are excellent for trends, learning, automation triggers, and relative changes, even when they are not laboratory instruments."
+    },
+    {
+      "question": "Why do engineers average sensor readings?",
+      "answer": "Averaging reduces small random changes so decisions are based on the general trend instead of one noisy sample."
+    },
+    {
+      "question": "How often should I read a BME280?",
+      "answer": "For a beginner environment monitor, every 1 to 5 seconds is usually enough. Reading too quickly often creates noise without adding useful information."
+    }
+  ],
+  "mission": {
+    "badge": "Mission 11",
+    "icon": "BME",
+    "title": "Read the Air Around Your ESP32",
+    "story": "Blinking an LED proves your ESP32 can control an output. Reading a sensor proves it can observe the world.\n\nIn this mission, the ESP32 measures temperature, humidity, and pressure with a BME280. Then it shows those values on both Serial Monitor and an OLED display. This is the foundation of weather stations, indoor comfort monitors, greenhouse controllers, and smart home climate systems.",
+    "eli12": "A sensor is like a sense organ for your ESP32. A button lets it feel a press. A potentiometer lets it measure a dial. A BME280 lets it sense the air.\n\nThe BME280 does not just say hot or cold. It gives numbers. Your job as an engineer is to read those numbers, format them clearly, and decide what they mean.",
+    "mission_goal": "Read temperature, humidity, and pressure from a BME280 sensor, then display the data on an SSD1306 OLED and Serial Monitor.",
+    "learning_objectives": [
+      "Explain what environmental sensors measure.",
+      "Read BME280 data over I2C using ESP32 GPIO21 and GPIO22.",
+      "Display temperature, humidity, and pressure on an OLED screen.",
+      "Print formatted sensor readings to Serial Monitor.",
+      "Explain why readings change slightly even when the room feels stable.",
+      "Compare BME280 and DHT22 at a beginner level."
+    ],
+    "what_you_build": "- A BME280 connected to the ESP32 I2C bus.\n- An SSD1306 OLED sharing the same SDA and SCL wires.\n- Arduino code that reads temperature, humidity, and pressure.\n- OLED output for normal use and Serial Monitor output for debugging.\n- A simple foundation for a future smart environment monitor.",
+    "things_you_need": [
+      {
+        "item": "ESP32 DevKit V1",
+        "note": "Reads the sensor and controls the display",
+        "link": "/components/esp32-devkit.html",
+        "icon": "ESP32"
+      },
+      {
+        "item": "BME280 environmental sensor",
+        "note": "Measures temperature, humidity, and pressure",
+        "link": "/components/bme280.html",
+        "icon": "BME"
+      },
+      {
+        "item": "SSD1306 OLED display",
+        "note": "Shows the live readings",
+        "link": "/components/ssd1306-oled.html",
+        "icon": "OLED"
+      },
+      {
+        "item": "Breadboard and jumper wires",
+        "note": "Connect shared 3.3 V, GND, SDA, and SCL",
+        "icon": "WIRE"
+      }
+    ],
+    "safety": [
+      {
+        "text": "Unplug USB before changing sensor or OLED wires."
+      },
+      {
+        "text": "Use 3.3 V power for the BME280 and OLED in this mission."
+      },
+      {
+        "text": "Do not connect ESP32 I2C pins to 5 V logic."
+      },
+      {
+        "text": "Avoid touching the BME280 sensor area while measuring temperature because your finger warms it."
+      }
+    ],
+    "component_spotlight_lead": "The BME280 is a smart environmental sensor: it measures the physical world, converts the measurements internally, and sends digital data to the ESP32 over I2C.",
+    "concept": {
+      "title": "Environmental Sensors Turn Air Into Data",
+      "illustration_alt": "ESP32 connected to BME280 and SSD1306 OLED over I2C, showing temperature, humidity, and pressure values",
+      "body": "An environmental sensor measures conditions around your project. The BME280 measures three useful values: temperature, humidity, and atmospheric pressure.\n\nTemperature tells you how warm the air is. Humidity tells you how much water vapor is in the air compared with what the air can hold. Pressure tells you how strongly the air above you is pushing down.\n\nThese values are not perfectly still. Air moves. People breathe. USB power warms the board. Weather changes. A good engineer expects small changes and designs the software to read them calmly."
+    },
+    "engineering_explanation": "The BME280 contains tiny sensing elements and internal electronics. It measures physical effects, converts them into digital values, and makes those values available over I2C. Because Mission 10 introduced SDA, SCL, and addresses, you can now treat the BME280 as another smart I2C device on the same bus as the OLED.\n\nTemperature readings are affected by real air temperature and heat near the sensor. If the sensor sits close to the ESP32 voltage regulator, USB chip, your hand, or direct sunlight, it may read warmer than the room.\n\nHumidity is relative humidity. It depends on both water vapor and temperature. That is why humidity can change when a room warms or cools, even if no water was added.\n\nPressure changes because the atmosphere is not fixed. Weather systems move, air masses rise and sink, and local conditions shift through the day. Indoors, pressure usually follows outdoor pressure, but temperature and humidity may be very different because walls, windows, people, and air conditioning shape the room.\n\nAccuracy means how close the reading is to the true value. Precision means how repeatable the readings are. Calibration means comparing readings with a trusted reference and correcting your interpretation. Cheap sensors are still useful because many projects care about trends: warmer than before, humidity rising, pressure falling, or the room becoming uncomfortable.\n\nCommon misconceptions are worth clearing up now. A sensor is not broken because values wiggle. Two sensors rarely match perfectly. A weather app is not measuring your desk. More decimal places do not always mean more truth. Faster sampling does not automatically mean better information. Engineers often average readings because one sample can wiggle, but several samples reveal the trend.",
+    "real_life_analogy": "A thermometer on a wall is one environmental sensor. It does not control the room by itself; it gives information so a person or thermostat can decide what to do.\n\nA kitchen scale explains accuracy and precision. If it always reads 5 grams high, it is precise but not accurate. If it jumps around randomly, it is not precise. Sensors have the same two ideas.\n\nA weather report is like a city-wide measurement, while your BME280 is like a measurement at your desk. Both can be useful, but they answer different questions.\n\nPressure is like the weight of a tall invisible stack of air above you. When weather systems move, that stack changes slightly, so the pressure number moves too.\n\nAveraging sensor readings is like asking several people to estimate the same temperature and using the general agreement instead of trusting the loudest single answer.",
+    "wiring": {
+      "illustration_alt": "ESP32 GPIO21 SDA and GPIO22 SCL connected to both BME280 and SSD1306 OLED, with 3.3 V and GND shared",
+      "steps": [
+        "Unplug the ESP32 USB cable before wiring.",
+        "Connect BME280 VIN or VCC to ESP32 3.3 V.",
+        "Connect BME280 GND to ESP32 GND.",
+        "Connect BME280 SDA to ESP32 GPIO21.",
+        "Connect BME280 SCL to ESP32 GPIO22.",
+        "Connect OLED VCC to ESP32 3.3 V.",
+        "Connect OLED GND to ESP32 GND.",
+        "Connect OLED SDA to the same GPIO21 SDA row.",
+        "Connect OLED SCL to the same GPIO22 SCL row.",
+        "Install Adafruit BME280, Adafruit Unified Sensor, Adafruit SSD1306, and Adafruit GFX from Arduino Library Manager."
+      ]
+    },
+    "gpio_table": [
+      {
+        "signal": "I2C SDA",
+        "esp32_pin": "GPIO21",
+        "mode": "I2C data",
+        "notes": "Shared by BME280 SDA and OLED SDA."
+      },
+      {
+        "signal": "I2C SCL",
+        "esp32_pin": "GPIO22",
+        "mode": "I2C clock",
+        "notes": "Shared by BME280 SCL and OLED SCL."
+      },
+      {
+        "signal": "BME280 power",
+        "esp32_pin": "3V3 and GND",
+        "mode": "Power",
+        "notes": "Use 3.3 V wiring for this beginner build."
+      },
+      {
+        "signal": "OLED power",
+        "esp32_pin": "3V3 and GND",
+        "mode": "Power",
+        "notes": "The display shares power and ground with the sensor."
+      }
+    ],
+    "code": {
+      "filename": "environmental_sensor_oled.ino",
+      "notes": "- Required libraries: Adafruit BME280, Adafruit Unified Sensor, Adafruit SSD1306, and Adafruit GFX.\n- Install them from Arduino IDE Library Manager before compiling.\n- The sketch tries BME280 address 0x76 first, then 0x77.\n- OLED address is set to 0x3C, the most common SSD1306 address.\n- Sensor readings update every 2 seconds to keep the display readable.",
+      "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n#include <Adafruit_BME280.h>\n\nconst int I2C_SDA = 21;\nconst int I2C_SCL = 22;\n\nconst int SCREEN_WIDTH = 128;\nconst int SCREEN_HEIGHT = 64;\nconst int OLED_RESET = -1;\nconst int OLED_ADDRESS = 0x3C;\n\nconst unsigned long SAMPLE_INTERVAL_MS = 2000;\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\nAdafruit_BME280 bme;\n\nunsigned long lastSampleTime = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n\n  Wire.begin(I2C_SDA, I2C_SCL);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {\n    Serial.println(\"OLED not found. Check address, SDA, and SCL.\");\n    while (true) {\n      delay(1000);\n    }\n  }\n\n  bool bmeReady = bme.begin(0x76);\n\n  if (!bmeReady) {\n    bmeReady = bme.begin(0x77);\n  }\n\n  if (!bmeReady) {\n    Serial.println(\"BME280 not found at 0x76 or 0x77.\");\n    showMessage(\"BME280 not found\", \"Check wiring\");\n    while (true) {\n      delay(1000);\n    }\n  }\n\n  Serial.println(\"Mission 11: Environmental sensor ready\");\n  showMessage(\"ESP32 Engine\", \"BME280 ready\");\n  delay(1500);\n}\n\nvoid loop() {\n  unsigned long now = millis();\n\n  if (now - lastSampleTime >= SAMPLE_INTERVAL_MS) {\n    lastSampleTime = now;\n\n    float temperatureC = bme.readTemperature();\n    float humidity = bme.readHumidity();\n    float pressureHpa = bme.readPressure() / 100.0;\n\n    printToSerial(temperatureC, humidity, pressureHpa);\n    showOnDisplay(temperatureC, humidity, pressureHpa);\n  }\n}\n\nvoid printToSerial(float temperatureC, float humidity, float pressureHpa) {\n  Serial.print(\"Temperature: \");\n  Serial.print(temperatureC, 1);\n  Serial.print(\" C | Humidity: \");\n  Serial.print(humidity, 1);\n  Serial.print(\" % | Pressure: \");\n  Serial.print(pressureHpa, 1);\n  Serial.println(\" hPa\");\n}\n\nvoid showOnDisplay(float temperatureC, float humidity, float pressureHpa) {\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n\n  display.setCursor(0, 0);\n  display.println(\"Environment\");\n\n  display.setCursor(0, 16);\n  display.print(\"Temp: \");\n  display.print(temperatureC, 1);\n  display.println(\" C\");\n\n  display.setCursor(0, 32);\n  display.print(\"Hum:  \");\n  display.print(humidity, 1);\n  display.println(\" %\");\n\n  display.setCursor(0, 48);\n  display.print(\"Pres: \");\n  display.print(pressureHpa, 1);\n  display.println(\" hPa\");\n\n  display.display();\n}\n\nvoid showMessage(const char* line1, const char* line2) {\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 12);\n  display.println(line1);\n  display.setCursor(0, 32);\n  display.println(line2);\n  display.display();\n}\n"
+    },
+    "code_explanation": [
+      {
+        "text": "Wire.h starts the I2C bus used by both the BME280 and OLED."
+      },
+      {
+        "text": "Adafruit_GFX and Adafruit_SSD1306 control the OLED display."
+      },
+      {
+        "text": "Adafruit_BME280 reads temperature, humidity, and pressure from the sensor."
+      },
+      {
+        "text": "I2C_SDA and I2C_SCL keep the ESP32 on GPIO21 and GPIO22, matching Mission 10."
+      },
+      {
+        "text": "SAMPLE_INTERVAL_MS sets how often the ESP32 reads the sensor. Two seconds is readable and calm."
+      },
+      {
+        "text": "display.begin() checks that the OLED responds at address 0x3C."
+      },
+      {
+        "text": "bme.begin(0x76) tries the common BME280 address first."
+      },
+      {
+        "text": "If 0x76 fails, the sketch tries 0x77 because many BME280 modules use that address."
+      },
+      {
+        "text": "millis() is used to sample every 2 seconds without needing a long blocking delay in the main loop."
+      },
+      {
+        "text": "readTemperature() returns temperature in degrees Celsius."
+      },
+      {
+        "text": "readHumidity() returns relative humidity as a percent."
+      },
+      {
+        "text": "readPressure() returns pressure in pascals, so the code divides by 100 to display hPa."
+      },
+      {
+        "text": "printToSerial() formats the values for debugging on your computer."
+      },
+      {
+        "text": "showOnDisplay() formats the same values for the OLED so the project can stand alone."
+      }
+    ],
+    "expected_output": "The OLED should show a compact live dashboard:\n\nEnvironment\nTemp: 24.6 C\nHum:  48.3 %\nPres: 1012.7 hPa\n\nSerial Monitor should print matching lines about every two seconds:\n\nMission 11: Environmental sensor ready\nTemperature: 24.6 C | Humidity: 48.3 % | Pressure: 1012.7 hPa\nTemperature: 24.7 C | Humidity: 48.1 % | Pressure: 1012.6 hPa\n\nDo not expect every line to be identical. Real air moves, the sensor has noise, and pressure changes through the day.",
+    "common_mistakes": [
+      {
+        "problem": "Misconception: a stable room should give identical readings",
+        "cause": "Real measurements include air movement, sensor noise, and tiny electrical changes.",
+        "fix": "Expect small movement and focus on trends instead of one perfect number."
+      },
+      {
+        "problem": "Misconception: more decimals mean more truth",
+        "cause": "Extra digits can suggest more certainty than the sensor really provides.",
+        "fix": "Display one decimal place for beginner dashboards."
+      },
+      {
+        "problem": "Confusing accuracy with precision",
+        "cause": "A stable reading can still be offset from the true value.",
+        "fix": "Use accuracy for closeness to truth and precision for repeatability."
+      },
+      {
+        "problem": "Touching the sensor during testing",
+        "cause": "Your finger warms the board and changes humidity around the sensor.",
+        "fix": "Handle the breadboard edges and give the sensor time to settle."
+      },
+      {
+        "problem": "Putting the sensor beside the ESP32 regulator",
+        "cause": "Board heat can make temperature read too high.",
+        "fix": "Place the sensor away from heat sources and direct sunlight."
+      },
+      {
+        "problem": "Using the wrong BME280 address",
+        "cause": "Some modules use 0x76 and others use 0x77.",
+        "fix": "Run the Mission 10 scanner or use code that tries both addresses."
+      },
+      {
+        "problem": "Reading too fast",
+        "cause": "Fast updates can make normal noise look like a problem.",
+        "fix": "Use a reasonable interval such as 2 seconds for a beginner display."
+      },
+      {
+        "problem": "Comparing indoor values directly with weather apps",
+        "cause": "Weather apps report outdoor station data, not the air next to your desk.",
+        "fix": "Use indoor readings for indoor decisions and outdoor data for weather context."
+      },
+      {
+        "problem": "Ignoring humidity temperature relationship",
+        "cause": "Relative humidity can change when temperature changes.",
+        "fix": "Read humidity as a comfort indicator, not as a fixed amount of water."
+      },
+      {
+        "problem": "Expecting two sensors to match exactly",
+        "cause": "Every sensor has tolerance, placement differences, and calibration differences.",
+        "fix": "Compare trends and use calibration if exact agreement matters."
+      }
+    ],
+    "common_problems": [
+      {
+        "problem": "OLED works but BME280 is not found",
+        "cause": "The display is on the bus, but the sensor wiring or address is wrong.",
+        "fix": "Check BME280 3.3 V, GND, SDA, SCL, then run the I2C scanner."
+      },
+      {
+        "problem": "BME280 works but OLED is blank",
+        "cause": "The sensor is responding, but the OLED address or display wiring is wrong.",
+        "fix": "Check OLED VCC, GND, GPIO21, GPIO22, and address 0x3C or 0x3D."
+      },
+      {
+        "problem": "Compilation fails for Adafruit_BME280.h",
+        "cause": "The BME280 library is not installed.",
+        "fix": "Install Adafruit BME280 and Adafruit Unified Sensor from Library Manager."
+      },
+      {
+        "problem": "Compilation fails for Adafruit_SSD1306.h",
+        "cause": "The OLED display library is not installed.",
+        "fix": "Install Adafruit SSD1306 and Adafruit GFX from Library Manager."
+      },
+      {
+        "problem": "Temperature seems too high",
+        "cause": "The sensor may be warmed by the ESP32, USB power, your hand, or sunlight.",
+        "fix": "Move the sensor away from heat and wait a few minutes."
+      },
+      {
+        "problem": "Pressure looks unfamiliar",
+        "cause": "Pressure is shown in hPa, which is common for weather-style readings.",
+        "fix": "Normal sea-level pressure is often near 1013 hPa, but your local value changes with weather and altitude."
+      }
+    ],
+    "engineer_tip": "- Place the sensor where it measures the environment, not heat from the ESP32.\n- Use a sampling interval that matches the real system. Room climate does not need millisecond updates.\n- Average readings when one noisy value should not trigger a decision.\n- Label units clearly: C, %, and hPa are part of the data.\n- Debug with Serial Monitor even when the OLED is working.",
+    "remember_forever": "A sensor reading is not a perfect fact.\n\nIt is the sensor's best measurement of a changing world.",
+    "challenge_items": [
+      {
+        "icon": "AVG",
+        "text": "Take five temperature readings and calculate a simple average before printing."
+      },
+      {
+        "icon": "TIME",
+        "text": "Change SAMPLE_INTERVAL_MS to 1000, 5000, and 10000. Decide which feels best for a room display."
+      },
+      {
+        "icon": "PLACE",
+        "text": "Move the sensor near your hand for 20 seconds, then move it away and watch it recover."
+      },
+      {
+        "icon": "OLED",
+        "text": "Make the OLED show only one large value, then rotate between temperature, humidity, and pressure."
+      },
+      {
+        "icon": "COMPARE",
+        "text": "Compare the BME280 temperature with a DHT22 or room thermometer and explain why they may differ."
+      }
+    ],
+    "complete": {
+      "subtitle": "Your ESP32 can now observe the air and present useful information.",
+      "summary": "You used the BME280 as a real environmental sensor, read temperature, humidity, and pressure over I2C, then showed the values on both OLED and Serial Monitor.\n\nYou also learned the engineering mindset behind sensor data: readings move, cheap sensors are still useful, placement matters, pressure changes naturally, and averaging helps software make calmer decisions.",
+      "skills": [
+        "Read BME280 environmental data",
+        "Display sensor values on OLED",
+        "Format Serial Monitor output",
+        "Explain accuracy and precision",
+        "Understand why readings change"
+      ]
+    },
+    "next_missions": [
+      {
+        "title": "Mission 12 - Smart Environment Monitor",
+        "description": "Next you will turn raw readings into a capstone monitor with status messages and practical behaviour."
+      },
+      {
+        "slug": "i2c-communication",
+        "title": "Mission 10 - I2C Communication",
+        "description": "Review I2C if the BME280 or OLED is not being detected."
+      }
+    ]
+  },
+  "quality_status": "golden",
+  "status": "complete"
+}
