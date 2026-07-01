@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Analog Inputs Tutorial | ESP32 Engine</title>
+<meta name="description" content="Mission 08 - learn how ESP32 analog inputs read real-world voltages, why ADC values range from 0 to 4095, and how to read a potentiometer.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/analog-inputs-reading-real-world.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Analog Inputs Tutorial | ESP32 Engine">
+<meta property="og:description" content="Mission 08 - learn how ESP32 analog inputs read real-world voltages, why ADC values range from 0 to 4095, and how to read a potentiometer.">
+<meta property="og:url" content="https://esp32engine.com/guides/analog-inputs-reading-real-world.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Analog Inputs Tutorial | ESP32 Engine">
+<meta name="twitter:description" content="Mission 08 - learn how ESP32 analog inputs read real-world voltages, why ADC values range from 0 to 4095, and how to read a potentiometer.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260628-homepage-rhythm" as="style">
+<link rel="stylesheet" href="/style.css?v=20260628-homepage-rhythm">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Analog Inputs","description":"Mission 08 - learn how ESP32 analog inputs read real-world voltages, why ADC values range from 0 to 4095, and how to read a potentiometer.","datePublished":"2026-07-01","dateModified":"2026-07-01","image":"https://esp32engine.com/og-image.jpg","author":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/og-image.jpg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/analog-inputs-reading-real-world.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 analog input, ESP32 ADC tutorial, ESP32 potentiometer, analogRead ESP32, ESP32 0 to 4095"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Analog Inputs","item":"https://esp32engine.com/guides/analog-inputs-reading-real-world.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is an analog signal?","acceptedAnswer":{"@type":"Answer","text":"An analog signal can change smoothly through many values instead of being only ON or OFF."}},{"@type":"Question","name":"What is the difference between digital and analog input?","acceptedAnswer":{"@type":"Answer","text":"A digital input gives two answers, HIGH or LOW. An analog input gives a number that represents a voltage level."}},{"@type":"Question","name":"What does ADC mean?","acceptedAnswer":{"@type":"Answer","text":"ADC means Analog-to-Digital Converter. It turns a voltage into a number the ESP32 can use."}},{"@type":"Question","name":"Why does ESP32 analogRead() return 0 to 4095?","acceptedAnswer":{"@type":"Answer","text":"The ESP32 ADC commonly uses 12-bit readings. Twelve bits can represent 4096 possible values, numbered 0 through 4095."}},{"@type":"Question","name":"What voltage should I use with ESP32 analog inputs?","acceptedAnswer":{"@type":"Answer","text":"Keep analog inputs within the ESP32's safe 3.3 V range. Do not feed 5 V into an ESP32 GPIO."}},{"@type":"Question","name":"What is a potentiometer?","acceptedAnswer":{"@type":"Answer","text":"A potentiometer is a variable resistor with a rotating shaft. It can act like a dial that outputs a changing voltage."}},{"@type":"Question","name":"Why does turning the potentiometer change the number smoothly?","acceptedAnswer":{"@type":"Answer","text":"The middle pin of the potentiometer slides between 0 V and 3.3 V, so the ADC sees many voltage levels between the two ends."}},{"@type":"Question","name":"Why does my analog value wiggle when I am not touching the dial?","acceptedAnswer":{"@type":"Answer","text":"Small electrical noise, loose wiring, USB power noise, and ADC variation can make readings move by a few counts."}},{"@type":"Question","name":"Is ADC noise a broken sensor?","acceptedAnswer":{"@type":"Answer","text":"Usually no. Small changes are normal. Real products often average or filter analog readings."}},{"@type":"Question","name":"Can I use any ESP32 GPIO for analog input?","acceptedAnswer":{"@type":"Answer","text":"No. Only ADC-capable pins can read analog values. For beginner lessons, use a known ADC1 pin such as GPIO34."}},{"@type":"Question","name":"Why use GPIO34 in this mission?","acceptedAnswer":{"@type":"Answer","text":"GPIO34 is an input-only ADC1 pin, which makes it a good safe choice for reading a potentiometer."}},{"@type":"Question","name":"Can GPIO34 control an LED?","acceptedAnswer":{"@type":"Answer","text":"No. GPIO34 is input-only. Use it for reading, not output."}},{"@type":"Question","name":"What happens if I connect the potentiometer backwards?","acceptedAnswer":{"@type":"Answer","text":"The numbers will move in the opposite direction. Low becomes high and high becomes low, but the ESP32 should still read safely if the ends are 3.3 V and GND."}},{"@type":"Question","name":"Can analog input read negative voltage?","acceptedAnswer":{"@type":"Answer","text":"No. ESP32 GPIO pins should not receive negative voltage. Keep the signal between GND and 3.3 V."}},{"@type":"Question","name":"Why do real products use analog inputs?","acceptedAnswer":{"@type":"Answer","text":"Many real-world conditions change gradually, such as light, pressure, position, moisture, battery voltage, and sound level."}}]}</script>
+</head>
+<body class="mission-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html" class="active">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="mission-hero-band">
+  <section class="wrap mission-hero">
+<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">Analog Inputs</li></ol></nav>
+    <div class="mission-hero-inner">
+      <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
+      <h1 class="mission-hero-title">Analog Inputs</h1>
+      <p class="article-lead mission-hero-lead">Buttons teach the ESP32 yes or no. Analog inputs teach it how much: how bright, how loud, how wet, how far, or where a dial is turned.</p>
+      <div class="mission-meta-row"><span class="badge badge-mission">Mission 08</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">35-40 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap mission-guide-shell">
+<article class="mission-journey">
+<div class="guide-friendly-intro">
+<header class="mission-card">
+  <div class="mission-card-glow" aria-hidden="true"></div>
+  <span class="mission-card-icon" aria-hidden="true">ADC</span>
+  <span class="mission-card-badge">Mission 08</span>
+  <h2 class="mission-card-title">Read a Dial with the ESP32 ADC</h2>
+</header>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>So far, most of your inputs have been digital. A button is pressed or released. A GPIO is HIGH or LOW. That kind of thinking is powerful, but the real world is rarely only two choices.</p><p>Room light changes gradually. A volume knob turns smoothly. Soil becomes wetter or drier by degrees. A battery voltage falls slowly. Mission 08 teaches the ESP32 to measure those in-between values.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>A digital input is like asking, &#x27;Is the door open?&#x27; The answer is yes or no.</p><p>An analog input is like asking, &#x27;How open is the door?&#x27; It might be closed, halfway open, almost open, or anywhere between.</p><p>The ESP32 cannot directly think in smooth voltages, so it uses an ADC. The ADC looks at the voltage and turns it into a number. Low voltage becomes a small number. Higher voltage becomes a bigger number.</p></div>
+  </div>
+</section>
+
+</div>
+<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
+  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">GOAL</span><span class="mission-section-title">Mission Goal</span></h2>
+  <div class="mission-build-panel"><p>Read a potentiometer with the ESP32 ADC and understand how a changing voltage becomes a number from 0 to 4095.</p></div>
+</section>
+<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
+  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">TIME</span><span class="mission-section-title">Estimated Time</span></h2>
+  <div class="mission-prose"><p>35-40 min</p></div>
+</section>
+<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
+  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">LEVEL</span><span class="mission-section-title">Difficulty</span></h2>
+  <div class="mission-prose"><p>Beginner</p></div>
+</section>
+<section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">PRE</span><span class="mission-section-title">Prerequisites</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/pwm-fundamentals.html"><strong>PWM Fundamentals</strong></a> <span class="meta">You should understand that some outputs can feel gradual even when the ESP32 is digital.</span></li></ul>
+</section>
+<section class="mission-section" id="skills" aria-labelledby="skills-heading">
+  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">SKILL</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <ul class="mission-bullets"><li>Explain the difference between digital and analog signals</li><li>Describe what the ESP32 ADC does</li><li>Read a potentiometer with analogRead()</li><li>Understand why ESP32 ADC values range from 0 to 4095</li><li>Recognize simple analog noise and why readings may wiggle</li></ul>
+</section>
+<section class="mission-section" id="parts" aria-labelledby="parts-heading">
+  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Components Required</span></h2>
+  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Reads the analog voltage with its ADC</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">POT</span><span class="mission-thing-body"><span class="mission-thing-name">10 kOhm potentiometer</span><span class="mission-thing-note">Acts like a turnable voltage divider</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BOARD</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard</span><span class="mission-thing-note">Holds the potentiometer and jumper wires</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Jumper wires</span><span class="mission-thing-note">Connect 3.3 V, GND, and GPIO34</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload code and watch Serial Monitor</span></span></li></ul>
+</section>
+<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">ENG</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <div class="mission-prose"><p>ADC stands for Analog-to-Digital Converter. Analog means the voltage can vary continuously. Digital means the ESP32 stores the result as a number.</p><p>In this mission, the potentiometer is wired as a voltage divider. One outside leg connects to 3.3 V. The other outside leg connects to GND. The middle pin, called the wiper, slides between those two ends as you turn the knob. When the wiper is near GND, GPIO34 sees a low voltage. When it is near 3.3 V, GPIO34 sees a high voltage.</p><p>The ESP32 ADC samples that voltage and returns a raw number. With 12-bit readings, the possible values are 0 through 4095. A reading near 0 means the input is near GND. A reading near 4095 means the input is near the top of the safe range. A reading near 2048 means the input is roughly around the middle.</p><p>Real ADC readings are not perfectly still. You may see small changes even when the knob is not moving. That is normal. Wires pick up noise, USB power is not perfectly clean, and ADC hardware has small variation. Engineers handle this by averaging readings, filtering, calibrating, and designing stable circuits.</p><p>The most important beginner habit is to print the raw value first. Before guessing what a sensor means, look at the number the ESP32 is actually reading.</p></div>
+</section>
+<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
+  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">REAL</span><span class="mission-section-title">Real-World Analogy</span></h2>
+  <div class="mission-prose"><p>A light switch is digital: it is either off or on. A volume knob is analog: it can be quiet, medium, loud, or anywhere between.</p><p>A thermometer is another example. Temperature does not jump only between cold and hot. It moves gradually. Analog inputs let a microcontroller notice those gradual changes.</p><p>Think of the ADC like a ruler for voltage. The voltage is the real-world length. The ADC number is the ruler marking closest to where the voltage lands.</p></div>
+</section>
+
+
+
+
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">WIRE</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
+  <figure class="mission-illustration" aria-label="ESP32 3.3V connected to one outer potentiometer leg, GND to the other outer leg, and GPIO34 to the middle wiper pin">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">WIRE</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32 3.3V connected to one outer potentiometer leg, GND to the other outer leg, and GPIO34 to the middle wiper pin</span>
+  </div>
+</figure>
+  <ol class="mission-steps-list"><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">1</span>
+    <p class="mission-step-text">Unplug the ESP32 USB cable before wiring.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">2</span>
+    <p class="mission-step-text">Place the potentiometer on the breadboard.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">3</span>
+    <p class="mission-step-text">Connect one outside potentiometer leg to ESP32 3.3 V.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">4</span>
+    <p class="mission-step-text">Connect the other outside potentiometer leg to ESP32 GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">5</span>
+    <p class="mission-step-text">Connect the middle potentiometer pin to ESP32 GPIO34.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">6</span>
+    <p class="mission-step-text">Check that the middle pin goes to GPIO34, not directly to 3.3 V or GND.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">7</span>
+    <p class="mission-step-text">Plug USB back in, upload the sketch, and open Serial Monitor at 115200 baud.</p>
+  </div>
+</li><li class="mission-step-wrap">
+  <div class="mission-step">
+    <span class="mission-num">8</span>
+    <p class="mission-step-text">Turn the knob slowly and watch the values change.</p>
+  </div>
+</li></ol>
+</section>
+<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
+  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>Potentiometer wiper</td><td>GPIO34</td><td>Analog input</td><td>Reads the changing voltage from the middle pin.</td></tr><tr><td>Potentiometer high side</td><td>3V3</td><td>Power</td><td>Provides the safe top voltage for the dial.</td></tr><tr><td>Potentiometer low side</td><td>GND</td><td>Ground</td><td>Provides the low end of the dial.</td></tr><tr><td>Serial debug</td><td>USB</td><td>Serial</td><td>Shows raw ADC and percent values.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="mission-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
+  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
+  <div class="mission-code-layout">
+    <div class="mission-code-main"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">analog_potentiometer_read.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino">const <span class="tok-kw">int</span> POT_PIN = <span class="tok-num">34</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">delay</span>(<span class="tok-num">500</span>);
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">08</span>: Analog input ready&quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Turn the potentiometer and watch the ADC value change.&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">int</span> rawValue = <span class="tok-fn">analogRead</span>(POT_PIN);
+  <span class="tok-kw">int</span> percent = map(rawValue, <span class="tok-num">0</span>, <span class="tok-num">4095</span>, <span class="tok-num">0</span>, <span class="tok-num">100</span>);
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Raw ADC: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(rawValue);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;  |  Dial: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(percent);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;%&quot;);
+
+  <span class="tok-fn">delay</span>(<span class="tok-num">200</span>);
+}</code></pre>
+</div></div>
+    <aside class="mission-code-preview" aria-label="Expected result preview">
+  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
+  <div class="mission-code-preview-body"><p>Serial Monitor should print changing values as you rotate the potentiometer:</p></div>
+</aside>
+  </div>
+  <div class="mission-code-notes"><ul class="mission-bullets"><li>GPIO34 is an ADC input pin.</li><li>analogRead() returns a raw value from about 0 to 4095.</li><li>map() converts the raw reading into a 0 to 100 percent estimate.</li><li>A short delay makes Serial Monitor easier to read.</li></ul></div>
+</section>
+<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">CODE</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
+  <ul class="mission-bullets"><li>POT_PIN is GPIO34, the ADC-capable pin connected to the potentiometer middle pin.</li><li>Serial.begin(115200) starts communication with Serial Monitor.</li><li>analogRead(POT_PIN) asks the ESP32 ADC to measure the voltage on GPIO34.</li><li>rawValue stores the ADC result, usually somewhere between 0 and 4095.</li><li>map(rawValue, 0, 4095, 0, 100) converts the raw ADC range into a beginner-friendly percentage.</li><li>Serial.print() lines show both the raw number and the percent value so you can compare engineering data with human-friendly data.</li><li>delay(200) slows the output so the Serial Monitor does not scroll too fast while you turn the knob.</li></ul>
+</section>
+<section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">OUT</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>Serial Monitor should print changing values as you rotate the potentiometer:</p><p>Mission 08: Analog input ready
+Turn the potentiometer and watch the ADC value change.
+Raw ADC: 18  |  Dial: 0%
+Raw ADC: 1024  |  Dial: 25%
+Raw ADC: 2050  |  Dial: 50%
+Raw ADC: 3075  |  Dial: 75%
+Raw ADC: 4090  |  Dial: 99%</p><p>Your exact values may not reach perfect 0 or perfect 4095. That is normal. The important behavior is that the number changes gradually when the knob turns gradually.</p></div>
+</section>
+
+<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
+  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">WARN</span><span class="mission-section-title">Common Mistakes</span></h2>
+  <ul class="mission-bullets"><li><h3>Connecting the potentiometer to 5 V</h3><p>Many Arduino examples use 5 V boards, but ESP32 GPIO pins are 3.3 V logic.</p></li><li><h3>Using a non-ADC pin</h3><p>Not every GPIO can read analog voltage.</p></li><li><h3>Reading the wrong potentiometer leg</h3><p>The outside legs are fixed ends; the middle leg is the changing wiper.</p></li><li><h3>Expecting perfectly stable numbers</h3><p>ADC readings naturally include small noise and variation.</p></li><li><h3>Thinking 4095 means 4095 volts</h3><p>The ADC value is a count, not a voltage unit.</p></li></ul>
+</section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
+  <ul class="mission-bullets"><li><h3>The value stays at 0</h3><p><strong>Likely cause:</strong> GPIO34 may be connected to GND, or the middle pin may not be wired correctly.</p><p><strong>Fix:</strong> Trace the potentiometer middle pin to GPIO34 and confirm one outer leg goes to 3.3 V.</p></li><li><h3>The value stays near 4095</h3><p><strong>Likely cause:</strong> GPIO34 may be connected directly to 3.3 V, or the wiper wire may be on the wrong leg.</p><p><strong>Fix:</strong> Move the GPIO34 wire to the middle pin of the potentiometer.</p></li><li><h3>Values change backwards</h3><p><strong>Likely cause:</strong> The 3.3 V and GND outer legs are swapped.</p><p><strong>Fix:</strong> This is safe if both are still 3.3 V and GND. Swap the outer wires if you want clockwise to increase.</p></li><li><h3>Values jump around a lot</h3><p><strong>Likely cause:</strong> Loose breadboard wires, a damaged potentiometer, or noisy power can cause unstable readings.</p><p><strong>Fix:</strong> Press wires firmly, try a different potentiometer, and keep jumper wires short.</p></li><li><h3>Serial Monitor prints nothing</h3><p><strong>Likely cause:</strong> The board may not be connected, upload may have failed, or the baud rate may be wrong.</p><p><strong>Fix:</strong> Upload again, choose the correct port, and set Serial Monitor to 115200 baud.</p></li></ul>
+</section>
+<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
+  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">TIP</span><span class="mission-section-title">Engineer Tip</span></h2>
+  <div class="mission-prose"><p>Always print the raw ADC value before turning it into a decision. If the raw number does not make sense, the project logic built on top of it will not make sense either.</p></div>
+</section>
+<section class="mission-section" id="remember" aria-labelledby="remember-heading">
+  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">REM</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <div class="mission-build-panel"><p>Digital asks: is it ON?</p><p>Analog asks: how much?</p><p>The ADC is how the ESP32 turns a changing voltage into a number it can reason about.</p></div>
+</section>
+<section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
+  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">100</span><span class="mission-challenge-text">Print only the 0-100 percent value and explain why it is easier for humans than 0-4095.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">AVG</span><span class="mission-challenge-text">Take five readings, average them, and compare whether the number wiggles less.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">REV</span><span class="mission-challenge-text">Swap the two outside potentiometer wires and observe how the direction changes.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">PWM</span><span class="mission-challenge-text">Explain how this analog dial could later control the PWM LED brightness from Mission 07.</span></li></ul>
+</section>
+<section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
+  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>What is an analog signal?</h3><p>An analog signal can change smoothly through many values instead of being only ON or OFF.</p></li><li><h3>What is the difference between digital and analog input?</h3><p>A digital input gives two answers, HIGH or LOW. An analog input gives a number that represents a voltage level.</p></li><li><h3>What does ADC mean?</h3><p>ADC means Analog-to-Digital Converter. It turns a voltage into a number the ESP32 can use.</p></li><li><h3>Why does ESP32 analogRead() return 0 to 4095?</h3><p>The ESP32 ADC commonly uses 12-bit readings. Twelve bits can represent 4096 possible values, numbered 0 through 4095.</p></li><li><h3>What voltage should I use with ESP32 analog inputs?</h3><p>Keep analog inputs within the ESP32&#x27;s safe 3.3 V range. Do not feed 5 V into an ESP32 GPIO.</p></li><li><h3>What is a potentiometer?</h3><p>A potentiometer is a variable resistor with a rotating shaft. It can act like a dial that outputs a changing voltage.</p></li><li><h3>Why does turning the potentiometer change the number smoothly?</h3><p>The middle pin of the potentiometer slides between 0 V and 3.3 V, so the ADC sees many voltage levels between the two ends.</p></li><li><h3>Why does my analog value wiggle when I am not touching the dial?</h3><p>Small electrical noise, loose wiring, USB power noise, and ADC variation can make readings move by a few counts.</p></li><li><h3>Is ADC noise a broken sensor?</h3><p>Usually no. Small changes are normal. Real products often average or filter analog readings.</p></li><li><h3>Can I use any ESP32 GPIO for analog input?</h3><p>No. Only ADC-capable pins can read analog values. For beginner lessons, use a known ADC1 pin such as GPIO34.</p></li><li><h3>Why use GPIO34 in this mission?</h3><p>GPIO34 is an input-only ADC1 pin, which makes it a good safe choice for reading a potentiometer.</p></li><li><h3>Can GPIO34 control an LED?</h3><p>No. GPIO34 is input-only. Use it for reading, not output.</p></li><li><h3>What happens if I connect the potentiometer backwards?</h3><p>The numbers will move in the opposite direction. Low becomes high and high becomes low, but the ESP32 should still read safely if the ends are 3.3 V and GND.</p></li><li><h3>Can analog input read negative voltage?</h3><p>No. ESP32 GPIO pins should not receive negative voltage. Keep the signal between GND and 3.3 V.</p></li><li><h3>Why do real products use analog inputs?</h3><p>Many real-world conditions change gradually, such as light, pressure, position, moisture, battery voltage, and sound level.</p></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">PARTS</span><span class="mission-section-title">Related Components</span></h2>
+  <ul class="guide-related-list"><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The ESP32 includes ADC hardware for reading changing voltages.</span></li><li><a href="/components/dht22.html"><strong>DHT22 Temperature Sensor</strong></a> <span class="meta">Digital sensors are different from analog sensors, which makes this comparison useful.</span></li><li><a href="/components/bme280.html"><strong>BME280 Environmental Sensor</strong></a> <span class="meta">Smart digital sensors handle measurement internally, unlike a raw analog input.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">PROJ</span><span class="mission-section-title">Related Projects</span></h2>
+  <ul class="guide-related-list"><li><a href="/projects/esp32-soil-moisture-monitor.html"><strong>ESP32 Soil Moisture Monitor</strong></a> <span class="meta">Soil moisture modules often produce changing analog values.</span></li><li><a href="/projects/esp32-smart-irrigation-system.html"><strong>ESP32 Smart Irrigation System</strong></a> <span class="meta">Irrigation projects depend on reading gradual sensor values, not only ON/OFF states.</span></li><li><a href="/projects/esp32-air-quality-monitor.html"><strong>ESP32 Air Quality Monitor</strong></a> <span class="meta">Many environmental sensors begin with the same analog-thinking foundation.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
+  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">PREV</span><span class="mission-section-title">Previous Mission</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/pwm-fundamentals.html"><strong>PWM Fundamentals</strong></a> <span class="meta">You learned how the ESP32 can create smooth-looking output using fast digital switching.</span></li></ul>
+</section>
+<section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
+  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Next Mission</span></h2>
+  <ul class="guide-related-list"><li><strong>Mission 09 - Talking to Smart Components (I2C)</strong> <span class="meta">Next you will learn how the ESP32 talks to smart chips such as displays and sensors.</span></li></ul>
+</section>
+<section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
+  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">NEXT</span><span class="mission-section-title">Continue Learning</span></h2>
+  <ul class="guide-related-list"><li><a href="/guides/pwm-fundamentals.html"><strong>PWM Fundamentals</strong></a> <span class="meta">Compare analog input values with PWM output levels.</span></li><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">See how digital sensor readings differ from raw ADC readings.</span></li></ul>
+</section>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Learn</h4><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><h4>Resources</h4><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/news.html">News</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>
