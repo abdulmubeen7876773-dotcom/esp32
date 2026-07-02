@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from site_layout import badge_class, esc, site_href
+from guide_images import guide_image_alt, guide_image_path
 
 _ROOT = Path(__file__).resolve().parent.parent
 
@@ -865,7 +866,10 @@ def mission_index_card(guide: dict) -> str:
         desc = desc[:117].rstrip() + "…"
     m = guide.get("mission") or {}
     icon = m.get("icon", "🚀")
+    image = guide_image_path(slug)
+    alt = guide_image_alt(guide)
     return f"""<a class="mission-index-card" href="{esc(href)}">
+  <span class="card-media card-media--has-image"><img class="card-media-img" src="{esc(image)}" alt="{esc(alt)}" width="1024" height="576" loading="lazy" decoding="async" style="object-fit:contain;"></span>
   <span class="mission-index-icon" aria-hidden="true">{esc(icon)}</span>
   {mission_meta_badges_html(guide)}
   <h3>{esc(headline)}</h3>

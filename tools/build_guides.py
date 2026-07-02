@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
+from guide_images import guide_image_alt, guide_image_path
 from guide_mission import mission_index_card, mission_meta_badges_html, render_friendly_intro, render_mission_guide
 from site_layout import (
     OG_IMAGE,
@@ -39,6 +40,17 @@ def normalize_body(body: str) -> str:
     return "\n".join(f"  {line}" if line.strip() else line for line in body.splitlines())
 
 
+def guide_hero_image_html(guide: dict) -> str:
+    image = guide_image_path(guide["slug"])
+    alt = guide_image_alt(guide)
+    return (
+        f'<figure class="guide-hero-image" style="margin:1.5rem 0 0;">'
+        f'<img src="{esc(image)}" alt="{esc(alt)}" width="1024" height="576" decoding="async" '
+        f'style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);">'
+        f"</figure>"
+    )
+
+
 def sorted_guides(guides: list[dict]) -> list[dict]:
     return sorted(guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99), g.get("slug", "")))
 
@@ -55,8 +67,11 @@ def legacy_guide_card_html(g: dict) -> str:
     if len(desc) > 160:
         desc = desc[:157].rstrip() + "…"
     reading = g.get("reading_time", "")
+    image = guide_image_path(slug)
+    alt = guide_image_alt(g)
     return (
         f'<a class="guide-index-card reference-guide-card" href="{esc(href)}">'
+        f'<span class="card-media card-media--has-image"><img class="card-media-img" src="{esc(image)}" alt="{esc(alt)}" width="1024" height="576" loading="lazy" decoding="async" style="object-fit:contain;"></span>'
         f'<span class="badge badge-reference">Reference Guide</span>'
         f'<span class="badge {badge_class(g.get("proficiency_level", "Beginner"))}">{esc(g.get("proficiency_level", "Beginner"))}</span>'
         f"<h3>{esc(headline)}</h3>"
@@ -186,6 +201,7 @@ def render_legacy_guide(guide: dict) -> str:
   <h1>{esc(headline)}</h1>
   <p class="article-lead">{esc(lead)}</p>
   <p class="meta guide-meta">{esc(guide.get("reading_time", "14 min read"))} · Updated {esc(guide.get("date_modified", "2026-06-26"))}</p>
+{guide_hero_image_html(guide)}
 {intro}
   <div class="guide-technical-content">
 {body}
@@ -230,6 +246,7 @@ def render_mission_page(guide: dict) -> str:
       <h1 class="mission-hero-title">{esc(headline)}</h1>
       <p class="article-lead mission-hero-lead">{esc(lead)}</p>
       {mission_meta_badges_html(guide)}
+      {guide_hero_image_html(guide)}
     </div>
   </section>
 </div>
