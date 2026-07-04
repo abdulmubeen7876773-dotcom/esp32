@@ -24,6 +24,8 @@ from site_layout import (
     SITE_DOMAIN,
     OG_IMAGE,
     ORG_NAME,
+    site_href,
+    index_redirect_script,
     json_ld_script,
     social_meta,
     analytics_config_script,
@@ -408,7 +410,7 @@ def build_head(d: dict) -> str:
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{DOMAIN}/index.html"},
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{DOMAIN}/"},
             {"@type": "ListItem", "position": 2, "name": cat, "item": f"{DOMAIN}/projects.html"},
             {"@type": "ListItem", "position": 3, "name": d["title"], "item": url},
         ],
@@ -501,7 +503,7 @@ def assign_titles(all_data: list) -> None:
 
 def rnt_header():
     return f"""<div class="site-nav-sticky">
-<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="../index.html"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="../index.html">Home</a><a href="../projects.html">Projects</a><a href="../about.html">About</a><a href="../sitemap.html">Sitemap</a></nav></div></header>
+<header class="site-header"><div class="wrap header-inner"><a class="site-logo" href="{site_href()}"><span class="logo-mark" aria-hidden="true"></span>ESP32<span class="logo-accent">Library</span></a><button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><nav class="top-nav" aria-label="Main"><a href="{site_href()}">Home</a><a href="{site_href('projects.html')}">Projects</a><a href="{site_href('about.html')}">About</a><a href="{site_href('sitemap.html')}">Sitemap</a></nav></div></header>
 {featured_cat_bar("../")}
 </div>"""
 
@@ -546,7 +548,7 @@ def render_page(d: dict) -> str:
     health_note = ""
     if d["category"] == "Healthcare":
         health_note = '<p class="notice notice-health">This tutorial is for educational purposes only and is not medical advice. Do not use it for diagnosis, treatment, or patient monitoring without proper validation.</p>'
-    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../projects.html">Projects</a></li><li><a href="../projects.html#cat-{cat_slug}">{esc(d['category'])}</a></li><li aria-current="page">{esc(d['title'][:60])}</li></ol></nav>"""
+    breadcrumb = f"""<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('projects.html')}">Projects</a></li><li><a href="{site_href('projects.html#cat-' + cat_slug)}">{esc(d['category'])}</a></li><li aria-current="page">{esc(d['title'][:60])}</li></ol></nav>"""
     featured_badge = '<span class="badge badge-featured">Featured</span>' if d.get("featured") else ""
     hero_block = hero_diagram_dark(d) if d.get("featured") else ""
     wiring_viz = wiring_diagram_enhanced(d) if d.get("featured") else ""
@@ -561,6 +563,7 @@ def render_page(d: dict) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
+{index_redirect_script()}
 {GOOGLE_TAG_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

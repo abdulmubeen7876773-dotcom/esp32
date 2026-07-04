@@ -4,11 +4,25 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
 <script>
+  function esp32CanonicalPath(path) {
+    path = (path || '/').replace(/\/+/g, '/');
+    path = path.replace(/^\/esp32(?=\/|$)/i, '');
+    if (!path || path === '/index.html') return '/';
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, '');
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, '.html');
+    }
+    return path;
+  }
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-S2MHJBW77S');
+  gtag('config', 'G-S2MHJBW77S', {
+    page_path: esp32CanonicalPath(location.pathname),
+    page_location: 'https://esp32engine.com' + esp32CanonicalPath(location.pathname) + (location.search || ''),
+    page_title: document.title
+  });
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

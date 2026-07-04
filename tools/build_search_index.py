@@ -11,7 +11,10 @@ SEARCH_PAGE = ROOT / "search.html"
 
 
 def entry(type_label: str, title: str, desc: str, href: str, **extra) -> dict:
-    row = {"type": type_label, "title": title, "desc": desc, "href": href}
+    from site_layout import site_href
+
+    normalized_href = href if href.startswith(("http://", "https://")) else site_href(href)
+    row = {"type": type_label, "title": title, "desc": desc, "href": normalized_href}
     row.update(extra)
     return row
 

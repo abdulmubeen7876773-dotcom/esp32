@@ -15,6 +15,8 @@ from site_layout import (
     footer_html,
     head_html,
     projects_page_path,
+    canonical_url,
+    site_href,
     UI_JS_SRC,
     organization_schema,
     webpage_schema,
@@ -50,9 +52,7 @@ TODAY = date.today().isoformat()
 
 
 def page_loc(page: str) -> str:
-    if page == "":
-        return f"{SITE_DOMAIN}/"
-    return f"{SITE_DOMAIN}/{page}"
+    return canonical_url(page)
 
 
 def category_pages() -> list[tuple[str, str, str]]:
@@ -127,7 +127,7 @@ def write_sitemap_xml(project_files: list[Path]) -> int:
 def write_sitemap_html(project_files: list[Path]) -> None:
     valid = [p for p in project_files if "_archive" not in p.parts and "-project-" not in p.name]
     static_links = "".join(
-        f'<li><a href="{esc("/" if not p else "/" + p)}">{esc(("Home" if not p else p.replace(".html", "").replace("-", " ").title()))}</a></li>'
+        f'<li><a href="{esc(site_href(p))}">{esc(("Home" if not p else p.replace(".html", "").replace("-", " ").title()))}</a></li>'
         for p, _, _ in STATIC_PAGES
         if p != "sitemap.html"
     )

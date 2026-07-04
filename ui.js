@@ -117,6 +117,21 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
+  function canonicalPath(path) {
+    path = (path || '/').replace(/\/+/g, '/');
+    path = path.replace(/^\/esp32(?=\/|$)/i, '');
+    if (!path || path === '/index.html') return '/';
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, '');
+    if (
+      /^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(
+        path
+      )
+    ) {
+      return path.replace(/\/$/, '.html');
+    }
+    return path;
+  }
+
   function loadAnalytics() {
     var id = window.SITE_GA4;
     if (!id) return;
@@ -130,7 +145,12 @@
     s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
     document.head.appendChild(s);
     window.gtag('js', new Date());
-    window.gtag('config', id, { anonymize_ip: true });
+    window.gtag('config', id, {
+      anonymize_ip: true,
+      page_path: canonicalPath(location.pathname),
+      page_location: 'https://esp32engine.com' + canonicalPath(location.pathname) + (location.search || ''),
+      page_title: document.title,
+    });
   }
 
   function initCookieConsent() {

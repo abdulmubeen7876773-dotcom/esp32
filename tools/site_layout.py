@@ -25,14 +25,63 @@ PROJECTS_PAGE_SIZE = int(_cfg["projects_page_size"])
 OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
 OG_IMAGE_WIDTH = int(_cfg.get("og_image_width", 1200))
 OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
+DIRECTORY_ALIAS_PAGES = {
+    "projects",
+    "guides",
+    "components",
+    "learning",
+    "parents",
+    "teachers",
+    "downloads",
+    "tools",
+    "news",
+    "search",
+    "about",
+    "contact",
+    "privacy",
+    "terms",
+    "disclaimer",
+    "sitemap",
+}
+CANONICAL_ROUTE_SCRIPT = """<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\\/+/g, "/");
+    path = path.replace(/^\\/esp32(?=\\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\\/index\\.html$/i.test(path)) return path.replace(/index\\.html$/i, "");
+    if (/^\\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\\/$/i.test(path)) {
+      return path.replace(/\\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>"""
+
 GOOGLE_TAG_HTML = f"""<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={GA4_MEASUREMENT_ID}"></script>
 <script>
+  function esp32CanonicalPath(path) {{
+    path = (path || '/').replace(/\\/+/g, '/');
+    path = path.replace(/^\\/esp32(?=\\/|$)/i, '');
+    if (!path || path === '/index.html') return '/';
+    if (/\\/index\\.html$/i.test(path)) return path.replace(/index\\.html$/i, '');
+    if (/^\\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\\/$/i.test(path)) {{
+      return path.replace(/\\/$/, '.html');
+    }}
+    return path;
+  }}
   window.dataLayer = window.dataLayer || [];
   function gtag(){{dataLayer.push(arguments);}}
   gtag('js', new Date());
 
-  gtag('config', '{GA4_MEASUREMENT_ID}');
+  gtag('config', '{GA4_MEASUREMENT_ID}', {{
+    page_path: esp32CanonicalPath(location.pathname),
+    page_location: 'https://esp32engine.com' + esp32CanonicalPath(location.pathname) + (location.search || ''),
+    page_title: document.title
+  }});
 </script>"""
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#2563EB"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(37,99,235,.08)" stroke="rgba(37,99,235,.28)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="140" cy="130" r="10" fill="#2563EB"/><circle cx="140" cy="130" r="20" stroke="#2563EB" stroke-width="1.5" opacity=".35"/><text x="140" y="136" text-anchor="middle" fill="#1D4ED8" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#FBBF24" opacity=".9"/><circle cx="70" cy="220" r="5" fill="#EF4444" opacity=".75"/><path d="M200 220l20-16 12 20" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>"""
@@ -193,22 +242,49 @@ def modern_card(
     return f"""<a class="{card_class} modern-card project-card-item" href="{esc(link)}"{extra_attrs}><div class="card-media-wrap">{media}</div><div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
-def site_href(path: str = "") -> str:
-    p = (path or "").strip().lstrip("/")
-    if not p or p == "index.html":
+def normalize_public_path(path: str = "") -> str:
+    p = (path or "").strip().replace("\\", "/")
+    if not p:
         return "/"
-    return f"/{p}"
+    if p.startswith(("http://", "https://", "mailto:", "tel:", "#")):
+        return p
+    if "#" in p:
+        p, fragment = p.split("#", 1)
+        fragment = "#" + fragment
+    else:
+        fragment = ""
+    if "?" in p:
+        p, query = p.split("?", 1)
+        query = "?" + query
+    else:
+        query = ""
+    p = p.lstrip("/")
+    if p.lower().startswith("esp32/"):
+        p = p[6:]
+    if not p or p.lower() == "index.html":
+        return "/" + query + fragment
+    if p.lower().endswith("/index.html"):
+        p = p[:-10]
+    clean = p.strip("/").lower()
+    if clean in DIRECTORY_ALIAS_PAGES:
+        p = clean + ".html"
+    return f"/{p}{query}{fragment}"
+
+
+def site_href(path: str = "") -> str:
+    return normalize_public_path(path)
 
 
 def canonical_url(path: str = "") -> str:
-    p = (path or "").strip().lstrip("/")
-    if not p or p == "index.html":
-        return SITE_DOMAIN.rstrip("/") + "/"
-    return f"{SITE_DOMAIN.rstrip('/')}/{p}"
+    if (path or "").startswith(("http://", "https://")):
+        if path.startswith(SITE_DOMAIN):
+            return SITE_DOMAIN.rstrip("/") + normalize_public_path(path[len(SITE_DOMAIN) :])
+        return path
+    return SITE_DOMAIN.rstrip("/") + normalize_public_path(path)
 
 
 def index_redirect_script() -> str:
-    return '<script>if(/\\/index\\.html$/i.test(location.pathname))location.replace(location.pathname.replace(/index\\.html$/i,"")+(location.search||"")+(location.hash||"")||"/");</script>'
+    return CANONICAL_ROUTE_SCRIPT
 
 
 def json_ld_script(data) -> str:
@@ -437,8 +513,9 @@ def head_html(
     gsc = gsc_verification_meta() if include_gsc else ""
     pinterest = pinterest_verification_meta()
     extras = head_extras_html()
-    redirect = index_redirect_script() if include_index_redirect else ""
-    return f"""{GOOGLE_TAG_HTML}
+    redirect = CANONICAL_ROUTE_SCRIPT
+    return f"""{redirect}
+{GOOGLE_TAG_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
@@ -451,7 +528,6 @@ def head_html(
 {social_meta(title, description, canon, og_type, og_image)}
 {pinterest}
 {gsc}
-{redirect}
 <script>(function(){{try{{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){{document.documentElement.setAttribute("data-theme",t);return;}}if(window.matchMedia("(prefers-color-scheme: dark)").matches){{document.documentElement.setAttribute("data-theme","dark");return;}}document.documentElement.setAttribute("data-theme","light");}}catch(e){{document.documentElement.setAttribute("data-theme","light");}}}})();</script>
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
