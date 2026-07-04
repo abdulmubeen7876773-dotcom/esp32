@@ -1,6 +1,6 @@
 # Component Quality Report
 
-Generated: 2026-06-26T19:24:30Z
+Generated: 2026-07-04T15:45:41Z
 
 Benchmark: **DHT22** is the golden standard (`content/components/dht22.yaml`).
 
@@ -10,308 +10,278 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 
 ## Golden Benchmark (DHT22)
 
-- Overall: 100/100
-- Child: 100 · Parent: 100 · Teacher: 100
-- Engineering: 100 · SEO: 100 · Accessibility: 100
+- Overall: 78/100
+- Child: 75 · Parent: 50 · Teacher: 70
+- Engineering: 100 · SEO: 90 · Accessibility: 85
 
 ## Summary
 
 | Component | Overall | Priority | Missing required |
 |-----------|---------|----------|------------------|
-| HC-SR501 PIR Motion Sensor | 29/100 | HIGH | 8 |
-| 1-Channel Relay Module | 29/100 | HIGH | 8 |
-| HC-SR04 Ultrasonic Distance Sensor | 31/100 | HIGH | 8 |
-| SSD1306 OLED Display | 32/100 | HIGH | 8 |
-| ESP32 DevKit Board | 35/100 | HIGH | 8 |
-| DHT22 Temperature & Humidity Sensor | 100/100 | LOW | 0 |
-
-## HC-SR501 PIR Motion Sensor (`pir-sensor`)
-
-**Overall score:** 29/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 20/100
-- Parent Experience: 0/100
-- Teacher Experience: 15/100
-- Engineering: 65/100
-- SEO: 15/100
-- Accessibility: 60/100
-
-### Missing sections
-
-- Quick Facts
-- Troubleshooting
-- FAQ
-- Glossary
-- Parent Tips
-- Teacher Tips
-- Challenge
-- Related Guides
-- Wiring (recommended)
-- Common Mistakes (recommended)
-- Technical Specifications (recommended)
-- Datasheet (recommended)
-- Mini Quiz (recommended)
-
-### Recommendations
-
-- Add at least 4 quick_facts tiles (Measures, Pins, Best for, Voltage or speed).
-- Add 2+ FAQ entries prefixed "Glossary —".
-- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
-- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
-- Add 2+ FAQ entries prefixed "Challenge yourself —".
-- Add at least 2 problem/fix troubleshooting pairs.
-- Link to 2+ related guides with descriptions.
-- Add wiring block with illustration_alt, summary, and numbered steps.
-
-### Warnings
-
-- Missing Quick Facts
-- Missing Troubleshooting
-- Missing FAQ
-- Missing Glossary
-- Missing Parent Tips
-- Missing Teacher Tips
-- Missing Challenge
-- Missing Related Guides
-- Image uses external CDN URL — migrate to /assets/visuals/ when ready
-- Using legacy pins list — upgrade to structured pinout rows
-- Using legacy example_code — upgrade to code block with filename
+| 1-Channel Relay Module | 73/100 | MEDIUM | 4 |
+| SSD1306 OLED Display | 75/100 | LOW | 4 |
+| BME280 Environmental Sensor | 76/100 | LOW | 4 |
+| HC-SR501 PIR Motion Sensor | 76/100 | LOW | 4 |
+| DHT22 Temperature & Humidity Sensor | 78/100 | LOW | 4 |
+| HC-SR04 Ultrasonic Distance Sensor | 79/100 | LOW | 4 |
+| ESP32 DevKit Board | 80/100 | LOW | 4 |
 
 ## 1-Channel Relay Module (`relay-module`)
 
-**Overall score:** 29/100 · **Priority:** HIGH
+**Overall score:** 73/100 · **Priority:** MEDIUM
 
 ### Scores
 
-- Child Experience: 25/100
-- Parent Experience: 0/100
-- Teacher Experience: 15/100
-- Engineering: 60/100
-- SEO: 15/100
-- Accessibility: 60/100
+- Child Experience: 75/100
+- Parent Experience: 55/100
+- Teacher Experience: 55/100
+- Engineering: 95/100
+- SEO: 75/100
+- Accessibility: 85/100
 
 ### Missing sections
 
-- Quick Facts
-- Troubleshooting
-- FAQ
 - Glossary
 - Parent Tips
 - Teacher Tips
 - Challenge
-- Related Guides
-- Wiring (recommended)
-- Common Mistakes (recommended)
-- Technical Specifications (recommended)
 - Datasheet (recommended)
 - Mini Quiz (recommended)
 
 ### Recommendations
 
-- Add at least 4 quick_facts tiles (Measures, Pins, Best for, Voltage or speed).
 - Add 2+ FAQ entries prefixed "Glossary —".
 - Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
 - Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
 - Add 2+ FAQ entries prefixed "Challenge yourself —".
-- Add at least 2 problem/fix troubleshooting pairs.
-- Link to 2+ related guides with descriptions.
-- Add wiring block with illustration_alt, summary, and numbered steps.
-
-### Warnings
-
-- Missing Quick Facts
-- Missing Troubleshooting
-- Missing FAQ
-- Missing Glossary
-- Missing Parent Tips
-- Missing Teacher Tips
-- Missing Challenge
-- Missing Related Guides
-- Image uses external CDN URL — migrate to /assets/visuals/ when ready
-- Using legacy pins list — upgrade to structured pinout rows
-- Using legacy example_code — upgrade to code block with filename
-
-## HC-SR04 Ultrasonic Distance Sensor (`hc-sr04`)
-
-**Overall score:** 31/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 25/100
-- Parent Experience: 15/100
-- Teacher Experience: 30/100
-- Engineering: 60/100
-- SEO: 15/100
-- Accessibility: 40/100
-
-### Missing sections
-
-- Quick Facts
-- Troubleshooting
-- FAQ
-- Glossary
-- Parent Tips
-- Teacher Tips
-- Challenge
-- Related Guides
-- Wiring (recommended)
-- Common Mistakes (recommended)
-- Technical Specifications (recommended)
-- Mini Quiz (recommended)
-
-### Recommendations
-
-- Add at least 4 quick_facts tiles (Measures, Pins, Best for, Voltage or speed).
-- Add 2+ FAQ entries prefixed "Glossary —".
-- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
-- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
-- Add 2+ FAQ entries prefixed "Challenge yourself —".
-- Add at least 2 problem/fix troubleshooting pairs.
-- Link to 2+ related guides with descriptions.
-- Add wiring block with illustration_alt, summary, and numbered steps.
-
-### Warnings
-
-- Missing Quick Facts
-- Missing Troubleshooting
-- Missing FAQ
-- Missing Glossary
-- Missing Parent Tips
-- Missing Teacher Tips
-- Missing Challenge
-- Missing Related Guides
-- Image uses external CDN URL — migrate to /assets/visuals/ when ready
-- Using legacy pins list — upgrade to structured pinout rows
-- Using legacy example_code — upgrade to code block with filename
-
-## SSD1306 OLED Display (`ssd1306-oled`)
-
-**Overall score:** 32/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 25/100
-- Parent Experience: 15/100
-- Teacher Experience: 30/100
-- Engineering: 65/100
-- SEO: 15/100
-- Accessibility: 40/100
-
-### Missing sections
-
-- Quick Facts
-- Troubleshooting
-- FAQ
-- Glossary
-- Parent Tips
-- Teacher Tips
-- Challenge
-- Related Guides
-- Wiring (recommended)
-- Common Mistakes (recommended)
-- Technical Specifications (recommended)
-- Mini Quiz (recommended)
-
-### Recommendations
-
-- Add at least 4 quick_facts tiles (Measures, Pins, Best for, Voltage or speed).
-- Add 2+ FAQ entries prefixed "Glossary —".
-- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
-- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
-- Add 2+ FAQ entries prefixed "Challenge yourself —".
-- Add at least 2 problem/fix troubleshooting pairs.
-- Link to 2+ related guides with descriptions.
-- Add wiring block with illustration_alt, summary, and numbered steps.
-
-### Warnings
-
-- Missing Quick Facts
-- Missing Troubleshooting
-- Missing FAQ
-- Missing Glossary
-- Missing Parent Tips
-- Missing Teacher Tips
-- Missing Challenge
-- Missing Related Guides
-- Image uses external CDN URL — migrate to /assets/visuals/ when ready
-- Using legacy pins list — upgrade to structured pinout rows
-- Using legacy example_code — upgrade to code block with filename
-
-## ESP32 DevKit Board (`esp32-devkit`)
-
-**Overall score:** 35/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 25/100
-- Parent Experience: 25/100
-- Teacher Experience: 45/100
-- Engineering: 60/100
-- SEO: 15/100
-- Accessibility: 40/100
-
-### Missing sections
-
-- Quick Facts
-- Troubleshooting
-- FAQ
-- Glossary
-- Parent Tips
-- Teacher Tips
-- Challenge
-- Related Projects
-- Wiring (recommended)
-- Common Mistakes (recommended)
-- Mini Quiz (recommended)
-
-### Recommendations
-
-- Add at least 4 quick_facts tiles (Measures, Pins, Best for, Voltage or speed).
-- Add 2+ FAQ entries prefixed "Glossary —".
-- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
-- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
-- Add 2+ FAQ entries prefixed "Challenge yourself —".
-- Add at least 2 problem/fix troubleshooting pairs.
-- Link to at least 1 related project with description.
-- Add wiring block with illustration_alt, summary, and numbered steps.
-
-### Warnings
-
-- Missing Quick Facts
-- Missing Troubleshooting
-- Missing FAQ
-- Missing Glossary
-- Missing Parent Tips
-- Missing Teacher Tips
-- Missing Challenge
-- Missing Related Projects
-- Image uses external CDN URL — migrate to /assets/visuals/ when ready
-- Using legacy pins list — upgrade to structured pinout rows
-- Using legacy example_code — upgrade to code block with filename
-
-## DHT22 Temperature & Humidity Sensor (`dht22`)
-
-**Overall score:** 100/100 · **Priority:** LOW
-
-### Scores
-
-- Child Experience: 100/100
-- Parent Experience: 100/100
-- Teacher Experience: 100/100
-- Engineering: 100/100
-- SEO: 100/100
-- Accessibility: 100/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
 - Plan migration to local /assets/visuals/components/photos/ image.
 
 ### Warnings
 
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
+- Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## SSD1306 OLED Display (`ssd1306-oled`)
+
+**Overall score:** 75/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 75/100
+- Parent Experience: 50/100
+- Teacher Experience: 70/100
+- Engineering: 100/100
+- SEO: 70/100
+- Accessibility: 85/100
+
+### Missing sections
+
+- Glossary
+- Parent Tips
+- Teacher Tips
+- Challenge
+- Mini Quiz (recommended)
+
+### Recommendations
+
+- Add 2+ FAQ entries prefixed "Glossary —".
+- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
+- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
+- Add 2+ FAQ entries prefixed "Challenge yourself —".
+- Plan migration to local /assets/visuals/components/photos/ image.
+
+### Warnings
+
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
+- Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## BME280 Environmental Sensor (`bme280`)
+
+**Overall score:** 76/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 75/100
+- Parent Experience: 50/100
+- Teacher Experience: 70/100
+- Engineering: 100/100
+- SEO: 75/100
+- Accessibility: 85/100
+
+### Missing sections
+
+- Glossary
+- Parent Tips
+- Teacher Tips
+- Challenge
+- Mini Quiz (recommended)
+
+### Recommendations
+
+- Add 2+ FAQ entries prefixed "Glossary —".
+- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
+- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
+- Add 2+ FAQ entries prefixed "Challenge yourself —".
+- Plan migration to local /assets/visuals/components/photos/ image.
+
+### Warnings
+
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
+- Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## HC-SR501 PIR Motion Sensor (`pir-sensor`)
+
+**Overall score:** 76/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 75/100
+- Parent Experience: 50/100
+- Teacher Experience: 70/100
+- Engineering: 100/100
+- SEO: 75/100
+- Accessibility: 85/100
+
+### Missing sections
+
+- Glossary
+- Parent Tips
+- Teacher Tips
+- Challenge
+- Mini Quiz (recommended)
+
+### Recommendations
+
+- Add 2+ FAQ entries prefixed "Glossary —".
+- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
+- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
+- Add 2+ FAQ entries prefixed "Challenge yourself —".
+- Plan migration to local /assets/visuals/components/photos/ image.
+
+### Warnings
+
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
+- Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## DHT22 Temperature & Humidity Sensor (`dht22`)
+
+**Overall score:** 78/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 75/100
+- Parent Experience: 50/100
+- Teacher Experience: 70/100
+- Engineering: 100/100
+- SEO: 90/100
+- Accessibility: 85/100
+
+### Missing sections
+
+- Glossary
+- Parent Tips
+- Teacher Tips
+- Challenge
+- Mini Quiz (recommended)
+
+### Recommendations
+
+- Add 2+ FAQ entries prefixed "Glossary —".
+- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
+- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
+- Add 2+ FAQ entries prefixed "Challenge yourself —".
+- Plan migration to local /assets/visuals/components/photos/ image.
+
+### Warnings
+
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
+- Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## HC-SR04 Ultrasonic Distance Sensor (`hc-sr04`)
+
+**Overall score:** 79/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 75/100
+- Parent Experience: 70/100
+- Teacher Experience: 70/100
+- Engineering: 95/100
+- SEO: 80/100
+- Accessibility: 85/100
+
+### Missing sections
+
+- Glossary
+- Parent Tips
+- Teacher Tips
+- Challenge
+- Mini Quiz (recommended)
+
+### Recommendations
+
+- Add 2+ FAQ entries prefixed "Glossary —".
+- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
+- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
+- Add 2+ FAQ entries prefixed "Challenge yourself —".
+- Plan migration to local /assets/visuals/components/photos/ image.
+
+### Warnings
+
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
+- Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## ESP32 DevKit Board (`esp32-devkit`)
+
+**Overall score:** 80/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 75/100
+- Parent Experience: 50/100
+- Teacher Experience: 70/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 85/100
+
+### Missing sections
+
+- Glossary
+- Parent Tips
+- Teacher Tips
+- Challenge
+- Mini Quiz (recommended)
+
+### Recommendations
+
+- Add 2+ FAQ entries prefixed "Glossary —".
+- Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
+- Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
+- Add 2+ FAQ entries prefixed "Challenge yourself —".
+- Plan migration to local /assets/visuals/components/photos/ image.
+
+### Warnings
+
+- Missing Glossary
+- Missing Parent Tips
+- Missing Teacher Tips
+- Missing Challenge
 - Image uses external CDN URL — migrate to /assets/visuals/ when ready

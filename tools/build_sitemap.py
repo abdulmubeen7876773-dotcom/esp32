@@ -7,7 +7,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
 from content_store import get_content_store
-from site_layout import PROJECTS_PAGE_SIZE, SITE_DOMAIN, esc, header_html, footer_html, head_html, projects_page_path, UI_JS_SRC
+from site_layout import (
+    PROJECTS_PAGE_SIZE,
+    SITE_DOMAIN,
+    esc,
+    header_html,
+    footer_html,
+    head_html,
+    projects_page_path,
+    UI_JS_SRC,
+    organization_schema,
+    webpage_schema,
+    breadcrumb_schema,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "projects"
@@ -134,10 +146,19 @@ def write_sitemap_html(project_files: list[Path]) -> None:
   <section class="sitemap-projects"><h2>Projects ({len(valid)})</h2>
   <p class="meta">Search engines: <a href="sitemap.xml">sitemap.xml</a></p>
   <ul class="sitemap-project-list">{project_links}</ul></section>"""
+    schema = (
+        organization_schema()
+        + webpage_schema(
+            "Sitemap | ESP32 Engine",
+            "Complete sitemap of ESP32 Engine pages, categories, and tutorials.",
+            "sitemap.html",
+        )
+        + breadcrumb_schema([("Home", "/"), ("Sitemap", "sitemap.html")])
+    )
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", "Sitemap | ESP32 Engine", "Complete sitemap of ESP32 Engine pages, categories, and tutorials.", canonical_path="sitemap.html")}
+{head_html("", "Sitemap | ESP32 Engine", "Complete sitemap of ESP32 Engine pages, categories, and tutorials.", canonical_path="sitemap.html", extra_schema=schema)}
 </head>
 <body>
 <main>

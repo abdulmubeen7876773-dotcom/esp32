@@ -28,6 +28,12 @@ def normalize_body(body: str) -> str:
     return "\n".join(f"  {line}" if line.strip() else line for line in body.splitlines())
 
 
+def normalize_heading_outline(body: str) -> str:
+    if "<h1" not in body or "<h2" in body.split("<h1", 1)[-1].split("<h3", 1)[0]:
+        return body
+    return body.replace("</h1>", '</h1>\n<h2 class="visually-hidden">Page sections</h2>', 1)
+
+
 def page_schema(page: dict) -> str:
     slug = page["slug"]
     title = page["title"]
@@ -50,17 +56,23 @@ def cms_page_html(page: dict) -> str:
         page.get("nav", slug),
         page["title"],
         page["meta_description"],
-        normalize_body(page.get("body_html", "")),
+        normalize_body(normalize_heading_outline(page.get("body_html", ""))),
         f"{slug}.html",
         page_schema(page),
     )
 
 
 def not_found_page() -> str:
+    schema = organization_schema() + webpage_schema(
+        f"Page Not Found | {SITE_NAME}",
+        "The page you requested was not found on ESP32 Engine.",
+        "404.html",
+        "WebPage",
+    )
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", f"Page Not Found | {SITE_NAME}", "The page you requested was not found on ESP32 Engine.", canonical_path="404.html", robots="noindex,nofollow")}
+{head_html("", f"Page Not Found | {SITE_NAME}", "The page you requested was not found on ESP32 Engine.", canonical_path="404.html", robots="noindex,nofollow", extra_schema=schema)}
 </head>
 <body>
 <main>

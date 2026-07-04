@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
+from project_images import project_image_path
 from parent_registry import PARENTS
 from content_store import get_content_store
 from site_layout import (
@@ -175,18 +176,19 @@ LEVELS = ["Beginner", "Intermediate", "Advanced"]
 
 
 def parent_listing_record(parent: dict) -> dict:
+    slug = parent["slug"]
     desc = parent["description"]
     if len(desc) > 120:
         desc = desc[:117].rstrip() + "…"
     return {
-        "href": f"projects/{parent['slug']}.html",
+        "href": f"projects/{slug}.html",
         "title": parent["title"],
         "desc": desc,
         "description": parent.get("description", desc),
         "category": parent["category"],
-        "slug": parent["slug"],
+        "slug": slug,
         "featured": bool(parent.get("featured")),
-        "featured_image": parent.get("featured_image") or parent.get("image") or "",
+        "featured_image": project_image_path(slug) or parent.get("featured_image") or parent.get("image"),
         "levels": LEVELS,
         "readMin": 12,
     }
@@ -220,7 +222,7 @@ def parent_grid_card(p: dict) -> str:
     media = card_media_html(
         p["category"],
         p.get("slug", ""),
-        p.get("featured_image") or p.get("image") or "",
+        project_image_path(p.get("slug", "")) or p.get("featured_image") or p.get("image") or "",
     )
     desc = esc(p.get("desc", ""))
     rt = esc(read_time_label("Beginner", p.get("slug", "")))
@@ -246,7 +248,7 @@ def project_json_record(p: dict) -> dict:
         "levels": p.get("levels", LEVELS),
         "readMin": p.get("readMin", 12),
         "featured": bool(p.get("featured")),
-        "featured_image": p.get("featured_image") or p.get("image") or "",
+        "featured_image": project_image_path(p.get("slug", "")) or p.get("featured_image") or p.get("image") or "",
     }
 
 
@@ -288,7 +290,7 @@ def home_html(projects):
     schema = organization_schema() + website_schema()
     guides = store.guides()
     components = store.components()
-    catalog = store.projects()
+    catalog = projects
     project_count = len(projects)
     guide_count = len(guides)
     component_count = len(components)

@@ -580,7 +580,7 @@ def render_page(d: dict) -> str:
 <div class="wrap article-shell">
   <aside class="sidebar-left">
     <div class="sidebar-sticky">
-    <h3>On this page</h3>
+    <p class="sidebar-label">On this page</p>
     <ul class="side-list side-toc">
       <li><a href="#overview">Overview</a></li>
       <li><a href="#parts">Parts</a></li>
@@ -591,7 +591,7 @@ def render_page(d: dict) -> str:
       <li><a href="#faq">FAQ</a></li>
       <li><a href="#related">Related</a></li>
     </ul>
-    <h3 class="sidebar-divider">Category</h3>
+    <p class="sidebar-label sidebar-divider">Category</p>
     <ul class="side-list"><li><a href="../projects.html#cat-{cat_slug_nav}">{esc(d['category'])}</a></li></ul>
     </div>
   </aside>

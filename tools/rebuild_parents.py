@@ -8,6 +8,7 @@ from parent_registry import PARENTS, PARENT_BY_SLUG
 from project_page import is_golden_project, render_golden_project_page
 from staged_content import LEVELS, LEVEL_LABELS, build_all_levels
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
+from project_images import project_image_path
 from rebuild_projects import parse_project, esc
 from site_layout import (
     footer_html,
@@ -41,6 +42,13 @@ ARCHIVE = PROJECTS / "_archive"
 DOMAIN = SITE_DOMAIN
 
 
+def clean_staged_value(value: object, fallback: str) -> str:
+    text = str(value or "").strip()
+    if not text or text.upper().startswith("TODO") or "TODO:" in text.upper():
+        return fallback
+    return text
+
+
 def load_hardware_from_archive(parent: dict) -> dict:
     base = parent["source_base"]
     matches = sorted(
@@ -57,8 +65,8 @@ def load_hardware_from_archive(parent: dict) -> dict:
             "wiring": [],
             "sensor_pin": "GPIO34",
             "output_pin": "GPIO26",
-            "sensor_name": parent.get("sensor", "Sensor"),
-            "output_name": parent.get("output", "Output"),
+            "sensor_name": clean_staged_value(parent.get("sensor"), "Project input"),
+            "output_name": clean_staged_value(parent.get("output"), "Project output"),
             "category": parent["category"],
         }
     data = parse_project(matches[0])
@@ -79,10 +87,10 @@ def load_hardware(parent: dict) -> dict:
         if wiring or stored.get("sensor_pin"):
             return {
                 "wiring": wiring,
-                "sensor_pin": stored.get("sensor_pin", "GPIO34"),
-                "output_pin": stored.get("output_pin", "GPIO26"),
-                "sensor_name": stored.get("sensor_name") or parent.get("sensor", "Sensor"),
-                "output_name": stored.get("output_name") or parent.get("output", "Output"),
+                "sensor_pin": clean_staged_value(stored.get("sensor_pin"), "GPIO34"),
+                "output_pin": clean_staged_value(stored.get("output_pin"), "GPIO26"),
+                "sensor_name": clean_staged_value(stored.get("sensor_name") or parent.get("sensor"), "Project input"),
+                "output_name": clean_staged_value(stored.get("output_name") or parent.get("output"), "Project output"),
                 "category": parent.get("category", "ESP32"),
             }
 
@@ -131,8 +139,8 @@ def steps_html(items: list[str]) -> str:
 
 def faq_for_parent(parent: dict) -> list[tuple[str, str]]:
     title = parent["title"]
-    sensor = parent.get("sensor", "sensor module")
-    output = parent.get("output", "output module")
+    sensor = clean_staged_value(parent.get("sensor"), "project-specific input hardware")
+    output = clean_staged_value(parent.get("output"), "project-specific output hardware")
     cat = parent.get("category", "ESP32")
     return [
         (
@@ -173,7 +181,7 @@ def build_head(parent: dict, hardware: dict) -> str:
         faq_schema.append(
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
         )
-    image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or OG_IMAGE
+    image = project_image_path(parent["slug"]) or parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or OG_IMAGE
     absolute_image = image if image.startswith("http") else f"{DOMAIN}{image}"
     article = {
         "@context": "https://schema.org",
@@ -191,7 +199,7 @@ def build_head(parent: dict, hardware: dict) -> str:
         },
         "mainEntityOfPage": {"@type": "WebPage", "@id": url},
         "proficiencyLevel": "Beginner",
-        "dependencies": f"ESP32 DevKit, {parent.get('sensor', 'sensor')}, {parent.get('output', 'output')}",
+        "dependencies": f"ESP32 DevKit, {clean_staged_value(parent.get('sensor'), 'project input hardware')}, {clean_staged_value(parent.get('output'), 'project output hardware')}",
     }
     howto = {
         "@context": "https://schema.org",
@@ -278,7 +286,7 @@ def render_difficulty_content(level: dict, parent: dict) -> str:
     apps = "".join(f"<li>{esc(a)}</li>" for a in level["apps"])
     upgrades = "".join(f"<li>{esc(u)}</li>" for u in level["upgrades"])
     trouble = "".join(
-        f'<div class="trouble-item"><h4>{esc(q)}</h4><p>{esc(a)}</p></div>'
+        f'<div class="trouble-item"><h3>{esc(q)}</h3><p>{esc(a)}</p></div>'
         for q, a in level["troubleshooting"]
     )
     code_esc = esc(level["code"])
@@ -324,7 +332,7 @@ def render_golden_parent(parent: dict) -> str:
         ]
     )
     url = f"{SITE_DOMAIN}/{path}"
-    image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or OG_IMAGE
+    image = project_image_path(parent["slug"]) or parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or OG_IMAGE
     absolute_image = image if str(image).startswith("http") else f"{SITE_DOMAIN}{image}"
     article = {
         "@context": "https://schema.org",
@@ -369,7 +377,7 @@ def render_golden_parent(parent: dict) -> str:
         + json_ld_script(howto)
         + (json_ld_script(faq_schema) if faq_items else "")
     )
-    og_image = parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image") or ""
+    og_image = project_image_path(parent["slug"]) or parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image")
     head = head_html("", title, desc, canonical_path=path, og_type="article", extra_schema=schema, og_image=og_image)
     return render_golden_project_page(
         parent,
@@ -385,10 +393,10 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     cat_slug = slug_cat(cat)
     tc = icon_thumb_class(cat)
     icon = pick_icon(cat)
-    hero_image = parent.get("hero_image") or parent.get("featured_image") or ""
+    hero_image = project_image_path(parent["slug"]) or parent.get("hero_image") or parent.get("featured_image")
     if hero_image:
         hero_media = (
-            f'<img class="project-hero-art-img" src="{esc(hero_image)}" alt="" loading="eager" decoding="async">'
+            f'<img class="project-hero-art-img" src="{esc(hero_image)}" alt="" width="1376" height="768" loading="eager" decoding="async">'
         )
     else:
         hero_media = icon
@@ -435,15 +443,15 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <div class="wrap article-shell parent-project-shell">
   <aside class="sidebar-left">
     <div class="sidebar-sticky">
-      <h3>Difficulty</h3>
+      <p class="sidebar-label">Difficulty</p>
       <ul class="side-list side-toc side-levels">
         <li><a href="#beginner" data-level-link="beginner">Beginner</a></li>
         <li><a href="#intermediate" data-level-link="intermediate">Intermediate</a></li>
         <li><a href="#advanced" data-level-link="advanced">Advanced</a></li>
       </ul>
-      <h3 class="sidebar-divider">Sections</h3>
+      <p class="sidebar-label sidebar-divider">Sections</p>
       {section_toc_html("beginner")}
-      <h3 class="sidebar-divider">Category</h3>
+      <p class="sidebar-label sidebar-divider">Category</p>
       <ul class="side-list"><li><a href="{site_href(f'category/{cat_slug}.html')}">{esc(cat)}</a></li></ul>
     </div>
   </aside>
@@ -453,6 +461,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
       <div class="parent-hero-row project-hero-banner">
         <div class="parent-hero-text">
           <h1>{esc(parent['title'])}</h1>
+          <h2 class="visually-hidden">Project tutorial sections</h2>
           <div class="article-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span>{level_badges}</div>
           <p class="article-lead">{esc(parent['description'])}</p>
         </div>

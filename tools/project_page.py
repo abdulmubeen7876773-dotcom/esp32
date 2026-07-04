@@ -285,7 +285,7 @@ def build_photos_section(items: list) -> str:
 <span class="project-part-body"><span class="project-part-name">{esc(title)}</span><span class="project-part-note">{esc(note)}</span></span></li>"""
         )
     return f"""<section class="project-section" id="build-photos" aria-labelledby="build-photos-heading">
-  {project_section_heading("build-photos", "IMG", "Build Photos Placeholder")}
+  {project_section_heading("build-photos", "IMG", "Build Photos")}
   <ul class="project-parts-list">{"".join(rows)}</ul>
 </section>"""
 

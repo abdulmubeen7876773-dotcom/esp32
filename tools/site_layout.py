@@ -55,7 +55,7 @@ ICON_THEME = '<span class="theme-icon theme-icon-moon" aria-hidden="true"><svg v
 
 LOGO_HTML = (
     '<img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" '
-    'alt="ESP32 Engine" width="132" height="56" decoding="async">'
+    'alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low">'
 )
 
 HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
@@ -142,7 +142,7 @@ def card_media_html(
     if featured_image and not str(featured_image).startswith("TODO"):
         return (
             f'<div class="card-media card-media--has-image">'
-            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" loading="lazy" decoding="async" '
+            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" width="1376" height="768" loading="lazy" decoding="async" '
             f'onerror="this.closest(&#39;.card-media&#39;).classList.add(&#39;is-fallback&#39;)">'
             f'<div class="card-media-fallback {tc}">{icon}</div>'
             f"</div>"
@@ -334,11 +334,18 @@ def analytics_config_script() -> str:
     return f'<script>window.SITE_GA4="{ga}";</script>'
 
 
+FONT_CSS = (
+    "https://fonts.googleapis.com/css2?"
+    "family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=swap"
+)
+
+
 def font_links_html() -> str:
-    return """<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700;800&display=swap"></noscript>"""
+    return f"""<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="{FONT_CSS}">
+<link rel="stylesheet" href="{FONT_CSS}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{FONT_CSS}"></noscript>"""
 
 
 def head_extras_html() -> str:
@@ -398,6 +405,19 @@ def pinterest_verification_meta() -> str:
     return f'<meta name="p:domain_verify" content="{esc(PINTEREST_VERIFICATION)}">'
 
 
+def stylesheet_links_html(homepage_perf: bool = False) -> str:
+    if homepage_perf:
+        return f"""<link rel="stylesheet" href="/assets/critical-home.css?v={CSS_VERSION}">
+<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/style.css?v={CSS_VERSION}"></noscript>"""
+    return f"""<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style">
+<link rel="stylesheet" href="/style.css?v={CSS_VERSION}">"""
+
+
+def homepage_hero_preload_html() -> str:
+    return """<link rel="preload" as="image" href="/assets/images/heroes/home-hero.webp" type="image/webp" fetchpriority="high">"""
+
+
 def head_html(
     base: str,
     title: str,
@@ -409,6 +429,7 @@ def head_html(
     robots: str = "index,follow,max-image-preview:large",
     include_index_redirect: bool = False,
     og_image: str = "",
+    homepage_perf: bool = False,
 ) -> str:
     t = esc(title)
     d = esc(description)
@@ -435,8 +456,7 @@ def head_html(
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}
 {font_links_html()}
-<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style">
-<link rel="stylesheet" href="/style.css?v={CSS_VERSION}">
+{stylesheet_links_html(homepage_perf)}
 {extra_schema}"""
 
 
@@ -932,7 +952,7 @@ def home_cta_banner(project_count: int) -> str:
 
 _V2_ARROW_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg>'
 
-_V2_HERO_IMAGE = """<img class="v2-hero-board-svg" src="/assets/images/heroes/home-hero.webp" alt="ESP32 development workspace with breadboard, relays, and display" width="1024" height="576" fetchpriority="high" decoding="async">"""
+_V2_HERO_IMAGE = """<img class="v2-hero-board-svg" src="/assets/images/heroes/home-hero.webp" alt="ESP32 development workspace with breadboard, relays, and display" width="1024" height="572" fetchpriority="high" decoding="async">"""
 
 _V2_HERO_FLOAT_CARDS = """<div class="v2-hero-float-stack" aria-hidden="true">
 <div class="v2-hero-float-card v2-hero-float-card-a"><span class="v2-float-label">Temperature</span><strong>24.3°C</strong><span class="v2-float-sub">DHT22 Sensor</span></div>
@@ -972,7 +992,7 @@ def home_v2_declaration() -> str:
     """Section 1 — Homepage v2: The Declaration (full-viewport hero)."""
     return f"""<section class="v2-declaration" aria-labelledby="v2-hero-heading">
   <div class="wrap v2-declaration-inner">
-    <div class="v2-declaration-content reveal">
+    <div class="v2-declaration-content">
       <p class="v2-eyebrow">ESP32 Engine</p>
       <h1 id="v2-hero-heading" class="v2-declaration-headline">Build things that exist<br>in the real world.</h1>
       <p class="v2-declaration-sub">ESP32 Engine is where engineers, makers, and curious minds learn to build hardware that actually works.</p>
@@ -1104,30 +1124,7 @@ def home_v2_invitation() -> str:
 
 
 def home_v2_showcase_js() -> str:
-    """Minimal inline JS for showcase drag-scroll and dot indicator (homepage only)."""
-    return """<script>
-(function(){
-  var track=document.getElementById('v2-showcase-track');
-  if(!track)return;
-  var dots=document.querySelectorAll('.v2-showcase-dot');
-  var panels=track.querySelectorAll('.v2-showcase-panel');
-  function updateDots(){
-    var idx=Math.round(track.scrollLeft/track.offsetWidth);
-    dots.forEach(function(d,i){d.classList.toggle('is-active',i===idx);});
-  }
-  track.addEventListener('scroll',updateDots,{passive:true});
-  dots.forEach(function(dot){
-    dot.addEventListener('click',function(){
-      var p=parseInt(dot.getAttribute('data-panel'),10);
-      track.scrollTo({left:p*track.offsetWidth,behavior:'smooth'});
-    });
-  });
-  var startX,startScroll,dragging=false;
-  track.addEventListener('mousedown',function(e){startX=e.pageX;startScroll=track.scrollLeft;dragging=true;track.classList.add('is-dragging');});
-  document.addEventListener('mousemove',function(e){if(!dragging)return;track.scrollLeft=startScroll-(e.pageX-startX);});
-  document.addEventListener('mouseup',function(){dragging=false;track.classList.remove('is-dragging');});
-})();
-</script>"""
+    return ""
 
 
 # ── Homepage v3 Constants ─────────────────────────────────────────────────
@@ -1341,7 +1338,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
             if image:
                 image_html = (
                     f'<span class="v3-pick-art" aria-hidden="true">'
-                    f'<img src="{esc(image)}" alt="" loading="lazy" decoding="async"></span>'
+                    f'<img src="{esc(image)}" alt="" width="1376" height="768" loading="lazy" decoding="async"></span>'
                 )
             rows.append(
                 f'<a class="v3-pick-row" href="{site_href(f"projects/{p["slug"]}.html")}">'
@@ -1588,9 +1585,9 @@ def footer_html(base: str = "") -> str:
         <a href="{esc(YOUTUBE_URL)}" rel="noopener noreferrer" target="_blank" aria-label="YouTube">{ICON_YOUTUBE}</a>
       </div>
     </div>
-    <div class="footer-col"><h4>Learn</h4><a href="{site_href('learning.html')}">Learning Paths</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('components.html')}">Components</a><a href="{site_href('projects.html')}">Projects</a></div>
-    <div class="footer-col"><h4>Resources</h4><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Downloads</a><a href="{site_href('tools.html')}">Tools</a></div>
-    <div class="footer-col"><h4>Company</h4><a href="{site_href('about.html')}">About</a><a href="{site_href('news.html')}">News</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a></div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="{site_href('learning.html')}">Learning Paths</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('components.html')}">Components</a><a href="{site_href('projects.html')}">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Downloads</a><a href="{site_href('tools.html')}">Tools</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="{site_href('about.html')}">About</a><a href="{site_href('news.html')}">News</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a></div>
   </div>
   <div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div>
 </footer>"""

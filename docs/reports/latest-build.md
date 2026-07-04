@@ -1,6 +1,6 @@
 # Latest Build Report
 
-Generated: 2026-06-29T10:07:11Z
+Generated: 2026-07-04T15:45:02Z
 
 ## Build Status
 
@@ -8,18 +8,18 @@ PASS
 
 ## Generated Pages
 
-- Guides: 5
+- Guides: 18
 - Components: 7
 - Projects: 50
-- Static pages: 37
+- Static pages: 38
 
 ## Search Index
 
-73
+86
 
 ## Sitemap
 
-93
+107
 
 ## Feed
 
@@ -27,15 +27,15 @@ PASS
 
 ## Build Time
 
-65.82s
+120.68s
 
 ## Build Duration
 
-65.82s
+120.68s
 
-## Warnings (1)
+## Warnings (0)
 
-- IndexNow: HTTP 403 — {"errorCode":"UserForbiddedToAccessSite","message":"User is unauthorized to access the site. Please verify the site using the key and try again","details":null}
+- None
 
 ## Errors (0)
 

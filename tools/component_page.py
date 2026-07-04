@@ -1,3 +1,4 @@
+from component_images import component_image_path
 from guide_mission import code_panel, illustration_placeholder
 from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
 
@@ -357,7 +358,7 @@ def downloads_html(component: dict) -> str:
     url = component.get("datasheet_url", "")
     note = (component.get("datasheet_note") or "Official manufacturer PDF for teachers and advanced builders.").strip()
     if not url:
-        action = '<p class="component-download-placeholder">Datasheet coming soon.</p>'
+        action = '<p class="component-download-placeholder">No separate datasheet is needed for this beginner guide.</p>'
     else:
         action = f'<a class="btn btn-secondary component-download-btn" href="{esc(url)}" rel="noopener noreferrer" target="_blank">Download Datasheet (PDF)</a>'
     return f"""<section class="component-section component-downloads" id="downloads" aria-labelledby="downloads-heading">
@@ -401,8 +402,8 @@ def derive_quick_facts(component: dict) -> list:
 
 
 def component_card_html(c: dict) -> str:
-    img = c.get("image", "")
-    img_html = f'<img src="{esc(img)}" alt="{esc(c["name"])}" loading="lazy" decoding="async">' if img else component_art_svg(c)
+    img = component_image_path(c["slug"]) or c.get("image", "")
+    img_html = f'<img src="{esc(img)}" alt="{esc(c["name"])}" width="1376" height="768" loading="lazy" decoding="async">' if img else component_art_svg(c)
     facts = derive_quick_facts(c)
     first_fact = facts[0].get("value", "") if facts and isinstance(facts[0], dict) else "ESP32 ready"
     summary = c.get("summary", "")
@@ -456,7 +457,7 @@ def render_component_body(component: dict) -> str:
 
 def component_hero_html(component: dict) -> str:
     name = component["name"]
-    img = component.get("image", "")
+    img = component_image_path(component["slug"]) or component.get("image", "")
     icon = component.get("icon", "C")
     media_img = f'<img src="{esc(img)}" alt="{esc(name)}" loading="eager" width="320" height="240">' if img else f'<span class="component-hero-fallback" aria-hidden="true">{esc(icon)}</span>'
     media = f'<div class="component-hero-photo">{media_img}</div><div class="component-hero-illustration" aria-hidden="true">{component_art_svg(component)}</div>'

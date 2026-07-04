@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-06-29T10:07:12Z
+Generated: 2026-07-04T15:45:06Z
 
 ## Components
 
@@ -9,7 +9,7 @@ Generated: 2026-06-29T10:07:12Z
 
 ## Guides
 
-- Complete: 5
+- Complete: 16
 - Planned: 100
 
 ## Projects
@@ -19,18 +19,31 @@ Generated: 2026-06-29T10:07:12Z
 
 ## Mission Count
 
-3
+16
 
 ## Illustrations
 
 - Complete: 0
-- Missing: 3
+- Missing: 16
 
 Missing items:
 
+- guides/analog-inputs-reading-real-world: concept
+- guides/analog-inputs: concept
 - guides/blink-led-esp32: concept
+- guides/button-led-control: concept
 - guides/connect-oled-esp32: concept
+- guides/debouncing-buttons: concept
+- guides/digital-inputs-floating-pins: concept
+- guides/environmental-sensors: concept
+- guides/i2c-communication: concept
+- guides/multiple-buttons-state-detection: concept
+- guides/oled-display-esp32: concept
+- guides/pull-up-vs-pull-down-resistors: concept
+- guides/pwm-fundamentals: concept
 - guides/read-temperature-dht22: concept
+- guides/reading-analog-sensors: concept
+- guides/smart-environment-monitor-capstone: concept
 
 ## Photos
 
@@ -49,25 +62,35 @@ Missing items:
 
 ## Pinouts
 
-- Complete: 2
-- Missing: 5
-
-Missing items:
-
-- components/esp32-devkit: pinout
-- components/hc-sr04: pinout
-- components/pir-sensor: pinout
-- components/relay-module: pinout
-- components/ssd1306-oled: pinout
+- Complete: 7
+- Missing: 0
 
 ## Wiring
 
 - Complete: 1
-- Missing: 4
+- Missing: 22
 
 Missing items:
 
+- guides/analog-inputs-reading-real-world: wiring diagram
+- guides/analog-inputs: wiring diagram
+- guides/button-led-control: wiring diagram
 - guides/connect-oled-esp32: wiring diagram
+- guides/debouncing-buttons: wiring diagram
+- guides/digital-inputs-floating-pins: wiring diagram
+- guides/environmental-sensors: wiring diagram
+- guides/i2c-communication: wiring diagram
+- guides/multiple-buttons-state-detection: wiring diagram
+- guides/oled-display-esp32: wiring diagram
+- guides/pull-up-vs-pull-down-resistors: wiring diagram
+- guides/pwm-fundamentals: wiring diagram
 - guides/read-temperature-dht22: wiring diagram
+- guides/reading-analog-sensors: wiring diagram
+- guides/smart-environment-monitor-capstone: wiring diagram
 - components/bme280: wiring diagram
 - components/dht22: wiring diagram
+- components/esp32-devkit: wiring diagram
+- components/hc-sr04: wiring diagram
+- components/pir-sensor: wiring diagram
+- components/relay-module: wiring diagram
+- components/ssd1306-oled: wiring diagram
