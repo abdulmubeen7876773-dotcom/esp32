@@ -118,6 +118,9 @@ def project_review_references_section(p: dict) -> str:
         ("Espressif ESP32 Documentation", "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/"),
         ("Arduino ESP32 Core", "https://docs.espressif.com/projects/arduino-esp32/en/latest/"),
     ]
+    for ref in proj.get("references", []):
+        if isinstance(ref, dict) and ref.get("title") and ref.get("href"):
+            refs.append((ref["title"], ref["href"]))
     links = []
     for label, href in refs:
         attrs = ' target="_blank" rel="noopener noreferrer"' if href.startswith("http") else ""
@@ -449,6 +452,8 @@ def render_project_body(p: dict) -> str:
 {troubleshooting_section(proj.get("troubleshooting", []))}
 {callout_list_section("mistakes", "WARN", "Common Mistakes", proj.get("common_mistakes", []), "project-mistakes")}
 {simple_list_section("testing", "TEST", "Testing Checklist", proj.get("testing_checklist", []), "project-testing")}
+{simple_list_section("engineer-tips", "TIP", "Engineering Tips", proj.get("engineer_tips", []), "project-engineer-tips")}
+{simple_list_section("performance", "PERF", "Performance Tips", proj.get("performance_tips", []), "project-performance")}
 {upgrade_section(proj.get("upgrade_ideas", []))}
 {simple_list_section("applications", "APP", "Real-World Applications", proj.get("real_world_applications", []), "project-applications")}
 {simple_list_section("downloads", "DL", "Downloads", proj.get("downloads", []), "project-downloads")}
@@ -468,7 +473,7 @@ def project_hero_html(p: dict, category: str) -> str:
     hero_art = ""
     if hero_image:
         hero_art = (
-            f'<div class="project-hero-art">'
+            f'\n    <div class="project-hero-art">'
             f'<img src="{esc(hero_image)}" alt="" loading="eager" decoding="async"></div>'
         )
     return f"""<div class="project-hero-band">
@@ -483,8 +488,7 @@ def project_hero_html(p: dict, category: str) -> str:
       <p class="project-hero-summary">{esc(desc)}</p>
       {project_meta_badges(p)}
       <span class="project-hero-icon" aria-hidden="true">{esc(icon)}</span>
-    </div>
-    {hero_art}
+    </div>{hero_art}
   </section>
 </div>"""
 

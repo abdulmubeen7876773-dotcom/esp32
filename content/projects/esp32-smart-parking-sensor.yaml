@@ -1,19 +1,18 @@
 slug: esp32-smart-parking-sensor
 title: ESP32 Smart Parking Sensor
 category: Smart City
-description: Use HC-SR04 ultrasonic sensors with the ESP32 to detect vehicle presence in parking bays,
-  display available space count on an LED display, and publish occupancy data to a web dashboard for smart
-  city parking management.
-meta_description: Build an ESP32 smart parking sensor using HC-SR04 ultrasonic sensors. From single-bay
-  detection to multi-bay web dashboard and MQTT parking management system.
+description: Use HC-SR04 ultrasonic sensors with the ESP32 to detect vehicle presence in parking bays, display available space
+  count on an LED display, and publish occupancy data to a web dashboard for smart city parking management.
+meta_description: A parking-bay detector that measures distance with an HC-SR04 ultrasonic sensor and uses LEDs or a dashboard
+  output to show whether a space is free or occu
 source_base: esp32-smart-parking-sensor-legacy-import
 sensor: HC-SR04 TRIG
 output: HC-SR04 ECHO
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
-status: needs_polish
+date_modified: '2026-07-05'
+quality_status: golden_tutorial
+status: published
 import_tier: 2
 import_source: batch-php
 hardware:
@@ -37,10 +36,10 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect an HC-SR04 ultrasonic distance sensor
-      to the ESP32 and detect whether a vehicle is present in a parking bay. A measured distance below
-      50 cm indicates an occupied bay. A green LED shows the bay is free and a red LED shows it is occupied.
-      The Serial Monitor prints the measured distance in centimetres every 500 ms.</p>
+    overview_html: <p>In this beginner project you will connect an HC-SR04 ultrasonic distance sensor to the ESP32 and detect
+      whether a vehicle is present in a parking bay. A measured distance below 50 cm indicates an occupied bay. A green LED
+      shows the bay is free and a red LED shows it is occupied. The Serial Monitor prints the measured distance in centimetres
+      every 500 ms.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× HC-SR04 ultrasonic sensor — 5 V; use voltage divider on ECHO pin
@@ -69,19 +68,17 @@ levels:
       - GPIO 26
       - 220 ohm resistor
     how:
-    - 'Ultrasonic Time-of-Flight Measurement: A 10 us HIGH pulse on TRIG fires an 8-cycle 40 kHz ultrasonic
-      burst. The ECHO pin goes HIGH when the burst leaves and LOW when the reflection returns. pulseIn()
-      measures this pulse duration in microseconds. Distance = duration * 0.034 / 2 (speed of sound divided
-      by round-trip).'
-    - 'Vehicle Detection Threshold: A parking bay sensor mounted at 1-2 m height above an empty bay reads
-      100-200 cm to the ground. A parked car reduces this to 10-40 cm. The 50 cm threshold reliably distinguishes
-      an occupied bay from an empty one with margin for low vehicles.'
-    - 'Timeout Handling: pulseIn() with a 30,000 us timeout returns 0 if no echo is received within 30
-      ms. This handles the case where the beam misses the car (extreme angle) or exceeds the 400 cm maximum
-      range, returning -1 to avoid false "free bay" readings.'
-    - 'LED Status Indication: Green LED (free) and red LED (occupied) give instant visual bay status visible
-      from a distance. In a real car park, replace LEDs with larger green/red indicators or an LED matrix
-      sign visible from the car park entrance.'
+    - 'Ultrasonic Time-of-Flight Measurement: A 10 us HIGH pulse on TRIG fires an 8-cycle 40 kHz ultrasonic burst. The ECHO
+      pin goes HIGH when the burst leaves and LOW when the reflection returns. pulseIn() measures this pulse duration in microseconds.
+      Distance = duration * 0.034 / 2 (speed of sound divided by round-trip).'
+    - 'Vehicle Detection Threshold: A parking bay sensor mounted at 1-2 m height above an empty bay reads 100-200 cm to the
+      ground. A parked car reduces this to 10-40 cm. The 50 cm threshold reliably distinguishes an occupied bay from an empty
+      one with margin for low vehicles.'
+    - 'Timeout Handling: pulseIn() with a 30,000 us timeout returns 0 if no echo is received within 30 ms. This handles the
+      case where the beam misses the car (extreme angle) or exceeds the 400 cm maximum range, returning -1 to avoid false
+      "free bay" readings.'
+    - 'LED Status Indication: Green LED (free) and red LED (occupied) give instant visual bay status visible from a distance.
+      In a real car park, replace LEDs with larger green/red indicators or an LED matrix sign visible from the car park entrance.'
     apps:
     - Driveway parking assist showing distance to garage wall
     - Small car park bay occupancy detection
@@ -89,42 +86,39 @@ levels:
     - Loading bay monitoring for logistics operations
     troubleshooting:
     - - Distance always reads -1 or 0
-      - Verify TRIG produces a 10 us pulse with an oscilloscope or by checking that digitalRead(TRIG)
-        goes HIGH briefly. Also ensure the voltage divider correctly reduces the 5 V ECHO signal to below
-        3.3 V before it reaches the ESP32 pin.
+      - Verify TRIG produces a 10 us pulse with an oscilloscope or by checking that digitalRead(TRIG) goes HIGH briefly. Also
+        ensure the voltage divider correctly reduces the 5 V ECHO signal to below 3.3 V before it reaches the ESP32 pin.
     - - Reading fluctuates by 10-20 cm
-      - Take a rolling average of 5 readings. HC-SR04 readings vary by 1-3 cm normally. Large jumps indicate
-        acoustic interference from nearby ultrasonic sources or the sensor beam reflecting off surrounding
-        objects at an angle.
+      - Take a rolling average of 5 readings. HC-SR04 readings vary by 1-3 cm normally. Large jumps indicate acoustic interference
+        from nearby ultrasonic sources or the sensor beam reflecting off surrounding objects at an angle.
     - - Sensor does not detect low sports cars
-      - Mount the sensor lower (40-60 cm above ground) or at an angle to ensure the beam hits the vehicle
-        roof or bonnet rather than passing over it.
+      - Mount the sensor lower (40-60 cm above ground) or at an angle to ensure the beam hits the vehicle roof or bonnet rather
+        than passing over it.
     - - LED shows occupied in an empty bay
-      - Adjust BAY_THRESHOLD_CM. Measure the actual distance from sensor to ground in an empty bay using
-        the Serial Monitor and set the threshold 20 cm below that reading.
-    upgrades:
+      - Adjust BAY_THRESHOLD_CM. Measure the actual distance from sensor to ground in an empty bay using the Serial Monitor
+        and set the threshold 20 cm below that reading.
+    upgrades: &id001
     - Add a 4-digit 7-segment display to show remaining free spaces in a multi-bay system
     - Add Wi-Fi and publish bay status to a web dashboard
     - Add a buzzer that sounds when a vehicle parks in a reserved bay
     - Add a second sensor to detect if a vehicle is entering or leaving the bay
-    code: "// ESP32 Smart Parking Sensor - Beginner\n// Single bay HC-SR04 distance + LED status\n\nconst\
-      \ int TRIG = 5;\nconst int ECHO = 18;\nconst int LED_FREE = 25;\nconst int LED_OCC  = 26;\nconst\
-      \ float BAY_THRESHOLD_CM = 50.0; // Vehicle present if closer than this\n\nlong measureCm() {\n\
-      \  digitalWrite(TRIG, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG, HIGH);\n  delayMicroseconds(10);\n\
-      \  digitalWrite(TRIG, LOW);\n  long duration = pulseIn(ECHO, HIGH, 30000); // 30 ms timeout\n  if\
-      \ (duration == 0) return -1; // No echo received\n  return duration * 0.034 / 2; // Convert to cm\n\
-      }\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(TRIG, OUTPUT);\n  pinMode(ECHO, INPUT);\n\
-      \  pinMode(LED_FREE, OUTPUT);\n  pinMode(LED_OCC,  OUTPUT);\n}\n\nvoid loop() {\n  long dist = measureCm();\n\
-      \  bool occupied = (dist > 0 && dist < BAY_THRESHOLD_CM);\n\n  Serial.printf(\"Distance: %ld cm\
-      \  Bay: %sn\",\n    dist, occupied ? \"OCCUPIED\" : \"FREE\");\n\n  digitalWrite(LED_FREE, occupied\
-      \ ? LOW  : HIGH);\n  digitalWrite(LED_OCC,  occupied ? HIGH : LOW);\n  delay(500);\n}"
+    code: "// ESP32 Smart Parking Sensor - Beginner\n// Single bay HC-SR04 distance + LED status\n\nconst int TRIG = 5;\n\
+      const int ECHO = 18;\nconst int LED_FREE = 25;\nconst int LED_OCC  = 26;\nconst float BAY_THRESHOLD_CM = 50.0; // Vehicle\
+      \ present if closer than this\n\nlong measureCm() {\n  digitalWrite(TRIG, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG,\
+      \ HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG, LOW);\n  long duration = pulseIn(ECHO, HIGH, 30000); // 30\
+      \ ms timeout\n  if (duration == 0) return -1; // No echo received\n  return duration * 0.034 / 2; // Convert to cm\n\
+      }\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(TRIG, OUTPUT);\n  pinMode(ECHO, INPUT);\n  pinMode(LED_FREE,\
+      \ OUTPUT);\n  pinMode(LED_OCC,  OUTPUT);\n}\n\nvoid loop() {\n  long dist = measureCm();\n  bool occupied = (dist >\
+      \ 0 && dist < BAY_THRESHOLD_CM);\n\n  Serial.printf(\"Distance: %ld cm  Bay: %sn\",\n    dist, occupied ? \"OCCUPIED\"\
+      \ : \"FREE\");\n\n  digitalWrite(LED_FREE, occupied ? LOW  : HIGH);\n  digitalWrite(LED_OCC,  occupied ? HIGH : LOW);\n\
+      \  delay(500);\n}"
     code_filename: esp32-smart-parking-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build monitors four parking bays using four HC-SR04 sensors and
-      displays the total available space count on a TM1637 four-digit LED display at the car park entrance.
-      Each bay status is also shown on an OLED with bay numbers. Wi-Fi connects the system to a web page
-      that shows a live grid of bay occupancy, updating every 3 seconds using JavaScript polling.</p>
+    overview_html: <p>The intermediate build monitors four parking bays using four HC-SR04 sensors and displays the total
+      available space count on a TM1637 four-digit LED display at the car park entrance. Each bay status is also shown on
+      an OLED with bay numbers. Wi-Fi connects the system to a web page that shows a live grid of bay occupancy, updating
+      every 3 seconds using JavaScript polling.</p>
     components:
     - 1× ESP32 DevKit V1
     - 4× HC-SR04 ultrasonic sensor — One per bay
@@ -152,18 +146,15 @@ levels:
       - GPIO 21 / GPIO 22
       - ''
     how:
-    - 'Sequential Bay Scanning: Sensors are fired one at a time with a 60 ms gap between each to prevent
-      cross-talk (one sensor echo being received by a neighbouring sensor). The 60 ms gap corresponds
-      to a 1020 cm round-trip, well beyond the 50 cm detection range.'
-    - 'TM1637 Space Counter: The TM1637 four-digit display shows the number of free spaces at the car
-      park entrance. disp.showNumberDec() converts the integer free count to a 7-segment display pattern.
-      Brightness is set to maximum (7) for outdoor visibility.'
-    - 'OLED Per-Bay Grid: The OLED shows each bay number and its status on a separate line. This detail
-      view is useful for the car park attendant monitoring station. The web dashboard provides the same
-      information remotely.'
-    - 'Auto-Refresh Web Dashboard: The HTML page includes a meta refresh tag with a 3-second interval,
-      causing the browser to reload the page automatically. Each reload triggers a fresh sensor scan and
-      returns the current occupancy state.'
+    - 'Sequential Bay Scanning: Sensors are fired one at a time with a 60 ms gap between each to prevent cross-talk (one sensor
+      echo being received by a neighbouring sensor). The 60 ms gap corresponds to a 1020 cm round-trip, well beyond the 50
+      cm detection range.'
+    - 'TM1637 Space Counter: The TM1637 four-digit display shows the number of free spaces at the car park entrance. disp.showNumberDec()
+      converts the integer free count to a 7-segment display pattern. Brightness is set to maximum (7) for outdoor visibility.'
+    - 'OLED Per-Bay Grid: The OLED shows each bay number and its status on a separate line. This detail view is useful for
+      the car park attendant monitoring station. The web dashboard provides the same information remotely.'
+    - 'Auto-Refresh Web Dashboard: The HTML page includes a meta refresh tag with a 3-second interval, causing the browser
+      to reload the page automatically. Each reload triggers a fresh sensor scan and returns the current occupancy state.'
     apps:
     - Office car park entrance sign showing available spaces
     - Shopping centre parking level guidance system
@@ -171,11 +162,11 @@ levels:
     - Airport short-stay parking bay monitoring
     troubleshooting:
     - - Two adjacent sensors interfere with each other
-      - Increase the delay between sensor firings from 60 ms to 100 ms. Mount sensors with at least 30
-        cm lateral separation and angle them slightly downward to minimise beam overlap.
+      - Increase the delay between sensor firings from 60 ms to 100 ms. Mount sensors with at least 30 cm lateral separation
+        and angle them slightly downward to minimise beam overlap.
     - - TM1637 shows dashes instead of numbers
-      - Verify CLK and DIO are correctly connected. The TM1637 uses a custom protocol, not standard I2C.
-        Check that both pins are not floating; add 10 kohm pull-ups to 3.3 V if the signal is weak.
+      - Verify CLK and DIO are correctly connected. The TM1637 uses a custom protocol, not standard I2C. Check that both pins
+        are not floating; add 10 kohm pull-ups to 3.3 V if the signal is weak.
     - - Web dashboard shows stale data
       - The meta refresh tag reloads every 3 seconds. If the ESP32 is busy in the sensor scan loop, server.handleClient()
         may be delayed. Reduce the sensor scan loop to under 2 seconds total for all four bays.
@@ -184,37 +175,33 @@ levels:
     - Add a reservation system where users can book a bay via the web page
     - Add outdoor-rated NeoPixel panels above each bay (green=free, red=occupied)
     - Add a second ESP32 at the car park exit to count vehicles leaving
-    code: "// ESP32 Smart Parking - Intermediate (4 bays + TM1637 + web dashboard)\n#include <Wire.h>\n\
-      #include <Adafruit_SSD1306.h>\n#include <TM1637Display.h>\n#include <WiFi.h>\n#include <WebServer.h>\n\
-      \nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nTM1637Display disp(32,33);\nWebServer server(80);\n\n\
-      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int NUM_BAYS=4;\nconst int TRIG[]={5,17,4,15};\n\
-      const int ECHO[]={18,16,2,13};\nconst float THRESH=50.0;\nbool occupied[4]={false,false,false,false};\n\
-      \nlong measureCm(int bay){\n  digitalWrite(TRIG[bay],LOW); delayMicroseconds(2);\n  digitalWrite(TRIG[bay],HIGH);\
-      \ delayMicroseconds(10);\n  digitalWrite(TRIG[bay],LOW);\n  long d=pulseIn(ECHO[bay],HIGH,30000);\n\
-      \  return d>0?d*0.034/2:-1;\n}\n\nvoid scanBays(){\n  for(int i=0;i<NUM_BAYS;i++){\n    long d=measureCm(i);\n\
-      \    occupied[i]=(d>0&&d<THRESH);\n    delay(60); // prevent sensor cross-talk\n  }\n}\n\nint freeCount(){\n\
-      \  int n=0;\n  for(int i=0;i<NUM_BAYS;i++) if(!occupied[i]) n++;\n  return n;\n}\n\nvoid serveStatus(){\n\
-      \  String body=\"<h2>Parking Status</h2><table border=1>\";\n  for(int i=0;i<NUM_BAYS;i++){\n  \
-      \  body+=\"<tr><td>Bay \"+String(i+1)+\"</td><td style=\"color:\"+\n          String(occupied[i]?\"\
-      red\":\"green\")+\"\">\"\n          +String(occupied[i]?\"OCCUPIED\":\"FREE\")+\"</td></tr>\";\n\
-      \  }\n  body+=\"</table><p>Free: \"+String(freeCount())+\"/\"+String(NUM_BAYS)+\"</p>\"\n      \
-      \  \"<meta http-equiv=\"refresh\" content=\"3\">\";\n  server.send(200,\"text/html\",body);\n}\n\
-      \nvoid setup(){\n  Serial.begin(115200);\n  for(int i=0;i<NUM_BAYS;i++){\n    pinMode(TRIG[i],OUTPUT);\
-      \ pinMode(ECHO[i],INPUT);\n  }\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n\
-      \  oled.setTextColor(WHITE);\n  disp.setBrightness(7);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(500);\n  server.on(\"/\",serveStatus);\n  server.begin();\n  Serial.printf(\"Dashboard:\
-      \ http://%s/n\",WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n  server.handleClient();\n\
-      \  scanBays();\n  int free=freeCount();\n  disp.showNumberDec(free,false);\n  oled.clearDisplay();\
-      \ oled.setTextSize(1); oled.setCursor(0,0);\n  oled.printf(\"Free: %d/%dn\",free,NUM_BAYS);\n  for(int\
-      \ i=0;i<NUM_BAYS;i++)\n    oled.printf(\"Bay %d: %sn\",i+1,occupied[i]?\"OCC \":\"FREE\");\n  oled.display();\n\
+    code: "// ESP32 Smart Parking - Intermediate (4 bays + TM1637 + web dashboard)\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <TM1637Display.h>\n#include <WiFi.h>\n#include <WebServer.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nTM1637Display\
+      \ disp(32,33);\nWebServer server(80);\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int NUM_BAYS=4;\n\
+      const int TRIG[]={5,17,4,15};\nconst int ECHO[]={18,16,2,13};\nconst float THRESH=50.0;\nbool occupied[4]={false,false,false,false};\n\
+      \nlong measureCm(int bay){\n  digitalWrite(TRIG[bay],LOW); delayMicroseconds(2);\n  digitalWrite(TRIG[bay],HIGH); delayMicroseconds(10);\n\
+      \  digitalWrite(TRIG[bay],LOW);\n  long d=pulseIn(ECHO[bay],HIGH,30000);\n  return d>0?d*0.034/2:-1;\n}\n\nvoid scanBays(){\n\
+      \  for(int i=0;i<NUM_BAYS;i++){\n    long d=measureCm(i);\n    occupied[i]=(d>0&&d<THRESH);\n    delay(60); // prevent\
+      \ sensor cross-talk\n  }\n}\n\nint freeCount(){\n  int n=0;\n  for(int i=0;i<NUM_BAYS;i++) if(!occupied[i]) n++;\n \
+      \ return n;\n}\n\nvoid serveStatus(){\n  String body=\"<h2>Parking Status</h2><table border=1>\";\n  for(int i=0;i<NUM_BAYS;i++){\n\
+      \    body+=\"<tr><td>Bay \"+String(i+1)+\"</td><td style=\"color:\"+\n          String(occupied[i]?\"red\":\"green\"\
+      )+\"\">\"\n          +String(occupied[i]?\"OCCUPIED\":\"FREE\")+\"</td></tr>\";\n  }\n  body+=\"</table><p>Free: \"\
+      +String(freeCount())+\"/\"+String(NUM_BAYS)+\"</p>\"\n        \"<meta http-equiv=\"refresh\" content=\"3\">\";\n  server.send(200,\"\
+      text/html\",body);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  for(int i=0;i<NUM_BAYS;i++){\n    pinMode(TRIG[i],OUTPUT);\
+      \ pinMode(ECHO[i],INPUT);\n  }\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextColor(WHITE);\n\
+      \  disp.setBrightness(7);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  server.on(\"\
+      /\",serveStatus);\n  server.begin();\n  Serial.printf(\"Dashboard: http://%s/n\",WiFi.localIP().toString().c_str());\n\
+      }\n\nvoid loop(){\n  server.handleClient();\n  scanBays();\n  int free=freeCount();\n  disp.showNumberDec(free,false);\n\
+      \  oled.clearDisplay(); oled.setTextSize(1); oled.setCursor(0,0);\n  oled.printf(\"Free: %d/%dn\",free,NUM_BAYS);\n\
+      \  for(int i=0;i<NUM_BAYS;i++)\n    oled.printf(\"Bay %d: %sn\",i+1,occupied[i]?\"OCC \":\"FREE\");\n  oled.display();\n\
       \  delay(1000);\n}"
     code_filename: esp32-smart-parking-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build publishes real-time parking bay occupancy data to an MQTT broker
-      with per-bay topics. A Node-RED dashboard visualises a scalable car park floor plan. Vehicles entering
-      and leaving are counted to track total capacity utilisation. Predictive occupancy analytics use
-      time-of-day patterns stored in NVS to display expected peak and off-peak times on the web dashboard.</p>
+    overview_html: <p>The advanced build publishes real-time parking bay occupancy data to an MQTT broker with per-bay topics.
+      A Node-RED dashboard visualises a scalable car park floor plan. Vehicles entering and leaving are counted to track total
+      capacity utilisation. Predictive occupancy analytics use time-of-day patterns stored in NVS to display expected peak
+      and off-peak times on the web dashboard.</p>
     components:
     - 1× ESP32 DevKit V1
     - 4× HC-SR04 ultrasonic sensors
@@ -226,19 +213,18 @@ levels:
       - Same as intermediate
       - ''
     how:
-    - 'Change-on-Event Publishing: Bay MQTT messages are published only when occupancy state changes (free
-      to occupied or vice versa), not on every scan cycle. This reduces broker traffic while ensuring
-      state changes reach subscribers immediately. The retain=true flag ensures new subscribers receive
-      the current state immediately upon connection.'
-    - 'Retained MQTT Topics: Setting retain=true on MQTT publish stores the last message at the broker.
-      When a new subscriber (Node-RED dashboard, mobile app) connects, it immediately receives the current
-      occupancy state without waiting for the next publish cycle.'
-    - 'Hourly Occupancy Analytics: An exponential moving average of occupied bay count per hour is stored
-      in NVS for each of 24 hours. Over days of operation this builds a statistical occupancy profile:
-      hour 8-9 typically high, hour 14 typically low. getPeakHour() returns the historically busiest hour.'
-    - 'Node-RED Floor Plan Dashboard: Node-RED subscribes to parking/bay/1 through parking/bay/4 and updates
-      gauge widgets on the dashboard. A template widget renders an SVG floor plan with per-bay colour
-      coding: green for free, red for occupied, updating in real time as MQTT messages arrive.'
+    - 'Change-on-Event Publishing: Bay MQTT messages are published only when occupancy state changes (free to occupied or
+      vice versa), not on every scan cycle. This reduces broker traffic while ensuring state changes reach subscribers immediately.
+      The retain=true flag ensures new subscribers receive the current state immediately upon connection.'
+    - 'Retained MQTT Topics: Setting retain=true on MQTT publish stores the last message at the broker. When a new subscriber
+      (Node-RED dashboard, mobile app) connects, it immediately receives the current occupancy state without waiting for the
+      next publish cycle.'
+    - 'Hourly Occupancy Analytics: An exponential moving average of occupied bay count per hour is stored in NVS for each
+      of 24 hours. Over days of operation this builds a statistical occupancy profile: hour 8-9 typically high, hour 14 typically
+      low. getPeakHour() returns the historically busiest hour.'
+    - 'Node-RED Floor Plan Dashboard: Node-RED subscribes to parking/bay/1 through parking/bay/4 and updates gauge widgets
+      on the dashboard. A template widget renders an SVG floor plan with per-bay colour coding: green for free, red for occupied,
+      updating in real time as MQTT messages arrive.'
     apps:
     - Smart city connected parking guidance system
     - Airport car park management with mobile app integration
@@ -246,50 +232,315 @@ levels:
     - EV charging bay availability notification service
     troubleshooting:
     - - Node-RED dashboard shows stale bay status after reboot
-      - The ESP32 republishes all bay statuses on first MQTT connection. Ensure the initial publishBay()
-        loop runs in setup() after MQTT connects, not just in loop() on state change.
+      - The ESP32 republishes all bay statuses on first MQTT connection. Ensure the initial publishBay() loop runs in setup()
+        after MQTT connects, not just in loop() on state change.
     - - Occupancy analytics shows all zeros
-      - Check that NTP sync has occurred before reading tm_hour. Add a delay after configTime() to allow
-        at least one NTP sync before the first analytics update.
+      - Check that NTP sync has occurred before reading tm_hour. Add a delay after configTime() to allow at least one NTP
+        sync before the first analytics update.
     - - MQTT broker receives duplicate bay messages
-      - The change-detection logic compares occupied[i] before and after the scan. If the delay between
-        scans allows transient readings, add a 3-reading majority vote before treating a state change
-        as confirmed.
+      - The change-detection logic compares occupied[i] before and after the scan. If the delay between scans allows transient
+        readings, add a 3-reading majority vote before treating a state change as confirmed.
     upgrades:
-    - Add a mobile app using Flutter that shows real-time bay availability and navigates the driver to
-      a free bay
+    - Add a mobile app using Flutter that shows real-time bay availability and navigates the driver to a free bay
     - 'Integrate with a payment system: publish entry/exit events to a billing MQTT topic'
     - Add LPR (licence plate recognition) using an ESP32-CAM at the entrance for permit validation
     - 'Add predictive hold: reserve a bay 5 minutes before the historical peak hour begins'
-    code: "// ESP32 Smart Parking - Advanced (MQTT + occupancy analytics)\n#include <WiFi.h>\n#include\
-      \ <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <Preferences.h>\n#include <time.h>\n\nWiFiClient\
-      \ wifiClient;\nPubSubClient mqtt(wifiClient);\nPreferences prefs;\n\nconst char* SSID=\"YourSSID\"\
-      , *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* TOPIC_BASE=\"parking/bay/\"\
-      ;\nconst char* TOPIC_SUMMARY=\"parking/summary\";\n\nconst int NUM_BAYS=4;\nconst int TRIG[]={5,17,4,15};\n\
-      const int ECHO[]={18,16,2,13};\nbool occupied[4]={false};\nint occupancyByHour[24]={0}; // count\
-      \ of occupied readings per hour\n\nlong measureCm(int bay){\n  digitalWrite(TRIG[bay],LOW); delayMicroseconds(2);\n\
-      \  digitalWrite(TRIG[bay],HIGH); delayMicroseconds(10);\n  digitalWrite(TRIG[bay],LOW);\n  long\
-      \ d=pulseIn(ECHO[bay],HIGH,30000);\n  return d>0?d*0.034/2:-1;\n}\n\nvoid publishBay(int bay){\n\
-      \  String topic=String(TOPIC_BASE)+String(bay+1);\n  StaticJsonDocument<64> doc;\n  doc[\"bay\"\
-      ]=bay+1; doc[\"occupied\"]=occupied[bay];\n  char buf[64]; serializeJson(doc,buf);\n  mqtt.publish(topic.c_str(),buf,true);\
-      \ // retain=true\n}\n\nvoid publishSummary(){\n  int free=0;\n  for(int i=0;i<NUM_BAYS;i++) if(!occupied[i])\
-      \ free++;\n  StaticJsonDocument<128> doc;\n  doc[\"free\"]=free; doc[\"total\"]=NUM_BAYS;\n  doc[\"\
-      utilisation\"]=(float)(NUM_BAYS-free)/NUM_BAYS*100.0f;\n  struct tm ti; getLocalTime(&ti);\n  doc[\"\
-      hour\"]=ti.tm_hour;\n  doc[\"peak_hour\"]=getPeakHour();\n  char buf[128]; serializeJson(doc,buf);\n\
-      \  mqtt.publish(TOPIC_SUMMARY,buf,true);\n}\n\nint getPeakHour(){\n  int peak=0,peakH=0;\n  for(int\
-      \ h=0;h<24;h++) if(occupancyByHour[h]>peak){peak=occupancyByHour[h];peakH=h;}\n  return peakH;\n\
-      }\n\nvoid setup(){\n  Serial.begin(115200);\n  for(int i=0;i<NUM_BAYS;i++){ pinMode(TRIG[i],OUTPUT);\
-      \ pinMode(ECHO[i],INPUT); }\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n  // Load occupancy history\
-      \ from NVS\n  prefs.begin(\"park\",true);\n  for(int h=0;h<24;h++) occupancyByHour[h]=prefs.getInt(String(h).c_str(),0);\n\
-      \  prefs.end();\n}\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"ESP32Parking\");\n  mqtt.loop();\n\
-      \  for(int i=0;i<NUM_BAYS;i++){\n    bool prev=occupied[i];\n    long d=measureCm(i);\n    occupied[i]=(d>0&&d<50.0f);\n\
-      \    if(occupied[i]!=prev) publishBay(i);\n    delay(60);\n  }\n  // Update hourly analytics\n \
-      \ struct tm ti; getLocalTime(&ti);\n  int occ=0; for(int i=0;i<NUM_BAYS;i++) if(occupied[i]) occ++;\n\
-      \  occupancyByHour[ti.tm_hour]=(occupancyByHour[ti.tm_hour]+occ)/2;\n  prefs.begin(\"park\",false);\n\
-      \  for(int h=0;h<24;h++) prefs.putInt(String(h).c_str(),occupancyByHour[h]);\n  prefs.end();\n \
-      \ publishSummary();\n  delay(30000); // Summary every 30 s; bay changes publish immediately\n}"
+    code: "// ESP32 Smart Parking - Advanced (MQTT + occupancy analytics)\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
+      #include <ArduinoJson.h>\n#include <Preferences.h>\n#include <time.h>\n\nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\
+      Preferences prefs;\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\n\
+      const char* TOPIC_BASE=\"parking/bay/\";\nconst char* TOPIC_SUMMARY=\"parking/summary\";\n\nconst int NUM_BAYS=4;\n\
+      const int TRIG[]={5,17,4,15};\nconst int ECHO[]={18,16,2,13};\nbool occupied[4]={false};\nint occupancyByHour[24]={0};\
+      \ // count of occupied readings per hour\n\nlong measureCm(int bay){\n  digitalWrite(TRIG[bay],LOW); delayMicroseconds(2);\n\
+      \  digitalWrite(TRIG[bay],HIGH); delayMicroseconds(10);\n  digitalWrite(TRIG[bay],LOW);\n  long d=pulseIn(ECHO[bay],HIGH,30000);\n\
+      \  return d>0?d*0.034/2:-1;\n}\n\nvoid publishBay(int bay){\n  String topic=String(TOPIC_BASE)+String(bay+1);\n  StaticJsonDocument<64>\
+      \ doc;\n  doc[\"bay\"]=bay+1; doc[\"occupied\"]=occupied[bay];\n  char buf[64]; serializeJson(doc,buf);\n  mqtt.publish(topic.c_str(),buf,true);\
+      \ // retain=true\n}\n\nvoid publishSummary(){\n  int free=0;\n  for(int i=0;i<NUM_BAYS;i++) if(!occupied[i]) free++;\n\
+      \  StaticJsonDocument<128> doc;\n  doc[\"free\"]=free; doc[\"total\"]=NUM_BAYS;\n  doc[\"utilisation\"]=(float)(NUM_BAYS-free)/NUM_BAYS*100.0f;\n\
+      \  struct tm ti; getLocalTime(&ti);\n  doc[\"hour\"]=ti.tm_hour;\n  doc[\"peak_hour\"]=getPeakHour();\n  char buf[128];\
+      \ serializeJson(doc,buf);\n  mqtt.publish(TOPIC_SUMMARY,buf,true);\n}\n\nint getPeakHour(){\n  int peak=0,peakH=0;\n\
+      \  for(int h=0;h<24;h++) if(occupancyByHour[h]>peak){peak=occupancyByHour[h];peakH=h;}\n  return peakH;\n}\n\nvoid setup(){\n\
+      \  Serial.begin(115200);\n  for(int i=0;i<NUM_BAYS;i++){ pinMode(TRIG[i],OUTPUT); pinMode(ECHO[i],INPUT); }\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
+      \  // Load occupancy history from NVS\n  prefs.begin(\"park\",true);\n  for(int h=0;h<24;h++) occupancyByHour[h]=prefs.getInt(String(h).c_str(),0);\n\
+      \  prefs.end();\n}\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"ESP32Parking\");\n  mqtt.loop();\n  for(int\
+      \ i=0;i<NUM_BAYS;i++){\n    bool prev=occupied[i];\n    long d=measureCm(i);\n    occupied[i]=(d>0&&d<50.0f);\n    if(occupied[i]!=prev)\
+      \ publishBay(i);\n    delay(60);\n  }\n  // Update hourly analytics\n  struct tm ti; getLocalTime(&ti);\n  int occ=0;\
+      \ for(int i=0;i<NUM_BAYS;i++) if(occupied[i]) occ++;\n  occupancyByHour[ti.tm_hour]=(occupancyByHour[ti.tm_hour]+occ)/2;\n\
+      \  prefs.begin(\"park\",false);\n  for(int h=0;h<24;h++) prefs.putInt(String(h).c_str(),occupancyByHour[h]);\n  prefs.end();\n\
+      \  publishSummary();\n  delay(30000); // Summary every 30 s; bay changes publish immediately\n}"
     code_filename: esp32-smart-parking-advanced.ino
 related_slugs:
 - esp32-distance-monitoring-system
 - esp32-smart-street-light
+format: golden
+keywords:
+- ESP32
+- ESP32 Smart Parking Sensor
+- HC-SR04 TRIG
+- HC-SR04 ECHO
+- Arduino tutorial
+- Smart City
+meta_title: ESP32 Smart Parking Sensor Tutorial with ESP32
+project:
+  icon: PARK
+  mission_title: Build a Smart Parking Sensor
+  difficulty: Beginner
+  age: Ages 12+
+  estimated_time: 60-90 min
+  budget: Under 25 USD
+  what_you_build: A parking-bay detector that measures distance with an HC-SR04 ultrasonic sensor and uses LEDs or a dashboard
+    output to show whether a space is free or occupied.
+  story: 'ESP32 Smart Parking Sensor solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
+    result. Build this if you want a practical distance-sensing project that teaches timing, voltage protection, and threshold
+    decisions.
+
+
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
+    the output under real conditions.'
+  eli12: The ultrasonic sensor works like a bat calling into a space and listening for the echo. The ESP32 measures how long
+    the echo takes to return and decides whether a car is close enough to count as parked.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
+    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
+    enclosure, and adult supervision are used.
+  learning_objectives:
+  - Trigger an HC-SR04 sensor from an ESP32.
+  - Protect the ESP32 input from a 5 V echo signal.
+  - Convert echo time into distance in centimeters.
+  - Choose a parking threshold from measured data.
+  - Use LEDs or displays to communicate occupied/free status.
+  components:
+  - item: 1× ESP32 DevKit V1
+    note: Required for this build
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: 1× HC-SR04 ultrasonic sensor
+    note: 5 V; use voltage divider on ECHO pin
+    icon: PART
+    link: /components/hc-sr04.html
+  - item: 1× Green LED 5 mm
+    note: Bay free indicator
+    icon: PART
+  - item: 1× Red LED 5 mm
+    note: Bay occupied indicator
+    icon: PART
+  - item: 2× 220 ohm resistor
+    note: LED current limiting
+    icon: PART
+  - item: 1× 10 kohm and 20 kohm resistor
+    note: Voltage divider for ECHO pin
+    icon: PART
+  - item: 1× Breadboard and jumper wires
+    note: Required for this build
+    icon: PART
+  - item: USB data cable
+    note: Programming and bench power
+    icon: PART
+  bom:
+  - part: 1× ESP32 DevKit V1
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 1× HC-SR04 ultrasonic sensor
+    qty: '1'
+    estimated_cost: Varies
+    notes: 5 V; use voltage divider on ECHO pin
+  - part: 1× Green LED 5 mm
+    qty: '1'
+    estimated_cost: Varies
+    notes: Bay free indicator
+  - part: 1× Red LED 5 mm
+    qty: '1'
+    estimated_cost: Varies
+    notes: Bay occupied indicator
+  - part: 2× 220 ohm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: LED current limiting
+  - part: 1× 10 kohm and 20 kohm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Voltage divider for ECHO pin
+  wiring:
+    illustration_alt: ESP32 Smart Parking Sensor wiring diagram
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. GPIO5 sends
+      a short trigger pulse.
+    steps:
+    - Unplug USB before changing wires.
+    - Connect HC-SR04 TRIG to GPIO 5 (3.3 V output is sufficient for trigger).
+    - Connect HC-SR04 ECHO to GPIO 18 via divider (ECHO is 5 V; divide with 10k+20k to 3.3 V).
+    - Connect HC-SR04 VCC to 5 V (Vin).
+    - Connect HC-SR04 GND to GND.
+    - Connect Green LED anode to GPIO 25 (220 ohm resistor).
+    - Connect Red LED anode to GPIO 26 (220 ohm resistor).
+    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+  gpio_map:
+  - signal: HC-SR04 TRIG
+    esp32_pin: GPIO 5
+    direction: Power
+    notes: 3.3 V output is sufficient for trigger
+  - signal: HC-SR04 ECHO
+    esp32_pin: GPIO 18 via divider
+    direction: Power
+    notes: ECHO is 5 V; divide with 10k+20k to 3.3 V
+  - signal: HC-SR04 VCC
+    esp32_pin: 5 V (Vin)
+    direction: Power
+    notes: Match this wire to the code constant.
+  - signal: HC-SR04 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Match this wire to the code constant.
+  - signal: Green LED anode
+    esp32_pin: GPIO 25
+    direction: Output
+    notes: 220 ohm resistor
+  - signal: Red LED anode
+    esp32_pin: GPIO 26
+    direction: Output
+    notes: 220 ohm resistor
+  circuit_explanation: GPIO5 sends a short trigger pulse. The HC-SR04 sends back an echo pulse whose width represents distance.
+    Because many HC-SR04 modules output 5 V on ECHO, the signal must be reduced to 3.3 V before it enters the ESP32. LEDs
+    on separate GPIO pins show the bay state.
+  engineering_explanation: Ultrasonic parking sensors are time-of-flight systems. They work best when the target surface reflects
+    sound back toward the sensor. Angle, height, wind, nearby sensors, and soft surfaces can all affect readings, so a reliable
+    parking project uses averaging, timeout handling, and a threshold measured from the real bay.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-smart-parking-sensor.ino
+    content: "// ESP32 Smart Parking Sensor - Beginner\n// Single bay HC-SR04 distance + LED status\n\nconst int TRIG = 5;\n\
+      const int ECHO = 18;\nconst int LED_FREE = 25;\nconst int LED_OCC  = 26;\nconst float BAY_THRESHOLD_CM = 50.0; // Vehicle\
+      \ present if closer than this\n\nlong measureCm() {\n  digitalWrite(TRIG, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG,\
+      \ HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG, LOW);\n  long duration = pulseIn(ECHO, HIGH, 30000); // 30\
+      \ ms timeout\n  if (duration == 0) return -1; // No echo received\n  return duration * 0.034 / 2; // Convert to cm\n\
+      }\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(TRIG, OUTPUT);\n  pinMode(ECHO, INPUT);\n  pinMode(LED_FREE,\
+      \ OUTPUT);\n  pinMode(LED_OCC,  OUTPUT);\n}\n\nvoid loop() {\n  long dist = measureCm();\n  bool occupied = (dist >\
+      \ 0 && dist < BAY_THRESHOLD_CM);\n\n  Serial.printf(\"Distance: %ld cm  Bay: %sn\",\n    dist, occupied ? \"OCCUPIED\"\
+      \ : \"FREE\");\n\n  digitalWrite(LED_FREE, occupied ? LOW  : HIGH);\n  digitalWrite(LED_OCC,  occupied ? HIGH : LOW);\n\
+      \  delay(500);\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
+    setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading first, compares it
+    with a threshold, then changes the output. Printing before controlling the output makes debugging much easier because
+    you can see what the ESP32 believes is happening.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
+    condition for esp32 smart parking sensor is reached.
+  common_mistakes:
+  - text: Connecting HC-SR04 ECHO directly to an ESP32 pin without level shifting.
+  - text: Mounting the sensor too high for low vehicles.
+  - text: Using one reading instead of averaging several readings.
+  - text: Forgetting that angled surfaces can reflect sound away from the receiver.
+  - text: Using a threshold copied from another parking bay.
+  troubleshooting:
+  - problem: Distance reads 0 or -1
+    fix: Check TRIG/ECHO wiring, confirm the voltage divider, and make sure the sensor has 5 V power.
+  - problem: Occupied/free state flickers
+    fix: Average five readings and require the same result twice before changing state.
+  - problem: Low vehicles are missed
+    fix: Mount the sensor lower or angle it toward the bonnet or bumper area.
+  - problem: Adjacent sensors interfere
+    fix: Trigger sensors one at a time with a delay between measurements.
+  testing_checklist:
+  - Upload a simple Blink sketch first to confirm the board and USB cable work.
+  - Wire only power and ground, then confirm the board still boots.
+  - Connect the input signal and print raw readings before using thresholds.
+  - Trigger the real-world condition slowly and watch Serial Monitor.
+  - Connect the output only after the input reading is believable.
+  - Power-cycle the project and confirm it starts in a safe state.
+  engineer_tips:
+  - Use a voltage divider or level shifter on ECHO.
+  - Measure empty-bay distance first, then set the threshold below that value.
+  - Use timeout handling so missing echoes do not create false readings.
+  - Avoid firing multiple ultrasonic sensors at the same time.
+  - Add weather protection for outdoor installations.
+  performance_tips:
+  - Use median or average filtering for stable distance.
+  - Scan multiple bays sequentially.
+  - Reduce update rate for dashboards to avoid unnecessary Wi-Fi traffic.
+  - Store last known state if a single reading times out.
+  upgrade_ideas: *id001
+  real_world_applications:
+  - Driveway parking assist
+  - Garage wall distance indicator
+  - Small car park occupancy counter
+  - Loading bay availability system
+  downloads:
+  - text: ESP32 Smart Parking Sensor Arduino sketch
+    note: Use the code section as the source sketch.
+  - text: Bench test checklist
+    note: Follow the testing checklist before permanent installation.
+  related_guides:
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Verify uploads and simple outputs before adding hardware.
+  - title: Mission 08 - Analog Inputs
+    href: /guides/analog-inputs.html
+    description: Understand changing sensor values before building threshold projects.
+  - title: Mission 10 - I2C Communication
+    href: /guides/i2c-communication.html
+    description: Use structured communication thinking before connecting multiple modules.
+  - title: Mission 07 - PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Learn brightness and output control concepts.
+  related_projects:
+  - title: ESP32 Distance Monitoring System
+    href: /projects/esp32-distance-monitoring-system.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Smart Street Light
+    href: /projects/esp32-smart-street-light.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Motion Security Alert
+    href: /projects/esp32-motion-security-alert.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  faqs:
+  - question: Is ESP32 Smart Parking Sensor good for beginners?
+    answer: Yes, if you build the beginner version first and test one part at a time. Build this if you want a practical distance-sensing
+      project that teaches timing, voltage protection, and threshold decisions.
+  - question: Which ESP32 board should I use?
+    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
+      ESP32-CAM module and a reliable FTDI adapter.
+  - question: Can I power this from a phone charger?
+    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
+      and LED matrices may need a separate regulated supply.
+  - question: Why should I print values to Serial Monitor first?
+    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
+      from LED, relay, display, or network problems.
+  - question: Can I change the GPIO pins?
+    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
+      Analog-only pins such as GPIO34 cannot drive outputs.
+  - question: What should I test before installing it permanently?
+    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
+      that should trigger the project.
+  - question: Can I add Wi-Fi or a dashboard?
+    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
+      after Wi-Fi is added.
+  - question: What is the most common failure?
+    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
+      raw reading and wiring table first.
+  - question: How do I make it more reliable?
+    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
+      hysteresis where the output might chatter.
+  - question: Where should I learn next?
+    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
+      part of this project you want to improve.
+  references:
+  - title: HC-SR04 Timing Principle
+    href: https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+  - title: Arduino ESP32 Core Documentation
+    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  complete:
+    summary: You completed ESP32 Smart Parking Sensor as a real ESP32 engineering build, not just a wiring demo. You now know
+      how to test the input, protect the circuit, explain the code, and improve the project safely.
+    skills:
+    - Read and verify project input hardware
+    - Map signals to safe ESP32 GPIO pins
+    - Debug with Serial Monitor
+    - Apply safety and performance checks
+    - Plan the next learning step
+  build_photos:
+  - title: Breadboard overview
+    note: Show ESP32, module, output device, and power rails.
+  - title: Close-up wiring
+    note: Show signal pins clearly enough for learners to compare.
+  - title: Working output
+    note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.

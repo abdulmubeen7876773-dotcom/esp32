@@ -1,18 +1,18 @@
 slug: esp32-soil-moisture-monitor
 title: ESP32 Soil Moisture Monitor
 category: Sensor Projects
-description: A soil moisture monitor that reads capacitive sensor data, alerts you when plants need water,
-  and can automatically trigger a pump relay — with cloud logging at the advanced level.
-meta_description: Build an ESP32 soil moisture monitor with a capacitive sensor, LED alerts, water pump
-  relay, and optional MQTT/ThingSpeak cloud logging to keep your plants perfectly watered.
+description: A soil moisture monitor that reads capacitive sensor data, alerts you when plants need water, and can automatically
+  trigger a pump relay — with cloud logging at the advanced level.
+meta_description: A plant monitor that reads a capacitive soil sensor, converts raw ADC values into a moisture percentage,
+  and uses LEDs or a buzzer to show when watering is
 source_base: esp32-soil-moisture-monitor-legacy-import
 sensor: Sensor AOUT
 output: Green LED (+ 220 Ω)
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
-status: needs_polish
+date_modified: '2026-07-05'
+quality_status: golden_tutorial
+status: published
 import_tier: 2
 import_source: batch-php
 hardware:
@@ -38,22 +38,20 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: '<p>This project teaches you to read an <strong>analogue sensor</strong> using the
-      ESP32''s ADC (Analogue-to-Digital Converter) and map raw 12-bit readings to a human-readable percentage.
-      A capacitive soil moisture sensor measures the dielectric constant of the soil around it — wet soil
-      has a higher dielectric constant than dry soil, which changes the sensor output voltage. Unlike
-      resistive sensors, capacitive sensors do not corrode and last for years outdoors.</p>
+    overview_html: '<p>This project teaches you to read an <strong>analogue sensor</strong> using the ESP32''s ADC (Analogue-to-Digital
+      Converter) and map raw 12-bit readings to a human-readable percentage. A capacitive soil moisture sensor measures the
+      dielectric constant of the soil around it — wet soil has a higher dielectric constant than dry soil, which changes the
+      sensor output voltage. Unlike resistive sensors, capacitive sensors do not corrode and last for years outdoors.</p>
 
 
-      <p>The ESP32 reads the sensor on GPIO 34 (an input-only ADC pin). You will learn: analogue reading
-      with analogRead(), mapping raw ADC counts to a 0–100% scale using the map() function, calibrating
-      the sensor for your specific soil type, and driving a tri-colour status indicator. When moisture
-      drops below a threshold, a red LED lights and a buzzer alerts you to water the plant.</p>
+      <p>The ESP32 reads the sensor on GPIO 34 (an input-only ADC pin). You will learn: analogue reading with analogRead(),
+      mapping raw ADC counts to a 0–100% scale using the map() function, calibrating the sensor for your specific soil type,
+      and driving a tri-colour status indicator. When moisture drops below a threshold, a red LED lights and a buzzer alerts
+      you to water the plant.</p>
 
 
-      <p>This project scales from a single potted plant to a multi-zone garden controller at the advanced
-      level. It is also the foundation for the esp32-smart-irrigation-system project, which automates
-      watering completely.</p>'
+      <p>This project scales from a single potted plant to a multi-zone garden controller at the advanced level. It is also
+      the foundation for the esp32-smart-irrigation-system project, which automates watering completely.</p>'
     components:
     - 1× ESP32 DevKit V1
     - 1× Capacitive Soil Moisture Sensor v1.2 — NOT the resistive (fork) type — those corrode
@@ -85,20 +83,18 @@ levels:
       - GPIO 32
       - Only sounds when critically dry
     how:
-    - 'Capacitive Sensing Principle: The sensor forms a capacitor with the surrounding soil. Wet soil
-      has a higher dielectric constant (~80) than dry soil (~3), increasing capacitance and lowering the
-      oscillator frequency, which the sensor''s onboard circuit converts to a lower output voltage. Lower
-      voltage = more moisture.'
-    - 'ADC Averaging: The ESP32 ADC has inherent noise of ±50 counts. Averaging 10 readings reduces random
-      noise to ±5 counts, which translates to a ±0.2% stability in the moisture reading. Always average
-      multiple ADC samples for analogue sensor projects.'
-    - 'map() and constrain(): map(raw, AIR_VALUE, WATER_VALUE, 0, 100) linearly interpolates the raw ADC
-      count to a 0–100 percentage. constrain(pct, 0, 100) clips readings that fall outside the calibration
-      range — this happens if you push the sensor deeper than the calibration depth or if soil compacts
-      differently.'
-    - 'Three-Zone Status: Three thresholds (≥60%, 30–60%, <30%) map to green/yellow/red status zones.
-      All LEDs are turned off before the if/else chain — this avoids the need to explicitly track which
-      LED was last on. The pattern (clear all, then set one) is cleaner than toggling individual pins.'
+    - 'Capacitive Sensing Principle: The sensor forms a capacitor with the surrounding soil. Wet soil has a higher dielectric
+      constant (~80) than dry soil (~3), increasing capacitance and lowering the oscillator frequency, which the sensor''s
+      onboard circuit converts to a lower output voltage. Lower voltage = more moisture.'
+    - 'ADC Averaging: The ESP32 ADC has inherent noise of ±50 counts. Averaging 10 readings reduces random noise to ±5 counts,
+      which translates to a ±0.2% stability in the moisture reading. Always average multiple ADC samples for analogue sensor
+      projects.'
+    - 'map() and constrain(): map(raw, AIR_VALUE, WATER_VALUE, 0, 100) linearly interpolates the raw ADC count to a 0–100
+      percentage. constrain(pct, 0, 100) clips readings that fall outside the calibration range — this happens if you push
+      the sensor deeper than the calibration depth or if soil compacts differently.'
+    - 'Three-Zone Status: Three thresholds (≥60%, 30–60%, <30%) map to green/yellow/red status zones. All LEDs are turned
+      off before the if/else chain — this avoids the need to explicitly track which LED was last on. The pattern (clear all,
+      then set one) is cleaner than toggling individual pins.'
     apps:
     - Indoor potted plant moisture alert system
     - Seedling tray moisture monitoring in a greenhouse
@@ -106,53 +102,48 @@ levels:
     - Foundation soil saturation monitoring (for basement flood prevention)
     troubleshooting:
     - - Moisture percentage is always 0% or 100%
-      - The sensor is not calibrated for your soil. Open Serial Monitor and record the actual ADC values
-        in dry air and in water, then update AIR_VALUE and WATER_VALUE accordingly. Values vary significantly
-        between sensor batches and soil types.
+      - The sensor is not calibrated for your soil. Open Serial Monitor and record the actual ADC values in dry air and in
+        water, then update AIR_VALUE and WATER_VALUE accordingly. Values vary significantly between sensor batches and soil
+        types.
     - - Readings fluctuate ±10% with the sensor stationary
-      - ESP32 ADC accuracy is affected by Wi-Fi radio activity (especially on GPIO 34 which shares ADC1).
-        If you add Wi-Fi in later steps, use ADC1_CHANNEL directly and call adc1_get_raw() rather than
-        analogRead(). For this beginner level, move to a more stable input like GPIO 36 if issues persist.
-    upgrades:
+      - ESP32 ADC accuracy is affected by Wi-Fi radio activity (especially on GPIO 34 which shares ADC1). If you add Wi-Fi
+        in later steps, use ADC1_CHANNEL directly and call adc1_get_raw() rather than analogRead(). For this beginner level,
+        move to a more stable input like GPIO 36 if issues persist.
+    upgrades: &id001
     - Add multiple sensors on GPIO 35, 36 for multi-plant monitoring with individual alerts
     - Record daily readings to detect drying trends before plants become stressed
-    code: "/*\n * ESP32 Soil Moisture Monitor — Beginner\n * Reads capacitive soil sensor, maps to percentage,\
-      \ lights LEDs.\n *\n * CALIBRATION REQUIRED:\n *   1) Place sensor in dry air → note AIR_VALUE (should\
-      \ be ~2800–3200)\n *   2) Submerge sensor tip in water → note WATER_VALUE (should be ~1200–1500)\n\
-      \ *   Update the defines below with your sensor's actual values.\n */\n#define SENSOR_PIN  34\n\
-      #define LED_GREEN   25   // Moist\n#define LED_YELLOW  26   // Moderate\n#define LED_RED     27\
-      \   // Dry\n#define BUZZER      32\n\n// ── CALIBRATE THESE for your sensor ─────────────────────────────\n\
-      #define AIR_VALUE   2800  // ADC reading in dry air (0% moisture)\n#define WATER_VALUE 1200  //\
-      \ ADC reading fully in water (100% moisture)\n// ────────────────────────────────────────────────────────────────\n\
-      \nint readMoisturePercent() {\n  // Average 10 readings to reduce ADC noise on ESP32\n  long sum\
-      \ = 0;\n  for (int i = 0; i < 10; i++) { sum += analogRead(SENSOR_PIN); delay(5); }\n  int raw =\
-      \ sum / 10;\n  int pct = map(raw, AIR_VALUE, WATER_VALUE, 0, 100);\n  return constrain(pct, 0, 100);\n\
-      }\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);   // 12-bit ADC: 0–4095\n\
-      \  pinMode(LED_GREEN,  OUTPUT);\n  pinMode(LED_YELLOW, OUTPUT);\n  pinMode(LED_RED,    OUTPUT);\n\
-      \  pinMode(BUZZER,     OUTPUT);\n  Serial.println(\"Soil Moisture Monitor started.\");\n  Serial.printf(\"\
-      Calibration: AIR=%d, WATER=%dn\", AIR_VALUE, WATER_VALUE);\n}\n\nvoid loop() {\n  int pct = readMoisturePercent();\n\
-      \  Serial.printf(\"Moisture: %d%%n\", pct);\n\n  // Turn all LEDs off first\n  digitalWrite(LED_GREEN,\
-      \  LOW);\n  digitalWrite(LED_YELLOW, LOW);\n  digitalWrite(LED_RED,    LOW);\n  digitalWrite(BUZZER,\
-      \     LOW);\n\n  if (pct >= 60) {\n    digitalWrite(LED_GREEN, HIGH);\n    Serial.println(\"Status:\
-      \ Moist — plant is happy\");\n  } else if (pct >= 30) {\n    digitalWrite(LED_YELLOW, HIGH);\n \
-      \   Serial.println(\"Status: Moderate — consider watering soon\");\n  } else {\n    digitalWrite(LED_RED,\
-      \ HIGH);\n    // Pulse buzzer 3 times for critical alert\n    for (int i = 0; i < 3; i++) {\n  \
-      \    digitalWrite(BUZZER, HIGH); delay(200);\n      digitalWrite(BUZZER, LOW);  delay(200);\n  \
-      \  }\n    Serial.println(\"Status: DRY — water the plant now!\");\n  }\n\n  delay(10000);   // Read\
-      \ every 10 seconds\n}"
+    code: "/*\n * ESP32 Soil Moisture Monitor — Beginner\n * Reads capacitive soil sensor, maps to percentage, lights LEDs.\n\
+      \ *\n * CALIBRATION REQUIRED:\n *   1) Place sensor in dry air → note AIR_VALUE (should be ~2800–3200)\n *   2) Submerge\
+      \ sensor tip in water → note WATER_VALUE (should be ~1200–1500)\n *   Update the defines below with your sensor's actual\
+      \ values.\n */\n#define SENSOR_PIN  34\n#define LED_GREEN   25   // Moist\n#define LED_YELLOW  26   // Moderate\n#define\
+      \ LED_RED     27   // Dry\n#define BUZZER      32\n\n// ── CALIBRATE THESE for your sensor ─────────────────────────────\n\
+      #define AIR_VALUE   2800  // ADC reading in dry air (0% moisture)\n#define WATER_VALUE 1200  // ADC reading fully in\
+      \ water (100% moisture)\n// ────────────────────────────────────────────────────────────────\n\nint readMoisturePercent()\
+      \ {\n  // Average 10 readings to reduce ADC noise on ESP32\n  long sum = 0;\n  for (int i = 0; i < 10; i++) { sum +=\
+      \ analogRead(SENSOR_PIN); delay(5); }\n  int raw = sum / 10;\n  int pct = map(raw, AIR_VALUE, WATER_VALUE, 0, 100);\n\
+      \  return constrain(pct, 0, 100);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);   // 12-bit\
+      \ ADC: 0–4095\n  pinMode(LED_GREEN,  OUTPUT);\n  pinMode(LED_YELLOW, OUTPUT);\n  pinMode(LED_RED,    OUTPUT);\n  pinMode(BUZZER,\
+      \     OUTPUT);\n  Serial.println(\"Soil Moisture Monitor started.\");\n  Serial.printf(\"Calibration: AIR=%d, WATER=%dn\"\
+      , AIR_VALUE, WATER_VALUE);\n}\n\nvoid loop() {\n  int pct = readMoisturePercent();\n  Serial.printf(\"Moisture: %d%%n\"\
+      , pct);\n\n  // Turn all LEDs off first\n  digitalWrite(LED_GREEN,  LOW);\n  digitalWrite(LED_YELLOW, LOW);\n  digitalWrite(LED_RED,\
+      \    LOW);\n  digitalWrite(BUZZER,     LOW);\n\n  if (pct >= 60) {\n    digitalWrite(LED_GREEN, HIGH);\n    Serial.println(\"\
+      Status: Moist — plant is happy\");\n  } else if (pct >= 30) {\n    digitalWrite(LED_YELLOW, HIGH);\n    Serial.println(\"\
+      Status: Moderate — consider watering soon\");\n  } else {\n    digitalWrite(LED_RED, HIGH);\n    // Pulse buzzer 3 times\
+      \ for critical alert\n    for (int i = 0; i < 3; i++) {\n      digitalWrite(BUZZER, HIGH); delay(200);\n      digitalWrite(BUZZER,\
+      \ LOW);  delay(200);\n    }\n    Serial.println(\"Status: DRY — water the plant now!\");\n  }\n\n  delay(10000);   //\
+      \ Read every 10 seconds\n}"
     code_filename: esp32-soil-moisture-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: '<p>At the intermediate level you expand to <strong>four soil sensors</strong> connected
-      via a CD4051 analogue multiplexer, giving you one moisture reading per plant on a single ESP32 ADC
-      pin. An SSD1306 OLED shows all four readings simultaneously. A water pump relay automatically triggers
-      for 5 seconds when any sensor drops below the dry threshold, then logs the watering event with a
-      timestamp.</p>
+    overview_html: '<p>At the intermediate level you expand to <strong>four soil sensors</strong> connected via a CD4051 analogue
+      multiplexer, giving you one moisture reading per plant on a single ESP32 ADC pin. An SSD1306 OLED shows all four readings
+      simultaneously. A water pump relay automatically triggers for 5 seconds when any sensor drops below the dry threshold,
+      then logs the watering event with a timestamp.</p>
 
 
-      <p>You will learn: analogue multiplexer wiring (S0, S1, S2 channel select), millis()-based scheduling
-      for pump duty cycles, and circular buffer event logging in RAM. The 4-zone auto-watering concept
-      is directly applicable to a real indoor herb garden or seedling tray.</p>'
+      <p>You will learn: analogue multiplexer wiring (S0, S1, S2 channel select), millis()-based scheduling for pump duty
+      cycles, and circular buffer event logging in RAM. The 4-zone auto-watering concept is directly applicable to a real
+      indoor herb garden or seedling tray.</p>'
     components:
     - 4× Capacitive Soil Moisture Sensor v1.2 — One per plant
     - 1× CD4051 8-Channel Analogue Multiplexer — Routes 4 sensors to one ADC pin
@@ -193,61 +184,55 @@ levels:
       - GPIO 21 / 22
       - ''
     how:
-    - 'CD4051 Multiplexer: The CD4051 is an 8-channel analogue switch IC. Setting the S0, S1, S2 pins
-      selects one of 8 input channels to connect to the common output (COM) pin. With S0=0,S1=0,S2=0 you
-      get channel 0; S0=1,S1=0,S2=0 gives channel 1, and so on. This lets four sensors share one ADC pin.'
-    - 'Settling Time: After switching channels, the multiplexer internal resistance (typical 100 Ω) and
-      the ADC input capacitance form an RC circuit that takes ~10 µs to settle. A 10 ms delay before reading
-      is more than sufficient and avoids cross-channel contamination in the ADC sample.'
-    - 'Pump Safety: The pump only runs for PUMP_MS milliseconds per check cycle. This prevents over-watering
-      if a sensor fails high (reads 0%). In a production system, add a flow sensor or water level sensor
-      to cut the pump if the reservoir is empty.'
+    - 'CD4051 Multiplexer: The CD4051 is an 8-channel analogue switch IC. Setting the S0, S1, S2 pins selects one of 8 input
+      channels to connect to the common output (COM) pin. With S0=0,S1=0,S2=0 you get channel 0; S0=1,S1=0,S2=0 gives channel
+      1, and so on. This lets four sensors share one ADC pin.'
+    - 'Settling Time: After switching channels, the multiplexer internal resistance (typical 100 Ω) and the ADC input capacitance
+      form an RC circuit that takes ~10 µs to settle. A 10 ms delay before reading is more than sufficient and avoids cross-channel
+      contamination in the ADC sample.'
+    - 'Pump Safety: The pump only runs for PUMP_MS milliseconds per check cycle. This prevents over-watering if a sensor fails
+      high (reads 0%). In a production system, add a flow sensor or water level sensor to cut the pump if the reservoir is
+      empty.'
     apps: []
     troubleshooting:
     - - All zones read identical values
-      - 'The CD4051 S pins may not be changing correctly. Verify S0/S1/S2 wiring and confirm the bit-shift
-        logic: (ch>>0)&1 gives the LSB of ch. Add Serial.printf("ch=%d S=%d%d%d\n",ch,(ch>>2)&1,(ch>>1)&1,(ch>>0)&1)
-        before each read to verify.'
+      - 'The CD4051 S pins may not be changing correctly. Verify S0/S1/S2 wiring and confirm the bit-shift logic: (ch>>0)&1
+        gives the LSB of ch. Add Serial.printf("ch=%d S=%d%d%d\n",ch,(ch>>2)&1,(ch>>1)&1,(ch>>0)&1) before each read to verify.'
     - - Pump runs continuously and never stops
-      - All sensors are reading below DRY_PCT. Either the sensors are dry, or there is a calibration or
-        wiring issue. Disconnect the pump and test sensors individually at the beginner level to verify
-        each one reads correctly before wiring the multiplexer.
+      - All sensors are reading below DRY_PCT. Either the sensors are dry, or there is a calibration or wiring issue. Disconnect
+        the pump and test sensors individually at the beginner level to verify each one reads correctly before wiring the
+        multiplexer.
     upgrades:
     - Add a water level sensor in the reservoir to prevent the pump running dry
     - Log watering events with timestamps to SPIFFS for a weekly watering report
-    code: "/*\n * ESP32 Soil Moisture Monitor — Intermediate (4-zone)\n * CD4051 mux + 4 sensors + OLED\
-      \ + auto-pump relay\n * Libraries: Adafruit_SSD1306, Adafruit_GFX\n */\n#include <Wire.h>\n#include\
-      \ <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define MUX_SIG  34   // ADC reads multiplexer\
-      \ output\n#define MUX_S0   25\n#define MUX_S1   26\n#define MUX_S2   27\n#define PUMP_PIN 32\n#define\
-      \ DRY_PCT  30   // Trigger watering below this\n#define PUMP_MS  5000 // Pump ON duration\n#define\
-      \ ZONES    4\n\n#define AIR_VALUE   2800\n#define WATER_VALUE 1200\n\nAdafruit_SSD1306 oled(128,\
-      \ 64, &Wire, -1);\n\nint readChannel(int ch) {\n  digitalWrite(MUX_S0, (ch>>0)&1);\n  digitalWrite(MUX_S1,\
-      \ (ch>>1)&1);\n  digitalWrite(MUX_S2, (ch>>2)&1);\n  delay(10); // Settle time\n  long sum=0; for(int\
-      \ i=0;i<10;i++){sum+=analogRead(MUX_SIG);delay(3);}\n  int raw=sum/10;\n  return constrain(map(raw,AIR_VALUE,WATER_VALUE,0,100),0,100);\n\
-      }\n\nvoid updateOLED(int* pct) {\n  oled.clearDisplay(); oled.setTextSize(1); oled.setTextColor(SSD1306_WHITE);\n\
-      \  for(int i=0;i<ZONES;i++){\n    oled.setCursor(0, i*14);\n    oled.printf(\"Z%d: %3d%%  %s\",\
-      \ i+1, pct[i],\n      pct[i]>=60?\"OK\":(pct[i]>=30?\"LOW\":\"DRY\"));\n  }\n  oled.display();\n\
-      }\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n  pinMode(MUX_S0,OUTPUT);\
-      \ pinMode(MUX_S1,OUTPUT); pinMode(MUX_S2,OUTPUT);\n  pinMode(PUMP_PIN,OUTPUT); digitalWrite(PUMP_PIN,LOW);\n\
-      \  Wire.begin(); oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n}\n\nvoid loop(){\n  int pct[ZONES];\n\
-      \  bool anyDry=false;\n  for(int z=0;z<ZONES;z++){\n    pct[z]=readChannel(z);\n    Serial.printf(\"\
-      Zone %d: %d%%n\",z+1,pct[z]);\n    if(pct[z]<DRY_PCT) anyDry=true;\n  }\n  updateOLED(pct);\n\n\
-      \  if(anyDry){\n    Serial.println(\"Dry zone detected — running pump\");\n    digitalWrite(PUMP_PIN,HIGH);\
-      \ delay(PUMP_MS); digitalWrite(PUMP_PIN,LOW);\n    Serial.println(\"Pump cycle complete\");\n  }\n\
-      \n  delay(60000); // Check every 60 seconds\n}"
+    code: "/*\n * ESP32 Soil Moisture Monitor — Intermediate (4-zone)\n * CD4051 mux + 4 sensors + OLED + auto-pump relay\n\
+      \ * Libraries: Adafruit_SSD1306, Adafruit_GFX\n */\n#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\
+      \n#define MUX_SIG  34   // ADC reads multiplexer output\n#define MUX_S0   25\n#define MUX_S1   26\n#define MUX_S2  \
+      \ 27\n#define PUMP_PIN 32\n#define DRY_PCT  30   // Trigger watering below this\n#define PUMP_MS  5000 // Pump ON duration\n\
+      #define ZONES    4\n\n#define AIR_VALUE   2800\n#define WATER_VALUE 1200\n\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n\
+      \nint readChannel(int ch) {\n  digitalWrite(MUX_S0, (ch>>0)&1);\n  digitalWrite(MUX_S1, (ch>>1)&1);\n  digitalWrite(MUX_S2,\
+      \ (ch>>2)&1);\n  delay(10); // Settle time\n  long sum=0; for(int i=0;i<10;i++){sum+=analogRead(MUX_SIG);delay(3);}\n\
+      \  int raw=sum/10;\n  return constrain(map(raw,AIR_VALUE,WATER_VALUE,0,100),0,100);\n}\n\nvoid updateOLED(int* pct)\
+      \ {\n  oled.clearDisplay(); oled.setTextSize(1); oled.setTextColor(SSD1306_WHITE);\n  for(int i=0;i<ZONES;i++){\n  \
+      \  oled.setCursor(0, i*14);\n    oled.printf(\"Z%d: %3d%%  %s\", i+1, pct[i],\n      pct[i]>=60?\"OK\":(pct[i]>=30?\"\
+      LOW\":\"DRY\"));\n  }\n  oled.display();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  pinMode(MUX_S0,OUTPUT); pinMode(MUX_S1,OUTPUT); pinMode(MUX_S2,OUTPUT);\n  pinMode(PUMP_PIN,OUTPUT); digitalWrite(PUMP_PIN,LOW);\n\
+      \  Wire.begin(); oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n}\n\nvoid loop(){\n  int pct[ZONES];\n  bool anyDry=false;\n\
+      \  for(int z=0;z<ZONES;z++){\n    pct[z]=readChannel(z);\n    Serial.printf(\"Zone %d: %d%%n\",z+1,pct[z]);\n    if(pct[z]<DRY_PCT)\
+      \ anyDry=true;\n  }\n  updateOLED(pct);\n\n  if(anyDry){\n    Serial.println(\"Dry zone detected — running pump\");\n\
+      \    digitalWrite(PUMP_PIN,HIGH); delay(PUMP_MS); digitalWrite(PUMP_PIN,LOW);\n    Serial.println(\"Pump cycle complete\"\
+      );\n  }\n\n  delay(60000); // Check every 60 seconds\n}"
     code_filename: esp32-soil-moisture-intermediate.ino
   advanced:
     level: advanced
-    overview_html: '<p>The advanced level adds <strong>ThingSpeak cloud logging</strong> and a <strong>smartphone
-      push notification</strong> via Pushover when any zone drops critically dry. All four zone readings
-      are uploaded to a ThingSpeak channel every 15 minutes, building a historical dataset you can graph
-      and analyse online. MQTT publishing is also included so your local Node-RED or Home Assistant receives
-      real-time readings without cloud dependency.</p>
+    overview_html: '<p>The advanced level adds <strong>ThingSpeak cloud logging</strong> and a <strong>smartphone push notification</strong>
+      via Pushover when any zone drops critically dry. All four zone readings are uploaded to a ThingSpeak channel every 15
+      minutes, building a historical dataset you can graph and analyse online. MQTT publishing is also included so your local
+      Node-RED or Home Assistant receives real-time readings without cloud dependency.</p>
 
 
-      <p>You will learn: HTTP POST to ThingSpeak REST API, JSON payload construction, Pushover API integration
-      for mobile notifications, and conditional MQTT publishing with retained flags for persistent state
-      display in Home Assistant.</p>'
+      <p>You will learn: HTTP POST to ThingSpeak REST API, JSON payload construction, Pushover API integration for mobile
+      notifications, and conditional MQTT publishing with retained flags for persistent state display in Home Assistant.</p>'
     components:
     - 4× Capacitive Soil Moisture Sensor v1.2
     - 1× CD4051 Analogue Multiplexer
@@ -260,64 +245,339 @@ levels:
       - See intermediate wiring
       - No additional hardware required
     how:
-    - 'ThingSpeak REST API: ThingSpeak accepts HTTP GET or POST requests to https://api.thingspeak.com/update
-      with your write API key and up to 8 field values. Each successful update returns an integer (the
-      update number). The free tier allows one update per 15 seconds, so zone readings are batched into
-      one API call rather than sent individually.'
-    - 'Pushover Notifications: Pushover delivers push notifications to iOS and Android via their REST
-      API. An HTTP POST with your app token, user key, title, and message delivers a notification to your
-      phone within seconds. The lastNotifiedZone guard prevents repeat notifications every 15 minutes
-      for the same dry zone.'
-    - 'MQTT Retained State: Publishing with retain=true caches the last reading on the broker. When Home
-      Assistant reconnects after a restart, it immediately receives the current soil moisture for each
-      zone without waiting for the next 15-minute reading cycle.'
+    - 'ThingSpeak REST API: ThingSpeak accepts HTTP GET or POST requests to https://api.thingspeak.com/update with your write
+      API key and up to 8 field values. Each successful update returns an integer (the update number). The free tier allows
+      one update per 15 seconds, so zone readings are batched into one API call rather than sent individually.'
+    - 'Pushover Notifications: Pushover delivers push notifications to iOS and Android via their REST API. An HTTP POST with
+      your app token, user key, title, and message delivers a notification to your phone within seconds. The lastNotifiedZone
+      guard prevents repeat notifications every 15 minutes for the same dry zone.'
+    - 'MQTT Retained State: Publishing with retain=true caches the last reading on the broker. When Home Assistant reconnects
+      after a restart, it immediately receives the current soil moisture for each zone without waiting for the next 15-minute
+      reading cycle.'
     apps: []
     troubleshooting:
     - - ThingSpeak updates fail (HTTP 0 or -1)
-      - Verify the API key. ThingSpeak requires HTTPS — confirm HTTPClient can reach the internet (test
-        with a simple http.GET("https://httpbin.org/get")). Free tier throttles to 1 update per 15 seconds;
-        faster calls are silently dropped.
+      - Verify the API key. ThingSpeak requires HTTPS — confirm HTTPClient can reach the internet (test with a simple http.GET("https://httpbin.org/get")).
+        Free tier throttles to 1 update per 15 seconds; faster calls are silently dropped.
     - - Pushover notifications not arriving
-      - Check token and user key at pushover.net. Ensure the app is installed and notifications are enabled
-        on your phone. The HTTP POST body must be URL-encoded — special characters in the message (& %
-        +) must be encoded.
+      - Check token and user key at pushover.net. Ensure the app is installed and notifications are enabled on your phone.
+        The HTTP POST body must be URL-encoded — special characters in the message (& % +) must be encoded.
     upgrades:
     - Replace ThingSpeak with a local InfluxDB instance for unlimited storage and privacy
     - Add a water flow meter (YF-S201 hall sensor) to measure exact mL delivered per pump cycle
     - Build a Grafana dashboard showing moisture trends vs watering events over 30 days
-    code: "/*\n * ESP32 Soil Moisture Monitor — Advanced\n * ThingSpeak logging + Pushover notifications\
-      \ + MQTT\n * Libraries: Adafruit_SSD1306, PubSubClient, HTTPClient (built-in)\n */\n#include <WiFi.h>\n\
-      #include <HTTPClient.h>\n#include <PubSubClient.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\"\
-      ;\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   = \"192.168.1.100\";\n\n\
-      // ThingSpeak\nconst char* TS_API_KEY = \"YOUR_THINGSPEAK_WRITE_KEY\";\nconst char* TS_URL     =\
-      \ \"https://api.thingspeak.com/update\";\n\n// Pushover (push notifications to phone)\nconst char*\
-      \ PO_TOKEN   = \"YOUR_PUSHOVER_APP_TOKEN\";\nconst char* PO_USER    = \"YOUR_PUSHOVER_USER_KEY\"\
-      ;\nconst char* PO_URL     = \"https://api.pushover.net/1/messages.json\";\n\n#define MUX_SIG  34\n\
-      #define MUX_S0   25\n#define MUX_S1   26\n#define MUX_S2   27\n#define PUMP_PIN 32\n#define ZONES\
-      \    4\n#define DRY_PCT  25     // Critical threshold for push notification\n#define AIR_VALUE \
-      \  2800\n#define WATER_VALUE 1200\n\nWiFiClient net;\nPubSubClient mqtt(net);\nint lastNotifiedZone\
-      \ = -1;\n\nint readChannel(int ch){\n  digitalWrite(MUX_S0,(ch>>0)&1);\n  digitalWrite(MUX_S1,(ch>>1)&1);\n\
-      \  digitalWrite(MUX_S2,(ch>>2)&1);\n  delay(10);\n  long s=0; for(int i=0;i<10;i++){s+=analogRead(MUX_SIG);delay(3);}\n\
-      \  return constrain(map((int)(s/10),AIR_VALUE,WATER_VALUE,0,100),0,100);\n}\n\nvoid uploadThingSpeak(int*\
-      \ pct){\n  HTTPClient http;\n  String url=String(TS_URL)+\"?api_key=\"+TS_API_KEY;\n  for(int i=0;i<ZONES;i++)\
-      \ url+=\"&field\"+String(i+1)+\"=\"+String(pct[i]);\n  http.begin(url); http.GET(); http.end();\n\
-      \  Serial.println(\"ThingSpeak updated\");\n}\n\nvoid sendPushover(int zone, int pct){\n  HTTPClient\
-      \ http;\n  http.begin(PO_URL);\n  http.addHeader(\"Content-Type\",\"application/x-www-form-urlencoded\"\
-      );\n  String body=\"token=\"+String(PO_TOKEN)+\"&user=\"+String(PO_USER)\n    +\"&title=Plant+Alert&message=Zone+\"\
-      +String(zone+1)+\"+is+at+\"+String(pct)+\"%25+moisture+-+water+now!\";\n  http.POST(body); http.end();\n\
-      \  Serial.printf(\"Pushover alert sent for zone %dn\",zone+1);\n}\n\nvoid publishMQTT(int* pct){\n\
-      \  if(!mqtt.connected()) return;\n  for(int i=0;i<ZONES;i++){\n    String topic=\"esp32engine/soil/zone\"\
-      +String(i+1);\n    mqtt.publish(topic.c_str(),String(pct[i]).c_str(),true);\n  }\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200);\n  analogReadResolution(12);\n  pinMode(MUX_S0,OUTPUT);pinMode(MUX_S1,OUTPUT);pinMode(MUX_S2,OUTPUT);\n\
-      \  pinMode(PUMP_PIN,OUTPUT);digitalWrite(PUMP_PIN,LOW);\n  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(400);\n  mqtt.setServer(BROKER,1883);\n  mqtt.connect(\"soil-monitor\");\n}\n\nvoid loop(){\n\
-      \  if(!mqtt.connected()) mqtt.connect(\"soil-monitor\");\n  mqtt.loop();\n\n  int pct[ZONES];\n\
-      \  for(int z=0;z<ZONES;z++) pct[z]=readChannel(z);\n\n  publishMQTT(pct);\n\n  for(int z=0;z<ZONES;z++){\n\
-      \    if(pct[z]<DRY_PCT && lastNotifiedZone!=z){\n      sendPushover(z,pct[z]);\n      lastNotifiedZone=z;\n\
-      \      // Auto-water\n      digitalWrite(PUMP_PIN,HIGH); delay(5000); digitalWrite(PUMP_PIN,LOW);\n\
-      \    }\n    if(pct[z]>=40) lastNotifiedZone=-1; // Reset after plant is watered\n  }\n\n  uploadThingSpeak(pct);\n\
-      \  delay(900000); // 15 minute upload interval (ThingSpeak free: 15s min)\n}"
+    code: "/*\n * ESP32 Soil Moisture Monitor — Advanced\n * ThingSpeak logging + Pushover notifications + MQTT\n * Libraries:\
+      \ Adafruit_SSD1306, PubSubClient, HTTPClient (built-in)\n */\n#include <WiFi.h>\n#include <HTTPClient.h>\n#include <PubSubClient.h>\n\
+      \nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   =\
+      \ \"192.168.1.100\";\n\n// ThingSpeak\nconst char* TS_API_KEY = \"YOUR_THINGSPEAK_WRITE_KEY\";\nconst char* TS_URL \
+      \    = \"https://api.thingspeak.com/update\";\n\n// Pushover (push notifications to phone)\nconst char* PO_TOKEN   =\
+      \ \"YOUR_PUSHOVER_APP_TOKEN\";\nconst char* PO_USER    = \"YOUR_PUSHOVER_USER_KEY\";\nconst char* PO_URL     = \"https://api.pushover.net/1/messages.json\"\
+      ;\n\n#define MUX_SIG  34\n#define MUX_S0   25\n#define MUX_S1   26\n#define MUX_S2   27\n#define PUMP_PIN 32\n#define\
+      \ ZONES    4\n#define DRY_PCT  25     // Critical threshold for push notification\n#define AIR_VALUE   2800\n#define\
+      \ WATER_VALUE 1200\n\nWiFiClient net;\nPubSubClient mqtt(net);\nint lastNotifiedZone = -1;\n\nint readChannel(int ch){\n\
+      \  digitalWrite(MUX_S0,(ch>>0)&1);\n  digitalWrite(MUX_S1,(ch>>1)&1);\n  digitalWrite(MUX_S2,(ch>>2)&1);\n  delay(10);\n\
+      \  long s=0; for(int i=0;i<10;i++){s+=analogRead(MUX_SIG);delay(3);}\n  return constrain(map((int)(s/10),AIR_VALUE,WATER_VALUE,0,100),0,100);\n\
+      }\n\nvoid uploadThingSpeak(int* pct){\n  HTTPClient http;\n  String url=String(TS_URL)+\"?api_key=\"+TS_API_KEY;\n \
+      \ for(int i=0;i<ZONES;i++) url+=\"&field\"+String(i+1)+\"=\"+String(pct[i]);\n  http.begin(url); http.GET(); http.end();\n\
+      \  Serial.println(\"ThingSpeak updated\");\n}\n\nvoid sendPushover(int zone, int pct){\n  HTTPClient http;\n  http.begin(PO_URL);\n\
+      \  http.addHeader(\"Content-Type\",\"application/x-www-form-urlencoded\");\n  String body=\"token=\"+String(PO_TOKEN)+\"\
+      &user=\"+String(PO_USER)\n    +\"&title=Plant+Alert&message=Zone+\"+String(zone+1)+\"+is+at+\"+String(pct)+\"%25+moisture+-+water+now!\"\
+      ;\n  http.POST(body); http.end();\n  Serial.printf(\"Pushover alert sent for zone %dn\",zone+1);\n}\n\nvoid publishMQTT(int*\
+      \ pct){\n  if(!mqtt.connected()) return;\n  for(int i=0;i<ZONES;i++){\n    String topic=\"esp32engine/soil/zone\"+String(i+1);\n\
+      \    mqtt.publish(topic.c_str(),String(pct[i]).c_str(),true);\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  pinMode(MUX_S0,OUTPUT);pinMode(MUX_S1,OUTPUT);pinMode(MUX_S2,OUTPUT);\n  pinMode(PUMP_PIN,OUTPUT);digitalWrite(PUMP_PIN,LOW);\n\
+      \  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED) delay(400);\n  mqtt.setServer(BROKER,1883);\n  mqtt.connect(\"\
+      soil-monitor\");\n}\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"soil-monitor\");\n  mqtt.loop();\n\n  int\
+      \ pct[ZONES];\n  for(int z=0;z<ZONES;z++) pct[z]=readChannel(z);\n\n  publishMQTT(pct);\n\n  for(int z=0;z<ZONES;z++){\n\
+      \    if(pct[z]<DRY_PCT && lastNotifiedZone!=z){\n      sendPushover(z,pct[z]);\n      lastNotifiedZone=z;\n      //\
+      \ Auto-water\n      digitalWrite(PUMP_PIN,HIGH); delay(5000); digitalWrite(PUMP_PIN,LOW);\n    }\n    if(pct[z]>=40)\
+      \ lastNotifiedZone=-1; // Reset after plant is watered\n  }\n\n  uploadThingSpeak(pct);\n  delay(900000); // 15 minute\
+      \ upload interval (ThingSpeak free: 15s min)\n}"
     code_filename: esp32-soil-moisture-advanced.ino
 related_slugs:
 - esp32-smart-irrigation-system
 - esp32-iot-weather-station
+format: golden
+keywords:
+- ESP32
+- ESP32 Soil Moisture Monitor
+- Sensor AOUT
+- Green LED (+ 220 Ω)
+- Arduino tutorial
+- Sensor Projects
+meta_title: ESP32 Soil Moisture Monitor Tutorial with ESP32
+project:
+  icon: SOIL
+  mission_title: Build a Soil Moisture Monitor
+  difficulty: Beginner
+  age: Ages 12+
+  estimated_time: 60-90 min
+  budget: Under 25 USD
+  what_you_build: A plant monitor that reads a capacitive soil sensor, converts raw ADC values into a moisture percentage,
+    and uses LEDs or a buzzer to show when watering is needed.
+  story: 'ESP32 Soil Moisture Monitor solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
+    result. Build this if you want to understand analog sensors, calibration, and threshold logic before moving to automatic
+    irrigation.
+
+
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
+    the output under real conditions.'
+  eli12: The ESP32 is a plant caretaker with a moisture meter. The sensor gives a changing number, the code decides whether
+    that number means wet or dry, and the LEDs explain the decision.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
+    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
+    enclosure, and adult supervision are used.
+  learning_objectives:
+  - Read an analog soil moisture sensor with an ESP32 ADC pin.
+  - Calibrate dry and wet readings for your own sensor and soil.
+  - Convert raw ADC values into a useful percentage.
+  - Use LEDs or a buzzer as clear status outputs.
+  - Recognize why capacitive sensors are better than resistive probes for long-term plant projects.
+  components:
+  - item: 1× ESP32 DevKit V1
+    note: Required for this build
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: 1× Capacitive Soil Moisture Sensor v1.2
+    note: NOT the resistive (fork) type — those corrode
+    icon: PART
+  - item: 1× LED (green) + 220 Ω resistor
+    note: Moist indicator
+    icon: PART
+  - item: 1× LED (yellow) + 220 Ω resistor
+    note: Dry warning
+    icon: PART
+  - item: 1× LED (red) + 220 Ω resistor
+    note: Critical dry alert
+    icon: PART
+  - item: 1× Active Buzzer (5 V)
+    note: Optional alert sound
+    icon: PART
+  - item: 1× Breadboard + jumper wires
+    note: Required for this build
+    icon: PART
+  - item: USB data cable
+    note: Programming and bench power
+    icon: PART
+  bom:
+  - part: 1× ESP32 DevKit V1
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 1× Capacitive Soil Moisture Sensor v1.2
+    qty: '1'
+    estimated_cost: Varies
+    notes: NOT the resistive (fork) type — those corrode
+  - part: 1× LED (green) + 220 Ω resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Moist indicator
+  - part: 1× LED (yellow) + 220 Ω resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Dry warning
+  - part: 1× LED (red) + 220 Ω resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Critical dry alert
+  - part: 1× Active Buzzer (5 V)
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optional alert sound
+  wiring:
+    illustration_alt: ESP32 Soil Moisture Monitor wiring diagram
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. The capacitive
+      probe produces an analog voltage that changes with the moisture around the sensor.
+    steps:
+    - Unplug USB before changing wires.
+    - Connect Sensor AOUT to GPIO 34 (ADC1 channel — input only, do not drive HIGH).
+    - Connect Sensor VCC to 3.3 V (Some sensors accept 3.3–5 V; check your module).
+    - Connect Sensor GND to GND.
+    - Connect Green LED (+ 220 Ω) to GPIO 25 (Moist (> 60%)).
+    - Connect Yellow LED (+ 220 Ω) to GPIO 26 (Moderate (30–60%)).
+    - Connect Red LED (+ 220 Ω) to GPIO 27 (Dry (< 30%)).
+    - Connect Buzzer + to GPIO 32 (Only sounds when critically dry).
+    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+  gpio_map:
+  - signal: Sensor AOUT
+    esp32_pin: GPIO 34
+    direction: Input
+    notes: ADC1 channel — input only, do not drive HIGH
+  - signal: Sensor VCC
+    esp32_pin: 3.3 V
+    direction: Power
+    notes: Some sensors accept 3.3–5 V; check your module
+  - signal: Sensor GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Match this wire to the code constant.
+  - signal: Green LED (+ 220 Ω)
+    esp32_pin: GPIO 25
+    direction: Output
+    notes: Moist (> 60%)
+  - signal: Yellow LED (+ 220 Ω)
+    esp32_pin: GPIO 26
+    direction: Output
+    notes: Moderate (30–60%)
+  - signal: Red LED (+ 220 Ω)
+    esp32_pin: GPIO 27
+    direction: Output
+    notes: Dry (< 30%)
+  - signal: Buzzer +
+    esp32_pin: GPIO 32
+    direction: Output
+    notes: Only sounds when critically dry
+  circuit_explanation: The capacitive probe produces an analog voltage that changes with the moisture around the sensor. GPIO34
+    is an ADC input, so it can read voltage but cannot drive an output. LEDs use separate GPIO pins through resistors so the
+    ESP32 only supplies safe indicator current. The buzzer is optional and should be tested after the moisture reading works.
+  engineering_explanation: Soil moisture sensors are not absolute instruments. Soil type, sensor depth, salt content, and
+    temperature all change the raw ADC reading. A reliable monitor is calibrated in your own dry and wet conditions, averages
+    several samples, and uses thresholds that are tested with real soil instead of copied from another build.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-soil-moisture-monitor.ino
+    content: "/*\n * ESP32 Soil Moisture Monitor — Beginner\n * Reads capacitive soil sensor, maps to percentage, lights LEDs.\n\
+      \ *\n * CALIBRATION REQUIRED:\n *   1) Place sensor in dry air → note AIR_VALUE (should be ~2800–3200)\n *   2) Submerge\
+      \ sensor tip in water → note WATER_VALUE (should be ~1200–1500)\n *   Update the defines below with your sensor's actual\
+      \ values.\n */\n#define SENSOR_PIN  34\n#define LED_GREEN   25   // Moist\n#define LED_YELLOW  26   // Moderate\n#define\
+      \ LED_RED     27   // Dry\n#define BUZZER      32\n\n// ── CALIBRATE THESE for your sensor ─────────────────────────────\n\
+      #define AIR_VALUE   2800  // ADC reading in dry air (0% moisture)\n#define WATER_VALUE 1200  // ADC reading fully in\
+      \ water (100% moisture)\n// ────────────────────────────────────────────────────────────────\n\nint readMoisturePercent()\
+      \ {\n  // Average 10 readings to reduce ADC noise on ESP32\n  long sum = 0;\n  for (int i = 0; i < 10; i++) { sum +=\
+      \ analogRead(SENSOR_PIN); delay(5); }\n  int raw = sum / 10;\n  int pct = map(raw, AIR_VALUE, WATER_VALUE, 0, 100);\n\
+      \  return constrain(pct, 0, 100);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);   // 12-bit\
+      \ ADC: 0–4095\n  pinMode(LED_GREEN,  OUTPUT);\n  pinMode(LED_YELLOW, OUTPUT);\n  pinMode(LED_RED,    OUTPUT);\n  pinMode(BUZZER,\
+      \     OUTPUT);\n  Serial.println(\"Soil Moisture Monitor started.\");\n  Serial.printf(\"Calibration: AIR=%d, WATER=%dn\"\
+      , AIR_VALUE, WATER_VALUE);\n}\n\nvoid loop() {\n  int pct = readMoisturePercent();\n  Serial.printf(\"Moisture: %d%%n\"\
+      , pct);\n\n  // Turn all LEDs off first\n  digitalWrite(LED_GREEN,  LOW);\n  digitalWrite(LED_YELLOW, LOW);\n  digitalWrite(LED_RED,\
+      \    LOW);\n  digitalWrite(BUZZER,     LOW);\n\n  if (pct >= 60) {\n    digitalWrite(LED_GREEN, HIGH);\n    Serial.println(\"\
+      Status: Moist — plant is happy\");\n  } else if (pct >= 30) {\n    digitalWrite(LED_YELLOW, HIGH);\n    Serial.println(\"\
+      Status: Moderate — consider watering soon\");\n  } else {\n    digitalWrite(LED_RED, HIGH);\n    // Pulse buzzer 3 times\
+      \ for critical alert\n    for (int i = 0; i < 3; i++) {\n      digitalWrite(BUZZER, HIGH); delay(200);\n      digitalWrite(BUZZER,\
+      \ LOW);  delay(200);\n    }\n    Serial.println(\"Status: DRY — water the plant now!\");\n  }\n\n  delay(10000);   //\
+      \ Read every 10 seconds\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
+    setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading first, compares it
+    with a threshold, then changes the output. Printing before controlling the output makes debugging much easier because
+    you can see what the ESP32 believes is happening.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
+    condition for esp32 soil moisture monitor is reached.
+  common_mistakes:
+  - text: Using a resistive fork-style sensor for a long-term outdoor build; those probes corrode quickly.
+  - text: Copying calibration values without measuring your own dry and wet readings.
+  - text: Driving an LED without a current-limiting resistor.
+  - text: Assuming 0 percent and 100 percent readings will be identical across soil types.
+  - text: Reading the sensor while Wi-Fi is active and then wondering why ADC values are noisier.
+  troubleshooting:
+  - problem: Moisture is always 0 percent or 100 percent
+    fix: Print the raw ADC value first. Update AIR_VALUE and WATER_VALUE with readings from your own dry air and wet test.
+  - problem: Readings jump while the sensor is not moving
+    fix: Average multiple samples, keep wires short, and keep the sensor lead away from motors, pumps, and Wi-Fi antennas.
+  - problem: LED status looks backwards
+    fix: Check whether your calibration has AIR_VALUE greater than WATER_VALUE. Many capacitive modules output lower voltage
+      when wetter.
+  - problem: Buzzer sounds too often
+    fix: Raise the dry threshold or require several dry readings in a row before sounding the buzzer.
+  testing_checklist:
+  - Upload a simple Blink sketch first to confirm the board and USB cable work.
+  - Wire only power and ground, then confirm the board still boots.
+  - Connect the input signal and print raw readings before using thresholds.
+  - Trigger the real-world condition slowly and watch Serial Monitor.
+  - Connect the output only after the input reading is believable.
+  - Power-cycle the project and confirm it starts in a safe state.
+  engineer_tips:
+  - Use GPIO34, GPIO35, GPIO36, or GPIO39 for analog-only sensor inputs.
+  - Record raw ADC values before writing percentage logic.
+  - Keep the sensor electronics above the soil; only the probe area should enter the soil.
+  - If you add a pump later, power it from a separate supply and share ground only where the driver requires it.
+  - Label dry, damp, and wet readings in a notebook before choosing thresholds.
+  performance_tips:
+  - Average 10-20 readings to reduce ADC noise.
+  - Read every few seconds or minutes; soil changes slowly.
+  - Power the sensor only while reading if you need lower corrosion and lower battery use.
+  - Use deep sleep for battery plant monitors.
+  upgrade_ideas: *id001
+  real_world_applications:
+  - Indoor plant monitoring
+  - Greenhouse seedling trays
+  - School experiments about soil and water retention
+  - Starter project for smart irrigation
+  downloads:
+  - text: ESP32 Soil Moisture Monitor Arduino sketch
+    note: Use the code section as the source sketch.
+  - text: Bench test checklist
+    note: Follow the testing checklist before permanent installation.
+  related_guides:
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Verify uploads and simple outputs before adding hardware.
+  - title: Mission 08 - Analog Inputs
+    href: /guides/analog-inputs.html
+    description: Understand changing sensor values before building threshold projects.
+  - title: Mission 07 - PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Learn brightness and output control concepts.
+  related_projects:
+  - title: ESP32 Smart Irrigation System
+    href: /projects/esp32-smart-irrigation-system.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Greenhouse Automation Controller
+    href: /projects/esp32-greenhouse-automation-controller.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Water Leak Detector
+    href: /projects/esp32-water-leak-detector.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  faqs:
+  - question: Is ESP32 Soil Moisture Monitor good for beginners?
+    answer: Yes, if you build the beginner version first and test one part at a time. Build this if you want to understand
+      analog sensors, calibration, and threshold logic before moving to automatic irrigation.
+  - question: Which ESP32 board should I use?
+    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
+      ESP32-CAM module and a reliable FTDI adapter.
+  - question: Can I power this from a phone charger?
+    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
+      and LED matrices may need a separate regulated supply.
+  - question: Why should I print values to Serial Monitor first?
+    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
+      from LED, relay, display, or network problems.
+  - question: Can I change the GPIO pins?
+    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
+      Analog-only pins such as GPIO34 cannot drive outputs.
+  - question: What should I test before installing it permanently?
+    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
+      that should trigger the project.
+  - question: Can I add Wi-Fi or a dashboard?
+    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
+      after Wi-Fi is added.
+  - question: What is the most common failure?
+    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
+      raw reading and wiring table first.
+  - question: How do I make it more reliable?
+    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
+      hysteresis where the output might chatter.
+  - question: Where should I learn next?
+    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
+      part of this project you want to improve.
+  references:
+  - title: ESP32 ADC Calibration
+    href: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_calibration.html
+  - title: Arduino ESP32 Core Documentation
+    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  complete:
+    summary: You completed ESP32 Soil Moisture Monitor as a real ESP32 engineering build, not just a wiring demo. You now
+      know how to test the input, protect the circuit, explain the code, and improve the project safely.
+    skills:
+    - Read and verify project input hardware
+    - Map signals to safe ESP32 GPIO pins
+    - Debug with Serial Monitor
+    - Apply safety and performance checks
+    - Plan the next learning step
+  build_photos:
+  - title: Breadboard overview
+    note: Show ESP32, module, output device, and power rails.
+  - title: Close-up wiring
+    note: Show signal pins clearly enough for learners to compare.
+  - title: Working output
+    note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.

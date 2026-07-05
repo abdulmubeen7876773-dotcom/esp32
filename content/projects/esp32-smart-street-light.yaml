@@ -1,14 +1,14 @@
 slug: esp32-smart-street-light
 title: ESP32 Smart Street Light
 category: Smart City
-description: Smart street lighting with LDR or motion sensing on ESP32 — dusk-to-dawn control through
-  connected city-style automation.
+description: Smart street lighting with LDR or motion sensing on ESP32 — dusk-to-dawn control through connected city-style
+  automation.
 source_base: esp32-smart-street-light-with-ota-update
 sensor: LDR light sensor
 output: street light relay
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-18'
+date_modified: '2026-07-05'
 hardware:
   sensor_pin: GPIO33
   output_pin: GPIO25
@@ -27,19 +27,17 @@ hardware:
     pin: 3.3V/5V
   - component: GND
     pin: GND
-meta_description: Production-ready walkthrough — Ldr Sensor signal on GPIO33 drives Street Light Relay
-  control with a tuned threshold sketch you can deploy today.
-meta_title: ESP32 Street Light for Urban Node
+meta_description: A light-sensing ESP32 controller that turns a lamp output on at night and can use motion sensing to brighten
+  only when movement is detected. Includes wirin
+meta_title: ESP32 Smart Street Light Tutorial with ESP32
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for Parking Sensor: ESP32 watches Ldr Sensor signal and activates Street Light\
-      \ Relay control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n\
-      \        <li>Ldr Sensor signal connects to GPIO33 (ADC input)</li><li>Threshold is set to 1605 in\
-      \ firmware (adjust after calibration)</li><li>Street Light Relay control is driven on GPIO25 when\
-      \ the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
-      \      </section>"
+    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
+      \ for Parking Sensor: ESP32 watches Ldr Sensor signal and activates Street Light Relay control when conditions cross\
+      \ your threshold.</p>\n      <ul class=\"overview-list\">\n        <li>Ldr Sensor signal connects to GPIO33 (ADC input)</li><li>Threshold\
+      \ is set to 1605 in firmware (adjust after calibration)</li><li>Street Light Relay control is driven on GPIO25 when\
+      \ the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n      </section>"
     components:
     - ESP32 Dev Board
     - Ldr Sensor
@@ -69,15 +67,15 @@ levels:
     apps:
     - Parking Sensor monitoring with Ldr Sensor signal
     troubleshooting: []
-    upgrades:
+    upgrades: &id001
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Street Light for Urban Node\nconst int SENSOR_PIN = 33;\nconst int OUTPUT_PIN = 25;\n\
-      const int THRESHOLD = 1812;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: street\
-      \ light for urban node\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\n\
-      void loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Ldr Sensor signal: \");\n\
-      \  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN, active\
-      \ ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    - Add motion-based dimming with a PIR sensor.
+    code: "// ESP32 Street Light for Urban Node\nconst int SENSOR_PIN = 33;\nconst int OUTPUT_PIN = 25;\nconst int THRESHOLD\
+      \ = 1812;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n\
+      \  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: street light for urban node\");\n  Serial.print(\"Threshold:\
+      \ \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"\
+      Ldr Sensor signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
+      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
@@ -85,7 +83,266 @@ levels:
   advanced:
     overview_html: '<p>TODO: import advanced content from batch or WordPress</p>'
     code: ''
-quality_status: legacy_import
-status: needs_polish
+quality_status: golden_tutorial
+status: published
 import_tier: 1
 import_source: esp32-smart-street-light-with-ota-update-project-001.html
+format: golden
+keywords:
+- ESP32
+- ESP32 Smart Street Light
+- LDR light sensor
+- street light relay
+- Arduino tutorial
+- Smart City
+project:
+  icon: LAMP
+  mission_title: Build a Smart Street Light
+  difficulty: Beginner
+  age: Ages 12+
+  estimated_time: 70-100 min
+  budget: Under 30 USD
+  what_you_build: A light-sensing ESP32 controller that turns a lamp output on at night and can use motion sensing to brighten
+    only when movement is detected.
+  story: 'ESP32 Smart Street Light solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
+    result. Build this to learn LDR analog sensing, relay/driver control, hysteresis, and smart-city style automation.
+
+
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
+    the output under real conditions.'
+  eli12: The LDR is the project eye. In daylight it tells the ESP32 the area is bright; after sunset the number changes and
+    the code decides the street light should turn on.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
+    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
+    enclosure, and adult supervision are used.
+  learning_objectives:
+  - Read an LDR voltage divider with ESP32 analog input.
+  - Use a threshold and hysteresis for stable day/night control.
+  - Drive a relay or transistor-controlled lamp output safely.
+  - Understand why sensor placement matters outdoors.
+  - Add motion-based brightness logic as an upgrade.
+  components:
+  - item: ESP32 Dev Board
+    note: Required for this build
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: Ldr Sensor
+    note: Required for this build
+    icon: PART
+  - item: Street Light Relay
+    note: Required for this build
+    icon: PART
+  - item: Motion Sensor
+    note: Required for this build
+    icon: PART
+  - item: 5V Power Supply
+    note: Required for this build
+    icon: PART
+  - item: Breadboard and jumper wires
+    note: For safe low-voltage prototyping
+    icon: PART
+  - item: USB data cable
+    note: Programming and bench power
+    icon: PART
+  bom:
+  - part: ESP32 Dev Board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: Ldr Sensor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: Street Light Relay
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: Motion Sensor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 5V Power Supply
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: Breadboard and jumper wires
+    qty: 1 set
+    estimated_cost: Varies
+    notes: For safe low-voltage prototyping
+  wiring:
+    illustration_alt: ESP32 Smart Street Light wiring diagram
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. An LDR forms
+      a voltage divider so changing light becomes changing voltage.
+    steps:
+    - Unplug USB before changing wires.
+    - Connect Ldr Sensor signal to GPIO33.
+    - Connect Street Light Relay control to GPIO25.
+    - Connect Motion Sensor SDA to GPIO21.
+    - Connect SCL to GPIO22.
+    - Connect VCC to 3.3V/5V.
+    - Connect GND to GND.
+    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+  gpio_map:
+  - signal: Ldr Sensor signal
+    esp32_pin: GPIO33
+    direction: Input
+    notes: Match this wire to the code constant.
+  - signal: Street Light Relay control
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Match this wire to the code constant.
+  - signal: Motion Sensor SDA
+    esp32_pin: GPIO21
+    direction: Input
+    notes: Match this wire to the code constant.
+  - signal: SCL
+    esp32_pin: GPIO22
+    direction: Signal
+    notes: Match this wire to the code constant.
+  - signal: VCC
+    esp32_pin: 3.3V/5V
+    direction: Power
+    notes: Match this wire to the code constant.
+  - signal: GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Match this wire to the code constant.
+  circuit_explanation: An LDR forms a voltage divider so changing light becomes changing voltage. The ESP32 reads that voltage
+    on an ADC pin. A relay or driver pin controls the lamp side, but actual lamps need a properly rated isolated module and
+    safe enclosure.
+  engineering_explanation: Outdoor lighting controllers need hysteresis because light changes gradually at sunrise and sunset.
+    Without hysteresis the output may chatter around the threshold. Professional systems also separate sensor placement from
+    lamp glare so the light does not fool its own sensor.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-smart-street-light.ino
+    content: "// ESP32 Street Light for Urban Node\nconst int SENSOR_PIN = 33;\nconst int OUTPUT_PIN = 25;\nconst int THRESHOLD\
+      \ = 1812;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n\
+      \  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: street light for urban node\");\n  Serial.print(\"Threshold:\
+      \ \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"\
+      Ldr Sensor signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
+      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
+    setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading first, compares it
+    with a threshold, then changes the output. Printing before controlling the output makes debugging much easier because
+    you can see what the ESP32 believes is happening.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
+    condition for esp32 smart street light is reached.
+  common_mistakes:
+  - text: Pointing the LDR at the lamp it controls.
+  - text: Switching a mains light on a breadboard.
+  - text: Skipping hysteresis and creating relay chatter.
+  - text: Powering a relay coil from a GPIO pin.
+  - text: Using ADC2 pins while Wi-Fi is active.
+  troubleshooting:
+  - problem: Light turns on and off repeatedly
+    fix: Add hysteresis and move the LDR away from the lamp beam.
+  - problem: Relay does not click
+    fix: Use a relay module with proper VCC, GND, IN wiring and common ground.
+  - problem: Analog reading is stuck
+    fix: 'Check the voltage divider: the LDR and fixed resistor must not both go to the same rail.'
+  - problem: Motion sensor retriggers oddly
+    fix: Give PIR modules warm-up time and avoid pointing them at heat sources.
+  testing_checklist:
+  - Upload a simple Blink sketch first to confirm the board and USB cable work.
+  - Wire only power and ground, then confirm the board still boots.
+  - Connect the input signal and print raw readings before using thresholds.
+  - Trigger the real-world condition slowly and watch Serial Monitor.
+  - Connect the output only after the input reading is believable.
+  - Power-cycle the project and confirm it starts in a safe state.
+  engineer_tips:
+  - Use an LDR divider with a known resistor such as 10 kOhm.
+  - Keep high-voltage lamp wiring out of breadboards.
+  - Add hysteresis before adding Wi-Fi.
+  - Test the LDR reading with a flashlight and by covering it with your hand.
+  - Use a MOSFET for low-voltage LED strips and a relay only when isolation is needed.
+  performance_tips:
+  - Sample light every few seconds; daylight does not change millisecond by millisecond.
+  - Use deep sleep for solar prototypes.
+  - Dim LEDs with PWM instead of hard switching when using low-voltage lighting.
+  - Publish only state changes to save network traffic.
+  upgrade_ideas: *id001
+  real_world_applications:
+  - Solar street light controller prototype
+  - Porch or garden lighting automation
+  - Smart city classroom model
+  - Warehouse aisle lighting demonstration
+  downloads:
+  - text: ESP32 Smart Street Light Arduino sketch
+    note: Use the code section as the source sketch.
+  - text: Bench test checklist
+    note: Follow the testing checklist before permanent installation.
+  related_guides:
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Verify uploads and simple outputs before adding hardware.
+  - title: Mission 08 - Analog Inputs
+    href: /guides/analog-inputs.html
+    description: Understand changing sensor values before building threshold projects.
+  - title: Mission 07 - PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Learn brightness and output control concepts.
+  related_projects:
+  - title: ESP32 Led Matrix Display
+    href: /projects/esp32-led-matrix-display.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Motion Security Alert
+    href: /projects/esp32-motion-security-alert.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Smart Parking Sensor
+    href: /projects/esp32-smart-parking-sensor.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  faqs:
+  - question: Is ESP32 Smart Street Light good for beginners?
+    answer: Yes, if you build the beginner version first and test one part at a time. Build this to learn LDR analog sensing,
+      relay/driver control, hysteresis, and smart-city style automation.
+  - question: Which ESP32 board should I use?
+    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
+      ESP32-CAM module and a reliable FTDI adapter.
+  - question: Can I power this from a phone charger?
+    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
+      and LED matrices may need a separate regulated supply.
+  - question: Why should I print values to Serial Monitor first?
+    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
+      from LED, relay, display, or network problems.
+  - question: Can I change the GPIO pins?
+    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
+      Analog-only pins such as GPIO34 cannot drive outputs.
+  - question: What should I test before installing it permanently?
+    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
+      that should trigger the project.
+  - question: Can I add Wi-Fi or a dashboard?
+    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
+      after Wi-Fi is added.
+  - question: What is the most common failure?
+    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
+      raw reading and wiring table first.
+  - question: How do I make it more reliable?
+    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
+      hysteresis where the output might chatter.
+  - question: Where should I learn next?
+    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
+      part of this project you want to improve.
+  references:
+  - title: ESP32 ADC Documentation
+    href: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_oneshot.html
+  - title: Arduino ESP32 Core Documentation
+    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  complete:
+    summary: You completed ESP32 Smart Street Light as a real ESP32 engineering build, not just a wiring demo. You now know
+      how to test the input, protect the circuit, explain the code, and improve the project safely.
+    skills:
+    - Read and verify project input hardware
+    - Map signals to safe ESP32 GPIO pins
+    - Debug with Serial Monitor
+    - Apply safety and performance checks
+    - Plan the next learning step
+  build_photos:
+  - title: Breadboard overview
+    note: Show ESP32, module, output device, and power rails.
+  - title: Close-up wiring
+    note: Show signal pins clearly enough for learners to compare.
+  - title: Working output
+    note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.

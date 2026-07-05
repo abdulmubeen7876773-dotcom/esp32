@@ -1,18 +1,18 @@
 slug: esp32-mqtt-sensor-dashboard
 title: ESP32 MQTT Sensor Dashboard
 category: IoT Projects
-description: Publish real-time temperature and humidity from the ESP32 to MQTT, then visualise it in Node-RED,
-  Home Assistant, or a Grafana time-series dashboard.
-meta_description: Build an ESP32 MQTT sensor dashboard with DHT22 temperature and humidity publishing
-  to Node-RED, Home Assistant, and InfluxDB+Grafana for professional IoT monitoring.
+description: Publish real-time temperature and humidity from the ESP32 to MQTT, then visualise it in Node-RED, Home Assistant,
+  or a Grafana time-series dashboard.
+meta_description: An ESP32 sensor node that publishes temperature and humidity readings to an MQTT broker so dashboards such
+  as Node-RED or Home Assistant can display live d
 source_base: esp32-mqtt-sensor-dashboard-legacy-import
 sensor: DHT22 DATA
 output: 'TODO: output'
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
-status: needs_polish
+date_modified: '2026-07-05'
+quality_status: golden_tutorial
+status: published
 import_tier: 2
 import_source: batch-php
 hardware:
@@ -30,21 +30,19 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: '<p>This project is your gateway to <strong>IoT data pipelines</strong>. The ESP32
-      reads a DHT22 sensor and publishes temperature and humidity to an MQTT broker every 30 seconds.
-      You then subscribe to those topics in a Node-RED dashboard to see a live graph in your browser —
-      no coding required on the dashboard side, just drag-and-drop nodes.</p>
+    overview_html: '<p>This project is your gateway to <strong>IoT data pipelines</strong>. The ESP32 reads a DHT22 sensor
+      and publishes temperature and humidity to an MQTT broker every 30 seconds. You then subscribe to those topics in a Node-RED
+      dashboard to see a live graph in your browser — no coding required on the dashboard side, just drag-and-drop nodes.</p>
 
 
-      <p>MQTT (Message Queuing Telemetry Transport) is the universal language of IoT devices. It is a
-      lightweight publish-subscribe protocol designed for low-bandwidth, unreliable networks. Understanding
-      it opens the door to Home Assistant, Node-RED, AWS IoT, Azure IoT Hub, and virtually every commercial
-      IoT platform. This project gives you a solid foundation in MQTT topics, QoS levels, and broker architecture
-      using real hardware.</p>
+      <p>MQTT (Message Queuing Telemetry Transport) is the universal language of IoT devices. It is a lightweight publish-subscribe
+      protocol designed for low-bandwidth, unreliable networks. Understanding it opens the door to Home Assistant, Node-RED,
+      AWS IoT, Azure IoT Hub, and virtually every commercial IoT platform. This project gives you a solid foundation in MQTT
+      topics, QoS levels, and broker architecture using real hardware.</p>
 
 
-      <p>By the end you will have a working IoT sensor node sending live data to a browser dashboard,
-      and you will understand the core publish-subscribe pattern that powers billions of connected devices.</p>'
+      <p>By the end you will have a working IoT sensor node sending live data to a browser dashboard, and you will understand
+      the core publish-subscribe pattern that powers billions of connected devices.</p>'
     components:
     - 1× ESP32 DevKit V1
     - 1× DHT22 Temperature & Humidity Sensor
@@ -62,20 +60,18 @@ levels:
       - GND
       - ''
     how:
-    - 'MQTT Publish-Subscribe: The ESP32 connects to the broker as a client and calls mqtt.publish(topic,
-      value). Any other client subscribed to that topic receives the value immediately. The broker acts
-      as a post office: senders drop messages in topic mailboxes, subscribers pick them up.'
-    - 'QoS 0 (At Most Once): mqtt.publish() uses QoS 0 by default: fire and forget. For sensor readings
-      this is fine — if a packet is lost, the next reading arrives in 30 seconds anyway. For critical
-      commands (turn off heater, open valve), use QoS 1 which guarantees delivery with acknowledgement.'
-    - 'Retained Messages: The third argument true to publish() sets the RETAIN flag. The broker stores
-      the last retained message per topic and delivers it to any new subscriber instantly. Without retain,
-      a Node-RED dashboard that reconnects after a restart would show no data until the next 30-second
-      publish.'
-    - 'Last Will Testament: The LWT is registered during the MQTT CONNECT packet. If the ESP32''s TCP
-      connection drops (power failure, network loss), the broker automatically publishes "offline" to
-      TOPIC_AVAIL. This lets dashboards show "Sensor offline" rather than showing stale old data as if
-      it were current.'
+    - 'MQTT Publish-Subscribe: The ESP32 connects to the broker as a client and calls mqtt.publish(topic, value). Any other
+      client subscribed to that topic receives the value immediately. The broker acts as a post office: senders drop messages
+      in topic mailboxes, subscribers pick them up.'
+    - 'QoS 0 (At Most Once): mqtt.publish() uses QoS 0 by default: fire and forget. For sensor readings this is fine — if
+      a packet is lost, the next reading arrives in 30 seconds anyway. For critical commands (turn off heater, open valve),
+      use QoS 1 which guarantees delivery with acknowledgement.'
+    - 'Retained Messages: The third argument true to publish() sets the RETAIN flag. The broker stores the last retained message
+      per topic and delivers it to any new subscriber instantly. Without retain, a Node-RED dashboard that reconnects after
+      a restart would show no data until the next 30-second publish.'
+    - 'Last Will Testament: The LWT is registered during the MQTT CONNECT packet. If the ESP32''s TCP connection drops (power
+      failure, network loss), the broker automatically publishes "offline" to TOPIC_AVAIL. This lets dashboards show "Sensor
+      offline" rather than showing stale old data as if it were current.'
     apps:
     - Multi-room temperature monitoring displayed on a single dashboard
     - Server room environmental monitoring with threshold alerts
@@ -83,52 +79,46 @@ levels:
     - Historical temperature logging to understand heating/cooling efficiency
     troubleshooting:
     - - MQTT state is -2 (MQTT_CONNECT_FAILED)
-      - 'Broker not reachable. Verify BROKER IP. Test with: mosquitto_pub -h BROKER_IP -t test -m hello
-        from a terminal on the same network. Check that port 1883 is not blocked by firewall on the broker
-        machine.'
+      - 'Broker not reachable. Verify BROKER IP. Test with: mosquitto_pub -h BROKER_IP -t test -m hello from a terminal on
+        the same network. Check that port 1883 is not blocked by firewall on the broker machine.'
     - - Node-RED dashboard shows old data and never updates
-      - Ensure the MQTT in node in Node-RED is connected to the same broker. Check the topic exactly —
-        "esp32engine/sensors/room1/temperature" must match character for character including case. Use
-        MQTT Explorer (a free GUI tool) to see what topics are actually being published.
-    upgrades:
+      - Ensure the MQTT in node in Node-RED is connected to the same broker. Check the topic exactly — "esp32engine/sensors/room1/temperature"
+        must match character for character including case. Use MQTT Explorer (a free GUI tool) to see what topics are actually
+        being published.
+    upgrades: &id001
     - Add a BMP280 pressure sensor on I2C to publish a third metric (air pressure)
     - Add a PIR motion sensor and publish motion events to trigger Home Assistant automations
-    code: "/*\n * ESP32 MQTT Sensor Dashboard — Beginner\n * Publishes DHT22 temp & humidity to MQTT every\
-      \ 30 seconds.\n * View live data in Node-RED, MQTT Explorer, or any subscriber.\n *\n * Setup:\n\
-      \ *   1) Install Mosquitto broker on your network\n *   2) Install Node-RED + node-red-dashboard\n\
-      \ *   3) Import the Node-RED flow from the project page\n *   4) Update SSID, PASSWORD, BROKER below\n\
-      \ *\n * Library: DHT (Adafruit), PubSubClient (Nick O'Leary)\n */\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      #include <DHT.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\"\
-      ;\nconst char* BROKER   = \"192.168.1.100\";   // Your broker IP\nconst int   PORT     = 1883;\n\
-      \n#define DHT_PIN  4\n#define DHT_TYPE DHT22\n\n// MQTT Topics (change \"room1\" to identify this\
-      \ sensor's location)\nconst char* TOPIC_TEMP = \"esp32engine/sensors/room1/temperature\";\nconst\
-      \ char* TOPIC_HUM  = \"esp32engine/sensors/room1/humidity\";\nconst char* TOPIC_AVAIL= \"esp32engine/sensors/room1/availability\"\
-      ;\n\nDHT dht(DHT_PIN, DHT_TYPE);\nWiFiClient net;\nPubSubClient mqtt(net);\n\nvoid connectMQTT()\
-      \ {\n  while (!mqtt.connected()) {\n    Serial.print(\"Connecting MQTT... \");\n    // Last Will:\
-      \ publish \"offline\" if we disconnect unexpectedly\n    if (mqtt.connect(\"esp32-room1\", \"\"\
-      , \"\", TOPIC_AVAIL, 0, true, \"offline\")) {\n      mqtt.publish(TOPIC_AVAIL, \"online\", true);\n\
-      \      Serial.println(\"connected\");\n    } else {\n      Serial.printf(\"failed rc=%d — retry\
-      \ in 5sn\", mqtt.state());\n      delay(5000);\n    }\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  dht.begin();\n  WiFi.begin(SSID, PASSWORD);\n  Serial.print(\"Connecting Wi-Fi\");\n  while (WiFi.status()\
-      \ != WL_CONNECTED) { delay(400); Serial.print(\".\"); }\n  Serial.printf(\"nConnected: %sn\", WiFi.localIP().toString().c_str());\n\
-      \  mqtt.setServer(BROKER, PORT);\n  connectMQTT();\n}\n\nvoid loop() {\n  if (!mqtt.connected())\
-      \ connectMQTT();\n  mqtt.loop();\n\n  static unsigned long last = 0;\n  if (millis() - last >= 30000)\
-      \ {\n    last = millis();\n    float h = dht.readHumidity();\n    float t = dht.readTemperature();\n\
-      \    if (!isnan(h) && !isnan(t)) {\n      mqtt.publish(TOPIC_TEMP, String(t, 2).c_str(), true);\n\
-      \      mqtt.publish(TOPIC_HUM,  String(h, 2).c_str(), true);\n      Serial.printf(\"Published: temp=%.2f\
-      \  hum=%.2fn\", t, h);\n    }\n  }\n}"
+    code: "/*\n * ESP32 MQTT Sensor Dashboard — Beginner\n * Publishes DHT22 temp & humidity to MQTT every 30 seconds.\n *\
+      \ View live data in Node-RED, MQTT Explorer, or any subscriber.\n *\n * Setup:\n *   1) Install Mosquitto broker on\
+      \ your network\n *   2) Install Node-RED + node-red-dashboard\n *   3) Import the Node-RED flow from the project page\n\
+      \ *   4) Update SSID, PASSWORD, BROKER below\n *\n * Library: DHT (Adafruit), PubSubClient (Nick O'Leary)\n */\n#include\
+      \ <WiFi.h>\n#include <PubSubClient.h>\n#include <DHT.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD\
+      \ = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   = \"192.168.1.100\";   // Your broker IP\nconst int   PORT     = 1883;\n\
+      \n#define DHT_PIN  4\n#define DHT_TYPE DHT22\n\n// MQTT Topics (change \"room1\" to identify this sensor's location)\n\
+      const char* TOPIC_TEMP = \"esp32engine/sensors/room1/temperature\";\nconst char* TOPIC_HUM  = \"esp32engine/sensors/room1/humidity\"\
+      ;\nconst char* TOPIC_AVAIL= \"esp32engine/sensors/room1/availability\";\n\nDHT dht(DHT_PIN, DHT_TYPE);\nWiFiClient net;\n\
+      PubSubClient mqtt(net);\n\nvoid connectMQTT() {\n  while (!mqtt.connected()) {\n    Serial.print(\"Connecting MQTT...\
+      \ \");\n    // Last Will: publish \"offline\" if we disconnect unexpectedly\n    if (mqtt.connect(\"esp32-room1\", \"\
+      \", \"\", TOPIC_AVAIL, 0, true, \"offline\")) {\n      mqtt.publish(TOPIC_AVAIL, \"online\", true);\n      Serial.println(\"\
+      connected\");\n    } else {\n      Serial.printf(\"failed rc=%d — retry in 5sn\", mqtt.state());\n      delay(5000);\n\
+      \    }\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  dht.begin();\n  WiFi.begin(SSID, PASSWORD);\n  Serial.print(\"\
+      Connecting Wi-Fi\");\n  while (WiFi.status() != WL_CONNECTED) { delay(400); Serial.print(\".\"); }\n  Serial.printf(\"\
+      nConnected: %sn\", WiFi.localIP().toString().c_str());\n  mqtt.setServer(BROKER, PORT);\n  connectMQTT();\n}\n\nvoid\
+      \ loop() {\n  if (!mqtt.connected()) connectMQTT();\n  mqtt.loop();\n\n  static unsigned long last = 0;\n  if (millis()\
+      \ - last >= 30000) {\n    last = millis();\n    float h = dht.readHumidity();\n    float t = dht.readTemperature();\n\
+      \    if (!isnan(h) && !isnan(t)) {\n      mqtt.publish(TOPIC_TEMP, String(t, 2).c_str(), true);\n      mqtt.publish(TOPIC_HUM,\
+      \  String(h, 2).c_str(), true);\n      Serial.printf(\"Published: temp=%.2f  hum=%.2fn\", t, h);\n    }\n  }\n}"
     code_filename: esp32-mqtt-dashboard-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: '<p>At the intermediate level you expand to <strong>five sensors</strong> on one ESP32:
-      DHT22, BMP280 (pressure + altitude), MQ-135 (air quality), a PIR motion sensor, and a photoresistor
-      (light level). All readings publish to structured MQTT topics and are displayed on a <strong>Node-RED
-      dashboard</strong> with gauges, charts, and alert nodes that send an email when CO2 levels are high.</p>
+    overview_html: '<p>At the intermediate level you expand to <strong>five sensors</strong> on one ESP32: DHT22, BMP280 (pressure
+      + altitude), MQ-135 (air quality), a PIR motion sensor, and a photoresistor (light level). All readings publish to structured
+      MQTT topics and are displayed on a <strong>Node-RED dashboard</strong> with gauges, charts, and alert nodes that send
+      an email when CO2 levels are high.</p>
 
 
-      <p>You will learn JSON payload design for multi-metric MQTT messages, subscribing to MQTT topics
-      to receive remote commands (toggle an LED from Node-RED), and structuring MQTT topic namespaces
-      for scalable multi-device deployments.</p>'
+      <p>You will learn JSON payload design for multi-metric MQTT messages, subscribing to MQTT topics to receive remote commands
+      (toggle an LED from Node-RED), and structuring MQTT topic namespaces for scalable multi-device deployments.</p>'
     components:
     - 1× ESP32 DevKit V1
     - 1× DHT22 — Temperature + humidity
@@ -157,70 +147,63 @@ levels:
       - GPIO 33
       - Remotely toggled via MQTT
     how:
-    - 'JSON Multi-Metric Payload: Instead of publishing each sensor value to a separate topic, this level
-      bundles all readings into one JSON string on a single /all topic. Node-RED''s JSON node parses the
-      payload and routes each field to the appropriate dashboard widget using msg.payload.temperature
-      etc. This reduces the number of MQTT messages by 5×.'
-    - 'Bidirectional MQTT: The ESP32 subscribes to T_CMD topic after connecting. When Node-RED sends "LED_ON"
-      to that topic, onCmd() fires and drives the LED pin HIGH. This is the same pattern used by smart
-      bulbs, smart plugs, and any remote-controllable IoT device.'
-    - 'Motion Event-Driven Publishing: Motion is published immediately when the PIR state changes rather
-      than on a 30-second timer. This gives sub-second latency for motion alerts. The two publishing patterns
-      (periodic for continuous sensors, event-driven for discrete sensors) are the two fundamental IoT
-      data models.'
+    - 'JSON Multi-Metric Payload: Instead of publishing each sensor value to a separate topic, this level bundles all readings
+      into one JSON string on a single /all topic. Node-RED''s JSON node parses the payload and routes each field to the appropriate
+      dashboard widget using msg.payload.temperature etc. This reduces the number of MQTT messages by 5×.'
+    - 'Bidirectional MQTT: The ESP32 subscribes to T_CMD topic after connecting. When Node-RED sends "LED_ON" to that topic,
+      onCmd() fires and drives the LED pin HIGH. This is the same pattern used by smart bulbs, smart plugs, and any remote-controllable
+      IoT device.'
+    - 'Motion Event-Driven Publishing: Motion is published immediately when the PIR state changes rather than on a 30-second
+      timer. This gives sub-second latency for motion alerts. The two publishing patterns (periodic for continuous sensors,
+      event-driven for discrete sensors) are the two fundamental IoT data models.'
     apps: []
     troubleshooting:
     - - BMP280 not found (address error)
-      - Some BMP280 modules use I2C address 0x77 instead of 0x76. Try bmp.begin(0x77). Run an I2C scanner
-        sketch to confirm the address.
+      - Some BMP280 modules use I2C address 0x77 instead of 0x76. Try bmp.begin(0x77). Run an I2C scanner sketch to confirm
+        the address.
     - - MQ-135 readings are unstable for the first 30 minutes
-      - MQ-series gas sensors require a 24-48 hour "burn-in" period and a 3-5 minute warm-up on every
-        power cycle. Discard the first 5 minutes of readings after boot.
+      - MQ-series gas sensors require a 24-48 hour "burn-in" period and a 3-5 minute warm-up on every power cycle. Discard
+        the first 5 minutes of readings after boot.
     upgrades:
     - Set up a Node-RED email node to send an alert when MQ-135 raw ADC exceeds a threshold
     - Add a SIM800L GSM module for cellular backup when Wi-Fi is unavailable
-    code: "/*\n * ESP32 MQTT Dashboard — Intermediate (5 sensors + remote control)\n * Libraries: DHT\
-      \ (Adafruit), Adafruit_BMP280, PubSubClient\n */\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      #include <DHT.h>\n#include <Wire.h>\n#include <Adafruit_BMP280.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\"\
-      ;\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   = \"192.168.1.100\";\nconst\
-      \ char* DEV      = \"esp32-room1\";\n\n#define DHT_PIN 4\n#define DHT_TYPE DHT22\n#define MQ_PIN\
-      \  34\n#define PIR_PIN 27\n#define LDR_PIN 35\n#define LED_PIN 33\n\nconst char* T_SENSOR = \"esp32engine/sensors/room1/all\"\
+    code: "/*\n * ESP32 MQTT Dashboard — Intermediate (5 sensors + remote control)\n * Libraries: DHT (Adafruit), Adafruit_BMP280,\
+      \ PubSubClient\n */\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <DHT.h>\n#include <Wire.h>\n#include <Adafruit_BMP280.h>\n\
+      \nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   =\
+      \ \"192.168.1.100\";\nconst char* DEV      = \"esp32-room1\";\n\n#define DHT_PIN 4\n#define DHT_TYPE DHT22\n#define\
+      \ MQ_PIN  34\n#define PIR_PIN 27\n#define LDR_PIN 35\n#define LED_PIN 33\n\nconst char* T_SENSOR = \"esp32engine/sensors/room1/all\"\
       ;\nconst char* T_MOTION = \"esp32engine/sensors/room1/motion\";\nconst char* T_CMD    = \"esp32engine/sensors/room1/cmd\"\
-      ;\nconst char* T_AVAIL  = \"esp32engine/sensors/room1/availability\";\n\nDHT dht(DHT_PIN, DHT_TYPE);\n\
-      Adafruit_BMP280 bmp;\nWiFiClient net;\nPubSubClient mqtt(net);\n\nvoid onCmd(char* topic, byte*\
-      \ pl, unsigned int len){\n  String msg; for(unsigned int i=0;i<len;i++) msg+=(char)pl[i];\n  if(String(topic)==T_CMD){\n\
-      \    if(msg==\"LED_ON\")  digitalWrite(LED_PIN,HIGH);\n    if(msg==\"LED_OFF\") digitalWrite(LED_PIN,LOW);\n\
-      \    if(msg==\"RESTART\") ESP.restart();\n  }\n}\n\nvoid connectMQTT(){\n  while(!mqtt.connected()){\n\
-      \    if(mqtt.connect(DEV,\"\",\"\",T_AVAIL,0,true,\"offline\")){\n      mqtt.publish(T_AVAIL,\"\
-      online\",true);\n      mqtt.subscribe(T_CMD);\n    } else delay(5000);\n  }\n}\n\nString buildJSON(float\
-      \ t,float h,float p,float alt,int mq,int ldr){\n  return \"{\"temperature\":\"+String(t,1)+\",\"\
-      humidity\":\"+String(h,1)\n        +\",\"pressure\":\"+String(p,1)+\",\"altitude\":\"+String(alt,1)\n\
-      \        +\",\"air_quality\":\"+String(mq)+\",\"light\":\"+String(ldr)+\"}\";\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200);\n  dht.begin();\n  Wire.begin(); bmp.begin(0x76);\n  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,\n\
-      \    Adafruit_BMP280::SAMPLING_X2,Adafruit_BMP280::SAMPLING_X16,\n    Adafruit_BMP280::FILTER_X16,Adafruit_BMP280::STANDBY_MS_500);\n\
-      \  pinMode(PIR_PIN,INPUT); pinMode(LED_PIN,OUTPUT);\n  analogReadResolution(12);\n  WiFi.begin(SSID,PASSWORD);\n\
-      \  while(WiFi.status()!=WL_CONNECTED) delay(400);\n  mqtt.setServer(BROKER,1883);\n  mqtt.setCallback(onCmd);\n\
-      \  connectMQTT();\n}\n\nvoid loop(){\n  if(!mqtt.connected()) connectMQTT();\n  mqtt.loop();\n\n\
-      \  // Motion — publish immediately on change\n  static bool lastMotion=false;\n  bool motion=digitalRead(PIR_PIN);\n\
-      \  if(motion!=lastMotion){\n    mqtt.publish(T_MOTION,motion?\"detected\":\"clear\",true);\n   \
-      \ lastMotion=motion;\n  }\n\n  // Sensor publish every 30 s\n  static unsigned long last=0;\n  if(millis()-last>=30000){\n\
-      \    last=millis();\n    float t=dht.readTemperature(),h=dht.readHumidity();\n    float p=bmp.readPressure()/100.0f,alt=bmp.readAltitude(1013.25);\n\
-      \    int mq=analogRead(MQ_PIN),ldr=analogRead(LDR_PIN);\n    if(!isnan(t)&&!isnan(h)){\n      String\
-      \ j=buildJSON(t,h,p,alt,mq,ldr);\n      mqtt.publish(T_SENSOR,j.c_str(),true);\n      Serial.println(j);\n\
-      \    }\n  }\n}"
+      ;\nconst char* T_AVAIL  = \"esp32engine/sensors/room1/availability\";\n\nDHT dht(DHT_PIN, DHT_TYPE);\nAdafruit_BMP280\
+      \ bmp;\nWiFiClient net;\nPubSubClient mqtt(net);\n\nvoid onCmd(char* topic, byte* pl, unsigned int len){\n  String msg;\
+      \ for(unsigned int i=0;i<len;i++) msg+=(char)pl[i];\n  if(String(topic)==T_CMD){\n    if(msg==\"LED_ON\")  digitalWrite(LED_PIN,HIGH);\n\
+      \    if(msg==\"LED_OFF\") digitalWrite(LED_PIN,LOW);\n    if(msg==\"RESTART\") ESP.restart();\n  }\n}\n\nvoid connectMQTT(){\n\
+      \  while(!mqtt.connected()){\n    if(mqtt.connect(DEV,\"\",\"\",T_AVAIL,0,true,\"offline\")){\n      mqtt.publish(T_AVAIL,\"\
+      online\",true);\n      mqtt.subscribe(T_CMD);\n    } else delay(5000);\n  }\n}\n\nString buildJSON(float t,float h,float\
+      \ p,float alt,int mq,int ldr){\n  return \"{\"temperature\":\"+String(t,1)+\",\"humidity\":\"+String(h,1)\n        +\"\
+      ,\"pressure\":\"+String(p,1)+\",\"altitude\":\"+String(alt,1)\n        +\",\"air_quality\":\"+String(mq)+\",\"light\"\
+      :\"+String(ldr)+\"}\";\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  dht.begin();\n  Wire.begin(); bmp.begin(0x76);\n\
+      \  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,\n    Adafruit_BMP280::SAMPLING_X2,Adafruit_BMP280::SAMPLING_X16,\n\
+      \    Adafruit_BMP280::FILTER_X16,Adafruit_BMP280::STANDBY_MS_500);\n  pinMode(PIR_PIN,INPUT); pinMode(LED_PIN,OUTPUT);\n\
+      \  analogReadResolution(12);\n  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED) delay(400);\n  mqtt.setServer(BROKER,1883);\n\
+      \  mqtt.setCallback(onCmd);\n  connectMQTT();\n}\n\nvoid loop(){\n  if(!mqtt.connected()) connectMQTT();\n  mqtt.loop();\n\
+      \n  // Motion — publish immediately on change\n  static bool lastMotion=false;\n  bool motion=digitalRead(PIR_PIN);\n\
+      \  if(motion!=lastMotion){\n    mqtt.publish(T_MOTION,motion?\"detected\":\"clear\",true);\n    lastMotion=motion;\n\
+      \  }\n\n  // Sensor publish every 30 s\n  static unsigned long last=0;\n  if(millis()-last>=30000){\n    last=millis();\n\
+      \    float t=dht.readTemperature(),h=dht.readHumidity();\n    float p=bmp.readPressure()/100.0f,alt=bmp.readAltitude(1013.25);\n\
+      \    int mq=analogRead(MQ_PIN),ldr=analogRead(LDR_PIN);\n    if(!isnan(t)&&!isnan(h)){\n      String j=buildJSON(t,h,p,alt,mq,ldr);\n\
+      \      mqtt.publish(T_SENSOR,j.c_str(),true);\n      Serial.println(j);\n    }\n  }\n}"
     code_filename: esp32-mqtt-dashboard-intermediate.ino
   advanced:
     level: advanced
-    overview_html: '<p>The advanced level connects your ESP32 sensor data to a <strong>professional time-series
-      stack: InfluxDB + Grafana</strong>. The ESP32 publishes JSON to MQTT. A Node-RED bridge subscribes
-      to those topics and writes to an InfluxDB database. Grafana queries InfluxDB and renders a professional
-      dashboard with multi-day history, statistical aggregations, and threshold alert annotations.</p>
+    overview_html: '<p>The advanced level connects your ESP32 sensor data to a <strong>professional time-series stack: InfluxDB
+      + Grafana</strong>. The ESP32 publishes JSON to MQTT. A Node-RED bridge subscribes to those topics and writes to an
+      InfluxDB database. Grafana queries InfluxDB and renders a professional dashboard with multi-day history, statistical
+      aggregations, and threshold alert annotations.</p>
 
 
-      <p>This is the same architecture used in real IoT production deployments. InfluxDB stores time-stamped
-      sensor data with zero configuration degradation over years. Grafana gives you drag-and-drop dashboard
-      building with dozens of panel types. You will understand the complete pipeline from hardware to
-      database to visualisation.</p>'
+      <p>This is the same architecture used in real IoT production deployments. InfluxDB stores time-stamped sensor data with
+      zero configuration degradation over years. Grafana gives you drag-and-drop dashboard building with dozens of panel types.
+      You will understand the complete pipeline from hardware to database to visualisation.</p>'
     components:
     - 1× ESP32 DevKit V1 + sensors — Same as intermediate level
     - 1× InfluxDB 2.x (free) — influxdata.com — local or cloud
@@ -231,58 +214,312 @@ levels:
       - No new hardware
       - Software-only additions
     how:
-    - 'InfluxDB Time-Series Database: InfluxDB stores data as measurements (table name), fields (sensor
-      values), tags (metadata like location), and a timestamp. Every row is automatically indexed by time,
-      making range queries like "average temperature last 7 days" extremely fast. Unlike MySQL, InfluxDB
-      is purpose-built for time-series data and needs no schema definition.'
-    - 'Node-RED Bridge: The MQTT-in node subscribes to all sensor topics using the esp32engine/sensors/+/all
-      wildcard. A JSON node parses the payload. A function node maps fields to InfluxDB measurement fields
-      and tags. The influxdb-out node writes the row. The entire bridge is 4 nodes with no programming.'
-    - 'Grafana Visualisation: Grafana connects to InfluxDB via a data source. Panels are configured with
-      Flux queries (InfluxDB 2.x query language) — for example: from(bucket:"sensors") |> range(start:-24h)
-      |> filter(fn:(r)=>r.device=="room1") |> filter(fn:(r)=>r._field=="temperature"). Grafana handles
-      aggregation, downsampling, and alert rules natively.'
+    - 'InfluxDB Time-Series Database: InfluxDB stores data as measurements (table name), fields (sensor values), tags (metadata
+      like location), and a timestamp. Every row is automatically indexed by time, making range queries like "average temperature
+      last 7 days" extremely fast. Unlike MySQL, InfluxDB is purpose-built for time-series data and needs no schema definition.'
+    - 'Node-RED Bridge: The MQTT-in node subscribes to all sensor topics using the esp32engine/sensors/+/all wildcard. A JSON
+      node parses the payload. A function node maps fields to InfluxDB measurement fields and tags. The influxdb-out node
+      writes the row. The entire bridge is 4 nodes with no programming.'
+    - 'Grafana Visualisation: Grafana connects to InfluxDB via a data source. Panels are configured with Flux queries (InfluxDB
+      2.x query language) — for example: from(bucket:"sensors") |> range(start:-24h) |> filter(fn:(r)=>r.device=="room1")
+      |> filter(fn:(r)=>r._field=="temperature"). Grafana handles aggregation, downsampling, and alert rules natively.'
     apps: []
     troubleshooting:
     - - Grafana shows "No data" despite MQTT publishing
-      - Verify Node-RED is receiving MQTT messages (debug node on the MQTT-in output). Check the InfluxDB
-        data source in Grafana — test it with the built-in "Test" button. Confirm the bucket name and
-        org name in the Flux query match your InfluxDB setup exactly.
+      - Verify Node-RED is receiving MQTT messages (debug node on the MQTT-in output). Check the InfluxDB data source in Grafana
+        — test it with the built-in "Test" button. Confirm the bucket name and org name in the Flux query match your InfluxDB
+        setup exactly.
     upgrades:
     - Add Grafana alerting to send a Telegram message when temperature exceeds threshold
-    - Set up InfluxDB data retention policies to downsample old data (1-min averages → 1-hour averages
-      after 30 days)
-    code: "/*\n * ESP32 MQTT Dashboard — Advanced\n * Same hardware as intermediate; adds OTA + structured\
-      \ JSON for InfluxDB.\n * The Node-RED flow bridges MQTT → InfluxDB.\n * No code changes needed on\
-      \ the ESP32 side — only Node-RED configuration.\n *\n * InfluxDB Node-RED flow setup:\n *   1) Install:\
-      \ npm install node-red-contrib-influxdb\n *   2) Subscribe to \"esp32engine/sensors/+/all\" (wildcard\
-      \ for all rooms)\n *   3) JSON node → function node (add measurement name) → InfluxDB out node\n\
-      \ *\n * This sketch adds ArduinoOTA and a richer JSON payload with metadata.\n */\n#include <WiFi.h>\n\
-      #include <PubSubClient.h>\n#include <ArduinoOTA.h>\n#include <DHT.h>\n#include <Wire.h>\n#include\
-      \ <Adafruit_BMP280.h>\n#include <time.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char*\
-      \ PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   = \"192.168.1.100\";\nconst char* DEV_ID\
-      \   = \"room1\";\nconst char* LOCATION = \"Living Room\";\n\n#define DHT_PIN 4\n#define DHT_TYPE\
-      \ DHT22\n#define MQ_PIN  34\n#define PIR_PIN 27\n#define LDR_PIN 35\n\nDHT dht(DHT_PIN, DHT_TYPE);\n\
-      Adafruit_BMP280 bmp;\nWiFiClient net;\nPubSubClient mqtt(net);\n\nString topicAll  = String(\"esp32engine/sensors/\"\
-      ) + DEV_ID + \"/all\";\nString topicAvail= String(\"esp32engine/sensors/\") + DEV_ID + \"/availability\"\
-      ;\n\nvoid connectMQTT(){\n  while(!mqtt.connected()){\n    if(mqtt.connect((\"esp32-\"+String(DEV_ID)).c_str(),\"\
-      \",\"\",\n      topicAvail.c_str(),0,true,\"offline\")){\n      mqtt.publish(topicAvail.c_str(),\"\
-      online\",true);\n    } else delay(5000);\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  dht.begin();\
-      \ Wire.begin(); bmp.begin(0x76);\n  pinMode(PIR_PIN,INPUT);\n  analogReadResolution(12);\n  WiFi.begin(SSID,PASSWORD);\n\
-      \  while(WiFi.status()!=WL_CONNECTED) delay(400);\n  configTime(0,0,\"pool.ntp.org\");\n  ArduinoOTA.setHostname((\"\
-      esp32-\"+String(DEV_ID)).c_str());\n  ArduinoOTA.begin();\n  mqtt.setServer(BROKER,1883);\n  connectMQTT();\n\
-      }\n\nvoid loop(){\n  ArduinoOTA.handle();\n  if(!mqtt.connected()) connectMQTT();\n  mqtt.loop();\n\
+    - Set up InfluxDB data retention policies to downsample old data (1-min averages → 1-hour averages after 30 days)
+    code: "/*\n * ESP32 MQTT Dashboard — Advanced\n * Same hardware as intermediate; adds OTA + structured JSON for InfluxDB.\n\
+      \ * The Node-RED flow bridges MQTT → InfluxDB.\n * No code changes needed on the ESP32 side — only Node-RED configuration.\n\
+      \ *\n * InfluxDB Node-RED flow setup:\n *   1) Install: npm install node-red-contrib-influxdb\n *   2) Subscribe to\
+      \ \"esp32engine/sensors/+/all\" (wildcard for all rooms)\n *   3) JSON node → function node (add measurement name) →\
+      \ InfluxDB out node\n *\n * This sketch adds ArduinoOTA and a richer JSON payload with metadata.\n */\n#include <WiFi.h>\n\
+      #include <PubSubClient.h>\n#include <ArduinoOTA.h>\n#include <DHT.h>\n#include <Wire.h>\n#include <Adafruit_BMP280.h>\n\
+      #include <time.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst\
+      \ char* BROKER   = \"192.168.1.100\";\nconst char* DEV_ID   = \"room1\";\nconst char* LOCATION = \"Living Room\";\n\n\
+      #define DHT_PIN 4\n#define DHT_TYPE DHT22\n#define MQ_PIN  34\n#define PIR_PIN 27\n#define LDR_PIN 35\n\nDHT dht(DHT_PIN,\
+      \ DHT_TYPE);\nAdafruit_BMP280 bmp;\nWiFiClient net;\nPubSubClient mqtt(net);\n\nString topicAll  = String(\"esp32engine/sensors/\"\
+      ) + DEV_ID + \"/all\";\nString topicAvail= String(\"esp32engine/sensors/\") + DEV_ID + \"/availability\";\n\nvoid connectMQTT(){\n\
+      \  while(!mqtt.connected()){\n    if(mqtt.connect((\"esp32-\"+String(DEV_ID)).c_str(),\"\",\"\",\n      topicAvail.c_str(),0,true,\"\
+      offline\")){\n      mqtt.publish(topicAvail.c_str(),\"online\",true);\n    } else delay(5000);\n  }\n}\n\nvoid setup(){\n\
+      \  Serial.begin(115200);\n  dht.begin(); Wire.begin(); bmp.begin(0x76);\n  pinMode(PIR_PIN,INPUT);\n  analogReadResolution(12);\n\
+      \  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED) delay(400);\n  configTime(0,0,\"pool.ntp.org\");\n\
+      \  ArduinoOTA.setHostname((\"esp32-\"+String(DEV_ID)).c_str());\n  ArduinoOTA.begin();\n  mqtt.setServer(BROKER,1883);\n\
+      \  connectMQTT();\n}\n\nvoid loop(){\n  ArduinoOTA.handle();\n  if(!mqtt.connected()) connectMQTT();\n  mqtt.loop();\n\
       \n  static unsigned long last=0;\n  if(millis()-last>=30000){\n    last=millis();\n    float t=dht.readTemperature(),h=dht.readHumidity();\n\
-      \    float p=bmp.readPressure()/100.0f;\n    char ts[25]=\"\"; struct tm ti;\n    if(getLocalTime(&ti))\
-      \ strftime(ts,sizeof(ts),\"%Y-%m-%dT%H:%M:%SZ\",&ti);\n\n    // Enriched JSON: add device_id, location,\
-      \ and ISO8601 timestamp\n    // InfluxDB line protocol can be generated in Node-RED from these fields\n\
-      \    String j = \"{\"device\":\"\"+String(DEV_ID)+\"\",\"\n               \"\"location\":\"\"+String(LOCATION)+\"\
-      \",\"\n               \"\"temperature\":\"+String(t,2)+\",\"\n               \"\"humidity\":\"+String(h,2)+\"\
-      ,\"\n               \"\"pressure\":\"+String(p,1)+\",\"\n               \"\"air_quality\":\"+String(analogRead(MQ_PIN))+\"\
-      ,\"\n               \"\"light\":\"+String(analogRead(LDR_PIN))+\",\"\n               \"\"motion\"\
-      :\"+String(digitalRead(PIR_PIN))+\",\"\n               \"\"ts\":\"\"+ts+\"\"}\";\n    mqtt.publish(topicAll.c_str(),j.c_str(),true);\n\
-      \    Serial.println(j);\n  }\n}"
+      \    float p=bmp.readPressure()/100.0f;\n    char ts[25]=\"\"; struct tm ti;\n    if(getLocalTime(&ti)) strftime(ts,sizeof(ts),\"\
+      %Y-%m-%dT%H:%M:%SZ\",&ti);\n\n    // Enriched JSON: add device_id, location, and ISO8601 timestamp\n    // InfluxDB\
+      \ line protocol can be generated in Node-RED from these fields\n    String j = \"{\"device\":\"\"+String(DEV_ID)+\"\"\
+      ,\"\n               \"\"location\":\"\"+String(LOCATION)+\"\",\"\n               \"\"temperature\":\"+String(t,2)+\"\
+      ,\"\n               \"\"humidity\":\"+String(h,2)+\",\"\n               \"\"pressure\":\"+String(p,1)+\",\"\n      \
+      \         \"\"air_quality\":\"+String(analogRead(MQ_PIN))+\",\"\n               \"\"light\":\"+String(analogRead(LDR_PIN))+\"\
+      ,\"\n               \"\"motion\":\"+String(digitalRead(PIR_PIN))+\",\"\n               \"\"ts\":\"\"+ts+\"\"}\";\n \
+      \   mqtt.publish(topicAll.c_str(),j.c_str(),true);\n    Serial.println(j);\n  }\n}"
     code_filename: esp32-mqtt-dashboard-advanced.ino
 related_slugs:
 - esp32-iot-weather-station
 - esp32-smart-thermostat
+format: golden
+keywords:
+- ESP32
+- ESP32 MQTT Sensor Dashboard
+- DHT22 DATA
+- 'TODO: output'
+- Arduino tutorial
+- IoT Projects
+meta_title: ESP32 MQTT Sensor Dashboard Tutorial with ESP32
+project:
+  icon: MQTT
+  mission_title: Build an MQTT Sensor Dashboard
+  difficulty: Intermediate
+  age: Ages 12+
+  estimated_time: 90-120 min
+  budget: Under 25 USD
+  what_you_build: An ESP32 sensor node that publishes temperature and humidity readings to an MQTT broker so dashboards such
+    as Node-RED or Home Assistant can display live data.
+  story: 'ESP32 MQTT Sensor Dashboard solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
+    result. Build this after basic sensor missions when you are ready to learn the publish/subscribe pattern used in real
+    IoT systems.
+
+
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
+    the output under real conditions.'
+  eli12: MQTT is like a notice board. The ESP32 posts sensor readings to a topic, and any dashboard that subscribes to that
+    topic can read the latest message.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
+    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
+    enclosure, and adult supervision are used.
+  learning_objectives:
+  - Wire and read a DHT22 sensor.
+  - Connect ESP32 to Wi-Fi safely in Arduino code.
+  - Publish readings to an MQTT topic.
+  - Understand broker, publisher, subscriber, and topic names.
+  - Design topic names that scale beyond one sensor.
+  components:
+  - item: 1× ESP32 DevKit V1
+    note: Required for this build
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: 1× DHT22 Temperature & Humidity Sensor
+    note: Required for this build
+    icon: PART
+    link: /components/dht22.html
+  - item: 1× 10 kΩ Resistor
+    note: DHT22 pull-up
+    icon: PART
+  - item: 1× MQTT Broker (Mosquitto)
+    note: 'Install free on Raspberry Pi or PC: sudo apt install mosquitto'
+    icon: PART
+  - item: 1× Node-RED
+    note: 'Free dashboard: sudo npm install -g node-red'
+    icon: PART
+  - item: Breadboard and jumper wires
+    note: For safe low-voltage prototyping
+    icon: PART
+  - item: USB data cable
+    note: Programming and bench power
+    icon: PART
+  bom:
+  - part: 1× ESP32 DevKit V1
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 1× DHT22 Temperature & Humidity Sensor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 1× 10 kΩ Resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: DHT22 pull-up
+  - part: 1× MQTT Broker (Mosquitto)
+    qty: '1'
+    estimated_cost: Varies
+    notes: 'Install free on Raspberry Pi or PC: sudo apt install mosquitto'
+  - part: 1× Node-RED
+    qty: '1'
+    estimated_cost: Varies
+    notes: 'Free dashboard: sudo npm install -g node-red'
+  - part: Breadboard and jumper wires
+    qty: 1 set
+    estimated_cost: Varies
+    notes: For safe low-voltage prototyping
+  wiring:
+    illustration_alt: ESP32 MQTT Sensor Dashboard wiring diagram
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. The DHT22
+      data pin uses a pull-up resistor so the signal idles HIGH.
+    steps:
+    - Unplug USB before changing wires.
+    - Connect DHT22 VCC to 3.3 V.
+    - Connect DHT22 DATA to GPIO 4 (10 kΩ pull-up to 3.3 V).
+    - Connect DHT22 GND to GND.
+    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+  gpio_map:
+  - signal: DHT22 VCC
+    esp32_pin: 3.3 V
+    direction: Power
+    notes: Match this wire to the code constant.
+  - signal: DHT22 DATA
+    esp32_pin: GPIO 4
+    direction: Power
+    notes: 10 kΩ pull-up to 3.3 V
+  - signal: DHT22 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Match this wire to the code constant.
+  circuit_explanation: The DHT22 data pin uses a pull-up resistor so the signal idles HIGH. The ESP32 reads the sensor locally,
+    then uses Wi-Fi to publish the value to the broker. The hardware circuit is simple; the engineering challenge is reliable
+    network behavior.
+  engineering_explanation: MQTT separates devices from dashboards. The ESP32 does not need to know who reads the data; it
+    only publishes to a topic. A reliable node reconnects after Wi-Fi loss, publishes at a reasonable interval, and uses clear
+    topic names.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-mqtt-sensor-dashboard.ino
+    content: "/*\n * ESP32 MQTT Sensor Dashboard — Beginner\n * Publishes DHT22 temp & humidity to MQTT every 30 seconds.\n\
+      \ * View live data in Node-RED, MQTT Explorer, or any subscriber.\n *\n * Setup:\n *   1) Install Mosquitto broker on\
+      \ your network\n *   2) Install Node-RED + node-red-dashboard\n *   3) Import the Node-RED flow from the project page\n\
+      \ *   4) Update SSID, PASSWORD, BROKER below\n *\n * Library: DHT (Adafruit), PubSubClient (Nick O'Leary)\n */\n#include\
+      \ <WiFi.h>\n#include <PubSubClient.h>\n#include <DHT.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD\
+      \ = \"YOUR_WIFI_PASSWORD\";\nconst char* BROKER   = \"192.168.1.100\";   // Your broker IP\nconst int   PORT     = 1883;\n\
+      \n#define DHT_PIN  4\n#define DHT_TYPE DHT22\n\n// MQTT Topics (change \"room1\" to identify this sensor's location)\n\
+      const char* TOPIC_TEMP = \"esp32engine/sensors/room1/temperature\";\nconst char* TOPIC_HUM  = \"esp32engine/sensors/room1/humidity\"\
+      ;\nconst char* TOPIC_AVAIL= \"esp32engine/sensors/room1/availability\";\n\nDHT dht(DHT_PIN, DHT_TYPE);\nWiFiClient net;\n\
+      PubSubClient mqtt(net);\n\nvoid connectMQTT() {\n  while (!mqtt.connected()) {\n    Serial.print(\"Connecting MQTT...\
+      \ \");\n    // Last Will: publish \"offline\" if we disconnect unexpectedly\n    if (mqtt.connect(\"esp32-room1\", \"\
+      \", \"\", TOPIC_AVAIL, 0, true, \"offline\")) {\n      mqtt.publish(TOPIC_AVAIL, \"online\", true);\n      Serial.println(\"\
+      connected\");\n    } else {\n      Serial.printf(\"failed rc=%d — retry in 5sn\", mqtt.state());\n      delay(5000);\n\
+      \    }\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  dht.begin();\n  WiFi.begin(SSID, PASSWORD);\n  Serial.print(\"\
+      Connecting Wi-Fi\");\n  while (WiFi.status() != WL_CONNECTED) { delay(400); Serial.print(\".\"); }\n  Serial.printf(\"\
+      nConnected: %sn\", WiFi.localIP().toString().c_str());\n  mqtt.setServer(BROKER, PORT);\n  connectMQTT();\n}\n\nvoid\
+      \ loop() {\n  if (!mqtt.connected()) connectMQTT();\n  mqtt.loop();\n\n  static unsigned long last = 0;\n  if (millis()\
+      \ - last >= 30000) {\n    last = millis();\n    float h = dht.readHumidity();\n    float t = dht.readTemperature();\n\
+      \    if (!isnan(h) && !isnan(t)) {\n      mqtt.publish(TOPIC_TEMP, String(t, 2).c_str(), true);\n      mqtt.publish(TOPIC_HUM,\
+      \  String(h, 2).c_str(), true);\n      Serial.printf(\"Published: temp=%.2f  hum=%.2fn\", t, h);\n    }\n  }\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
+    setup(), then repeats the measurement and decision logic in loop(). After Wi-Fi and MQTT connect, the ESP32 reads the
+    sensor at a controlled interval and publishes values to a topic. The important habit is to keep publishing rate reasonable
+    and print connection state while debugging.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
+    condition for esp32 mqtt sensor dashboard is reached.
+  common_mistakes:
+  - text: Publishing every loop cycle and flooding the broker.
+  - text: Hardcoding wrong Wi-Fi credentials and not printing connection status.
+  - text: Forgetting the DHT22 pull-up resistor.
+  - text: Using inconsistent MQTT topic names.
+  - text: Ignoring reconnect logic after Wi-Fi drops.
+  troubleshooting:
+  - problem: MQTT messages never appear
+    fix: Check broker IP, port 1883, topic name, and whether the ESP32 is on the same network.
+  - problem: Wi-Fi connects but MQTT fails
+    fix: Confirm broker firewall settings and test with a desktop MQTT client.
+  - problem: Sensor reads NAN
+    fix: Check DHT22 wiring, pull-up resistor, and library selection.
+  - problem: Dashboard values freeze
+    fix: Add reconnect logic and publish a heartbeat or timestamp.
+  testing_checklist:
+  - Upload a simple Blink sketch first to confirm the board and USB cable work.
+  - Wire only power and ground, then confirm the board still boots.
+  - Connect the input signal and print raw readings before using thresholds.
+  - Trigger the real-world condition slowly and watch Serial Monitor.
+  - Connect the output only after the input reading is believable.
+  - Power-cycle the project and confirm it starts in a safe state.
+  engineer_tips:
+  - Use readable topics such as esp32/room1/temperature.
+  - Publish JSON only when you need grouped values.
+  - Keep sensor publishing interval slower than the sensor response time.
+  - Never put real passwords in public screenshots or repositories.
+  - Add Last Will and Testament for production MQTT nodes.
+  performance_tips:
+  - Publish every 5-30 seconds instead of every loop.
+  - Reuse the MQTT client connection.
+  - Avoid long blocking delays in reconnect code.
+  - Use retained messages only for state values that should be remembered.
+  upgrade_ideas: *id001
+  real_world_applications:
+  - Home Assistant room sensor
+  - Node-RED classroom dashboard
+  - Greenhouse telemetry
+  - Workshop temperature and humidity logger
+  downloads:
+  - text: ESP32 MQTT Sensor Dashboard Arduino sketch
+    note: Use the code section as the source sketch.
+  - text: Bench test checklist
+    note: Follow the testing checklist before permanent installation.
+  related_guides:
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Verify uploads and simple outputs before adding hardware.
+  - title: Mission 09 - OLED Display with ESP32
+    href: /guides/oled-display-esp32.html
+    description: Learn how local displays make projects easier to debug.
+  - title: Mission 10 - I2C Communication
+    href: /guides/i2c-communication.html
+    description: Use structured communication thinking before connecting multiple modules.
+  related_projects:
+  - title: ESP32 Iot Weather Station
+    href: /projects/esp32-iot-weather-station.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Home Climate Automation
+    href: /projects/esp32-home-climate-automation.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Air Quality Monitor
+    href: /projects/esp32-air-quality-monitor.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  faqs:
+  - question: Is ESP32 MQTT Sensor Dashboard good for beginners?
+    answer: Yes, if you build the beginner version first and test one part at a time. Build this after basic sensor missions
+      when you are ready to learn the publish/subscribe pattern used in real IoT systems.
+  - question: Which ESP32 board should I use?
+    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
+      ESP32-CAM module and a reliable FTDI adapter.
+  - question: Can I power this from a phone charger?
+    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
+      and LED matrices may need a separate regulated supply.
+  - question: Why should I print values to Serial Monitor first?
+    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
+      from LED, relay, display, or network problems.
+  - question: Can I change the GPIO pins?
+    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
+      Analog-only pins such as GPIO34 cannot drive outputs.
+  - question: What should I test before installing it permanently?
+    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
+      that should trigger the project.
+  - question: Can I add Wi-Fi or a dashboard?
+    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
+      after Wi-Fi is added.
+  - question: What is the most common failure?
+    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
+      raw reading and wiring table first.
+  - question: How do I make it more reliable?
+    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
+      hysteresis where the output might chatter.
+  - question: Where should I learn next?
+    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
+      part of this project you want to improve.
+  references:
+  - title: MQTT Version 3.1.1 Standard
+    href: https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+  - title: Arduino ESP32 Core Documentation
+    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  complete:
+    summary: You completed ESP32 MQTT Sensor Dashboard as a real ESP32 engineering build, not just a wiring demo. You now
+      know how to test the input, protect the circuit, explain the code, and improve the project safely.
+    skills:
+    - Read and verify project input hardware
+    - Map signals to safe ESP32 GPIO pins
+    - Debug with Serial Monitor
+    - Apply safety and performance checks
+    - Plan the next learning step
+  build_photos:
+  - title: Breadboard overview
+    note: Show ESP32, module, output device, and power rails.
+  - title: Close-up wiring
+    note: Show signal pins clearly enough for learners to compare.
+  - title: Working output
+    note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.

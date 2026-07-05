@@ -1,10 +1,10 @@
 # Project Quality Report
 
-Generated: 2026-07-05T00:04:49Z
+Generated: 2026-07-05T00:44:14Z
 
 Benchmark: **ESP32 Mini Weather Station** is the golden standard (`content/projects/esp32-iot-weather-station.yaml`).
 
-Portfolio: 10 golden · 40 staged placeholder(s)
+Portfolio: 20 golden · 30 staged placeholder(s)
 
 Standard: [GOLDEN_PROJECT_STANDARD.md](../editorial/GOLDEN_PROJECT_STANDARD.md)
 
@@ -20,13 +20,9 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 | Project | Type | Overall | Priority | Missing required |
 |---------|------|---------|----------|------------------|
-| ESP32 BLE Beacon | staged | 80/100 | HIGH | 0 |
-| ESP32-CAM QR Code Scanner | staged | 80/100 | HIGH | 0 |
 | ESP32 AC Power Monitor | staged | 84/100 | HIGH | 0 |
 | ESP32 AI Object Detector | staged | 84/100 | HIGH | 0 |
-| ESP32 Air Quality Monitor | staged | 84/100 | HIGH | 0 |
 | ESP32-CAM Face Detection | staged | 84/100 | HIGH | 0 |
-| ESP32 Camera Capture Server | staged | 84/100 | HIGH | 0 |
 | ESP32 CNC Controller | staged | 84/100 | HIGH | 0 |
 | ESP32 Digital Piano | staged | 84/100 | HIGH | 0 |
 | ESP32 Distance Monitoring System | staged | 84/100 | HIGH | 0 |
@@ -37,11 +33,9 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | ESP32 Greenhouse Automation Controller | staged | 84/100 | HIGH | 0 |
 | ESP32 IR Remote Control | staged | 84/100 | HIGH | 0 |
 | ESP32 Learning Trainer Board | staged | 84/100 | HIGH | 0 |
-| ESP32 LED Matrix Display | staged | 84/100 | HIGH | 0 |
 | ESP32 Lightning Detector | staged | 84/100 | HIGH | 0 |
 | ESP32 LoRa Remote Sensor Node | staged | 84/100 | HIGH | 0 |
 | ESP32 Machine Monitoring Node | staged | 84/100 | HIGH | 0 |
-| ESP32 MQTT Sensor Dashboard | staged | 84/100 | HIGH | 0 |
 | ESP32 NeoPixel Music Visualizer | staged | 84/100 | HIGH | 0 |
 | ESP32 Pulse Oximeter Logger | staged | 84/100 | HIGH | 0 |
 | ESP32 RFID Inventory Tracker | staged | 84/100 | HIGH | 0 |
@@ -50,78 +44,32 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | ESP32 Security Camera System | staged | 84/100 | HIGH | 0 |
 | ESP32 Smart Energy Meter | staged | 84/100 | HIGH | 0 |
 | ESP32 Smart Mailbox | staged | 84/100 | HIGH | 0 |
-| ESP32 Smart Parking Sensor | staged | 84/100 | HIGH | 0 |
 | ESP32 Smart Power Strip | staged | 84/100 | HIGH | 0 |
-| ESP32 Smart Street Light | staged | 84/100 | HIGH | 0 |
-| ESP32 Soil Moisture Monitor | staged | 84/100 | HIGH | 0 |
 | ESP32 Soil pH Monitor | staged | 84/100 | HIGH | 0 |
 | ESP32 TinyML Sound Classifier | staged | 84/100 | HIGH | 0 |
 | ESP32 UV Index Monitor | staged | 84/100 | HIGH | 0 |
 | ESP32 Vibration Monitor | staged | 84/100 | HIGH | 0 |
 | ESP32 Voice-Controlled Relay | staged | 84/100 | HIGH | 0 |
-| ESP32 Water Leak Detector | staged | 84/100 | HIGH | 0 |
+| Build a BLE Beacon | golden | 96/100 | LOW | 0 |
+| Build a Smart Street Light | golden | 97/100 | LOW | 0 |
+| Build an ESP32-CAM QR Scanner | golden | 98/100 | LOW | 0 |
+| Build an LED Matrix Display | golden | 98/100 | LOW | 0 |
 | Build Your OLED Weather Clock | golden | 98/100 | LOW | 0 |
 | Build Your Smart Door Lock | golden | 98/100 | LOW | 0 |
 | Build Your Smart Thermostat | golden | 98/100 | LOW | 0 |
+| Build an Indoor Air Quality Monitor | golden | 99/100 | LOW | 0 |
+| Build a Camera Capture Server | golden | 99/100 | LOW | 0 |
+| Build an MQTT Sensor Dashboard | golden | 99/100 | LOW | 0 |
+| Build a Soil Moisture Monitor | golden | 99/100 | LOW | 0 |
 | Build Your Home Climate Automation | golden | 100/100 | LOW | 0 |
 | Build Your IoT Weather Station | golden | 100/100 | LOW | 0 |
 | Build Your Line Following Robot | golden | 100/100 | LOW | 0 |
 | Build Your Motion Security Alert | golden | 100/100 | LOW | 0 |
 | Build Your RFID Access Control System | golden | 100/100 | LOW | 0 |
 | Build Your Smart Irrigation System | golden | 100/100 | LOW | 0 |
+| Build a Smart Parking Sensor | golden | 100/100 | LOW | 0 |
+| Build a Water Leak Detector | golden | 100/100 | LOW | 0 |
 | Build Your WiFi Robot Controller | golden | 100/100 | LOW | 0 |
-
-## ESP32 BLE Beacon (`esp32-ble-beacon`)
-
-**Type:** staged · **Overall score:** 80/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 55/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
-## ESP32-CAM QR Code Scanner (`esp32-cam-qr-scanner`)
-
-**Type:** staged · **Overall score:** 80/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 55/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
 
 ## ESP32 AC Power Monitor (`esp32-ac-power-monitor`)
 
@@ -175,59 +123,7 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 - Staged placeholder — upgrade to format: golden with full project block
 
-## ESP32 Air Quality Monitor (`esp32-air-quality-monitor`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
 ## ESP32-CAM Face Detection (`esp32-cam-face-detection`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
-## ESP32 Camera Capture Server (`esp32-camera-capture-server`)
 
 **Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
 
@@ -513,32 +409,6 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 - Staged placeholder — upgrade to format: golden with full project block
 
-## ESP32 LED Matrix Display (`esp32-led-matrix-display`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
 ## ESP32 Lightning Detector (`esp32-lightning-detector`)
 
 **Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
@@ -592,32 +462,6 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 - Staged placeholder — upgrade to format: golden with full project block
 
 ## ESP32 Machine Monitoring Node (`esp32-machine-monitoring-node`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
-## ESP32 MQTT Sensor Dashboard (`esp32-mqtt-sensor-dashboard`)
 
 **Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
 
@@ -851,85 +695,7 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 - Staged placeholder — upgrade to format: golden with full project block
 
-## ESP32 Smart Parking Sensor (`esp32-smart-parking-sensor`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
 ## ESP32 Smart Power Strip (`esp32-smart-power-strip`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
-## ESP32 Smart Street Light (`esp32-smart-street-light`)
-
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
-
-### Scores
-
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
-- SEO: 100/100
-- Accessibility: 80/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
-
-### Warnings
-
-- Staged placeholder — upgrade to format: golden with full project block
-
-## ESP32 Soil Moisture Monitor (`esp32-soil-moisture-monitor`)
 
 **Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
 
@@ -1085,18 +851,18 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 - Staged placeholder — upgrade to format: golden with full project block
 
-## ESP32 Water Leak Detector (`esp32-water-leak-detector`)
+## Build a BLE Beacon (`esp32-ble-beacon`)
 
-**Type:** staged · **Overall score:** 84/100 · **Priority:** HIGH
+**Type:** golden · **Overall score:** 96/100 · **Priority:** LOW
 
 ### Scores
 
-- Child Experience: 90/100
-- Parent Experience: 85/100
-- Teacher Experience: 70/100
-- Engineering: 80/100
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 87/100
 - SEO: 100/100
-- Accessibility: 80/100
+- Accessibility: 88/100
 
 ### Missing sections
 
@@ -1104,12 +870,70 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 ### Recommendations
 
-- Upgrade to format: golden — copy content/project-template.yaml and fill all project sections.
-- Use esp32-iot-weather-station.yaml as the reference benchmark.
+- Minor polish only — align with Mini Weather Station depth where applicable.
 
-### Warnings
+## Build a Smart Street Light (`esp32-smart-street-light`)
 
-- Staged placeholder — upgrade to format: golden with full project block
+**Type:** golden · **Overall score:** 97/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 93/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 88/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build an ESP32-CAM QR Scanner (`esp32-cam-qr-scanner`)
+
+**Type:** golden · **Overall score:** 98/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 87/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build an LED Matrix Display (`esp32-led-matrix-display`)
+
+**Type:** golden · **Overall score:** 98/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 88/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
 
 ## Build Your OLED Weather Clock (`esp32-oled-weather-clock`)
 
@@ -1165,6 +989,90 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 - Engineering: 100/100
 - SEO: 100/100
 - Accessibility: 88/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build an Indoor Air Quality Monitor (`esp32-air-quality-monitor`)
+
+**Type:** golden · **Overall score:** 99/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 93/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build a Camera Capture Server (`esp32-camera-capture-server`)
+
+**Type:** golden · **Overall score:** 99/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 93/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build an MQTT Sensor Dashboard (`esp32-mqtt-sensor-dashboard`)
+
+**Type:** golden · **Overall score:** 99/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 93/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build a Soil Moisture Monitor (`esp32-soil-moisture-monitor`)
+
+**Type:** golden · **Overall score:** 99/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 93/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
 
 ### Missing sections
 
@@ -1280,6 +1188,48 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 - Minor polish only — align with Mini Weather Station depth where applicable.
 
 ## Build Your Smart Irrigation System (`esp32-smart-irrigation-system`)
+
+**Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build a Smart Parking Sensor (`esp32-smart-parking-sensor`)
+
+**Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build a Water Leak Detector (`esp32-water-leak-detector`)
 
 **Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
 

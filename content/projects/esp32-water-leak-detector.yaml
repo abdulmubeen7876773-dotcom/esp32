@@ -1,19 +1,19 @@
 slug: esp32-water-leak-detector
 title: ESP32 Water Leak Detector
 category: Home Automation
-description: Protect your home from water damage with an ESP32 leak detector. Start with a simple moisture
-  sensor and buzzer alert, scale to multi-zone monitoring with Telegram notifications, and finish with
-  automatic main water shutoff via a solenoid valve.
-meta_description: Build an ESP32 water leak detector using resistive moisture sensors. From a local buzzer
-  alert to multi-zone detection with Telegram notifications and automatic solenoid valve shutoff.
+description: Protect your home from water damage with an ESP32 leak detector. Start with a simple moisture sensor and buzzer
+  alert, scale to multi-zone monitoring with Telegram notifications, and finish with automatic main water shutoff via a solenoid
+  valve.
+meta_description: A low-voltage water leak alarm that detects moisture on a sensor strip, sounds a buzzer, and can later send
+  alerts over Wi-Fi. Includes wiring, code, troub
 source_base: esp32-water-leak-detector-legacy-import
 sensor: Water sensor AOUT
 output: Water sensor DOUT
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
-status: needs_polish
+date_modified: '2026-07-05'
+quality_status: golden_tutorial
+status: published
 import_tier: 3
 import_source: batch-php
 hardware:
@@ -39,11 +39,10 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect a resistive water sensor strip to the
-      ESP32 ADC. When the sensor strip is wet, resistance drops and the analog voltage rises above a threshold.
-      A buzzer sounds and a red LED turns on. The Serial Monitor prints the raw ADC value every second
-      so you can calibrate the wet and dry thresholds. The sensor is tested by dripping a few drops of
-      water onto the copper tracks.</p>
+    overview_html: <p>In this beginner project you will connect a resistive water sensor strip to the ESP32 ADC. When the
+      sensor strip is wet, resistance drops and the analog voltage rises above a threshold. A buzzer sounds and a red LED
+      turns on. The Serial Monitor prints the raw ADC value every second so you can calibrate the wet and dry thresholds.
+      The sensor is tested by dripping a few drops of water onto the copper tracks.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× Resistive water sensor strip — Parallel copper trace strip; inexpensive module
@@ -74,20 +73,17 @@ levels:
       - GPIO 27
       - ''
     how:
-    - 'Resistive Moisture Detection: The sensor strip has two interleaved copper tracks. In dry air, resistance
-      between tracks is very high (megaohms). Water bridging the tracks reduces resistance dramatically.
-      The sensor module uses a voltage divider: lower track resistance means higher voltage at the AOUT
-      pin.'
-    - 'Dual-Output Detection: Like the MQ-2 smoke sensor, the moisture module provides both an analog
-      output (AOUT: proportional to wetness) and a digital output (DOUT: LOW/HIGH based on onboard potentiometer
-      threshold). Both are checked for redundancy.'
-    - 'Corrosion Minimisation: Powering the sensor continuously causes electrolysis that corrodes the
-      copper tracks within weeks. Best practice is to power the sensor only when reading: connect VCC
-      to a GPIO output, set HIGH before analogRead(), read, then set LOW. For hourly checks, this reduces
-      sensor energisation time by 99.9 percent.'
-    - 'Calibration from Serial Monitor: Run the sketch with the sensor dry and note the ADC value (typically
-      0-200). Then wet the sensor with a few drops and note the wet value (typically 2000-4095 depending
-      on water conductivity). Set WET_THRESHOLD halfway between the two values.'
+    - 'Resistive Moisture Detection: The sensor strip has two interleaved copper tracks. In dry air, resistance between tracks
+      is very high (megaohms). Water bridging the tracks reduces resistance dramatically. The sensor module uses a voltage
+      divider: lower track resistance means higher voltage at the AOUT pin.'
+    - 'Dual-Output Detection: Like the MQ-2 smoke sensor, the moisture module provides both an analog output (AOUT: proportional
+      to wetness) and a digital output (DOUT: LOW/HIGH based on onboard potentiometer threshold). Both are checked for redundancy.'
+    - 'Corrosion Minimisation: Powering the sensor continuously causes electrolysis that corrodes the copper tracks within
+      weeks. Best practice is to power the sensor only when reading: connect VCC to a GPIO output, set HIGH before analogRead(),
+      read, then set LOW. For hourly checks, this reduces sensor energisation time by 99.9 percent.'
+    - 'Calibration from Serial Monitor: Run the sketch with the sensor dry and note the ADC value (typically 0-200). Then
+      wet the sensor with a few drops and note the wet value (typically 2000-4095 depending on water conductivity). Set WET_THRESHOLD
+      halfway between the two values.'
     apps:
     - Under-sink water leak detector for kitchen and bathroom
     - Washing machine overflow alert
@@ -95,38 +91,34 @@ levels:
     - Basement flooding early warning system
     troubleshooting:
     - - Sensor reads wet with no water present
-      - Humidity can cause the sensor to read slightly elevated. Place the sensor indoors, away from direct
-        steam or condensation. Increase WET_THRESHOLD slightly above the maximum dry reading observed
-        over 24 hours in the installed location.
+      - Humidity can cause the sensor to read slightly elevated. Place the sensor indoors, away from direct steam or condensation.
+        Increase WET_THRESHOLD slightly above the maximum dry reading observed over 24 hours in the installed location.
     - - Copper tracks corroded within weeks
-      - 'Implement powered-only-when-reading: add a GPIO-controlled power switch. Read once per minute,
-        powering the sensor only for 100 ms each time. This reduces corrosion by several orders of magnitude.'
+      - 'Implement powered-only-when-reading: add a GPIO-controlled power switch. Read once per minute, powering the sensor
+        only for 100 ms each time. This reduces corrosion by several orders of magnitude.'
     - - ADC reads zero regardless of wetness
-      - Check that the sensor VCC is connected and the AOUT wire is connected to GPIO 34 (input-only ADC
-        pin). Verify with a multimeter that the AOUT voltage changes when the sensor is wet.
-    upgrades:
+      - Check that the sensor VCC is connected and the AOUT wire is connected to GPIO 34 (input-only ADC pin). Verify with
+        a multimeter that the AOUT voltage changes when the sensor is wet.
+    upgrades: &id001
     - Add Wi-Fi and send a push notification when leak is detected
     - Add multiple sensors on different GPIO ADC pins for multi-zone detection
     - Add a solenoid valve relay to cut main water supply automatically
     - Add an OLED showing which zone is wet and for how long
-    code: "// ESP32 Water Leak Detector - Beginner\n// Resistive moisture sensor; buzzer + LED alert\n\
-      \nconst int SENSOR_AOUT = 34;\nconst int SENSOR_DOUT = 35;\nconst int BUZZER  = 25;\nconst int LED_RED\
-      \ = 26;\nconst int LED_GRN = 27;\n\nconst int WET_THRESHOLD = 2000; // tune from Serial output;\
-      \ 0-4095\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  pinMode(SENSOR_DOUT,\
-      \ INPUT);\n  pinMode(BUZZER,  OUTPUT);\n  pinMode(LED_RED, OUTPUT);\n  pinMode(LED_GRN, OUTPUT);\n\
-      }\n\nvoid loop() {\n  int raw = analogRead(SENSOR_AOUT);\n  bool wet = (raw > WET_THRESHOLD) ||\
-      \ (digitalRead(SENSOR_DOUT) == HIGH);\n\n  Serial.printf(\"Sensor: %d  Status: %sn\", raw, wet ?\
-      \ \"WET!\" : \"dry\");\n\n  if (wet) {\n    digitalWrite(LED_RED, HIGH);\n    digitalWrite(LED_GRN,\
-      \ LOW);\n    digitalWrite(BUZZER,  HIGH);\n  } else {\n    digitalWrite(LED_RED, LOW);\n    digitalWrite(LED_GRN,\
-      \ HIGH);\n    digitalWrite(BUZZER,  LOW);\n  }\n  delay(1000);\n}"
+    code: "// ESP32 Water Leak Detector - Beginner\n// Resistive moisture sensor; buzzer + LED alert\n\nconst int SENSOR_AOUT\
+      \ = 34;\nconst int SENSOR_DOUT = 35;\nconst int BUZZER  = 25;\nconst int LED_RED = 26;\nconst int LED_GRN = 27;\n\n\
+      const int WET_THRESHOLD = 2000; // tune from Serial output; 0-4095\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  pinMode(SENSOR_DOUT, INPUT);\n  pinMode(BUZZER,  OUTPUT);\n  pinMode(LED_RED, OUTPUT);\n  pinMode(LED_GRN, OUTPUT);\n\
+      }\n\nvoid loop() {\n  int raw = analogRead(SENSOR_AOUT);\n  bool wet = (raw > WET_THRESHOLD) || (digitalRead(SENSOR_DOUT)\
+      \ == HIGH);\n\n  Serial.printf(\"Sensor: %d  Status: %sn\", raw, wet ? \"WET!\" : \"dry\");\n\n  if (wet) {\n    digitalWrite(LED_RED,\
+      \ HIGH);\n    digitalWrite(LED_GRN, LOW);\n    digitalWrite(BUZZER,  HIGH);\n  } else {\n    digitalWrite(LED_RED, LOW);\n\
+      \    digitalWrite(LED_GRN, HIGH);\n    digitalWrite(BUZZER,  LOW);\n  }\n  delay(1000);\n}"
     code_filename: esp32-water-leak-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build monitors three sensor zones (under kitchen sink, bathroom,
-      and washing machine) using three moisture sensors. An OLED displays the current status of each zone.
-      When any zone detects a leak, a Telegram notification is sent immediately with the zone name. NVS
-      logs every leak event with an NTP timestamp. A manual reset button acknowledges the alert and silences
-      the buzzer while keeping the LED on until the sensor is dry.</p>
+    overview_html: <p>The intermediate build monitors three sensor zones (under kitchen sink, bathroom, and washing machine)
+      using three moisture sensors. An OLED displays the current status of each zone. When any zone detects a leak, a Telegram
+      notification is sent immediately with the zone name. NVS logs every leak event with an NTP timestamp. A manual reset
+      button acknowledges the alert and silences the buzzer while keeping the LED on until the sensor is dry.</p>
     components:
     - 1× ESP32 DevKit V1
     - 3× Resistive water sensor strip — One per zone
@@ -154,19 +146,17 @@ levels:
       - GPIO 0 to GND
       - INPUT_PULLUP; active LOW
     how:
-    - 'Rising-Edge Leak Detection: The wasWet[] array tracks the previous state of each zone. A Telegram
-      alert and NVS log entry are only created on the rising edge (was dry, now wet) rather than on every
-      2-second loop iteration. This prevents flooding Telegram with repeated messages while a puddle persists.'
-    - 'Manual Buzzer Acknowledgement: The reset button sets buzzerAck=true, silencing the buzzer immediately.
-      The LED and OLED alert remain active until the sensor reads dry again. This is the standard fire
-      alarm model: acknowledge to silence audible alert but maintain visual alert until the hazard is
-      resolved.'
-    - 'NVS Leak Event Log: Each new leak event is appended to NVS as a Unix timestamp combined with zone
-      name. The log persists across power cuts and can be read back and formatted as a history report
-      via Serial or a web endpoint.'
-    - 'Telegram HTTPS Request: sendTelegram() uses WiFiClientSecure with setInsecure() to skip certificate
-      verification for simplicity. The HTTP POST body uses application/x-www-form-urlencoded encoding
-      with chat_id and text fields. Telegram delivers the message to the specified chat within 1-3 seconds.'
+    - 'Rising-Edge Leak Detection: The wasWet[] array tracks the previous state of each zone. A Telegram alert and NVS log
+      entry are only created on the rising edge (was dry, now wet) rather than on every 2-second loop iteration. This prevents
+      flooding Telegram with repeated messages while a puddle persists.'
+    - 'Manual Buzzer Acknowledgement: The reset button sets buzzerAck=true, silencing the buzzer immediately. The LED and
+      OLED alert remain active until the sensor reads dry again. This is the standard fire alarm model: acknowledge to silence
+      audible alert but maintain visual alert until the hazard is resolved.'
+    - 'NVS Leak Event Log: Each new leak event is appended to NVS as a Unix timestamp combined with zone name. The log persists
+      across power cuts and can be read back and formatted as a history report via Serial or a web endpoint.'
+    - 'Telegram HTTPS Request: sendTelegram() uses WiFiClientSecure with setInsecure() to skip certificate verification for
+      simplicity. The HTTP POST body uses application/x-www-form-urlencoded encoding with chat_id and text fields. Telegram
+      delivers the message to the specified chat within 1-3 seconds.'
     apps:
     - Whole-home leak detection network with zone-specific alerts
     - Rental property remote monitoring for water damage prevention
@@ -174,53 +164,46 @@ levels:
     - Commercial kitchen under-sink monitoring for compliance logging
     troubleshooting:
     - - Telegram message arrives but with wrong zone name
-      - 'Verify ZONE_NAMES[] index matches SENSORS[] index. The array position must correspond: SENSORS[0]
-        is the kitchen sensor, ZONE_NAMES[0] must be "Kitchen". Swap array entries if zones are misidentified.'
+      - 'Verify ZONE_NAMES[] index matches SENSORS[] index. The array position must correspond: SENSORS[0] is the kitchen
+        sensor, ZONE_NAMES[0] must be "Kitchen". Swap array entries if zones are misidentified.'
     - - Multiple Telegram messages sent for one leak event
-      - 'The rising-edge detection (if wet && !wasWet[i]) should prevent duplicate messages. If duplicates
-        occur, add a per-zone cooldown: record the last alert timestamp and skip if less than 60 seconds
-        have passed since the previous alert.'
+      - 'The rising-edge detection (if wet && !wasWet[i]) should prevent duplicate messages. If duplicates occur, add a per-zone
+        cooldown: record the last alert timestamp and skip if less than 60 seconds have passed since the previous alert.'
     - - Button press does not silence buzzer
-      - With INPUT_PULLUP, the button reads HIGH when open and LOW when pressed. Verify the button connects
-        GPIO 0 to GND when pressed. Also verify that buzzerAck is set inside the if(digitalRead(RST_BTN)==LOW)
-        block.
+      - With INPUT_PULLUP, the button reads HIGH when open and LOW when pressed. Verify the button connects GPIO 0 to GND
+        when pressed. Also verify that buzzerAck is set inside the if(digitalRead(RST_BTN)==LOW) block.
     upgrades:
     - Add a solenoid valve on the main water supply to cut water automatically
     - Add a web page showing the full NVS leak event log with timestamps
     - Add SMS notification as a fallback if Telegram is unavailable
     - Add a capacitive sensor in parallel with the resistive sensor for distilled water detection
-    code: "// ESP32 Water Leak Detector - Intermediate (3-zone + Telegram + NVS log)\n#include <Wire.h>\n\
-      #include <Adafruit_SSD1306.h>\n#include <WiFi.h>\n#include <WiFiClientSecure.h>\n#include <Preferences.h>\n\
-      #include <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nPreferences prefs;\n\nconst char*\
-      \ SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\";\nconst char*\
-      \ CHAT_ID=\"YOUR_CHAT_ID\";\n\nconst char* ZONE_NAMES[3]={\"Kitchen\",\"Bathroom\",\"Washer\"};\n\
-      const int SENSORS[3]={34,35,36};\nconst int BUZZER=25, RST_BTN=0;\nconst int WET_THRESH=2000;\n\
-      bool wasWet[3]={false};\nbool buzzerAck=false;\n\nvoid sendTelegram(const String &msg){\n  WiFiClientSecure\
-      \ client; client.setInsecure();\n  if(!client.connect(\"api.telegram.org\",443)) return;\n  String\
-      \ body=\"chat_id=\"+String(CHAT_ID)+\"&text=\"+msg;\n  client.printf(\"POST /bot%s/sendMessage HTTP/1.1rn\"\
-      \n    \"Host: api.telegram.orgrnContent-Type: application/x-www-form-urlencodedrn\"\n    \"Content-Length:\
-      \ %drnrn%s\",BOT_TOKEN,(int)body.length(),body.c_str());\n  delay(1000); client.stop();\n}\n\nvoid\
-      \ logLeak(int zone){\n  time_t now=time(nullptr);\n  prefs.begin(\"leaks\",false);\n  int n=prefs.getInt(\"\
-      n\",0);\n  String entry=String(now)+\":\"+ZONE_NAMES[zone];\n  prefs.putString(String(n).c_str(),entry);\n\
-      \  prefs.putInt(\"n\",n+1);\n  prefs.end();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n\
-      \  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);\n  analogReadResolution(12);\n\
-      \  pinMode(BUZZER,OUTPUT); pinMode(RST_BTN,INPUT_PULLUP);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n}\n\nvoid loop(){\n  bool anyWet=false;\n  for(int\
-      \ i=0;i<3;i++){\n    bool wet=(analogRead(SENSORS[i])>WET_THRESH);\n    if(wet&&!wasWet[i]){\n \
-      \     logLeak(i);\n      sendTelegram(\"WATER LEAK: \"+String(ZONE_NAMES[i]));\n      buzzerAck=false;\n\
-      \    }\n    wasWet[i]=wet;\n    if(wet) anyWet=true;\n  }\n  if(digitalRead(RST_BTN)==LOW) buzzerAck=true;\n\
-      \  digitalWrite(BUZZER,anyWet&&!buzzerAck?HIGH:LOW);\n\n  oled.clearDisplay(); oled.setTextSize(1);\
-      \ oled.setCursor(0,0);\n  for(int i=0;i<3;i++)\n    oled.printf(\"%s: %sn\",ZONE_NAMES[i],wasWet[i]?\"\
-      WET!\":\"ok\");\n  oled.println(anyWet?\"ALERT!\":\"All clear\");\n  oled.display();\n  delay(2000);\n\
+    code: "// ESP32 Water Leak Detector - Intermediate (3-zone + Telegram + NVS log)\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <WiFi.h>\n#include <WiFiClientSecure.h>\n#include <Preferences.h>\n#include <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\
+      Preferences prefs;\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\";\n\
+      const char* CHAT_ID=\"YOUR_CHAT_ID\";\n\nconst char* ZONE_NAMES[3]={\"Kitchen\",\"Bathroom\",\"Washer\"};\nconst int\
+      \ SENSORS[3]={34,35,36};\nconst int BUZZER=25, RST_BTN=0;\nconst int WET_THRESH=2000;\nbool wasWet[3]={false};\nbool\
+      \ buzzerAck=false;\n\nvoid sendTelegram(const String &msg){\n  WiFiClientSecure client; client.setInsecure();\n  if(!client.connect(\"\
+      api.telegram.org\",443)) return;\n  String body=\"chat_id=\"+String(CHAT_ID)+\"&text=\"+msg;\n  client.printf(\"POST\
+      \ /bot%s/sendMessage HTTP/1.1rn\"\n    \"Host: api.telegram.orgrnContent-Type: application/x-www-form-urlencodedrn\"\
+      \n    \"Content-Length: %drnrn%s\",BOT_TOKEN,(int)body.length(),body.c_str());\n  delay(1000); client.stop();\n}\n\n\
+      void logLeak(int zone){\n  time_t now=time(nullptr);\n  prefs.begin(\"leaks\",false);\n  int n=prefs.getInt(\"n\",0);\n\
+      \  String entry=String(now)+\":\"+ZONE_NAMES[zone];\n  prefs.putString(String(n).c_str(),entry);\n  prefs.putInt(\"\
+      n\",n+1);\n  prefs.end();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\
+      \ oled.setTextColor(WHITE);\n  analogReadResolution(12);\n  pinMode(BUZZER,OUTPUT); pinMode(RST_BTN,INPUT_PULLUP);\n\
+      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n}\n\
+      \nvoid loop(){\n  bool anyWet=false;\n  for(int i=0;i<3;i++){\n    bool wet=(analogRead(SENSORS[i])>WET_THRESH);\n \
+      \   if(wet&&!wasWet[i]){\n      logLeak(i);\n      sendTelegram(\"WATER LEAK: \"+String(ZONE_NAMES[i]));\n      buzzerAck=false;\n\
+      \    }\n    wasWet[i]=wet;\n    if(wet) anyWet=true;\n  }\n  if(digitalRead(RST_BTN)==LOW) buzzerAck=true;\n  digitalWrite(BUZZER,anyWet&&!buzzerAck?HIGH:LOW);\n\
+      \n  oled.clearDisplay(); oled.setTextSize(1); oled.setCursor(0,0);\n  for(int i=0;i<3;i++)\n    oled.printf(\"%s: %sn\"\
+      ,ZONE_NAMES[i],wasWet[i]?\"WET!\":\"ok\");\n  oled.println(anyWet?\"ALERT!\":\"All clear\");\n  oled.display();\n  delay(2000);\n\
       }"
     code_filename: esp32-water-leak-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build adds automatic main water shutoff via a solenoid valve relay.
-      When any sensor zone detects a leak, the ESP32 immediately closes the solenoid valve, sends a Telegram
-      alert with zone details, and publishes the event to MQTT. The valve can be remotely re-opened via
-      MQTT after the leak is repaired. A watchdog timer ensures the valve closes if the ESP32 loses Wi-Fi
-      for more than 5 minutes, preventing undetected leaks during network outages.</p>
+    overview_html: <p>The advanced build adds automatic main water shutoff via a solenoid valve relay. When any sensor zone
+      detects a leak, the ESP32 immediately closes the solenoid valve, sends a Telegram alert with zone details, and publishes
+      the event to MQTT. The valve can be remotely re-opened via MQTT after the leak is repaired. A watchdog timer ensures
+      the valve closes if the ESP32 loses Wi-Fi for more than 5 minutes, preventing undetected leaks during network outages.</p>
     components:
     - 1× ESP32 DevKit V1
     - 3× Resistive water sensor
@@ -242,21 +225,19 @@ levels:
       - Relay COM/NO from 12 V
       - When relay closes, 12 V energises solenoid; closes valve
     how:
-    - 'Normally-Open Solenoid Valve: A normally-open solenoid valve allows water flow when de-energised.
-      Energising the coil (12 V via relay) closes the valve and stops water flow. This fail-safe design
-      means water flows if the ESP32 power fails, avoiding inadvertent water shutoff during power cuts.
-      Change to normally-closed for a safety-critical installation that cuts water on power failure.'
-    - 'Wi-Fi Watchdog Timer: lastWifi records the time of the last successful Wi-Fi connection. If Wi-Fi
-      is continuously lost for more than WIFI_WATCHDOG milliseconds (5 minutes), the valve is closed as
-      a precaution. This protects against the scenario where a leak occurs during a network outage and
-      the Telegram alert cannot be sent.'
-    - 'MQTT Valve Remote Control: Publishing "OPEN" to water/valve/set re-opens the valve after a leak
-      is repaired. Publishing "CLOSED" manually shuts off water remotely (e.g. leaving home during a storm).
-      The current valve state is published to water/valve/state with retain=true for dashboard synchronisation.'
-    - 'Immediate Shutoff Priority: setValve(false) is called before sendTelegram() because sending an
-      HTTPS request to Telegram can take 2-5 seconds. Closing the valve immediately minimises water damage.
-      The Telegram notification arrives within seconds of the shutoff, giving the homeowner time to investigate
-      before significant damage occurs.'
+    - 'Normally-Open Solenoid Valve: A normally-open solenoid valve allows water flow when de-energised. Energising the coil
+      (12 V via relay) closes the valve and stops water flow. This fail-safe design means water flows if the ESP32 power fails,
+      avoiding inadvertent water shutoff during power cuts. Change to normally-closed for a safety-critical installation that
+      cuts water on power failure.'
+    - 'Wi-Fi Watchdog Timer: lastWifi records the time of the last successful Wi-Fi connection. If Wi-Fi is continuously lost
+      for more than WIFI_WATCHDOG milliseconds (5 minutes), the valve is closed as a precaution. This protects against the
+      scenario where a leak occurs during a network outage and the Telegram alert cannot be sent.'
+    - 'MQTT Valve Remote Control: Publishing "OPEN" to water/valve/set re-opens the valve after a leak is repaired. Publishing
+      "CLOSED" manually shuts off water remotely (e.g. leaving home during a storm). The current valve state is published
+      to water/valve/state with retain=true for dashboard synchronisation.'
+    - 'Immediate Shutoff Priority: setValve(false) is called before sendTelegram() because sending an HTTPS request to Telegram
+      can take 2-5 seconds. Closing the valve immediately minimises water damage. The Telegram notification arrives within
+      seconds of the shutoff, giving the homeowner time to investigate before significant damage occurs.'
     apps:
     - Whole-home automatic water shutoff on leak detection
     - Vacation rental property remote water management
@@ -264,52 +245,312 @@ levels:
     - Laboratory water supply safety interlock
     troubleshooting:
     - - Valve closes but water continues flowing
-      - 'Verify the solenoid valve is installed on the correct pipe and in the correct flow direction
-        (marked on the valve body). Also check that the relay actually closes: measure 12 V across the
-        solenoid coil terminals when the relay is activated.'
+      - 'Verify the solenoid valve is installed on the correct pipe and in the correct flow direction (marked on the valve
+        body). Also check that the relay actually closes: measure 12 V across the solenoid coil terminals when the relay is
+        activated.'
     - - Watchdog closes valve unnecessarily during brief Wi-Fi drops
-      - Increase WIFI_WATCHDOG from 5 to 15 minutes for environments with intermittent Wi-Fi. Also add
-        logic to attempt Wi-Fi reconnection immediately after detecting a drop, resetting the lastWifi
-        timer on each successful reconnection attempt.
+      - Increase WIFI_WATCHDOG from 5 to 15 minutes for environments with intermittent Wi-Fi. Also add logic to attempt Wi-Fi
+        reconnection immediately after detecting a drop, resetting the lastWifi timer on each successful reconnection attempt.
     - - Valve will not open remotely after closing
-      - The MQTT subscribe to water/valve/set must succeed before commands can be received. Verify the
-        subscription fires after reconnection in the mqtt.connect() block. Also verify the MQTT payload
-        is exactly "OPEN" (case-sensitive).
+      - The MQTT subscribe to water/valve/set must succeed before commands can be received. Verify the subscription fires
+        after reconnection in the mqtt.connect() block. Also verify the MQTT payload is exactly "OPEN" (case-sensitive).
     upgrades:
     - Add a flow meter to measure and log total water consumption
     - Add Home Assistant integration for valve control from the HA dashboard
     - Add a water pressure sensor to detect pipe burst (sudden pressure drop)
     - Add a secondary SMS alert via a GSM module as a fallback when internet is down
-    code: "// ESP32 Water Leak Detector - Advanced (solenoid shutoff + MQTT + watchdog)\n#include <WiFi.h>\n\
-      #include <PubSubClient.h>\n#include <WiFiClientSecure.h>\n#include <ArduinoJson.h>\n#include <time.h>\n\
-      \nWiFiClient wifiClient; PubSubClient mqtt(wifiClient);\nconst char* SSID=\"YourSSID\", *PASS=\"\
-      YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\"\
-      ;\nconst char* CHAT_ID=\"YOUR_CHAT_ID\";\n\nconst int SENSORS[3]={34,35,36};\nconst char* ZONES[3]={\"\
-      Kitchen\",\"Bathroom\",\"Washer\"};\nconst int VALVE_RELAY=25;\nconst int WET_THRESH=2000;\nbool\
-      \ valveOpen=true;\nbool wasWet[3]={false};\nunsigned long lastWifi=0;\nconst unsigned long WIFI_WATCHDOG=300000UL;\
-      \ // 5 minutes\n\nvoid setValve(bool open){\n  valveOpen=open;\n  digitalWrite(VALVE_RELAY,open?HIGH:LOW);\
-      \ // HIGH=relay off=valve open\n  mqtt.publish(\"water/valve/state\",open?\"OPEN\":\"CLOSED\",true);\n\
-      \  Serial.printf(\"Valve: %sn\",open?\"OPEN\":\"CLOSED\");\n}\n\nvoid sendTelegram(const String\
-      \ &msg){\n  WiFiClientSecure c; c.setInsecure();\n  if(!c.connect(\"api.telegram.org\",443)) return;\n\
-      \  String body=\"chat_id=\"+String(CHAT_ID)+\"&text=\"+msg;\n  c.printf(\"POST /bot%s/sendMessage\
-      \ HTTP/1.1rnHost: api.telegram.orgrn\"\n    \"Content-Type: application/x-www-form-urlencodedrnContent-Length:\
-      \ %drnrn%s\",\n    BOT_TOKEN,(int)body.length(),body.c_str());\n  delay(1000); c.stop();\n}\n\n\
-      void mqttCallback(char* topic, byte* payload, unsigned int len){\n  String msg((char*)payload,len);\n\
-      \  if(String(topic)==\"water/valve/set\"){\n    setValve(msg==\"OPEN\");\n  }\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200);\n  analogReadResolution(12);\n  pinMode(VALVE_RELAY,OUTPUT);\n  setValve(true);\
-      \ // start with valve open\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  lastWifi=millis();\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      \  mqtt.setCallback(mqttCallback);\n}\n\nvoid loop(){\n  if(WiFi.status()==WL_CONNECTED) lastWifi=millis();\n\
-      \  // Watchdog: close valve if Wi-Fi lost for >5 min\n  if(millis()-lastWifi>WIFI_WATCHDOG && valveOpen){\n\
-      \    setValve(false);\n    Serial.println(\"WATCHDOG: valve closed due to Wi-Fi loss\");\n  }\n\
-      \  if(!mqtt.connected() && WiFi.status()==WL_CONNECTED){\n    mqtt.connect(\"LeakDetector\");\n\
-      \    mqtt.subscribe(\"water/valve/set\");\n  }\n  mqtt.loop();\n  for(int i=0;i<3;i++){\n    bool\
-      \ wet=(analogRead(SENSORS[i])>WET_THRESH);\n    if(wet&&!wasWet[i]){\n      setValve(false); //\
-      \ close main water supply immediately\n      sendTelegram(\"LEAK DETECTED: \"+String(ZONES[i])+\"\
-      \ - Water supply closed!\");\n      StaticJsonDocument<128> doc;\n      doc[\"zone\"]=ZONES[i];\
-      \ doc[\"valve\"]=\"CLOSED\";\n      char buf[128]; serializeJson(doc,buf);\n      mqtt.publish(\"\
-      water/leak\",buf);\n    }\n    wasWet[i]=wet;\n  }\n  delay(2000);\n}"
+    code: "// ESP32 Water Leak Detector - Advanced (solenoid shutoff + MQTT + watchdog)\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
+      #include <WiFiClientSecure.h>\n#include <ArduinoJson.h>\n#include <time.h>\n\nWiFiClient wifiClient; PubSubClient mqtt(wifiClient);\n\
+      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* BOT_TOKEN=\"\
+      YOUR_BOT_TOKEN\";\nconst char* CHAT_ID=\"YOUR_CHAT_ID\";\n\nconst int SENSORS[3]={34,35,36};\nconst char* ZONES[3]={\"\
+      Kitchen\",\"Bathroom\",\"Washer\"};\nconst int VALVE_RELAY=25;\nconst int WET_THRESH=2000;\nbool valveOpen=true;\nbool\
+      \ wasWet[3]={false};\nunsigned long lastWifi=0;\nconst unsigned long WIFI_WATCHDOG=300000UL; // 5 minutes\n\nvoid setValve(bool\
+      \ open){\n  valveOpen=open;\n  digitalWrite(VALVE_RELAY,open?HIGH:LOW); // HIGH=relay off=valve open\n  mqtt.publish(\"\
+      water/valve/state\",open?\"OPEN\":\"CLOSED\",true);\n  Serial.printf(\"Valve: %sn\",open?\"OPEN\":\"CLOSED\");\n}\n\n\
+      void sendTelegram(const String &msg){\n  WiFiClientSecure c; c.setInsecure();\n  if(!c.connect(\"api.telegram.org\"\
+      ,443)) return;\n  String body=\"chat_id=\"+String(CHAT_ID)+\"&text=\"+msg;\n  c.printf(\"POST /bot%s/sendMessage HTTP/1.1rnHost:\
+      \ api.telegram.orgrn\"\n    \"Content-Type: application/x-www-form-urlencodedrnContent-Length: %drnrn%s\",\n    BOT_TOKEN,(int)body.length(),body.c_str());\n\
+      \  delay(1000); c.stop();\n}\n\nvoid mqttCallback(char* topic, byte* payload, unsigned int len){\n  String msg((char*)payload,len);\n\
+      \  if(String(topic)==\"water/valve/set\"){\n    setValve(msg==\"OPEN\");\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
+      \  analogReadResolution(12);\n  pinMode(VALVE_RELAY,OUTPUT);\n  setValve(true); // start with valve open\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  lastWifi=millis();\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
+      \  mqtt.setCallback(mqttCallback);\n}\n\nvoid loop(){\n  if(WiFi.status()==WL_CONNECTED) lastWifi=millis();\n  // Watchdog:\
+      \ close valve if Wi-Fi lost for >5 min\n  if(millis()-lastWifi>WIFI_WATCHDOG && valveOpen){\n    setValve(false);\n\
+      \    Serial.println(\"WATCHDOG: valve closed due to Wi-Fi loss\");\n  }\n  if(!mqtt.connected() && WiFi.status()==WL_CONNECTED){\n\
+      \    mqtt.connect(\"LeakDetector\");\n    mqtt.subscribe(\"water/valve/set\");\n  }\n  mqtt.loop();\n  for(int i=0;i<3;i++){\n\
+      \    bool wet=(analogRead(SENSORS[i])>WET_THRESH);\n    if(wet&&!wasWet[i]){\n      setValve(false); // close main water\
+      \ supply immediately\n      sendTelegram(\"LEAK DETECTED: \"+String(ZONES[i])+\" - Water supply closed!\");\n      StaticJsonDocument<128>\
+      \ doc;\n      doc[\"zone\"]=ZONES[i]; doc[\"valve\"]=\"CLOSED\";\n      char buf[128]; serializeJson(doc,buf);\n   \
+      \   mqtt.publish(\"water/leak\",buf);\n    }\n    wasWet[i]=wet;\n  }\n  delay(2000);\n}"
     code_filename: esp32-water-leak-advanced.ino
 related_slugs:
 - esp32-fire-alarm-system
 - esp32-smart-mailbox
+format: golden
+keywords:
+- ESP32
+- ESP32 Water Leak Detector
+- Water sensor AOUT
+- Water sensor DOUT
+- Arduino tutorial
+- Home Automation
+meta_title: ESP32 Water Leak Detector Tutorial with ESP32
+project:
+  icon: LEAK
+  mission_title: Build a Water Leak Detector
+  difficulty: Beginner
+  age: Ages 12+
+  estimated_time: 50-80 min
+  budget: Under 20 USD
+  what_you_build: A low-voltage water leak alarm that detects moisture on a sensor strip, sounds a buzzer, and can later send
+    alerts over Wi-Fi.
+  story: 'ESP32 Water Leak Detector solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
+    result. Build this to learn practical threshold sensing, corrosion limits, and how a small ESP32 circuit can prevent real
+    damage.
+
+
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
+    the output under real conditions.'
+  eli12: The water sensor is like two metal rails on the floor. Dry rails are mostly disconnected. Water bridges them, current
+    can pass through the module, and the ESP32 sees the change.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
+    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
+    enclosure, and adult supervision are used.
+  learning_objectives:
+  - Detect water using analog and digital sensor outputs.
+  - Understand why resistive water probes corrode over time.
+  - Create a safe local buzzer/LED alarm.
+  - Choose sensor placement for real leaks.
+  - Prepare the project for future Wi-Fi alerts.
+  components:
+  - item: 1× ESP32 DevKit V1
+    note: Required for this build
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: 1× Resistive water sensor strip
+    note: Parallel copper trace strip; inexpensive module
+    icon: PART
+  - item: 1× Active buzzer 5 V
+    note: Required for this build
+    icon: PART
+  - item: 1× Red LED and 220 ohm resistor
+    note: Leak indicator
+    icon: PART
+  - item: 1× Green LED and 220 ohm resistor
+    note: Normal status indicator
+    icon: PART
+  - item: 1× Breadboard and jumper wires
+    note: Required for this build
+    icon: PART
+  - item: USB data cable
+    note: Programming and bench power
+    icon: PART
+  bom:
+  - part: 1× ESP32 DevKit V1
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 1× Resistive water sensor strip
+    qty: '1'
+    estimated_cost: Varies
+    notes: Parallel copper trace strip; inexpensive module
+  - part: 1× Active buzzer 5 V
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for this build
+  - part: 1× Red LED and 220 ohm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Leak indicator
+  - part: 1× Green LED and 220 ohm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Normal status indicator
+  - part: 1× Breadboard and jumper wires
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Required for this build
+  wiring:
+    illustration_alt: ESP32 Water Leak Detector wiring diagram
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. The water
+      strip exposes conductive traces.
+    steps:
+    - Unplug USB before changing wires.
+    - Connect Water sensor AOUT to GPIO 34 (Analog signal; higher voltage = wetter).
+    - Connect Water sensor DOUT to GPIO 35 (Digital threshold from onboard comparator).
+    - Connect Water sensor VCC to 3.3 V (Power sensor only when reading to reduce electrolytic corrosion).
+    - Connect Water sensor GND to GND.
+    - Connect Buzzer + to GPIO 25.
+    - Connect Red LED anode to GPIO 26.
+    - Connect Green LED anode to GPIO 27.
+    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+  gpio_map:
+  - signal: Water sensor AOUT
+    esp32_pin: GPIO 34
+    direction: Input
+    notes: Analog signal; higher voltage = wetter
+  - signal: Water sensor DOUT
+    esp32_pin: GPIO 35
+    direction: Input
+    notes: Digital threshold from onboard comparator
+  - signal: Water sensor VCC
+    esp32_pin: 3.3 V
+    direction: Power
+    notes: Power sensor only when reading to reduce electrolytic corrosion
+  - signal: Water sensor GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Match this wire to the code constant.
+  - signal: Buzzer +
+    esp32_pin: GPIO 25
+    direction: Output
+    notes: Match this wire to the code constant.
+  - signal: Red LED anode
+    esp32_pin: GPIO 26
+    direction: Output
+    notes: Match this wire to the code constant.
+  - signal: Green LED anode
+    esp32_pin: GPIO 27
+    direction: Output
+    notes: Match this wire to the code constant.
+  circuit_explanation: The water strip exposes conductive traces. When water touches the traces, resistance changes and the
+    module output changes. The ESP32 can read the analog output for wetness level or digital output for simple leak/no-leak
+    detection. LEDs and buzzer provide immediate local feedback.
+  engineering_explanation: Water detection is simple electrically but tricky in real installations. Minerals in water, corrosion,
+    condensation, sensor placement, and cable length affect reliability. A good detector powers the sensor only while reading,
+    tests both wet and dry states, and places the probe where water appears first.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-water-leak-detector.ino
+    content: "// ESP32 Water Leak Detector - Beginner\n// Resistive moisture sensor; buzzer + LED alert\n\nconst int SENSOR_AOUT\
+      \ = 34;\nconst int SENSOR_DOUT = 35;\nconst int BUZZER  = 25;\nconst int LED_RED = 26;\nconst int LED_GRN = 27;\n\n\
+      const int WET_THRESHOLD = 2000; // tune from Serial output; 0-4095\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  pinMode(SENSOR_DOUT, INPUT);\n  pinMode(BUZZER,  OUTPUT);\n  pinMode(LED_RED, OUTPUT);\n  pinMode(LED_GRN, OUTPUT);\n\
+      }\n\nvoid loop() {\n  int raw = analogRead(SENSOR_AOUT);\n  bool wet = (raw > WET_THRESHOLD) || (digitalRead(SENSOR_DOUT)\
+      \ == HIGH);\n\n  Serial.printf(\"Sensor: %d  Status: %sn\", raw, wet ? \"WET!\" : \"dry\");\n\n  if (wet) {\n    digitalWrite(LED_RED,\
+      \ HIGH);\n    digitalWrite(LED_GRN, LOW);\n    digitalWrite(BUZZER,  HIGH);\n  } else {\n    digitalWrite(LED_RED, LOW);\n\
+      \    digitalWrite(LED_GRN, HIGH);\n    digitalWrite(BUZZER,  LOW);\n  }\n  delay(1000);\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
+    setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading first, compares it
+    with a threshold, then changes the output. Printing before controlling the output makes debugging much easier because
+    you can see what the ESP32 believes is happening.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
+    condition for esp32 water leak detector is reached.
+  common_mistakes:
+  - text: Leaving a resistive water sensor powered continuously for months.
+  - text: Placing the sensor where water reaches it too late.
+  - text: Using the buzzer before proving the sensor reading works.
+  - text: Ignoring corrosion after repeated wet tests.
+  - text: Forgetting to dry the sensor completely before retesting.
+  troubleshooting:
+  - problem: Alarm always stays on
+    fix: Dry the sensor, check for residue between traces, and print raw readings before threshold logic.
+  - problem: Alarm never triggers
+    fix: Touch the traces with a damp cloth and verify VCC, GND, and signal wiring.
+  - problem: False alarms happen overnight
+    fix: Move the sensor away from condensation sources or raise the threshold after logging dry readings.
+  - problem: Buzzer is weak
+    fix: Use an active buzzer module and check whether it needs 5 V or a transistor driver.
+  testing_checklist:
+  - Upload a simple Blink sketch first to confirm the board and USB cable work.
+  - Wire only power and ground, then confirm the board still boots.
+  - Connect the input signal and print raw readings before using thresholds.
+  - Trigger the real-world condition slowly and watch Serial Monitor.
+  - Connect the output only after the input reading is believable.
+  - Power-cycle the project and confirm it starts in a safe state.
+  engineer_tips:
+  - Power the sensor only during measurement to reduce electrolysis.
+  - Keep the ESP32 board away from the wet area.
+  - Use a drip loop in cables so water cannot run toward electronics.
+  - Test with a damp cloth, not a cup of water near the board.
+  - Use a plastic enclosure for permanent monitoring.
+  performance_tips:
+  - Sleep between checks for battery operation.
+  - Use digital output for simple alarms and analog output for wetness trend.
+  - Require two wet readings before sounding the alarm.
+  - Send network alerts only when the state changes.
+  upgrade_ideas: *id001
+  real_world_applications:
+  - Sink cabinet leak alarm
+  - Water heater drip monitor
+  - Basement early warning sensor
+  - Appliance overflow detector
+  downloads:
+  - text: ESP32 Water Leak Detector Arduino sketch
+    note: Use the code section as the source sketch.
+  - text: Bench test checklist
+    note: Follow the testing checklist before permanent installation.
+  related_guides:
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Verify uploads and simple outputs before adding hardware.
+  - title: Mission 08 - Analog Inputs
+    href: /guides/analog-inputs.html
+    description: Understand changing sensor values before building threshold projects.
+  - title: Mission 10 - I2C Communication
+    href: /guides/i2c-communication.html
+    description: Use structured communication thinking before connecting multiple modules.
+  related_projects:
+  - title: ESP32 Motion Security Alert
+    href: /projects/esp32-motion-security-alert.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Soil Moisture Monitor
+    href: /projects/esp32-soil-moisture-monitor.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Home Climate Automation
+    href: /projects/esp32-home-climate-automation.html
+    description: Continue with a related ESP32 build that uses the same engineering idea.
+  faqs:
+  - question: Is ESP32 Water Leak Detector good for beginners?
+    answer: Yes, if you build the beginner version first and test one part at a time. Build this to learn practical threshold
+      sensing, corrosion limits, and how a small ESP32 circuit can prevent real damage.
+  - question: Which ESP32 board should I use?
+    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
+      ESP32-CAM module and a reliable FTDI adapter.
+  - question: Can I power this from a phone charger?
+    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
+      and LED matrices may need a separate regulated supply.
+  - question: Why should I print values to Serial Monitor first?
+    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
+      from LED, relay, display, or network problems.
+  - question: Can I change the GPIO pins?
+    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
+      Analog-only pins such as GPIO34 cannot drive outputs.
+  - question: What should I test before installing it permanently?
+    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
+      that should trigger the project.
+  - question: Can I add Wi-Fi or a dashboard?
+    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
+      after Wi-Fi is added.
+  - question: What is the most common failure?
+    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
+      raw reading and wiring table first.
+  - question: How do I make it more reliable?
+    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
+      hysteresis where the output might chatter.
+  - question: Where should I learn next?
+    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
+      part of this project you want to improve.
+  references:
+  - title: ESP32 Deep Sleep Guide
+    href: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/sleep_modes.html
+  - title: Arduino ESP32 Core Documentation
+    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  complete:
+    summary: You completed ESP32 Water Leak Detector as a real ESP32 engineering build, not just a wiring demo. You now know
+      how to test the input, protect the circuit, explain the code, and improve the project safely.
+    skills:
+    - Read and verify project input hardware
+    - Map signals to safe ESP32 GPIO pins
+    - Debug with Serial Monitor
+    - Apply safety and performance checks
+    - Plan the next learning step
+  build_photos:
+  - title: Breadboard overview
+    note: Show ESP32, module, output device, and power rails.
+  - title: Close-up wiring
+    note: Show signal pins clearly enough for learners to compare.
+  - title: Working output
+    note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.
