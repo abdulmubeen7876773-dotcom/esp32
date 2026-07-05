@@ -34,6 +34,7 @@ from site_layout import (
     webpage_schema,
     UI_JS_SRC,
     GOOGLE_TAG_HTML,
+    index_redirect_script,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -155,6 +156,14 @@ def faq_for_parent(parent: dict) -> list[tuple[str, str]]:
             f"Which difficulty level should I start with for {title}?",
             f"Start with Beginner if you are new to {cat}. Use Intermediate for OLED feedback and Advanced for dashboards or connected monitoring.",
         ),
+        (
+            f"Why might Google or a learner choose this {title} tutorial?",
+            f"This page teaches the complete path from wiring to code to troubleshooting, not just a parts list. It explains what the ESP32 measures, what it controls, and how to test each stage safely.",
+        ),
+        (
+            f"What should I learn before building {title}?",
+            "You should be comfortable uploading an Arduino sketch, reading Serial Monitor output, recognizing 3.3 V and GND, and changing wiring only when USB power is unplugged.",
+        ),
     ]
 
 
@@ -191,7 +200,8 @@ def build_head(parent: dict, hardware: dict) -> str:
         "datePublished": "2026-06-14",
         "dateModified": "2026-06-18",
         "image": absolute_image,
-        "author": {"@type": "Organization", "name": ORG_NAME, "url": DOMAIN + "/"},
+        "author": {"@type": "Person", "name": "Abdul Mubeen", "url": DOMAIN + "/author.html"},
+        "reviewedBy": {"@type": "Organization", "name": "ESP32 Engine Editorial Team", "url": DOMAIN + "/editorial-policy.html"},
         "publisher": {
             "@type": "Organization",
             "name": ORG_NAME,
@@ -236,6 +246,108 @@ def build_head(parent: dict, hardware: dict) -> str:
 {json_ld_script(howto)}
 {json_ld_script(faq)}
 {json_ld_script(crumbs)}"""
+
+
+def project_learning_context(parent: dict, hardware: dict) -> str:
+    title = parent["title"]
+    sensor = clean_staged_value(parent.get("sensor"), hardware.get("sensor_name", "input sensor"))
+    output = clean_staged_value(parent.get("output"), hardware.get("output_name", "output device"))
+    cat = parent.get("category", "ESP32")
+    return f"""<div class="steps steps-compact">
+  <div class="step"><span class="step-no">01</span><p>{esc(title)} starts with a real input: {esc(sensor)}. The first learning goal is to prove the ESP32 can read that signal reliably before anything is automated.</p></div>
+  <div class="step"><span class="step-no">02</span><p>The second goal is decision logic. The sketch compares the live reading with a threshold, then explains why thresholds need testing instead of guessing.</p></div>
+  <div class="step"><span class="step-no">03</span><p>The final goal is a controlled output: {esc(output)}. You learn how a {esc(cat.lower())} project turns sensor data into a visible or useful action.</p></div>
+</div>"""
+
+
+def project_quality_notes(parent: dict, hardware: dict) -> str:
+    title = parent["title"]
+    s_pin = hardware.get("sensor_pin", "GPIO34")
+    o_pin = hardware.get("output_pin", "GPIO26")
+    updated = parent.get("date_modified", "2026-07-05")
+    return f"""<div class="trouble-list">
+  <div class="trouble-item"><h3>Editorial accuracy</h3><p>{esc(title)} is written as an educational build. Last updated: {esc(updated)}. Pin choices, code structure, and troubleshooting steps are selected so beginners can test the circuit on a bench before moving to a permanent enclosure.</p></div>
+  <div class="trouble-item"><h3>Safety boundary</h3><p>Keep the ESP32 side low-voltage. Unplug USB before rewiring. If the project interacts with mains power, motors, pumps, batteries, or outdoor wiring, use an isolated relay/module and get adult or qualified supervision.</p></div>
+  <div class="trouble-item"><h3>Verification method</h3><p>First confirm the input on {esc(s_pin)} in Serial Monitor. Then confirm the output pin {esc(o_pin)} changes only when the condition is true. This separates sensor problems from output-driver problems.</p></div>
+</div>"""
+
+
+def related_guides_for_parent(parent: dict) -> list[dict]:
+    title = parent["title"]
+    cat = parent.get("category", "")
+    guides = [
+        {
+            "href": site_href("guides/blink-led-esp32.html"),
+            "title": "Mission 01 - Blink LED",
+            "description": "Start here if you need a first upload and output test before building projects.",
+        },
+        {
+            "href": site_href("guides/analog-inputs.html"),
+            "title": "Mission 08 - Analog Inputs",
+            "description": "Useful for sensor projects that read changing values instead of simple ON/OFF states.",
+        },
+    ]
+    lower = f"{title} {cat}".lower()
+    if any(word in lower for word in ("weather", "climate", "air", "environment", "greenhouse", "uv")):
+        guides.append(
+            {
+                "href": site_href("guides/environmental-sensors.html"),
+                "title": "Mission 11 - Reading Environmental Sensors",
+                "description": "Learn how temperature, humidity, pressure, and live sensor data behave in real rooms.",
+            }
+        )
+    if any(word in lower for word in ("oled", "display", "clock", "dashboard")):
+        guides.append(
+            {
+                "href": site_href("guides/oled-display-esp32.html"),
+                "title": "Mission 09 - OLED Display with ESP32",
+                "description": "Display ESP32 readings locally instead of relying only on Serial Monitor.",
+            }
+        )
+    if any(word in lower for word in ("wifi", "iot", "mqtt", "home", "automation", "energy")):
+        guides.append(
+            {
+                "href": site_href("guides/i2c-communication.html"),
+                "title": "Mission 10 - I2C Communication",
+                "description": "Understand shared communication buses used by OLED screens and sensor modules.",
+            }
+        )
+    if any(word in lower for word in ("robot", "motor", "servo", "street light", "piano", "matrix")):
+        guides.append(
+            {
+                "href": site_href("guides/pwm-fundamentals.html"),
+                "title": "Mission 07 - PWM Fundamentals",
+                "description": "Use PWM concepts for brightness, speed, and smooth output control.",
+            }
+        )
+    return guides[:4]
+
+
+def related_guides_html(parent: dict) -> str:
+    cards = []
+    for item in related_guides_for_parent(parent):
+        cards.append(
+            f"""<a class="related-card" href="{esc(item['href'])}">
+  <span class="tag clay">Guide</span>
+  <h3>{esc(item['title'])}</h3>
+  <p>{esc(item['description'])}</p>
+</a>"""
+        )
+    return f'<div class="related-grid">{"".join(cards)}</div>'
+
+
+def authority_references_html(parent: dict) -> str:
+    refs = [
+        ("Espressif ESP32 Documentation", "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/"),
+        ("Arduino ESP32 Core Documentation", "https://docs.espressif.com/projects/arduino-esp32/en/latest/"),
+        ("ESP32 Arduino GitHub", "https://github.com/espressif/arduino-esp32"),
+    ]
+    items = "".join(
+        f'<li><a href="{esc(url)}" target="_blank" rel="noopener noreferrer">{esc(label)}</a></li>'
+        for label, url in refs
+    )
+    return f"""<p>This project is written for practical learning, then cross-checked against the ESP32 platform documentation where pin behavior, Arduino support, and board-level constraints matter.</p>
+<ul class="detail-list">{items}</ul>"""
 
 
 SECTION_NAV = [
@@ -342,7 +454,8 @@ def render_golden_parent(parent: dict) -> str:
         "datePublished": parent.get("date_published", "2026-06-14"),
         "dateModified": parent.get("date_modified", "2026-06-29"),
         "image": absolute_image,
-        "author": {"@type": "Organization", "name": ORG_NAME, "url": SITE_DOMAIN + "/"},
+        "author": {"@type": "Person", "name": "Abdul Mubeen", "url": SITE_DOMAIN + "/author.html"},
+        "reviewedBy": {"@type": "Organization", "name": "ESP32 Engine Editorial Team", "url": SITE_DOMAIN + "/editorial-policy.html"},
         "publisher": {"@type": "Organization", "name": ORG_NAME, "logo": {"@type": "ImageObject", "url": OG_IMAGE}},
         "mainEntityOfPage": {"@type": "WebPage", "@id": url},
         "proficiencyLevel": proj.get("difficulty", "Beginner"),
@@ -419,6 +532,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
+{index_redirect_script()}
 {GOOGLE_TAG_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -480,6 +594,10 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     </div>
     <div class="article-content parent-footer-sections">
       <div class="footer-accordions">
+        {footer_accordion("learning-context", "What You Learn", project_learning_context(parent, hardware))}
+        {footer_accordion("quality-notes", "Safety and Accuracy Notes", project_quality_notes(parent, hardware))}
+        {footer_accordion("related-guides", "Related Guides", related_guides_html(parent))}
+        {footer_accordion("authority-references", "Engineering References", authority_references_html(parent))}
         {footer_accordion("related", "Related Projects", related_section)}
       </div>
     </div>

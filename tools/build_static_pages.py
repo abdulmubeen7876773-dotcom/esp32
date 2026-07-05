@@ -5,11 +5,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
 from site_layout import (
     SITE_NAME,
+    SITE_DOMAIN,
     breadcrumb_schema,
     footer_html,
     head_html,
     header_html,
     organization_schema,
+    json_ld_script,
     static_page_shell,
     webpage_schema,
     website_schema,
@@ -47,6 +49,23 @@ def page_schema(page: dict) -> str:
     schema = organization_schema() + webpage_schema(title, desc, f"{slug}.html", page_type) + crumbs
     if slug == "about":
         schema += website_schema()
+    if slug == "author":
+        schema += json_ld_script(
+            {
+                "@context": "https://schema.org",
+                "@type": "Person",
+                "name": "Abdul Mubeen",
+                "url": f"{SITE_DOMAIN}/author.html",
+                "worksFor": {"@type": "Organization", "name": "ESP32 Engine", "url": SITE_DOMAIN + "/"},
+                "knowsAbout": [
+                    "ESP32",
+                    "Arduino",
+                    "embedded systems education",
+                    "electronics prototyping",
+                    "STEM learning",
+                ],
+            }
+        )
     return schema
 
 

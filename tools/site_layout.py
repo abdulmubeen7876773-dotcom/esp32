@@ -1662,8 +1662,8 @@ def footer_html(base: str = "") -> str:
       </div>
     </div>
     <div class="footer-col"><p class="footer-col-title">Learn</p><a href="{site_href('learning.html')}">Learning Paths</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('components.html')}">Components</a><a href="{site_href('projects.html')}">Projects</a></div>
-    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Downloads</a><a href="{site_href('tools.html')}">Tools</a></div>
-    <div class="footer-col"><p class="footer-col-title">Company</p><a href="{site_href('about.html')}">About</a><a href="{site_href('news.html')}">News</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Downloads</a><a href="{site_href('tools.html')}">Tools</a><a href="{site_href('testing-methodology.html')}">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="{site_href('about.html')}">About</a><a href="{site_href('author.html')}">Author</a><a href="{site_href('editorial-policy.html')}">Editorial Policy</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a></div>
   </div>
   <div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div>
 </footer>"""

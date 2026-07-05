@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from component_page import component_card_html, render_component_page
+from component_page import component_all_faqs, component_card_html, render_component_page
 from content_store import get_content_store
 from site_layout import (
     SITE_NAME,
@@ -41,7 +41,25 @@ def component_page_html(c: dict, prev_component: dict | None = None, next_compon
     title = f"{c['name']} — Component Guide | {SITE_NAME}"
     desc = c.get("summary", "")
     crumbs = breadcrumb_schema([("Home", "/"), ("Components", "components.html"), (c["name"], path)])
-    schema = organization_schema() + webpage_schema(title, desc, path) + crumbs + faq_schema(c.get("faqs", []))
+    article = json_ld_script(
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": c["name"],
+            "description": desc,
+            "dateModified": c.get("date_modified", "2026-07-05"),
+            "author": {"@type": "Person", "name": "Abdul Mubeen", "url": "https://esp32engine.com/author.html"},
+            "reviewedBy": {
+                "@type": "Organization",
+                "name": "ESP32 Engine Editorial Team",
+                "url": "https://esp32engine.com/editorial-policy.html",
+            },
+            "publisher": {"@type": "Organization", "name": "ESP32 Engine", "url": "https://esp32engine.com/"},
+            "mainEntityOfPage": {"@type": "WebPage", "@id": f"https://esp32engine.com/{path}"},
+            "proficiencyLevel": c.get("difficulty", "Beginner"),
+        }
+    )
+    schema = organization_schema() + webpage_schema(title, desc, path) + crumbs + article + faq_schema(component_all_faqs(c))
     head = head_html("", title, desc, canonical_path=path, extra_schema=schema)
     return render_component_page(
         c,

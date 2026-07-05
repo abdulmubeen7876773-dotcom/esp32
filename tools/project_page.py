@@ -82,6 +82,59 @@ def parent_safety_section(p: dict) -> str:
 </section>"""
 
 
+def project_safety_standards_section(p: dict) -> str:
+    title_blob = " ".join(
+        [
+            p.get("title", ""),
+            p.get("category", ""),
+            p.get("description", ""),
+            str((p.get("project") or {}).get("what_you_build", "")),
+        ]
+    ).lower()
+    notes = [
+        "Unplug USB before changing jumper wires. Recheck 3.3 V, 5 V, and GND before reconnecting power.",
+        "Do not power motors, pumps, LED strips, or servos from the ESP32 3.3 V pin. Use a suitable external supply and common ground.",
+        "Breadboards are for low-current prototypes. Move high-current or unattended builds to proper terminals, enclosure, strain relief, and fusing.",
+    ]
+    if any(word in title_blob for word in ("relay", "lock", "power strip", "ac ", "mains", "pump", "irrigation")):
+        notes.append("Relay and mains-voltage projects require isolation, correct relay ratings, enclosed wiring, and qualified adult supervision.")
+    if any(word in title_blob for word in ("robot", "motor", "servo", "arm", "cnc")):
+        notes.append("Motors and servos can reset the ESP32 when they draw surge current. Use a separate motor supply, driver module, and flyback protection where needed.")
+    if any(word in title_blob for word in ("battery", "portable", "lora", "tracker")):
+        notes.append("Li-ion battery builds need a protected cell, proper charger, fuse, and enclosure. Never charge unknown or damaged cells.")
+    items = "".join(f"<li>{esc(note)}</li>" for note in notes)
+    return f"""<section class="project-section project-safety-section" id="safety-standards" aria-labelledby="safety-standards-heading">
+  {project_section_heading("safety-standards", "SAFE", "Safety Standards")}
+  <ul class="project-callout-list">{items}</ul>
+</section>"""
+
+
+def project_review_references_section(p: dict) -> str:
+    proj = p.get("project") or {}
+    refs = [
+        ("Author & Editorial Team", site_href("author.html")),
+        ("Editorial Policy", site_href("editorial-policy.html")),
+        ("Testing Methodology", site_href("testing-methodology.html")),
+        ("Espressif ESP32 Documentation", "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/"),
+        ("Arduino ESP32 Core", "https://docs.espressif.com/projects/arduino-esp32/en/latest/"),
+    ]
+    links = []
+    for label, href in refs:
+        attrs = ' target="_blank" rel="noopener noreferrer"' if href.startswith("http") else ""
+        links.append(f'<li><a href="{esc(href)}"{attrs}>{esc(label)}</a></li>')
+    updated = p.get("date_modified", "2026-06-29")
+    level = proj.get("difficulty", "Beginner")
+    time = proj.get("estimated_time", "Varies by build")
+    return f"""<section class="project-section project-references" id="review-references" aria-labelledby="review-references-heading">
+  {project_section_heading("review-references", "REF", "Review, Testing, and References")}
+  <div class="project-prose">
+    <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> {esc(updated)}. <strong>Reviewed:</strong> wiring logic, Arduino code structure, beginner safety, and learning sequence.</p>
+    <p><strong>Educational level:</strong> {esc(level)}. <strong>Estimated completion time:</strong> {esc(time)}. This project is for learning and prototyping; production or unattended hardware needs additional engineering review.</p>
+  </div>
+  <ul class="project-callout-list">{"".join(links)}</ul>
+</section>"""
+
+
 def components_list(items: list) -> str:
     if not items:
         return ""
@@ -372,6 +425,7 @@ def render_project_body(p: dict) -> str:
 {story_section(p)}
 {eli12_section(p)}
 {parent_safety_section(p)}
+{project_safety_standards_section(p)}
 <section class="project-section" id="build" aria-labelledby="build-heading">
   {project_section_heading("build", "BUILD", "What You Will Build")}
   <div class="project-prose">{_paragraphs(proj.get("what_you_build", ""))}</div>
@@ -401,6 +455,7 @@ def render_project_body(p: dict) -> str:
 {related_links_section("guides", "GUIDE", "Related Guides", proj.get("related_guides", []))}
 {related_links_section("projects", "PROJ", "Related Projects", proj.get("related_projects", []))}
 {faq_section(proj.get("faqs", []))}
+{project_review_references_section(p)}
 {complete_section(p)}
 </article>"""
 

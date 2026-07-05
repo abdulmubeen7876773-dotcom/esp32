@@ -130,7 +130,8 @@ def guide_schema(guide: dict, faqs: list[dict]) -> str:
         "datePublished": guide.get("date_published", "2026-06-26"),
         "dateModified": guide.get("date_modified", "2026-06-26"),
         "image": OG_IMAGE,
-        "author": {"@type": "Organization", "name": ORG_NAME, "url": SITE_DOMAIN + "/"},
+        "author": {"@type": "Person", "name": "Abdul Mubeen", "url": SITE_DOMAIN + "/author.html"},
+        "reviewedBy": {"@type": "Organization", "name": "ESP32 Engine Editorial Team", "url": SITE_DOMAIN + "/editorial-policy.html"},
         "publisher": {
             "@type": "Organization",
             "name": ORG_NAME,
@@ -152,6 +153,35 @@ def guide_schema(guide: dict, faqs: list[dict]) -> str:
     if faq:
         schema += json_ld_script(faq)
     return schema
+
+
+def guide_trust_block(guide: dict, mission: bool = True) -> str:
+    updated = guide.get("date_modified", "2026-06-26")
+    level = guide.get("proficiency_level", "Beginner")
+    reading = guide.get("reading_time", "10-20 min")
+    refs = [
+        ("Testing Methodology", "/testing-methodology.html"),
+        ("Editorial Policy", "/editorial-policy.html"),
+        ("Author & Editorial Team", "/author.html"),
+        ("Espressif ESP32 Documentation", "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/"),
+        ("Arduino ESP32 Core", "https://docs.espressif.com/projects/arduino-esp32/en/latest/"),
+    ]
+    links = "".join(
+        f'<li><a href="{esc(url)}"{(" target=\"_blank\" rel=\"noopener noreferrer\"" if url.startswith("http") else "")}>{esc(label)}</a></li>'
+        for label, url in refs
+    )
+    cls = "mission-section academy-unlocks" if mission else "guide-technical-content"
+    heading = (
+        '<h2 id="trust-heading"><span class="mission-section-icon" aria-hidden="true">TRUST</span><span class="mission-section-title">Review, Testing, and References</span></h2>'
+        if mission
+        else '<h2 id="trust-heading">Review, Testing, and References</h2>'
+    )
+    return f"""<section class="{cls}" id="review-and-references" aria-labelledby="trust-heading">
+  {heading}
+  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> {esc(updated)}. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> {esc(level)}. <strong>Estimated time:</strong> {esc(reading)}.</p>
+  <p>This guide is written for learning and bench prototyping. Check the testing notes before adapting the circuit to different boards, batteries, relays, motors, or outdoor hardware.</p>
+  <ul class="guide-related-list">{links}</ul>
+</section>"""
 
 
 def guide_faq_script() -> str:
@@ -203,6 +233,7 @@ def render_legacy_guide(guide: dict) -> str:
   <p class="meta guide-meta">{esc(guide.get("reading_time", "14 min read"))} · Updated {esc(guide.get("date_modified", "2026-06-26"))}</p>
 {guide_hero_image_html(guide)}
 {intro}
+{guide_trust_block(guide, mission=False)}
   <div class="guide-technical-content">
 {body}
   </div>
@@ -251,6 +282,7 @@ def render_mission_page(guide: dict) -> str:
   </section>
 </div>
 <section class="section-block wrap mission-guide-shell">
+{guide_trust_block(guide, mission=True)}
 {render_mission_guide(guide)}
 </section>
 </main>

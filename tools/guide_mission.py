@@ -540,11 +540,70 @@ def related_components_section(guide: dict) -> str:
 def related_projects_section(guide: dict) -> str:
     projects = (guide.get("academy") or {}).get("unlocked_projects", [])
     if not projects:
+        projects = inferred_related_projects(guide)
+    if not projects:
         return ""
     return f"""<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
   {section_heading("related-projects", "PROJ", "Related Projects")}
   {academy_link_list(projects, "projects")}
 </section>"""
+
+
+def inferred_related_projects(guide: dict) -> list[dict]:
+    slug = guide.get("slug", "")
+    text = " ".join(
+        [
+            slug,
+            guide.get("headline", ""),
+            guide.get("lead", ""),
+            guide.get("meta_description", ""),
+            str((guide.get("mission") or {}).get("title", "")),
+        ]
+    ).lower()
+    matches: list[dict] = []
+
+    def add(title: str, href: str, description: str) -> None:
+        if any(item.get("href") == href for item in matches):
+            return
+        matches.append({"title": title, "href": href, "description": description})
+
+    if any(word in text for word in ("oled", "display", "i2c")):
+        add(
+            "ESP32 OLED Weather Clock",
+            "/projects/esp32-oled-weather-clock.html",
+            "Use display and I2C skills to show live weather values on a small OLED screen.",
+        )
+    if any(word in text for word in ("temperature", "humidity", "environment", "sensor", "dht", "bme")):
+        add(
+            "ESP32 IoT Weather Station",
+            "/projects/esp32-iot-weather-station.html",
+            "Apply environmental sensor readings in a complete ESP32 weather project.",
+        )
+    if any(word in text for word in ("button", "input", "debounce", "pull-up", "pull down", "digital")):
+        add(
+            "ESP32 Smart Door Lock",
+            "/projects/esp32-smart-door-lock.html",
+            "Use reliable input logic as part of a real access-control project.",
+        )
+    if any(word in text for word in ("pwm", "brightness", "speed", "motor", "robot")):
+        add(
+            "ESP32 Line Following Robot",
+            "/projects/esp32-line-following-robot.html",
+            "Use output control and timing concepts in a robotics build.",
+        )
+    if any(word in text for word in ("analog", "adc", "ldr", "soil", "potentiometer")):
+        add(
+            "ESP32 Smart Irrigation System",
+            "/projects/esp32-smart-irrigation-system.html",
+            "Turn analog sensor readings into threshold decisions for watering automation.",
+        )
+    if not matches:
+        add(
+            "ESP32 IoT Weather Station",
+            "/projects/esp32-iot-weather-station.html",
+            "A beginner-friendly capstone that connects ESP32 wiring, code, and sensor readings.",
+        )
+    return matches[:3]
 
 
 def mission_nav_section(section_id: str, icon: str, title: str, item: dict | None, fallback: str = "") -> str:

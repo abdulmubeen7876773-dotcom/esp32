@@ -354,6 +354,65 @@ def faq_section_html(faqs: list) -> str:
 </section>"""
 
 
+def component_quality_faqs(component: dict) -> list[dict]:
+    name = component.get("name", "this component")
+    category = component.get("category", "ESP32 component")
+    difficulty = component.get("difficulty", "Beginner")
+    return [
+        {
+            "question": f"Glossary - What does {name} mean in an ESP32 project?",
+            "answer": f"{name} is a {category.lower()} part used with the ESP32. Learn its job first, then connect power, ground, and signal pins exactly as the wiring table shows.",
+        },
+        {
+            "question": "Glossary - What is a signal pin?",
+            "answer": "A signal pin is the wire that carries information between the ESP32 and the component. It may be digital, analog, I2C, SPI, PWM, or another protocol depending on the part.",
+        },
+        {
+            "question": f"Parent tips - Is {name} safe for a beginner?",
+            "answer": f"For a {difficulty.lower()} ESP32 lesson, this component is suitable when an adult checks the wiring, keeps the project at low voltage, and unplugs USB before moving jumper wires.",
+        },
+        {
+            "question": "Parent tips - What should I watch during the build?",
+            "answer": "Watch for reversed power pins, loose jumper wires, and children touching the circuit while it is powered. Most beginner ESP32 mistakes are wiring mistakes, not broken parts.",
+        },
+        {
+            "question": f"Teacher tips - How can {name} fit into a classroom lesson?",
+            "answer": f"Use {name} to connect one visible hardware behavior to one software concept. Ask students to predict the reading or output first, then test it on real hardware.",
+        },
+        {
+            "question": "Teacher tips - How should students be assessed?",
+            "answer": "Assess whether students can explain the wiring, identify the ESP32 pins used, run the example, describe the expected output, and troubleshoot one intentional mistake.",
+        },
+        {
+            "question": f"Challenge yourself - What is a useful next step after {name} works?",
+            "answer": "Change one variable at a time: move to another valid GPIO, adjust the timing, display the value on an OLED, or combine the component with a related project.",
+        },
+        {
+            "question": "Challenge yourself - How can I prove I understand it?",
+            "answer": "Disconnect one wire, predict the failure, observe the output, then explain why the failure happened before reconnecting the circuit.",
+        },
+        {
+            "question": "Mini quiz - What should you check before changing wires?",
+            "answer": "Unplug USB power first. Then check the pin labels, voltage level, and ground connection before powering the ESP32 again.",
+        },
+        {
+            "question": "Mini quiz - Why is common ground important?",
+            "answer": "Common ground gives the ESP32 and the component the same voltage reference. Without it, signal readings can be wrong or unstable.",
+        },
+    ]
+
+
+def component_all_faqs(component: dict) -> list[dict]:
+    existing = list(component.get("faqs", []) or [])
+    seen = {str(item.get("question", "")).strip().lower() for item in existing if isinstance(item, dict)}
+    for item in component_quality_faqs(component):
+        key = item["question"].strip().lower()
+        if key not in seen:
+            existing.append(item)
+            seen.add(key)
+    return existing
+
+
 def downloads_html(component: dict) -> str:
     url = component.get("datasheet_url", "")
     note = (component.get("datasheet_note") or "Official manufacturer PDF for teachers and advanced builders.").strip()
@@ -367,6 +426,33 @@ def downloads_html(component: dict) -> str:
     <p class="component-section-lead">{esc(note)}</p>
     {action}
   </div>
+</section>"""
+
+
+def component_reference_section(component: dict) -> str:
+    datasheet = component.get("datasheet_url", "")
+    refs = [
+        ("Testing Methodology", site_href("testing-methodology.html")),
+        ("Editorial Policy", site_href("editorial-policy.html")),
+        ("Author & Editorial Team", site_href("author.html")),
+        ("Espressif ESP32 Documentation", "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/"),
+        ("Arduino ESP32 Core", "https://docs.espressif.com/projects/arduino-esp32/en/latest/"),
+    ]
+    if datasheet:
+        refs.append(("Component datasheet or manufacturer reference", datasheet))
+    items = []
+    for label, url in refs:
+        external = url.startswith("http")
+        attrs = ' target="_blank" rel="noopener noreferrer"' if external else ""
+        items.append(f'<li><a href="{esc(url)}"{attrs}>{esc(label)}</a></li>')
+    updated = component.get("date_modified", "2026-07-05")
+    return f"""<section class="component-section component-references" id="references" aria-labelledby="references-heading">
+  {component_section_heading("references", "REF", "Review, Testing, and References")}
+  <div class="component-section-prose">
+    <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> {esc(updated)}. <strong>Reviewed:</strong> wiring, code, beginner safety, and ESP32 compatibility. <strong>Educational level:</strong> {esc(component.get("difficulty", "Beginner"))}.</p>
+    <p>Use this component page as an educational starting point. Check official documentation before using the part in production, high-current, outdoor, battery, or safety-critical hardware.</p>
+  </div>
+  <ul class="component-callout-list">{"".join(items)}</ul>
 </section>"""
 
 
@@ -450,7 +536,8 @@ def render_component_body(component: dict) -> str:
 {related_links_html("guides", "G", "Related Guides", component.get("related_guides", []), "component-guides")}
 {related_links_html("projects", "P", "Related Projects", component.get("related_projects", []), "component-projects")}
 {related_links_html("related-components", "C", "Related Components", component.get("related_components", []), "component-related-components")}
-{faq_section_html(component.get("faqs", []))}
+{faq_section_html(component_all_faqs(component))}
+{component_reference_section(component)}
 {downloads_html(component)}
 </article>"""
 
