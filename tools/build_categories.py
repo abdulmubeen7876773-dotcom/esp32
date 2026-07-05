@@ -113,6 +113,11 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
     )
     sidebar_key = SIDEBAR_KEYS.get(cat, slug)
     hero = category_hero_html(title, desc, cat, badges)
+    related_category = ""
+    if cat == "LED Projects":
+        related_category = '<p class="meta">Looking for screen-based builds? Browse <a href="/category/display-projects.html">ESP32 display projects</a>.</p>'
+    elif cat == "Display Projects":
+        related_category = '<p class="meta">Need LED strips or matrix builds? Browse <a href="/category/led-projects.html">ESP32 LED projects</a>.</p>'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -126,6 +131,7 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
   {sidebar_categories_html(sidebar_key)}
   <div class="main-with-sidebar">
     <section class="section-block">
+      {related_category}
       <div class="grid grid-projects category-project-grid">{cards or "<p>No projects in this category yet.</p>"}</div>
       <p class="meta category-back"><a href="{site_href('projects.html')}">← Browse all ESP32 projects</a></p>
     </section>

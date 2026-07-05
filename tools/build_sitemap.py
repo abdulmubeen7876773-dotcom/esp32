@@ -146,6 +146,7 @@ def write_sitemap_html(project_files: list[Path]) -> None:
   <p>Browse every page on {SITE_DOMAIN.replace("https://", "")} — main pages, categories, and {len(valid)} ESP32 project tutorials.</p>
   <section class="sitemap-static"><h2>Main Pages</h2><ul>{static_links}</ul></section>
   <section class="sitemap-categories"><h2>Categories ({len({p["category"] for p in PARENTS})})</h2><ul>{cat_links}</ul></section>
+  <section class="sitemap-support"><h2>Support and verification</h2><ul><li><a href="/404.html">Missing-page help</a></li><li><a href="/google926bc78bc682aaf9.html">Google verification file</a></li><li><a href="/googlec0cbd82255f45946.html">Google verification file</a></li><li><a href="/pinterest-f71bc.html">Pinterest verification file</a></li></ul></section>
   <section class="sitemap-projects"><h2>Projects ({len(valid)})</h2>
   <p class="meta">Search engines: <a href="sitemap.xml">sitemap.xml</a></p>
   <ul class="sitemap-project-list">{project_links}</ul></section>"""

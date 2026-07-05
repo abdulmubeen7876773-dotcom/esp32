@@ -367,6 +367,7 @@ def projects_listing_html(
   <div class="main-with-sidebar">
     <div class="filters-sticky">{filters}</div>
     <section class="section-block">
+      <p class="meta">Prefer browsing by topic? See the <a href="/category/">ESP32 project category index</a>.</p>
       <div class="grid grid-projects" id="grid">{preview}</div>
       <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary" id="projects-load-more">Load More</button></div>
       {text_index}

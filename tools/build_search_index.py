@@ -91,6 +91,7 @@ def search_page_html() -> str:
     <input id="search-page-input" name="q" type="search" placeholder="Search everything…" autocomplete="off" style="flex:1;padding:0.85rem 1rem;border-radius:14px;border:2px solid var(--border);font-size:1.125rem">
     <button type="submit" class="btn btn-primary">Search</button>
   </form>
+  <p class="meta">Not sure what to search for? Browse <a href="/projects.html">all ESP32 projects</a>, check <a href="/news.html">latest site updates</a>, or use the <a href="/404.html">missing-page help page</a>.</p>
   <div class="search-results" id="search-page-results"></div>
 </section>
 </main>
