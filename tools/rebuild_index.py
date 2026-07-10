@@ -8,8 +8,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from project_images import project_image_path
+from project_text import card_description, project_meta_description, project_title
 from parent_registry import PARENTS
 from content_store import get_content_store
+from site_counts import site_counts
 from site_layout import (
     modern_card,
     footer_html,
@@ -33,6 +35,13 @@ from site_layout import (
     home_v2_proof,
     home_v2_invitation,
     home_v2_showcase_js,
+    home_learning_adventure,
+    home_start_here,
+    home_popular_paths,
+    home_build_experiment_upgrade,
+    home_parent_teacher_split,
+    home_discovery_links,
+    home_learning_finder_js,
     card_media_html,
     home_v3_journey,
     home_v3_roadmap,
@@ -177,14 +186,14 @@ LEVELS = ["Beginner", "Intermediate", "Advanced"]
 
 def parent_listing_record(parent: dict) -> dict:
     slug = parent["slug"]
-    desc = parent["description"]
+    desc = card_description(parent, 120)
     if len(desc) > 120:
         desc = desc[:117].rstrip() + "…"
     return {
         "href": f"projects/{slug}.html",
-        "title": parent["title"],
+        "title": project_title(parent),
         "desc": desc,
-        "description": parent.get("description", desc),
+        "description": project_meta_description(parent),
         "category": parent["category"],
         "slug": slug,
         "featured": bool(parent.get("featured")),
@@ -284,16 +293,16 @@ def home_html(projects):
     home = store.home()
     desc = home.get(
         "meta_description",
-        "Build, connect, and automate with ESP32. 15 parent projects with Beginner, Intermediate, and Advanced stages for makers, students, and engineers.",
+        f"Build, connect, and automate with ESP32. {site_counts()['total_projects']} projects with wiring, code, and troubleshooting for makers, students, and teachers.",
     )
     title = home.get("meta_title", "ESP32 Engine — Build, Connect & Automate with ESP32")
     schema = organization_schema() + website_schema()
     guides = store.guides()
     components = store.components()
+    source_projects = store.projects()
     catalog = projects
-    project_count = len(projects)
-    guide_count = len(guides)
-    component_count = len(components)
+    counts = site_counts()
+    project_count = counts["total_projects"]
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -305,19 +314,26 @@ def home_html(projects):
 {header_html("home", project_count=project_count)}
 {home_v2_declaration()}
 {home_v2_proof()}
+{home_learning_adventure(source_projects)}
+{home_start_here(source_projects)}
+{home_popular_paths(source_projects)}
+{home_build_experiment_upgrade(source_projects)}
+{home_parent_teacher_split()}
 {home_v3_journey()}
 {home_v3_roadmap(guides)}
 {home_v3_academy()}
 {home_v3_top_picks(catalog, guides, components)}
 {home_v3_mission_feature(guides)}
 {home_v3_why()}
-{home_v3_progress(project_count, guide_count, component_count)}
+{home_v3_progress(counts)}
+{home_discovery_links(counts)}
 {home_v2_invitation()}
 </main>
 {footer_html()}
 <script src="{SEARCH_JS_SRC}" defer></script>
 <script src="{UI_JS_SRC}" defer></script>
 {home_v2_showcase_js()}
+{home_learning_finder_js()}
 </body>
 </html>
 """

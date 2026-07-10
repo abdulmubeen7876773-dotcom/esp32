@@ -1,10 +1,10 @@
 slug: esp32-cam-qr-scanner
 title: ESP32-CAM QR Code Scanner
 category: ESP32-CAM
-description: Use the ESP32-CAM camera and the Quirc QR decoding library to scan and decode QR codes in real time, displaying
-  results on a web page, logging them to an SD card, and publishing them as MQTT access-control events.
-meta_description: An ESP32-CAM scanner that captures frames and decodes QR codes for access demos, inventory labels, or classroom
-  identification projects. Includes wiring, c
+description: Use the ESP32-CAM camera and the Quirc QR decoding library to scan and decode QR codes in real time,
+  displaying results on a web page, logging them to an SD card, and publishing them as MQTT access-control events.
+meta_description: An ESP32-CAM scanner that captures frames and decodes QR codes for access demos, inventory labels,
+  or classroom identification projects. Includes wiring, c
 source_base: esp32-cam-qr-scanner-legacy-import
 sensor: 'TODO: sensor'
 output: 'TODO: output'
@@ -28,10 +28,10 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will point the ESP32-CAM at a QR code and have the ESP32 decode and print
-      the payload to the Serial Monitor. The Quirc library is small enough to run on the ESP32 without PSRAM. The camera captures
-      a GRAYSCALE frame, Quirc scans it for QR code patterns, and the decoded UTF-8 string is printed to Serial within a fraction
-      of a second.</p>
+    overview_html: <p>In this beginner project you will point the ESP32-CAM at a QR code and have the ESP32 decode
+      and print the payload to the Serial Monitor. The Quirc library is small enough to run on the ESP32 without
+      PSRAM. The camera captures a GRAYSCALE frame, Quirc scans it for QR code patterns, and the decoded UTF-8 string
+      is printed to Serial within a fraction of a second.</p>
     components:
     - 1× ESP32-CAM module (AI-Thinker) — OV2640 camera
     - 1× FTDI USB-to-serial adapter — Programming and Serial Monitor
@@ -45,17 +45,17 @@ levels:
       - GND
       - During upload only; remove for run
     how:
-    - 'Grayscale Frame Capture: PIXFORMAT_GRAYSCALE captures each frame as an 8-bit luminance array without colour information.
-      Quirc only needs luminance to detect the QR finder patterns and alignment markers, so grayscale halves memory usage
-      compared to RGB.'
-    - 'Quirc Scan Pipeline: quirc_begin() returns a pointer to the internal pixel buffer. After copying the camera frame into
-      it, quirc_end() runs the full QR detection pipeline: thresholding, finder-pattern detection, perspective correction,
-      and Reed-Solomon error correction.'
-    - 'Multiple QR Codes: quirc_count() returns the number of valid QR codes found in the frame. The loop iterates over all
-      detected codes, so the scanner can decode multiple QR codes visible simultaneously in the same frame.'
-    - 'Error Correction: quirc_decode() applies Reed-Solomon error correction automatically. QR codes with up to 30 percent
-      data damage (error correction level H) can still be decoded correctly, making the scanner tolerant of partially obscured
-      or damaged codes.'
+    - 'Grayscale Frame Capture: PIXFORMAT_GRAYSCALE captures each frame as an 8-bit luminance array without colour
+      information. Quirc only needs luminance to detect the QR finder patterns and alignment markers, so grayscale
+      halves memory usage compared to RGB.'
+    - 'Quirc Scan Pipeline: quirc_begin() returns a pointer to the internal pixel buffer. After copying the camera
+      frame into it, quirc_end() runs the full QR detection pipeline: thresholding, finder-pattern detection, perspective
+      correction, and Reed-Solomon error correction.'
+    - 'Multiple QR Codes: quirc_count() returns the number of valid QR codes found in the frame. The loop iterates
+      over all detected codes, so the scanner can decode multiple QR codes visible simultaneously in the same frame.'
+    - 'Error Correction: quirc_decode() applies Reed-Solomon error correction automatically. QR codes with up to
+      30 percent data damage (error correction level H) can still be decoded correctly, making the scanner tolerant
+      of partially obscured or damaged codes.'
     apps:
     - Event ticket scanning at venue entrances
     - Product barcode reading for inventory management
@@ -63,48 +63,52 @@ levels:
     - Lab sample tracking with QR-coded specimen labels
     troubleshooting:
     - - quirc_decode returns QUIRC_ERROR_DATA_UNDERFLOW
-      - The QR code is too small in the frame. Move the camera closer to the QR code or increase the frame size to FRAMESIZE_VGA
-        (640x480) for better resolution at a distance.
+      - The QR code is too small in the frame. Move the camera closer to the QR code or increase the frame size
+        to FRAMESIZE_VGA (640x480) for better resolution at a distance.
     - - No QR codes detected in good lighting
-      - Ensure PIXFORMAT_GRAYSCALE is set (not JPEG or RGB). Also check that quirc_resize() matches the actual frame dimensions
-        (320x240 for QVGA).
+      - Ensure PIXFORMAT_GRAYSCALE is set (not JPEG or RGB). Also check that quirc_resize() matches the actual frame
+        dimensions (320x240 for QVGA).
     - - Scan works intermittently
-      - Camera focus and angle matter. Hold the QR code steady and perpendicular to the camera. Slight perspective skew is
-        corrected internally but extreme angles fail.
+      - Camera focus and angle matter. Hold the QR code steady and perpendicular to the camera. Slight perspective
+        skew is corrected internally but extreme angles fail.
     - - Memory allocation failed for Quirc
-      - The ESP32-CAM has 520 KB SRAM. Reduce frame size to FRAMESIZE_QQVGA (160x120) if memory is tight, or enable PSRAM
-        with config.fb_count=2.
+      - The ESP32-CAM has 520 KB SRAM. Reduce frame size to FRAMESIZE_QQVGA (160x120) if memory is tight, or enable
+        PSRAM with config.fb_count=2.
     upgrades: &id001
     - Add an OLED display to show decoded QR content without a computer
     - Add a buzzer beep on successful decode
     - Log decoded URLs to Serial and open them automatically via a companion app
     - Add a green LED that lights for 1 second after a successful decode
-    code: "// ESP32-CAM QR Code Scanner - Beginner\n// Library: https://github.com/zbar/zbar or Quirc port for ESP32\n// Use:\
-      \ ESP32-CAM-QR library by martinius96\n#include \"esp_camera.h\"\n#include <quirc.h>\n\n// AI-Thinker pin map\n#define\
-      \ PWDN_GPIO_NUM  32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM   0\n#define SIOD_GPIO_NUM  26\n#define SIOC_GPIO_NUM\
-      \  27\n#define Y9_GPIO_NUM    35\n#define Y8_GPIO_NUM    34\n#define Y7_GPIO_NUM    39\n#define Y6_GPIO_NUM    36\n\
-      #define Y5_GPIO_NUM    21\n#define Y4_GPIO_NUM    19\n#define Y3_GPIO_NUM    18\n#define Y2_GPIO_NUM     5\n#define\
-      \ VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM  23\n#define PCLK_GPIO_NUM  22\n\nstruct quirc *qr;\n\nvoid setup() {\n \
-      \ Serial.begin(115200);\n\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer \
-      \  = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM; config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM; config.pin_d3\
-      \ = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM; config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM; config.pin_d7\
-      \ = Y9_GPIO_NUM;\n  config.pin_xclk  = XCLK_GPIO_NUM; config.pin_pclk  = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\
-      \ config.pin_href  = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM; config.pin_sscb_scl = SIOC_GPIO_NUM;\n \
-      \ config.pin_pwdn  = PWDN_GPIO_NUM;  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 10000000;\n  config.pixel_format\
-      \ = PIXFORMAT_GRAYSCALE; // Quirc needs grayscale\n  config.frame_size   = FRAMESIZE_QVGA;      // 320x240 for speed\n\
-      \  config.jpeg_quality = 12;\n  config.fb_count     = 1;\n\n  if (esp_camera_init(&config) != ESP_OK) {\n    Serial.println(\"\
-      Camera init failed\"); return;\n  }\n\n  qr = quirc_new();\n  quirc_resize(qr, 320, 240);\n  Serial.println(\"QR Scanner\
-      \ ready — point at a QR code\");\n}\n\nvoid loop() {\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb) { delay(100);\
-      \ return; }\n\n  uint8_t *qr_buf = quirc_begin(qr, NULL, NULL);\n  memcpy(qr_buf, fb->buf, fb->len);\n  quirc_end(qr);\n\
-      \  esp_camera_fb_return(fb);\n\n  int count = quirc_count(qr);\n  for (int i = 0; i < count; i++) {\n    struct quirc_code\
-      \  code;\n    struct quirc_data  data;\n    quirc_extract(qr, i, &code);\n    if (quirc_decode(&code, &data) == QUIRC_SUCCESS)\
-      \ {\n      Serial.print(\"QR Decoded: \");\n      Serial.println((char*)data.payload);\n    }\n  }\n  delay(200);\n}"
+    code: "// ESP32-CAM QR Code Scanner - Beginner\n// Library: https://github.com/zbar/zbar or Quirc port for ESP32\n\
+      // Use: ESP32-CAM-QR library by martinius96\n#include \"esp_camera.h\"\n#include <quirc.h>\n\n// AI-Thinker\
+      \ pin map\n#define PWDN_GPIO_NUM  32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM   0\n#define SIOD_GPIO_NUM\
+      \  26\n#define SIOC_GPIO_NUM  27\n#define Y9_GPIO_NUM    35\n#define Y8_GPIO_NUM    34\n#define Y7_GPIO_NUM\
+      \    39\n#define Y6_GPIO_NUM    36\n#define Y5_GPIO_NUM    21\n#define Y4_GPIO_NUM    19\n#define Y3_GPIO_NUM\
+      \    18\n#define Y2_GPIO_NUM     5\n#define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM  23\n#define PCLK_GPIO_NUM\
+      \  22\n\nstruct quirc *qr;\n\nvoid setup() {\n  Serial.begin(115200);\n\n  camera_config_t config;\n  config.ledc_channel\
+      \ = LEDC_CHANNEL_0;\n  config.ledc_timer   = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM; config.pin_d1 =\
+      \ Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM; config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\
+      \ config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM; config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk\
+      \  = XCLK_GPIO_NUM; config.pin_pclk  = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM; config.pin_href\
+      \  = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM; config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn\
+      \  = PWDN_GPIO_NUM;  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 10000000;\n  config.pixel_format\
+      \ = PIXFORMAT_GRAYSCALE; // Quirc needs grayscale\n  config.frame_size   = FRAMESIZE_QVGA;      // 320x240\
+      \ for speed\n  config.jpeg_quality = 12;\n  config.fb_count     = 1;\n\n  if (esp_camera_init(&config) !=\
+      \ ESP_OK) {\n    Serial.println(\"Camera init failed\"); return;\n  }\n\n  qr = quirc_new();\n  quirc_resize(qr,\
+      \ 320, 240);\n  Serial.println(\"QR Scanner ready — point at a QR code\");\n}\n\nvoid loop() {\n  camera_fb_t\
+      \ *fb = esp_camera_fb_get();\n  if (!fb) { delay(100); return; }\n\n  uint8_t *qr_buf = quirc_begin(qr, NULL,\
+      \ NULL);\n  memcpy(qr_buf, fb->buf, fb->len);\n  quirc_end(qr);\n  esp_camera_fb_return(fb);\n\n  int count\
+      \ = quirc_count(qr);\n  for (int i = 0; i < count; i++) {\n    struct quirc_code  code;\n    struct quirc_data\
+      \  data;\n    quirc_extract(qr, i, &code);\n    if (quirc_decode(&code, &data) == QUIRC_SUCCESS) {\n     \
+      \ Serial.print(\"QR Decoded: \");\n      Serial.println((char*)data.payload);\n    }\n  }\n  delay(200);\n\
+      }"
     code_filename: esp32-cam-qr-scanner-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build adds a web server that shows the live camera stream alongside the last decoded
-      QR payload. Every unique scan is logged to a CSV file on the microSD card with a timestamp from NTP. A duplicate-filter
-      suppresses repeat scans of the same code within 5 seconds to prevent log flooding when a code stays in the frame.</p>
+    overview_html: <p>The intermediate build adds a web server that shows the live camera stream alongside the last
+      decoded QR payload. Every unique scan is logged to a CSV file on the microSD card with a timestamp from NTP.
+      A duplicate-filter suppresses repeat scans of the same code within 5 seconds to prevent log flooding when
+      a code stays in the frame.</p>
     components:
     - 1× ESP32-CAM module
     - 1× MicroSD card — FAT32; inserted in onboard slot
@@ -115,17 +119,17 @@ levels:
       - Same as beginner
       - SD card in onboard slot; no extra GPIO
     how:
-    - 'Duplicate Suppression: The debounce filter compares the current payload against lastPayload and checks whether DEBOUNCE_MS
-      (5000 ms) has elapsed since the last scan. Only new payloads or payloads scanned after the debounce window are logged
-      and displayed.'
-    - 'NTP-Timestamped CSV Log: configTime() syncs the ESP32 clock to pool.ntp.org. Each unique scan appends a row to /scans.csv
-      containing the ctime()-formatted timestamp and the QR payload. The /log endpoint serves the file as plain text for easy
-      download.'
-    - 'Web UI with Live Result: The root endpoint builds an HTML page showing the last decoded payload as bold text. An img
-      tag pointing to /stream embeds the MJPEG stream from the camera server. The page auto-refreshes every 2 seconds to update
-      the result display.'
-    - 'SD Append Mode: Opening the log file with FILE_APPEND adds new rows without overwriting existing data. The scan log
-      accumulates indefinitely until the SD card is full or the file is manually deleted.'
+    - 'Duplicate Suppression: The debounce filter compares the current payload against lastPayload and checks whether
+      DEBOUNCE_MS (5000 ms) has elapsed since the last scan. Only new payloads or payloads scanned after the debounce
+      window are logged and displayed.'
+    - 'NTP-Timestamped CSV Log: configTime() syncs the ESP32 clock to pool.ntp.org. Each unique scan appends a row
+      to /scans.csv containing the ctime()-formatted timestamp and the QR payload. The /log endpoint serves the
+      file as plain text for easy download.'
+    - 'Web UI with Live Result: The root endpoint builds an HTML page showing the last decoded payload as bold text.
+      An img tag pointing to /stream embeds the MJPEG stream from the camera server. The page auto-refreshes every
+      2 seconds to update the result display.'
+    - 'SD Append Mode: Opening the log file with FILE_APPEND adds new rows without overwriting existing data. The
+      scan log accumulates indefinitely until the SD card is full or the file is manually deleted.'
     apps:
     - Conference registration kiosk scanning ticket QR codes
     - Library book check-in and check-out terminal
@@ -133,11 +137,11 @@ levels:
     - Access control gate reading QR passes with timestamps
     troubleshooting:
     - - Log file grows too large over time
-      - 'Add a daily log rotation: check the date at startup and create a new file named /scans_YYYYMMDD.csv if the date has
-        changed since the last file was created.'
+      - 'Add a daily log rotation: check the date at startup and create a new file named /scans_YYYYMMDD.csv if
+        the date has changed since the last file was created.'
     - - Web page result does not update
-      - Add a meta refresh tag or use JavaScript fetch() to poll a /result endpoint every 2 seconds for the latest payload
-        string without reloading the full page.
+      - Add a meta refresh tag or use JavaScript fetch() to poll a /result endpoint every 2 seconds for the latest
+        payload string without reloading the full page.
     - - NTP timestamp shows 1970
       - 'Adjust the GMT offset in configTime(). Also wait for NTP sync before the first scan: add while(time(nullptr)<1000000000UL)
         delay(500); after configTime().'
@@ -146,32 +150,34 @@ levels:
     - Generate a QR code directly on the web UI as a test code using a JavaScript QR generator
     - 'Add per-scan LED colour: green for URL payloads, red for unknown format'
     - Add CSV download link on the /log page for easy data export
-    code: "// ESP32-CAM QR Scanner - Intermediate (web UI + SD log + duplicate filter)\n#include \"esp_camera.h\"\n#include\
-      \ <quirc.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include \"FS.h\"\n#include \"SD_MMC.h\"\n#include <time.h>\n\
-      \n// Pin defines (same as beginner)\n#define PWDN_GPIO_NUM 32\n// ...\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\"\
-      ;\nWebServer server(80);\nstruct quirc *qr;\n\nString lastPayload=\"\";\nunsigned long lastScanTime=0;\nconst unsigned\
-      \ long DEBOUNCE_MS=5000;\n\nString currentResult=\"Waiting for QR code...\";\n\nvoid logScan(const String &payload){\n\
-      \  time_t now=time(nullptr);\n  String ts=ctime(&now); ts.trim();\n  File f=SD_MMC.open(\"/scans.csv\",FILE_APPEND);\n\
-      \  if(f){ f.println(ts+\",\"+payload); f.close(); }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  // camera init with\
-      \ PIXFORMAT_GRAYSCALE, FRAMESIZE_QVGA\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  configTime(0,0,\"pool.ntp.org\");\n  SD_MMC.begin();\n\n  server.on(\"/\",[](){\n    String body=\"<h2>QR Scanner</h2>\"\
-      \n      \"<p>Last result: <b>\"+currentResult+\"</b></p>\"\n      \"<img src=\"/stream\" width=320>\";\n    server.send(200,\"\
-      text/html\",body);\n  });\n  server.on(\"/log\",[](){\n    File f=SD_MMC.open(\"/scans.csv\");\n    String content=f?f.readString():\"\
+    code: "// ESP32-CAM QR Scanner - Intermediate (web UI + SD log + duplicate filter)\n#include \"esp_camera.h\"\
+      \n#include <quirc.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include \"FS.h\"\n#include \"SD_MMC.h\"\n\
+      #include <time.h>\n\n// Pin defines (same as beginner)\n#define PWDN_GPIO_NUM 32\n// ...\n\nconst char* SSID=\"\
+      YourSSID\", *PASS=\"YourPass\";\nWebServer server(80);\nstruct quirc *qr;\n\nString lastPayload=\"\";\nunsigned\
+      \ long lastScanTime=0;\nconst unsigned long DEBOUNCE_MS=5000;\n\nString currentResult=\"Waiting for QR code...\"\
+      ;\n\nvoid logScan(const String &payload){\n  time_t now=time(nullptr);\n  String ts=ctime(&now); ts.trim();\n\
+      \  File f=SD_MMC.open(\"/scans.csv\",FILE_APPEND);\n  if(f){ f.println(ts+\",\"+payload); f.close(); }\n}\n\
+      \nvoid setup(){\n  Serial.begin(115200);\n  // camera init with PIXFORMAT_GRAYSCALE, FRAMESIZE_QVGA\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  SD_MMC.begin();\n\
+      \n  server.on(\"/\",[](){\n    String body=\"<h2>QR Scanner</h2>\"\n      \"<p>Last result: <b>\"+currentResult+\"\
+      </b></p>\"\n      \"<img src=\"/stream\" width=320>\";\n    server.send(200,\"text/html\",body);\n  });\n\
+      \  server.on(\"/log\",[](){\n    File f=SD_MMC.open(\"/scans.csv\");\n    String content=f?f.readString():\"\
       No log yet\";\n    f.close();\n    server.send(200,\"text/plain\",content);\n  });\n  server.begin();\n  qr=quirc_new();\
-      \ quirc_resize(qr,320,240);\n}\n\nvoid loop(){\n  server.handleClient();\n  camera_fb_t *fb=esp_camera_fb_get();\n \
-      \ if(!fb){ delay(50); return; }\n\n  uint8_t *buf=quirc_begin(qr,NULL,NULL);\n  memcpy(buf,fb->buf,fb->len);\n  quirc_end(qr);\n\
-      \  esp_camera_fb_return(fb);\n\n  int n=quirc_count(qr);\n  for(int i=0;i<n;i++){\n    struct quirc_code code; struct\
-      \ quirc_data data;\n    quirc_extract(qr,i,&code);\n    if(quirc_decode(&code,&data)==QUIRC_SUCCESS){\n      String\
-      \ payload=(char*)data.payload;\n      unsigned long now=millis();\n      if(payload!=lastPayload || now-lastScanTime>DEBOUNCE_MS){\n\
-      \        lastPayload=payload; lastScanTime=now;\n        currentResult=payload;\n        logScan(payload);\n       \
-      \ Serial.println(\"Scanned: \"+payload);\n      }\n    }\n  }\n  delay(100);\n}"
+      \ quirc_resize(qr,320,240);\n}\n\nvoid loop(){\n  server.handleClient();\n  camera_fb_t *fb=esp_camera_fb_get();\n\
+      \  if(!fb){ delay(50); return; }\n\n  uint8_t *buf=quirc_begin(qr,NULL,NULL);\n  memcpy(buf,fb->buf,fb->len);\n\
+      \  quirc_end(qr);\n  esp_camera_fb_return(fb);\n\n  int n=quirc_count(qr);\n  for(int i=0;i<n;i++){\n    struct\
+      \ quirc_code code; struct quirc_data data;\n    quirc_extract(qr,i,&code);\n    if(quirc_decode(&code,&data)==QUIRC_SUCCESS){\n\
+      \      String payload=(char*)data.payload;\n      unsigned long now=millis();\n      if(payload!=lastPayload\
+      \ || now-lastScanTime>DEBOUNCE_MS){\n        lastPayload=payload; lastScanTime=now;\n        currentResult=payload;\n\
+      \        logScan(payload);\n        Serial.println(\"Scanned: \"+payload);\n      }\n    }\n  }\n  delay(100);\n\
+      }"
     code_filename: esp32-cam-qr-scanner-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build turns the QR scanner into an MQTT-based access control reader. Scanned payloads are
-      published to an MQTT topic; a subscriber (Node-RED or Home Assistant) validates the payload against an approved list
-      and publishes an ALLOW or DENY response. The ESP32 then actuates a relay (door strike or barrier gate) based on the
-      MQTT response and logs the decision with timestamp to the SD card.</p>
+    overview_html: <p>The advanced build turns the QR scanner into an MQTT-based access control reader. Scanned
+      payloads are published to an MQTT topic; a subscriber (Node-RED or Home Assistant) validates the payload against
+      an approved list and publishes an ALLOW or DENY response. The ESP32 then actuates a relay (door strike or
+      barrier gate) based on the MQTT response and logs the decision with timestamp to the SD card.</p>
     components:
     - 1× ESP32-CAM module
     - 1× MicroSD card
@@ -196,16 +202,17 @@ levels:
       - Standard AI-Thinker map
       - ''
     how:
-    - 'MQTT Access Request: When a QR code is decoded, the payload string is published to qr/scan and waitingResult is set
-      to true. The main loop pauses new scans while waiting for the broker to respond, preventing duplicate requests from
-      a code held in view.'
-    - 'Broker-Side Validation: A Node-RED flow or Home Assistant automation subscribes to qr/scan, checks the payload against
-      a database or list of valid codes, and publishes "ALLOW" or "DENY" back to qr/result. This keeps the validation logic
-      off the ESP32 and easily updatable.'
-    - 'Hardware Actuation: grantAccess() drives the relay LOW (active LOW), opening the door strike for 3 seconds, lights
-      the green LED, and beeps the buzzer once. denyAccess() lights the red LED and produces a long low-pitch buzz.'
-    - 'SD Access Log: Every decision is appended to /access.csv on the SD card with a timestamp, payload, and ALLOW or DENY
-      result. This provides a local audit trail independent of the MQTT broker.'
+    - 'MQTT Access Request: When a QR code is decoded, the payload string is published to qr/scan and waitingResult
+      is set to true. The main loop pauses new scans while waiting for the broker to respond, preventing duplicate
+      requests from a code held in view.'
+    - 'Broker-Side Validation: A Node-RED flow or Home Assistant automation subscribes to qr/scan, checks the payload
+      against a database or list of valid codes, and publishes "ALLOW" or "DENY" back to qr/result. This keeps the
+      validation logic off the ESP32 and easily updatable.'
+    - 'Hardware Actuation: grantAccess() drives the relay LOW (active LOW), opening the door strike for 3 seconds,
+      lights the green LED, and beeps the buzzer once. denyAccess() lights the red LED and produces a long low-pitch
+      buzz.'
+    - 'SD Access Log: Every decision is appended to /access.csv on the SD card with a timestamp, payload, and ALLOW
+      or DENY result. This provides a local audit trail independent of the MQTT broker.'
     apps:
     - Event venue entry control with QR ticket validation
     - Car park barrier gate with QR permit codes
@@ -213,38 +220,40 @@ levels:
     - Smart locker system with QR unlock codes sent via SMS
     troubleshooting:
     - - System stays locked after valid QR scan
-      - Check that the MQTT broker received the qr/scan message. Use an MQTT client (MQTT Explorer) to monitor traffic. Verify
-        the Node-RED flow is publishing to qr/result with exactly "ALLOW" (case-sensitive).
+      - Check that the MQTT broker received the qr/scan message. Use an MQTT client (MQTT Explorer) to monitor traffic.
+        Verify the Node-RED flow is publishing to qr/result with exactly "ALLOW" (case-sensitive).
     - - Multiple scans fire for one code presentation
-      - The waitingResult flag should prevent duplicate publishes. If it resets too fast check that mqttCallback is being
-        called before waitingResult is cleared. Add a 100 ms minimum between scans as an additional guard.
+      - The waitingResult flag should prevent duplicate publishes. If it resets too fast check that mqttCallback
+        is being called before waitingResult is cleared. Add a 100 ms minimum between scans as an additional guard.
     - - Relay clicks but door does not open
-      - Verify the relay NO (Normally Open) and COM terminals are connected to the door strike power circuit. Test the relay
-        in isolation by driving the IN pin LOW and measuring continuity between NO and COM.
+      - Verify the relay NO (Normally Open) and COM terminals are connected to the door strike power circuit. Test
+        the relay in isolation by driving the IN pin LOW and measuring continuity between NO and COM.
     upgrades:
     - Generate single-use QR codes on the server and invalidate after one scan
     - Add a display above the scanner showing WELCOME or ACCESS DENIED messages
     - Add a camera snapshot on each DENY event for security audit review
     - Integrate with a visitor pre-registration web form that issues QR codes by email
-    code: "// ESP32-CAM QR Scanner - Advanced (MQTT access control)\n#include \"esp_camera.h\"\n#include <quirc.h>\n#include\
-      \ <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include \"SD_MMC.h\"\n#include <time.h>\n\n#define\
-      \ RELAY  12\n#define LED_G  13\n#define LED_R  15\n#define BUZZER 14\n#define PWDN_GPIO_NUM 32\n// ... other pin defines\n\
-      \nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* TOPIC_SCAN\
-      \  =\"qr/scan\";\nconst char* TOPIC_RESULT=\"qr/result\";\n\nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\
-      struct quirc *qr;\n\nbool waitingResult=false;\nString pendingPayload=\"\";\n\nvoid grantAccess(){\n  digitalWrite(LED_G,HIGH);\
-      \ digitalWrite(RELAY,LOW); // relay active LOW\n  tone(BUZZER,1000,200);\n  delay(3000);\n  digitalWrite(LED_G,LOW);\
-      \ digitalWrite(RELAY,HIGH);\n}\n\nvoid denyAccess(){\n  digitalWrite(LED_R,HIGH);\n  tone(BUZZER,400,500);\n  delay(1000);\n\
-      \  digitalWrite(LED_R,LOW);\n}\n\nvoid mqttCallback(char* topic, byte* payload, unsigned int len){\n  String result((char*)payload,len);\n\
-      \  if(result==\"ALLOW\") grantAccess();\n  else denyAccess();\n  waitingResult=false;\n  // Log to SD\n  time_t now=time(nullptr);\
-      \ String ts=ctime(&now); ts.trim();\n  File f=SD_MMC.open(\"/access.csv\",FILE_APPEND);\n  if(f){ f.println(ts+\",\"\
-      +pendingPayload+\",\"+result); f.close(); }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  pinMode(RELAY,OUTPUT); digitalWrite(RELAY,HIGH);\
-      \ // start locked\n  pinMode(LED_G,OUTPUT); pinMode(LED_R,OUTPUT); pinMode(BUZZER,OUTPUT);\n  // camera init GRAYSCALE\
-      \ QVGA\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\"\
-      );\n  SD_MMC.begin();\n  mqtt.setServer(MQTT_HOST,1883);\n  mqtt.setCallback(mqttCallback);\n  qr=quirc_new(); quirc_resize(qr,320,240);\n\
-      }\n\nvoid loop(){\n  if(!mqtt.connected()){ mqtt.connect(\"ESP32QR\"); mqtt.subscribe(TOPIC_RESULT); }\n  mqtt.loop();\n\
-      \  if(waitingResult){ delay(50); return; }\n\n  camera_fb_t *fb=esp_camera_fb_get();\n  if(!fb){ delay(50); return;\
-      \ }\n  uint8_t *buf=quirc_begin(qr,NULL,NULL);\n  memcpy(buf,fb->buf,fb->len);\n  quirc_end(qr);\n  esp_camera_fb_return(fb);\n\
-      \n  int n=quirc_count(qr);\n  for(int i=0;i<n;i++){\n    struct quirc_code code; struct quirc_data data;\n    quirc_extract(qr,i,&code);\n\
+    code: "// ESP32-CAM QR Scanner - Advanced (MQTT access control)\n#include \"esp_camera.h\"\n#include <quirc.h>\n\
+      #include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include \"SD_MMC.h\"\n#include <time.h>\n\
+      \n#define RELAY  12\n#define LED_G  13\n#define LED_R  15\n#define BUZZER 14\n#define PWDN_GPIO_NUM 32\n//\
+      \ ... other pin defines\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\"\
+      ;\nconst char* TOPIC_SCAN  =\"qr/scan\";\nconst char* TOPIC_RESULT=\"qr/result\";\n\nWiFiClient wifiClient;\n\
+      PubSubClient mqtt(wifiClient);\nstruct quirc *qr;\n\nbool waitingResult=false;\nString pendingPayload=\"\"\
+      ;\n\nvoid grantAccess(){\n  digitalWrite(LED_G,HIGH); digitalWrite(RELAY,LOW); // relay active LOW\n  tone(BUZZER,1000,200);\n\
+      \  delay(3000);\n  digitalWrite(LED_G,LOW); digitalWrite(RELAY,HIGH);\n}\n\nvoid denyAccess(){\n  digitalWrite(LED_R,HIGH);\n\
+      \  tone(BUZZER,400,500);\n  delay(1000);\n  digitalWrite(LED_R,LOW);\n}\n\nvoid mqttCallback(char* topic,\
+      \ byte* payload, unsigned int len){\n  String result((char*)payload,len);\n  if(result==\"ALLOW\") grantAccess();\n\
+      \  else denyAccess();\n  waitingResult=false;\n  // Log to SD\n  time_t now=time(nullptr); String ts=ctime(&now);\
+      \ ts.trim();\n  File f=SD_MMC.open(\"/access.csv\",FILE_APPEND);\n  if(f){ f.println(ts+\",\"+pendingPayload+\"\
+      ,\"+result); f.close(); }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  pinMode(RELAY,OUTPUT); digitalWrite(RELAY,HIGH);\
+      \ // start locked\n  pinMode(LED_G,OUTPUT); pinMode(LED_R,OUTPUT); pinMode(BUZZER,OUTPUT);\n  // camera init\
+      \ GRAYSCALE QVGA\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"\
+      pool.ntp.org\");\n  SD_MMC.begin();\n  mqtt.setServer(MQTT_HOST,1883);\n  mqtt.setCallback(mqttCallback);\n\
+      \  qr=quirc_new(); quirc_resize(qr,320,240);\n}\n\nvoid loop(){\n  if(!mqtt.connected()){ mqtt.connect(\"\
+      ESP32QR\"); mqtt.subscribe(TOPIC_RESULT); }\n  mqtt.loop();\n  if(waitingResult){ delay(50); return; }\n\n\
+      \  camera_fb_t *fb=esp_camera_fb_get();\n  if(!fb){ delay(50); return; }\n  uint8_t *buf=quirc_begin(qr,NULL,NULL);\n\
+      \  memcpy(buf,fb->buf,fb->len);\n  quirc_end(qr);\n  esp_camera_fb_return(fb);\n\n  int n=quirc_count(qr);\n\
+      \  for(int i=0;i<n;i++){\n    struct quirc_code code; struct quirc_data data;\n    quirc_extract(qr,i,&code);\n\
       \    if(quirc_decode(&code,&data)==QUIRC_SUCCESS){\n      pendingPayload=(char*)data.payload;\n      mqtt.publish(TOPIC_SCAN,pendingPayload.c_str());\n\
       \      waitingResult=true;\n      break;\n    }\n  }\n  delay(100);\n}"
     code_filename: esp32-cam-qr-scanner-advanced.ino
@@ -267,20 +276,20 @@ project:
   age: Ages 12+
   estimated_time: 90-130 min
   budget: Under 25 USD
-  what_you_build: An ESP32-CAM scanner that captures frames and decodes QR codes for access demos, inventory labels, or classroom
-    identification projects.
-  story: 'ESP32-CAM QR Code Scanner solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
-    result. Build this after the basic camera server because QR scanning adds focus, lighting, decoding, and serial debugging
-    challenges.
+  what_you_build: An ESP32-CAM scanner that captures frames and decodes QR codes for access demos, inventory labels,
+    or classroom identification projects.
+  story: 'ESP32-CAM QR Code Scanner solves a real beginner problem: turning an ESP32 reading into a useful physical
+    or networked result. Build this after the basic camera server because QR scanning adds focus, lighting, decoding,
+    and serial debugging challenges.
 
 
-    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
-    the output under real conditions.'
-  eli12: A QR scanner is a camera plus a translator. The camera sees a square pattern, and the decoding library turns that
-    pattern into text the ESP32 can use.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
-    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
-    enclosure, and adult supervision are used.
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
+    then test the output under real conditions.'
+  eli12: A QR scanner is a camera plus a translator. The camera sees a square pattern, and the decoding library
+    turns that pattern into text the ESP32 can use.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
+    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
+    unless a proper driver, enclosure, and adult supervision are used.
   learning_objectives:
   - Program and boot an ESP32-CAM correctly.
   - Capture frames suitable for QR decoding.
@@ -291,7 +300,7 @@ project:
   - item: 1× ESP32-CAM module (AI-Thinker)
     note: OV2640 camera
     icon: PART
-    link: /components/esp32-devkit.html
+    link: /components/esp32-cam.html
   - item: 1× FTDI USB-to-serial adapter
     note: Programming and Serial Monitor
     icon: PART
@@ -327,8 +336,8 @@ project:
     notes: For safe low-voltage prototyping
   wiring:
     illustration_alt: ESP32-CAM QR Code Scanner wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. The ESP32-CAM
-      uses its onboard OV2640 camera.
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
+      The ESP32-CAM uses its onboard OV2640 camera.
     steps:
     - Unplug USB before changing wires.
     - Connect FTDI TX/RX/GND/5V to U0R/U0T/GND/5V (Standard ESP32-CAM flash wiring).
@@ -343,43 +352,46 @@ project:
     esp32_pin: GND
     direction: Signal
     notes: During upload only; remove for run
-  circuit_explanation: The ESP32-CAM uses its onboard OV2640 camera. Programming requires FTDI serial wiring and IO0-to-GND
-    only during upload. A printed QR code or phone screen becomes the target. Good lighting and correct focus matter as much
-    as code.
-  engineering_explanation: QR decoding is sensitive to image clarity. Low light, glare, motion blur, high resolution memory
-    pressure, and poor focus can all prevent decoding. A reliable scanner starts with simple Serial output, fixed lighting,
-    and a known QR code before adding actions such as relays or web requests.
+  circuit_explanation: The ESP32-CAM uses its onboard OV2640 camera. Programming requires FTDI serial wiring and
+    IO0-to-GND only during upload. A printed QR code or phone screen becomes the target. Good lighting and correct
+    focus matter as much as code.
+  engineering_explanation: QR decoding is sensitive to image clarity. Low light, glare, motion blur, high resolution
+    memory pressure, and poor focus can all prevent decoding. A reliable scanner starts with simple Serial output,
+    fixed lighting, and a known QR code before adding actions such as relays or web requests.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
   code:
     filename: esp32-cam-qr-scanner.ino
-    content: "// ESP32-CAM QR Code Scanner - Beginner\n// Library: https://github.com/zbar/zbar or Quirc port for ESP32\n\
-      // Use: ESP32-CAM-QR library by martinius96\n#include \"esp_camera.h\"\n#include <quirc.h>\n\n// AI-Thinker pin map\n\
-      #define PWDN_GPIO_NUM  32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM   0\n#define SIOD_GPIO_NUM  26\n#define\
-      \ SIOC_GPIO_NUM  27\n#define Y9_GPIO_NUM    35\n#define Y8_GPIO_NUM    34\n#define Y7_GPIO_NUM    39\n#define Y6_GPIO_NUM\
-      \    36\n#define Y5_GPIO_NUM    21\n#define Y4_GPIO_NUM    19\n#define Y3_GPIO_NUM    18\n#define Y2_GPIO_NUM     5\n\
-      #define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM  23\n#define PCLK_GPIO_NUM  22\n\nstruct quirc *qr;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer\
-      \   = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM; config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM; config.pin_d3\
-      \ = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM; config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM; config.pin_d7\
-      \ = Y9_GPIO_NUM;\n  config.pin_xclk  = XCLK_GPIO_NUM; config.pin_pclk  = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\
-      \ config.pin_href  = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM; config.pin_sscb_scl = SIOC_GPIO_NUM;\n \
-      \ config.pin_pwdn  = PWDN_GPIO_NUM;  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 10000000;\n  config.pixel_format\
-      \ = PIXFORMAT_GRAYSCALE; // Quirc needs grayscale\n  config.frame_size   = FRAMESIZE_QVGA;      // 320x240 for speed\n\
-      \  config.jpeg_quality = 12;\n  config.fb_count     = 1;\n\n  if (esp_camera_init(&config) != ESP_OK) {\n    Serial.println(\"\
-      Camera init failed\"); return;\n  }\n\n  qr = quirc_new();\n  quirc_resize(qr, 320, 240);\n  Serial.println(\"QR Scanner\
-      \ ready — point at a QR code\");\n}\n\nvoid loop() {\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb) { delay(100);\
-      \ return; }\n\n  uint8_t *qr_buf = quirc_begin(qr, NULL, NULL);\n  memcpy(qr_buf, fb->buf, fb->len);\n  quirc_end(qr);\n\
-      \  esp_camera_fb_return(fb);\n\n  int count = quirc_count(qr);\n  for (int i = 0; i < count; i++) {\n    struct quirc_code\
-      \  code;\n    struct quirc_data  data;\n    quirc_extract(qr, i, &code);\n    if (quirc_decode(&code, &data) == QUIRC_SUCCESS)\
-      \ {\n      Serial.print(\"QR Decoded: \");\n      Serial.println((char*)data.payload);\n    }\n  }\n  delay(200);\n}"
-  code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
-    setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct ESP32-CAM pin map,
-    initializes the OV2640, then captures frames. Keep the first test simple: prove the camera initializes before adding storage,
-    scanning, or network actions.'
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
-    condition for esp32-cam qr code scanner is reached.
+    content: "// ESP32-CAM QR Code Scanner - Beginner\n// Library: https://github.com/zbar/zbar or Quirc port for\
+      \ ESP32\n// Use: ESP32-CAM-QR library by martinius96\n#include \"esp_camera.h\"\n#include <quirc.h>\n\n//\
+      \ AI-Thinker pin map\n#define PWDN_GPIO_NUM  32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM   0\n#define\
+      \ SIOD_GPIO_NUM  26\n#define SIOC_GPIO_NUM  27\n#define Y9_GPIO_NUM    35\n#define Y8_GPIO_NUM    34\n#define\
+      \ Y7_GPIO_NUM    39\n#define Y6_GPIO_NUM    36\n#define Y5_GPIO_NUM    21\n#define Y4_GPIO_NUM    19\n#define\
+      \ Y3_GPIO_NUM    18\n#define Y2_GPIO_NUM     5\n#define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM  23\n#define\
+      \ PCLK_GPIO_NUM  22\n\nstruct quirc *qr;\n\nvoid setup() {\n  Serial.begin(115200);\n\n  camera_config_t config;\n\
+      \  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer   = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\
+      \ config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM; config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4\
+      \ = Y6_GPIO_NUM; config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM; config.pin_d7 = Y9_GPIO_NUM;\n\
+      \  config.pin_xclk  = XCLK_GPIO_NUM; config.pin_pclk  = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\
+      \ config.pin_href  = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM; config.pin_sscb_scl = SIOC_GPIO_NUM;\n\
+      \  config.pin_pwdn  = PWDN_GPIO_NUM;  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 10000000;\n\
+      \  config.pixel_format = PIXFORMAT_GRAYSCALE; // Quirc needs grayscale\n  config.frame_size   = FRAMESIZE_QVGA;\
+      \      // 320x240 for speed\n  config.jpeg_quality = 12;\n  config.fb_count     = 1;\n\n  if (esp_camera_init(&config)\
+      \ != ESP_OK) {\n    Serial.println(\"Camera init failed\"); return;\n  }\n\n  qr = quirc_new();\n  quirc_resize(qr,\
+      \ 320, 240);\n  Serial.println(\"QR Scanner ready — point at a QR code\");\n}\n\nvoid loop() {\n  camera_fb_t\
+      \ *fb = esp_camera_fb_get();\n  if (!fb) { delay(100); return; }\n\n  uint8_t *qr_buf = quirc_begin(qr, NULL,\
+      \ NULL);\n  memcpy(qr_buf, fb->buf, fb->len);\n  quirc_end(qr);\n  esp_camera_fb_return(fb);\n\n  int count\
+      \ = quirc_count(qr);\n  for (int i = 0; i < count; i++) {\n    struct quirc_code  code;\n    struct quirc_data\
+      \  data;\n    quirc_extract(qr, i, &code);\n    if (quirc_decode(&code, &data) == QUIRC_SUCCESS) {\n     \
+      \ Serial.print(\"QR Decoded: \");\n      Serial.println((char*)data.payload);\n    }\n  }\n  delay(200);\n\
+      }"
+  code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output
+    pins in setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct
+    ESP32-CAM pin map, initializes the OV2640, then captures frames. Keep the first test simple: prove the camera
+    initializes before adding storage, scanning, or network actions.'
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
+    the tested condition for esp32-cam qr code scanner is reached.
   common_mistakes:
   - text: Testing with a tiny QR code too close to the camera.
   - text: Using glossy phone screens with glare.
@@ -442,44 +454,23 @@ project:
     href: /projects/esp32-rfid-inventory-tracker.html
     description: Continue with a related ESP32 build that uses the same engineering idea.
   faqs:
-  - question: Is ESP32-CAM QR Code Scanner good for beginners?
-    answer: Yes, if you build the beginner version first and test one part at a time. Build this after the basic camera server
-      because QR scanning adds focus, lighting, decoding, and serial debugging challenges.
-  - question: Which ESP32 board should I use?
-    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
-      ESP32-CAM module and a reliable FTDI adapter.
-  - question: Can I power this from a phone charger?
-    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
-      and LED matrices may need a separate regulated supply.
-  - question: Why should I print values to Serial Monitor first?
-    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
-      from LED, relay, display, or network problems.
-  - question: Can I change the GPIO pins?
-    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
-      Analog-only pins such as GPIO34 cannot drive outputs.
-  - question: What should I test before installing it permanently?
-    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
-      that should trigger the project.
-  - question: Can I add Wi-Fi or a dashboard?
-    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
-      after Wi-Fi is added.
-  - question: What is the most common failure?
-    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
-      raw reading and wiring table first.
-  - question: How do I make it more reliable?
-    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
-      hysteresis where the output might chatter.
-  - question: Where should I learn next?
-    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
-      part of this project you want to improve.
+  - question: Why does QR scanning fail in low light?
+    answer: The decoder needs a sharp, high-contrast camera frame. Improve lighting, reduce glare, and hold the QR
+      code still before changing the code.
+  - question: What QR code size works best at close range?
+    answer: Start with a larger printed QR code at about 10-20 cm, matching the troubleshooting guidance, then adjust
+      distance after the scanner decodes reliably.
+  - question: Why does the ESP32-CAM reset during scanning?
+    answer: Camera capture can draw enough current to expose a weak 5 V supply. Use the stable supply listed in the
+      project and remove IO0 from GND after uploading.
   references:
   - title: Espressif ESP32 Camera Driver
     href: https://github.com/espressif/esp32-camera
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32-CAM QR Code Scanner as a real ESP32 engineering build, not just a wiring demo. You now know
-      how to test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed ESP32-CAM QR Code Scanner as a real ESP32 engineering build, not just a wiring demo.
+      You now know how to test the input, protect the circuit, explain the code, and improve the project safely.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins

@@ -1,8 +1,8 @@
 slug: esp32-distance-monitoring-system
 title: ESP32 Distance Monitoring System
 category: Sensor Projects
-description: Measure distance with ultrasonic or ToF sensors on ESP32 — beginner breadboard builds through
-  OLED feedback and tuned alerts.
+description: Measure distance with ultrasonic or ToF sensors on ESP32 — beginner breadboard builds through OLED feedback and
+  tuned alerts.
 source_base: esp32-distance-monitoring-system-for-beginners
 sensor: HC-SR04 ultrasonic sensor
 output: buzzer alert
@@ -30,10 +30,11 @@ meta_title: ESP32 Distance Monitoring System for Signal Logger
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for distance sensing: GPIO5 sends the HC-SR04 trigger pulse, GPIO18 reads ECHO through a voltage divider, and GPIO25 drives the buzzer alert.</p>\n      <ul class=\"overview-list\">\n      \
-      \  <li>HC-SR04 TRIG connects to GPIO5 as a digital output</li><li>HC-SR04 ECHO connects to GPIO18 through a 10 kOhm / 20 kOhm divider</li><li>Buzzer + connects to GPIO25</li><li>The sketch measures pulse width and converts it to centimeters</li>\n      </ul>\n\
-      \      </section>"
+    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
+      \ for distance sensing: GPIO5 sends the HC-SR04 trigger pulse, GPIO18 reads ECHO through a voltage divider, and GPIO25\
+      \ drives the buzzer alert.</p>\n      <ul class=\"overview-list\">\n        <li>HC-SR04 TRIG connects to GPIO5 as a\
+      \ digital output</li><li>HC-SR04 ECHO connects to GPIO18 through a 10 kOhm / 20 kOhm divider</li><li>Buzzer + connects\
+      \ to GPIO25</li><li>The sketch measures pulse width and converts it to centimeters</li>\n      </ul>\n      </section>"
     components:
     - ESP32 Dev Board
     - HC-SR04 ultrasonic sensor
@@ -63,7 +64,13 @@ levels:
     troubleshooting: []
     upgrades:
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Distance Monitoring System - HC-SR04\nconst int TRIG_PIN = 5;\nconst int ECHO_PIN = 18;\nconst int BUZZER_PIN = 25;\nconst int DISTANCE_LIMIT_CM = 20;\n\nlong readDistanceCm() {\n  digitalWrite(TRIG_PIN, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG_PIN, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n  long duration = pulseIn(ECHO_PIN, HIGH, 30000);\n  if (duration == 0) return -1;\n  return duration / 58;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  pinMode(BUZZER_PIN, OUTPUT);\n}\n\nvoid loop() {\n  long distanceCm = readDistanceCm();\n  Serial.print(\"Distance cm: \");\n  Serial.println(distanceCm);\n  digitalWrite(BUZZER_PIN, distanceCm > 0 && distanceCm < DISTANCE_LIMIT_CM ? HIGH : LOW);\n  delay(250);\n}"
+    code: "// ESP32 Distance Monitoring System - HC-SR04\nconst int TRIG_PIN = 5;\nconst int ECHO_PIN = 18;\nconst int BUZZER_PIN\
+      \ = 25;\nconst int DISTANCE_LIMIT_CM = 20;\n\nlong readDistanceCm() {\n  digitalWrite(TRIG_PIN, LOW);\n  delayMicroseconds(2);\n\
+      \  digitalWrite(TRIG_PIN, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n  long duration = pulseIn(ECHO_PIN,\
+      \ HIGH, 30000);\n  if (duration == 0) return -1;\n  return duration / 58;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  pinMode(BUZZER_PIN, OUTPUT);\n}\n\nvoid loop() {\n  long\
+      \ distanceCm = readDistanceCm();\n  Serial.print(\"Distance cm: \");\n  Serial.println(distanceCm);\n  digitalWrite(BUZZER_PIN,\
+      \ distanceCm > 0 && distanceCm < DISTANCE_LIMIT_CM ? HIGH : LOW);\n  delay(250);\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
@@ -71,7 +78,163 @@ levels:
   advanced:
     overview_html: '<p>TODO: import advanced content from batch or WordPress</p>'
     code: ''
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
 import_source: esp32-distance-monitoring-system-for-beginners-project-002.html
+format: golden
+project:
+  icon: PROJ
+  mission_title: Build a Distance Alert Meter
+  difficulty: Beginner
+  age: Ages 11+
+  estimated_time: 60-75 min
+  budget: Under 20 USD
+  what_you_build: An ESP32 distance monitor that triggers an HC-SR04 from GPIO5, reads ECHO on GPIO18 through a 10 kOhm /
+    20 kOhm divider, and sounds a buzzer on GPIO25.
+  story: 'Distance projects are useful because the result is immediate: move an object and the ESP32 reacts. This build documents
+    the important voltage detail, because the HC-SR04 ECHO line must be divided before it reaches GPIO18. The component list,
+    wiring table, GPIO map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build so
+    a learner can verify each step instead of guessing.'
+  eli12: The HC-SR04 sends a tiny sound pulse and waits for the echo. A short wait means the object is close, so the ESP32
+    turns on the buzzer. Prove the local wiring and code first, then add displays, logging, or Wi-Fi after the simple version
+    behaves exactly as expected.
+  parent_safety: Power the HC-SR04 from 5 V as shown, but reduce ECHO with the documented divider before the ESP32 input.
+    Unplug USB and any external supply before rewiring, keep the build low-voltage on the bench, and stop immediately if a
+    module becomes hot or behaves unexpectedly.
+  learning_objectives:
+  - Wire the exact GPIO pins used by the sketch.
+  - Run the starter code and compare output with the wiring table.
+  - Explain the main sensor or input signal in plain language.
+  - Troubleshoot one wiring mistake using Serial Monitor evidence.
+  components:
+  - item: ESP32 DevKit board
+    note: Runs the timing code and buzzer output.
+    link: /components/esp32-devkit.html
+  - item: HC-SR04 ultrasonic sensor
+    note: 5 V distance sensor; ECHO must go through a divider before GPIO18.
+    link: /components/hc-sr04.html
+  - item: 10 kOhm resistor
+    note: Upper resistor in the ECHO voltage divider.
+  - item: 20 kOhm resistor
+    note: Lower resistor in the ECHO voltage divider.
+  - item: Small buzzer module
+    note: Alert output on GPIO25.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Runs the timing code and buzzer output.
+  - part: HC-SR04 ultrasonic sensor
+    qty: '1'
+    estimated_cost: Varies
+    notes: 5 V distance sensor; ECHO must go through a divider before GPIO18.
+  - part: 10 kOhm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Upper resistor in the ECHO voltage divider.
+  - part: 20 kOhm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Lower resistor in the ECHO voltage divider.
+  - part: Small buzzer module
+    qty: '1'
+    estimated_cost: Varies
+    notes: Alert output on GPIO25.
+  wiring:
+    illustration_alt: ESP32 Distance Monitoring System wiring diagram
+    summary: An ESP32 distance monitor that triggers an HC-SR04 from GPIO5, reads ECHO on GPIO18 through a 10 kOhm / 20 kOhm
+      divider, and sounds a buzzer on GPIO25.
+    steps:
+    - Unplug USB before changing the HC-SR04 or divider wiring.
+    - Connect HC-SR04 VCC to 5V and GND to GND.
+    - Connect HC-SR04 TRIG to GPIO5.
+    - Connect HC-SR04 ECHO through the 10 kOhm / 20 kOhm divider, with the divided node going to GPIO18.
+    - Connect buzzer signal or positive input to GPIO25 and buzzer ground to GND.
+    - Reconnect USB and open Serial Monitor at 115200 baud.
+  gpio_map:
+  - signal: HC-SR04 TRIG
+    esp32_pin: GPIO5
+    direction: Output
+    notes: Short trigger pulse.
+  - signal: HC-SR04 ECHO
+    esp32_pin: GPIO18
+    direction: Input
+    notes: Read through a 10 kOhm / 20 kOhm divider.
+  - signal: Buzzer alert
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Turns on below DISTANCE_LIMIT_CM.
+  circuit_explanation: GPIO5 creates the trigger pulse. The divided ECHO pulse reaches GPIO18, and GPIO25 drives the alert
+    output.
+  engineering_explanation: DISTANCE_LIMIT_CM is 20 cm in the sketch. pulseIn() uses a timeout so a missing echo returns -1
+    instead of blocking forever.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-distance-monitoring-system.ino
+    content: "// ESP32 Distance Monitoring System - HC-SR04\nconst int TRIG_PIN = 5;\nconst int ECHO_PIN = 18;\nconst int\
+      \ BUZZER_PIN = 25;\nconst int DISTANCE_LIMIT_CM = 20;\n\nlong readDistanceCm() {\n  digitalWrite(TRIG_PIN, LOW);\n \
+      \ delayMicroseconds(2);\n  digitalWrite(TRIG_PIN, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n\
+      \  long duration = pulseIn(ECHO_PIN, HIGH, 30000);\n  if (duration == 0) return -1;\n  return duration / 58;\n}\n\n\
+      void setup() {\n  Serial.begin(115200);\n  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  pinMode(BUZZER_PIN,\
+      \ OUTPUT);\n}\n\nvoid loop() {\n  long distanceCm = readDistanceCm();\n  Serial.print(\"Distance cm: \");\n  Serial.println(distanceCm);\n\
+      \  digitalWrite(BUZZER_PIN, distanceCm > 0 && distanceCm < DISTANCE_LIMIT_CM ? HIGH : LOW);\n  delay(250);\n}"
+  code_explanation: readDistanceCm() sends the trigger pulse, measures ECHO, and converts the timing to centimeters. loop()
+    turns the buzzer on only for valid readings below 20 cm.
+  expected_output: Serial Monitor prints distance values in centimeters. With no echo it prints -1 and the buzzer stays off.
+    When an object moves closer than 20 cm, GPIO25 turns the buzzer on.
+  common_mistakes:
+  - text: Connecting HC-SR04 ECHO directly to the ESP32 without the divider.
+  - text: Swapping TRIG and ECHO pins.
+  - text: Forgetting common ground.
+  troubleshooting:
+  - problem: Distance always reads -1
+    fix: Check TRIG on GPIO5, divided ECHO on GPIO18, 5 V sensor power, and common ground.
+  - problem: Values jump around
+    fix: Aim at a flat surface and shorten jumper wires.
+  - problem: Buzzer never turns on
+    fix: Move an object under 20 cm and verify buzzer signal is on GPIO25.
+  testing_checklist:
+  - Upload the sketch with only the documented circuit attached.
+  - Open Serial Monitor and confirm the expected messages.
+  - Move or trigger the input and watch the output change.
+  - Power-cycle the project and confirm it starts safely.
+  engineer_tips:
+  - Change one variable at a time.
+  - Keep wires short and labeled while testing.
+  - Record any calibrated threshold before installing the project.
+  upgrade_ideas:
+  - Show distance on an OLED display.
+  - Add separate near, caution, and clear thresholds.
+  - Log distance over Wi-Fi after local readings are stable.
+  real_world_applications:
+  - Classroom lab build
+  - Bench prototype
+  - Local ESP32 learning project
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, Wi-Fi, and the beginner wiring rules used by this build.
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Confirm uploads and simple GPIO behavior before adding sensors, storage, or displays.
+  related_projects:
+  - title: ESP32 Smart Parking Sensor
+    href: /projects/esp32-smart-parking-sensor.html
+    description: Apply the same distance idea to a parking-style indicator.
+  faqs:
+  - question: Why is the divider required?
+    answer: ESP32 GPIO is 3.3 V logic, while HC-SR04 ECHO can be 5 V.
+  - question: Can I change the alert distance?
+    answer: Yes. Change DISTANCE_LIMIT_CM and keep the documentation in sync.
+  - question: Why does the reading show -1?
+    answer: The sketch returns -1 when no echo arrives before the timeout.
+  complete:
+    summary: You completed ESP32 Distance Monitoring System as a real ESP32 engineering build with matching wiring, code,
+      testing, and troubleshooting.
+    skills:
+    - Read the GPIO map
+    - Verify code against hardware
+    - Troubleshoot with Serial Monitor

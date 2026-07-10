@@ -1,339 +1,299 @@
 slug: esp32-neopixel-music-visualizer
-title: ESP32 NeoPixel Music Visualizer
+title: ESP32 NeoPixel Music Visualizer (Amplitude-Reactive)
 category: LED Projects
-description: A music-reactive LED strip that pulses and dances to audio — from a simple volume meter to
-  a full frequency spectrum analyser with web-configurable colour themes.
-meta_description: Build an ESP32 NeoPixel music visualizer with WS2812B LEDs and a microphone. From a
-  simple VU meter to a full FFT frequency spectrum display with web-configurable color themes.
+description: Build an honest amplitude-reactive WS2812B visualizer with an INMP441 I2S microphone, external 5 V LED power,
+  and no FFT claims.
+meta_description: Build a real amplitude-reactive NeoPixel visualizer with an I2S digital microphone, external LED power,
+  and honest no-FFT scope.
 source_base: esp32-neopixel-music-visualizer-legacy-import
-sensor: 'TODO: sensor'
-output: MAX4466 OUT
+sensor: INMP441 BCLK
+output: LED strip power
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 34
-  sensor_name: 'TODO: sensor'
-  output_name: MAX4466 OUT
+  sensor_pin: GPIO14
+  output_pin: External 5 V / GND
+  sensor_name: INMP441 BCLK
+  output_name: LED strip power
   wiring:
-  - component: MAX4466 OUT
-    pin: GPIO 34
-  - component: MAX4466 VCC
-    pin: 3.3 V
-  - component: MAX4466 GND
-    pin: GND
-  - component: LED Strip DATA IN
-    pin: GPIO 5 (via 470 Ω)
-  - component: LED Strip 5V
-    pin: 5 V PSU positive
-  - component: LED Strip GND
-    pin: PSU GND + ESP32 GND
-  - component: Capacitor
-    pin: Across PSU 5V and GND
+  - component: INMP441 BCLK
+    pin: GPIO14
+  - component: INMP441 LRCLK
+    pin: GPIO15
+  - component: INMP441 SD
+    pin: GPIO32
+  - component: WS2812B DATA
+    pin: GPIO5
+  - component: LED strip power
+    pin: External 5 V / GND
 levels:
   beginner:
     level: beginner
-    overview_html: '<p>This project builds a <strong>music-reactive VU (Volume Unit) meter</strong> using
-      a strip of WS2812B NeoPixel LEDs and a MAX4466 electret microphone amplifier. The ESP32 reads the
-      microphone''s analogue output, measures the peak audio level in each sampling window, maps it to
-      a number of lit LEDs, and uses the FastLED library to colour the strip from green (quiet) through
-      yellow (moderate) to red (loud).</p>
-
-
-      <p>WS2812B LEDs (commonly sold as NeoPixels) contain a red, green, and blue LED plus a tiny control
-      chip inside each 5 mm package. They chain together using a single data wire with a proprietary timed
-      serial protocol. The FastLED library handles all timing automatically and provides a rich API for
-      colour manipulation, animations, and brightness control.</p>
-
-
-      <p>You will learn: analogue audio sampling on the ESP32, peak detection over a time window, HSV
-      colour space for smooth colour transitions, and driving addressable RGB LED strips with FastLED.
-      This project is crowd-pleasingly visual and teaches core concepts that apply to any LED art installation.</p>'
+    overview_html: <p>An amplitude-reactive LED strip that responds to volume using I2S microphone samples. Use an external
+      regulated 5 V supply for the strip, common ground, a data resistor, a bulk capacitor, and a brightness cap.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× WS2812B LED Strip (30 or 60 LEDs/m) — IP30 indoor strip, 1 meter minimum
-    - 1× MAX4466 Microphone Amplifier Module — Adjustable gain — much better than KY-038
-    - 1× 5 V 2 A Power Supply — USB charger works for 30 LEDs; longer strips need dedicated 5 V PSU
-    - 1× 470 Ω Resistor — Series resistor on LED data line — prevents ringing
-    - 1× 1000 µF 6.3 V Capacitor — Across LED power supply to absorb current spikes
-    - 1× Jumper wires + breadboard
+    - ESP32 DevKit board
+    - INMP441 I2S digital microphone
+    - WS2812B LED strip, 8-30 LEDs
+    - External regulated 5 V power supply
+    - 330 ohm data resistor
+    - 1000 uF electrolytic capacitor
     wiring:
-    - - MAX4466 OUT
-      - GPIO 34
-      - Analogue audio signal — ADC1, no Wi-Fi noise
-    - - MAX4466 VCC
-      - 3.3 V
-      - ''
-    - - MAX4466 GND
-      - GND
-      - ''
-    - - LED Strip DATA IN
-      - GPIO 5 (via 470 Ω)
-      - Series 470 Ω protects data line from ringing
-    - - LED Strip 5V
-      - 5 V PSU positive
-      - NEVER power more than 5 LEDs from ESP32 VIN — use dedicated PSU
-    - - LED Strip GND
-      - PSU GND + ESP32 GND
-      - Common ground is essential
-    - - Capacitor
-      - Across PSU 5V and GND
-      - Absorbs current spikes when many LEDs change at once
-    how:
-    - 'Peak Detection: The inner while loop runs for SAMPLE_MS milliseconds, reading the ADC as fast as
-      possible (~50,000 samples/second on ESP32). It tracks the maximum deviation from DC_OFFSET (2048
-      at 12-bit). Audio signals are AC — they swing above and below the DC midpoint. Taking abs() and
-      keeping the max captures the amplitude of the loudest moment in the window.'
-    - 'DC Offset Correction: The MAX4466 biases the microphone signal around VCC/2 (about 1.65 V) so it
-      fits in the 0–3.3 V ADC range. At silence, analogRead() returns ~2048 (half of 4096 at 12-bit).
-      Subtracting DC_OFFSET centres the signal at 0, so quiet audio gives values near 0 and loud audio
-      gives values up to ±2047.'
-    - 'FastLED HSV Colour Mapping: FastLED''s CHSV(hue, saturation, value) lets you specify colour as
-      hue angle, colour purity, and brightness. Hue 96 is green, 64 is yellow, 0 is red (HSV wraps at
-      255). By mapping the LED position index to the hue, shorter bars are entirely green while tall bars
-      add yellow and red at the top — exactly like a professional VU meter.'
-    - 'GRB Colour Order: WS2812B LEDs use GRB byte order (Green, Red, Blue) instead of RGB. FastLED''s
-      <WS2812B, LED_PIN, GRB> template parameter handles this automatically. If colours look wrong (red
-      when you expect green), the byte order is incorrect — try RGB or BGR.'
-    apps:
-    - Party room or studio lighting reactive to music
-    - Desk ambient lighting that pulses to music while working
-    - Sound-sensitive art installation
-    - Quiet-zone indicator (goes red when room gets too loud)
-    - Baby monitor visual alert (silent light show instead of speaker noise)
-    troubleshooting:
-    - - LEDs are always at full brightness regardless of sound
-      - The peak is always high, suggesting DC_OFFSET is wrong. Print analogRead(MIC_PIN) to Serial Plotter
-        during silence. The resting value should be near 2048. If it is very different, update DC_OFFSET
-        to match. Also check MAX4466 gain pot — turn it fully counter-clockwise to minimum.
-    - - LEDs flicker randomly even in silence
-      - Electrical noise on the ADC. 1) Add a 100 nF capacitor between GPIO 34 and GND. 2) Move MAX4466
-        away from the ESP32 if possible. 3) Increase SAMPLE_MS to 50 ms to average more samples per frame.
-    - - LEDs show wrong colours (purple instead of red, etc.)
-      - The colour order is wrong. Try changing GRB to RGB, BGR, or GRBW in the FastLED.addLeds line until
-        colours match. Different WS2812B clones use different byte orders.
-    upgrades:
-    - Add a sensitivity pot (10 kΩ) to adjust the peak-to-LED mapping without reflashing
-    - Implement a "peak hold" dot that lingers at the highest recent level for 1-2 seconds
-    - Add a falling-bar animation where LEDs decay smoothly rather than dropping instantly
-    code: "/*\n * ESP32 NeoPixel Music Visualizer — Beginner (VU Meter)\n * Reads MAX4466 microphone,\
-      \ maps volume to LED count and colour.\n * Green (quiet) → Yellow (moderate) → Red (loud)\n *\n\
-      \ * Library: FastLED by Daniel Garcia (Library Manager)\n *\n * Power note: 1 white LED at full\
-      \ brightness = 60 mA.\n * 30 LEDs = 1.8 A peak. Use a 5V 2A+ power supply, not the ESP32.\n */\n\
-      #include <FastLED.h>\n\n#define MIC_PIN     34\n#define LED_PIN      5\n#define NUM_LEDS    30\n\
-      #define BRIGHTNESS  80     // 0–255 (keep low for power budget)\n#define SAMPLE_MS   20     // Audio\
-      \ sampling window (ms)\n#define DC_OFFSET 2048     // ADC midpoint at 12-bit = 4096/2\n\nCRGB leds[NUM_LEDS];\n\
-      \n// Collect peak audio level over SAMPLE_MS milliseconds\nint sampleAudio() {\n  unsigned long\
-      \ start = millis();\n  int peak = 0;\n  while (millis() - start < SAMPLE_MS) {\n    int raw = analogRead(MIC_PIN);\n\
-      \    int level = abs(raw - DC_OFFSET);\n    if (level > peak) peak = level;\n  }\n  return peak;\n\
-      }\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  FastLED.addLeds<WS2812B,\
-      \ LED_PIN, GRB>(leds, NUM_LEDS);\n  FastLED.setBrightness(BRIGHTNESS);\n  FastLED.clear(); FastLED.show();\n\
-      \  Serial.println(\"Music Visualizer started. Speak or play music near mic.\");\n}\n\nvoid loop()\
-      \ {\n  int peak = sampleAudio();\n\n  // Map peak level (0–2047) to number of lit LEDs\n  // Adjust\
-      \ the 30 (upper bound) based on your mic sensitivity\n  int litCount = map(peak, 0, 600, 0, NUM_LEDS);\n\
-      \  litCount = constrain(litCount, 0, NUM_LEDS);\n\n  // Colour: HSV hue 96=green → 64=yellow → 0=red\
-      \ as level increases\n  FastLED.clear();\n  for (int i = 0; i < litCount; i++) {\n    // Map LED\
-      \ position to hue: bottom=green, top=red\n    uint8_t hue = map(i, 0, NUM_LEDS - 1, 96, 0);\n  \
-      \  leds[i] = CHSV(hue, 255, 255);\n  }\n  FastLED.show();\n\n  // Optional: print peak to Serial\
-      \ Plotter for mic calibration\n  Serial.println(peak);\n}"
-    code_filename: esp32-neopixel-visualizer-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: '<p>At the intermediate level you implement a <strong>real-time FFT (Fast Fourier Transform)
-      frequency analyser</strong>. Instead of just measuring total volume, the FFT decomposes the audio
-      into 16 frequency bins — bass, mid, treble — and lights a separate column of LEDs for each bin.
-      The result looks like a classic equaliser display: bass frequencies on the left, treble on the right,
-      each column bouncing independently to the music.</p>
-
-
-      <p>You will use the ESP32''s I2S interface with an INMP441 digital microphone for much lower noise
-      than the MAX4466 analogue approach, and the arduinoFFT library to process 256 audio samples per
-      frame at ~60 fps. This introduces digital signal processing concepts directly applicable to audio
-      analysis, vibration sensing, and wireless signal processing.</p>'
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× INMP441 I2S MEMS Microphone — Better noise floor than MAX4466
-    - 1× WS2812B LED Matrix (8×8 or 8×16) — Or arrange a strip into columns
-    - 1× 5 V 3 A Power Supply — 64-LED matrix can draw 3.8 A peak
-    - 1× 470 Ω resistor + 1000 µF cap — Same as beginner level
-    wiring:
-    - - INMP441 SCK
-      - GPIO 14
-      - I2S serial clock
-    - - INMP441 WS
-      - GPIO 15
-      - I2S word select (L/R)
+    - - INMP441 BCLK
+      - GPIO14
+      - Digital microphone bit clock.
+    - - INMP441 LRCLK
+      - GPIO15
+      - Boot strap pin; keep wiring passive.
     - - INMP441 SD
-      - GPIO 32
-      - I2S serial data
-    - - INMP441 L/R
-      - GND
-      - Select left channel (set to 3.3V for right)
-    - - INMP441 VDD
-      - 3.3 V
-      - ''
-    - - LED Matrix DATA
-      - GPIO 5 (via 470 Ω)
-      - ''
-    how:
-    - 'I2S Digital Microphone: The INMP441 outputs audio as a 24-bit I2S (Inter-IC Sound) stream. I2S
-      is a standard digital audio interface: SCK is the bit clock, WS (word select) toggles at the sample
-      rate to separate left/right channels, SD carries the data. The ESP32 has two hardware I2S peripherals
-      that handle all timing without CPU intervention.'
-    - 'FFT Processing: The Fast Fourier Transform converts 256 time-domain audio samples into 128 frequency-domain
-      magnitude values (frequency bins). Each bin represents a frequency range: bin 0 = 0 Hz, bin 128
-      = 22050 Hz (Nyquist at 44100 Hz sample rate). The bin resolution is 44100/256 ≈ 172 Hz per bin.'
-    - 'Logarithmic Bin Grouping: Human hearing is logarithmic — an octave (doubling of frequency) sounds
-      the same width at 200 Hz as at 2000 Hz. The binStarts array groups linear FFT bins into logarithmically-spaced
-      columns using a Fibonacci-like spread, giving each display column perceptually equal frequency width.'
-    - 'Attack/Decay Animation: Column heights use asymmetric smoothing: instant attack (target > current
-      → jump immediately) and gradual decay (target < current → subtract 0.8 per frame). This gives the
-      characteristic "fast up, slow fall" VU meter behavior that makes the display feel musical rather
-      than twitchy.'
-    apps: []
+      - GPIO32
+      - I2S data input.
+    - - WS2812B DATA
+      - GPIO5
+      - Use series resistor.
+    - - LED strip power
+      - External 5 V / GND
+      - Common ground with ESP32.
+    key_concepts:
+    - I2S carries digital audio samples from the mic. GPIO5 sends timed LED data while the strip is powered from its own 5
+      V supply.
+    - The sketch calculates RMS-like amplitude, not frequency bands. BRIGHTNESS_CAP limits current draw and is part of the
+      safety design.
+    applications: &id003
+    - Volume-reactive desk light
+    - RMS amplitude lesson
+    - LED power budgeting demo
     troubleshooting:
-    - - All columns show equal height (flat spectrum)
-      - I2S not receiving audio. Check SCK, WS, SD pin connections and L/R pin state (must be GND for
-        left channel). Verify i2s_read returns bytes > 0. Print vReal[10] to confirm non-zero magnitudes
-        after FFT.
-    - - FFT shows strong DC spike in bin 0
-      - 'Apply a DC-removal high-pass filter before FFT: subtract the running average from each sample.
-        The Hamming window helps but does not fully remove DC offset from I2S data.'
-    upgrades:
-    - Add a push button to cycle through colour themes (rainbow, fire, ice, party)
-    - Use PSRAM (if your ESP32 module has it) for larger FFT sizes (512 or 1024) for higher frequency
-      resolution
-    - Sync multiple LED strips via ESP-NOW for a whole-room installation
-    code: "/*\n * ESP32 NeoPixel Music Visualizer — Intermediate (FFT Spectrum)\n * INMP441 I2S mic +\
-      \ arduinoFFT + WS2812B 8×16 matrix\n * Libraries: FastLED, arduinoFFT\n */\n#include <FastLED.h>\n\
-      #include <driver/i2s.h>\n#include \"arduinoFFT.h\"\n\n#define LED_PIN     5\n#define NUM_LEDS  \
-      \ 128   // 8 columns × 16 rows\n#define COLS        8\n#define ROWS       16\n#define BRIGHTNESS\
-      \  40\n\n#define I2S_SCK    14\n#define I2S_WS     15\n#define I2S_SD     32\n#define SAMPLES  \
-      \ 256\n#define SAMPLE_RATE 44100\n\nCRGB leds[NUM_LEDS];\ndouble vReal[SAMPLES], vImag[SAMPLES];\n\
-      ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, SAMPLES, SAMPLE_RATE);\n\n// Column heights\
-      \ (decaying)\nfloat colHeight[COLS] = {0};\n\nvoid i2sSetup(){\n  i2s_config_t cfg = {\n    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_RX),\n\
-      \    .sample_rate=SAMPLE_RATE,\n    .bits_per_sample=I2S_BITS_PER_SAMPLE_32BIT,\n    .channel_format=I2S_CHANNEL_FMT_ONLY_LEFT,\n\
-      \    .communication_format=I2S_COMM_FORMAT_STAND_I2S,\n    .intr_alloc_flags=ESP_INTR_FLAG_LEVEL1,\n\
-      \    .dma_buf_count=4,.dma_buf_len=64,.use_apll=false\n  };\n  i2s_pin_config_t pins = {\n    .bck_io_num=I2S_SCK,.ws_io_num=I2S_WS,\n\
-      \    .data_out_num=I2S_PIN_NO_CHANGE,.data_in_num=I2S_SD\n  };\n  i2s_driver_install(I2S_NUM_0,&cfg,0,NULL);\n\
-      \  i2s_set_pin(I2S_NUM_0,&pins);\n}\n\nvoid readI2S(){\n  int32_t raw[SAMPLES]; size_t bytes=0;\n\
-      \  i2s_read(I2S_NUM_0,raw,sizeof(raw),&bytes,portMAX_DELAY);\n  for(int i=0;i<SAMPLES;i++){\n  \
-      \  vReal[i]=(double)(raw[i]>>8)/8388608.0; // Normalise 24-bit\n    vImag[i]=0;\n  }\n}\n\nvoid\
-      \ drawSpectrum(){\n  FastLED.clear();\n  for(int c=0;c<COLS;c++){\n    int h=(int)colHeight[c];\n\
-      \    for(int r=0;r<h;r++){\n      int ledIdx=c*ROWS+r;\n      uint8_t hue=map(r,0,ROWS-1,96,0);\
-      \ // Green at bottom, red at top\n      leds[ledIdx]=CHSV(hue,255,255);\n    }\n  }\n  FastLED.show();\n\
-      }\n\nvoid setup(){\n  Serial.begin(115200);\n  FastLED.addLeds<WS2812B,LED_PIN,GRB>(leds,NUM_LEDS);\n\
-      \  FastLED.setBrightness(BRIGHTNESS);\n  FastLED.clear(); FastLED.show();\n  i2sSetup();\n}\n\n\
-      void loop(){\n  readI2S();\n  FFT.windowing(FFTWindow::Hamming,FFTDirection::Forward);\n  FFT.compute(FFTDirection::Forward);\n\
-      \  FFT.complexToMagnitude();\n\n  // Map FFT bins to columns (logarithmic frequency distribution)\n\
-      \  int binStarts[COLS+1]={1,2,3,5,8,13,21,34,55}; // Fibonacci-ish spread\n  for(int c=0;c<COLS;c++){\n\
-      \    double mag=0;\n    for(int b=binStarts[c];b<binStarts[c+1];b++) mag=max(mag,vReal[b]);\n  \
-      \  float target=constrain((float)(mag*20.0),0,ROWS);\n    // Smooth: fast attack, slow decay\n \
-      \   if(target>colHeight[c]) colHeight[c]=target;\n    else colHeight[c]=max(0.0f, colHeight[c]-0.8f);\n\
-      \  }\n\n  drawSpectrum();\n}"
-    code_filename: esp32-neopixel-visualizer-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: '<p>The advanced level adds a <strong>web configuration panel</strong> where you can
-      switch between 6 visualisation modes, adjust sensitivity, change colour palettes, and set beat-sync
-      brightness pulses — all from a browser without reflashing. The ESP32 also receives audio wirelessly
-      via <strong>Bluetooth A2DP</strong>, letting you visualise music from your phone''s Spotify app
-      without any wires or microphone required.</p>
-
-
-      <p>Bluetooth A2DP (Advanced Audio Distribution Profile) receives stereo audio streams from any Bluetooth
-      audio source. The ESP32-A2DP library connects as a Bluetooth speaker and delivers audio samples
-      to a callback function for processing. Combined with a web UI for configuration, this creates a
-      professional-grade music visualiser comparable to commercial products.</p>'
-    components:
-    - 1× ESP32 DevKit V1 — Bluetooth built-in
-    - 1× WS2812B LED Strip / Matrix — 60+ LEDs recommended for visual impact
-    - 1× 5 V 5 A Power Supply — For 60+ LEDs at full brightness
-    - 1× 470 Ω + 1000 µF
-    wiring:
-    - - LED Strip DATA
-      - GPIO 5 (via 470 Ω)
-      - ''
-    - - LED 5V / GND
-      - External 5V PSU
-      - Common GND with ESP32
-    how:
-    - 'Bluetooth A2DP Sink: The ESP32-A2DP library configures the ESP32 as a Bluetooth A2DP sink — it
-      appears as a Bluetooth speaker to your phone. When you connect and play music, the library calls
-      audioDataCallback() with raw 16-bit stereo PCM audio data at 44100 Hz. You can process this data
-      for FFT or peak detection just like microphone samples.'
-    - 'Beat Detection: The RMS (Root Mean Square) of each audio block is computed. A smoothed running
-      average tracks the ambient level. A beat is detected when the current RMS exceeds 150% of the smoothed
-      average — the classic energy-based beat detection algorithm used in commercial DJ lighting systems.'
-    - 'Multiple Visualiser Modes: An enum (Mode) tracks the current mode. A switch statement in loop()
-      selects the appropriate drawing function. Switching modes at runtime can be done via a web API endpoint
-      (brief Wi-Fi window at boot), MQTT command, or a push button cycling through the enum values.'
-    - 'Fire Effect: The fire effect shifts all LED values up the strip each frame and adds a new random
-      orange/yellow pixel at the base with intensity proportional to audio level. This creates a flame
-      that rises and flickers with the music — all from 5 lines of code using FastLED''s HSV colour space.'
-    apps: []
-    troubleshooting:
-    - - Phone cannot see "ESP32 Visualizer" Bluetooth device
-      - Ensure no other device is already connected to this ESP32 A2DP instance. Bluetooth A2DP allows
-        only one connection at a time. Restart the ESP32 and try pairing immediately. Some phones require
-        "Forget" the old pairing before reconnecting.
-    - - Audio is choppy or dropping
-      - A2DP streams at 44100×4 bytes/second ≈ 170 KB/s. If the callback processes audio too slowly, the
-        buffer overflows. Ensure loop() processes audio data without blocking operations. The audioIdx
-        check and FFT computation must complete within ~11 ms (one 512-sample frame at 44100 Hz).
-    upgrades:
-    - Add BLE (Bluetooth Low Energy) for a web-like configuration UI without disabling Wi-Fi
-    - Use ESP-NOW to synchronise beat signals across multiple LED strips in different rooms
-    - Implement an auto-mode selector that detects the music genre from frequency content and switches
-      modes
-    code: "/*\n * ESP32 NeoPixel Music Visualizer — Advanced\n * Bluetooth A2DP audio input + Web config\
-      \ panel + 6 visualiser modes\n *\n * Library: ESP32-A2DP by Phil Schatzmann (Library Manager)\n\
-      \ *          FastLED, arduinoFFT\n *\n * IMPORTANT: Bluetooth A2DP and Wi-Fi cannot run simultaneously\
-      \ on ESP32.\n * This sketch uses Bluetooth for audio and a brief Wi-Fi window at boot\n * for configuration.\
-      \ In production, serve config from BLE instead.\n */\n#include <FastLED.h>\n#include <BluetoothA2DPSink.h>\n\
-      #include \"arduinoFFT.h\"\n\n#define LED_PIN     5\n#define NUM_LEDS   60\n#define BRIGHTNESS 100\n\
-      #define COLS       15    // FFT spectrum columns across strip\n#define SAMPLES   512\n\nCRGB leds[NUM_LEDS];\n\
-      BluetoothA2DPSink a2dp_sink;\n\ndouble vReal[SAMPLES], vImag[SAMPLES];\nArduinoFFT<double> FFT =\
-      \ ArduinoFFT<double>(vReal, vImag, SAMPLES, 44100.0);\nvolatile int audioIdx = 0;\n\nenum Mode {\
-      \ VU_METER, SPECTRUM, FIRE, RAINBOW_BEAT, SPARKLE, SOLID_BEAT };\nMode currentMode = SPECTRUM;\n\
-      uint8_t sensitivity = 80;   // 0–255\n\n// Beat detection\nfloat smoothedLevel = 0;\nbool beatDetected\
-      \ = false;\n\n// A2DP audio callback — called for each incoming audio frame\nvoid audioDataCallback(const\
-      \ uint8_t* data, uint32_t len) {\n  int16_t* samples = (int16_t*)data;\n  int sampleCount = len\
-      \ / 4; // Stereo 16-bit = 4 bytes per frame\n  for (int i = 0; i < sampleCount && audioIdx < SAMPLES;\
-      \ i++) {\n    // Mix L+R channels to mono, normalise to -1.0..1.0\n    vReal[audioIdx] = (double)(samples[i*2]\
-      \ + samples[i*2+1]) / 65536.0;\n    vImag[audioIdx] = 0.0;\n    audioIdx++;\n  }\n}\n\nvoid processBeat()\
-      \ {\n  double rms = 0;\n  for (int i = 0; i < SAMPLES; i++) rms += vReal[i] * vReal[i];\n  rms =\
-      \ sqrt(rms / SAMPLES);\n  smoothedLevel = smoothedLevel * 0.9f + rms * 0.1f;\n  beatDetected = (rms\
-      \ > smoothedLevel * 1.5);\n}\n\nvoid drawVU() {\n  double peak = 0;\n  for (int i = 0; i < SAMPLES;\
-      \ i++) peak = max(peak, abs(vReal[i]));\n  int lit = (int)(peak * NUM_LEDS * (sensitivity / 255.0)\
-      \ * 20);\n  lit = constrain(lit, 0, NUM_LEDS);\n  for (int i = 0; i < NUM_LEDS; i++) {\n    leds[i]\
-      \ = i < lit ? CHSV(map(i, 0, NUM_LEDS-1, 96, 0), 255, 255) : CRGB::Black;\n  }\n}\n\nvoid drawFire()\
-      \ {\n  // Shift all LEDs up\n  for (int i = NUM_LEDS-1; i > 0; i--) leds[i] = leds[i-1];\n  double\
-      \ peak = 0;\n  for (int i = 0; i < SAMPLES; i++) peak = max(peak, abs(vReal[i]));\n  uint8_t intensity\
-      \ = (uint8_t)constrain(peak * 2000 * (sensitivity/255.0), 0, 255);\n  leds[0] = CHSV(random8(10,\
-      \ 25), 255, intensity);   // Yellow-orange-red\n}\n\nvoid setup() {\n  Serial.begin(115200);\n \
-      \ FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);\n  FastLED.setBrightness(BRIGHTNESS);\n\
-      \  FastLED.clear(); FastLED.show();\n  a2dp_sink.set_stream_reader(audioDataCallback);\n  a2dp_sink.start(\"\
-      ESP32 Visualizer\");  // Bluetooth device name\n  Serial.println(\"Bluetooth started — pair from\
-      \ your phone as \"ESP32 Visualizer\"\");\n}\n\nvoid loop() {\n  if (audioIdx >= SAMPLES) {\n   \
-      \ audioIdx = 0;\n    processBeat();\n    if (beatDetected) FastLED.setBrightness(255);\n    else\
-      \ FastLED.setBrightness(BRIGHTNESS);\n\n    switch (currentMode) {\n      case VU_METER:  drawVU();\
-      \ break;\n      case FIRE:      drawFire(); break;\n      case SPECTRUM:\n        FFT.windowing(FFTWindow::Hamming,\
-      \ FFTDirection::Forward);\n        FFT.compute(FFTDirection::Forward);\n        FFT.complexToMagnitude();\n\
-      \        // Map to LED columns (simplified for clarity)\n        for (int c = 0; c < COLS; c++)\
-      \ {\n          int b = 1 + c * 3;\n          double mag = vReal[b] * 200 * (sensitivity/255.0);\n\
-      \          int h = (int)constrain(mag, 0, NUM_LEDS/COLS);\n          int start = c * (NUM_LEDS/COLS);\n\
-      \          for (int r = 0; r < NUM_LEDS/COLS; r++) {\n            leds[start+r] = r < h ? CHSV(map(r,\
-      \ 0, NUM_LEDS/COLS, 96, 0), 255, 255) : CRGB::Black;\n          }\n        }\n        break;\n \
-      \     case RAINBOW_BEAT:\n        if (beatDetected) fill_rainbow(leds, NUM_LEDS, random8(), 5);\n\
-      \        else fadeToBlackBy(leds, NUM_LEDS, 10);\n        break;\n      default:\n        fill_solid(leds,\
-      \ NUM_LEDS, beatDetected ? CRGB::White : CRGB::Black);\n    }\n    FastLED.show();\n  }\n}"
-    code_filename: esp32-neopixel-visualizer-advanced.ino
+    - - No sound response
+      - Check I2S pin mapping and INMP441 L/R wiring.
+    - - LED flicker
+      - Check common ground, data resistor, and external supply.
+    - - LEDs too bright or supply hot
+      - Lower BRIGHTNESS_CAP and reduce LED count.
+    improvements: &id002
+    - Add decay smoothing.
+    - Add color themes.
+    - Add a documented approximate 3-band filter.
+    code: "// ESP32 amplitude-reactive NeoPixel visualizer with INMP441 I2S microphone\n// This is volume/RMS reactive, not\
+      \ FFT or spectrum analysis.\n#include <Adafruit_NeoPixel.h>\n#include \"driver/i2s.h\"\n\nconst int I2S_BCLK = 14;\n\
+      const int I2S_LRCLK = 15;\nconst int I2S_DATA = 32;\nconst int LED_PIN = 5;\nconst int LED_COUNT = 30;\nconst int BRIGHTNESS_CAP\
+      \ = 80;\n\nAdafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);\nint32_t samples[256];\n\nvoid setupI2S()\
+      \ {\n  i2s_config_t config = {};\n  config.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX);\n  config.sample_rate\
+      \ = 16000;\n  config.bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT;\n  config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;\n\
+      \  config.communication_format = I2S_COMM_FORMAT_STAND_I2S;\n  config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;\n  config.dma_buf_count\
+      \ = 4;\n  config.dma_buf_len = 256;\n  i2s_pin_config_t pins = {I2S_BCLK, I2S_LRCLK, I2S_DATA, I2S_PIN_NO_CHANGE};\n\
+      \  i2s_driver_install(I2S_NUM_0, &config, 0, nullptr);\n  i2s_set_pin(I2S_NUM_0, &pins);\n}\n\nuint32_t wheel(byte pos)\
+      \ {\n  pos = 255 - pos;\n  if (pos < 85) return strip.Color(255 - pos * 3, 0, pos * 3);\n  if (pos < 170) {\n    pos\
+      \ -= 85;\n    return strip.Color(0, pos * 3, 255 - pos * 3);\n  }\n  pos -= 170;\n  return strip.Color(pos * 3, 255\
+      \ - pos * 3, 0);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupI2S();\n  strip.begin();\n  strip.setBrightness(BRIGHTNESS_CAP);\n\
+      \  strip.clear();\n  strip.show();\n  Serial.println(\"Amplitude visualizer ready. External 5 V LED power required.\"\
+      );\n}\n\nvoid loop() {\n  size_t bytesRead = 0;\n  i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytesRead, portMAX_DELAY);\n\
+      \  int count = bytesRead / sizeof(samples[0]);\n  if (count <= 0) return;\n\n  double sumSquares = 0;\n  for (int i\
+      \ = 0; i < count; i++) {\n    int32_t s = samples[i] >> 14;\n    sumSquares += (double)s * (double)s;\n  }\n  float\
+      \ rms = sqrt(sumSquares / count);\n  int lit = constrain(map((int)rms, 100, 6000, 0, LED_COUNT), 0, LED_COUNT);\n\n\
+      \  strip.clear();\n  for (int i = 0; i < lit; i++) {\n    strip.setPixelColor(i, wheel(map(i, 0, LED_COUNT - 1, 100,\
+      \ 0)));\n  }\n  strip.show();\n  Serial.println(rms);\n}\n"
+    code_filename: esp32-neopixel-music-visualizer-beginner.ino
 related_slugs:
 - esp32-rgb-led-pattern-controller
 - esp32-learning-trainer
+format: golden
+meta_title: ESP32 I2S Microphone LED Music Visualizer Tutorial
+project:
+  icon: VU
+  mission_title: Build an Amplitude-Reactive NeoPixel Visualizer
+  difficulty: Intermediate
+  age: Ages 12+
+  recommended_age: Ages 12+
+  estimated_time: 75-90 min
+  budget: Under 35 USD
+  adult_supervision: Adult help recommended for checking external 5 V LED power wiring.
+  classroom_use: Use it to teach RMS volume measurement, not frequency-spectrum analysis.
+  parent_prompt: Ask why LED strips need their own power supply and common ground.
+  screen_free_activity: Calculate LED current budget on paper before wiring the strip.
+  skills_practiced:
+  - I2S sampling
+  - RMS amplitude
+  - NeoPixel output
+  - External power wiring
+  learning_outcomes: &id001
+  - Wire INMP441 I2S pins.
+  - Compute an RMS-like amplitude value.
+  - Drive WS2812B LEDs from GPIO5.
+  - Explain brightness cap, resistor, capacitor, and common ground.
+  mini_experiments:
+  - Change sample window size.
+  - Map amplitude to color instead of LED count.
+  - Add a decay/fade so LEDs settle smoothly.
+  next_challenge: Add a simple approximate low/mid/high split only after documenting the filter method.
+  what_you_build: An amplitude-reactive LED strip that responds to volume using I2S microphone samples.
+  story: The page avoids old FFT and spectrum-analyzer claims. It measures volume changes and maps them to addressable LED
+    output.
+  eli12: The microphone sends sound numbers to the ESP32. Louder sound makes bigger numbers, and the ESP32 lights more LEDs.
+  parent_safety: Use an external regulated 5 V supply for the strip, common ground, a data resistor, a bulk capacitor, and
+    a brightness cap. Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: Main 3.3 V logic controller.
+    link: /components/esp32-devkit.html
+  - item: INMP441 I2S digital microphone
+    note: BCLK GPIO14, LRCLK GPIO15, data GPIO32.
+  - item: WS2812B LED strip, 8-30 LEDs
+    note: External 5 V supply required above a few LEDs.
+  - item: External regulated 5 V power supply
+    note: Sized for LED count; do not use ESP32 regulator.
+  - item: 330 ohm data resistor
+    note: Series resistor on LED data line.
+  - item: 1000 uF electrolytic capacitor
+    note: Across strip 5 V/GND at input.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Main 3.3 V logic controller.
+  - part: INMP441 I2S digital microphone
+    qty: '1'
+    estimated_cost: Varies
+    notes: BCLK GPIO14, LRCLK GPIO15, data GPIO32.
+  - part: WS2812B LED strip, 8-30 LEDs
+    qty: '1'
+    estimated_cost: Varies
+    notes: External 5 V supply required above a few LEDs.
+  - part: External regulated 5 V power supply
+    qty: '1'
+    estimated_cost: Varies
+    notes: Sized for LED count; do not use ESP32 regulator.
+  - part: 330 ohm data resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Series resistor on LED data line.
+  - part: 1000 uF electrolytic capacitor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Across strip 5 V/GND at input.
+  wiring:
+    illustration_alt: ESP32 NeoPixel Music Visualizer (Amplitude-Reactive) wiring diagram
+    summary: INMP441 uses GPIO14/GPIO15/GPIO32. WS2812B DIN uses GPIO5 through a data resistor. Strip 5 V comes from an external
+      supply with common ground.
+    steps:
+    - Unplug USB and LED power before wiring.
+    - Connect INMP441 VDD to 3.3 V, GND to GND, SCK to GPIO14, WS to GPIO15, and SD to GPIO32.
+    - Connect LED DIN to GPIO5 through a 330 ohm resistor.
+    - Connect strip 5 V to external 5 V supply positive.
+    - Connect strip GND, supply GND, and ESP32 GND together.
+    - Place a 1000 uF capacitor across strip 5 V/GND near the strip input.
+  gpio_map:
+  - signal: INMP441 BCLK
+    esp32_pin: GPIO14
+    direction: I2S clock
+    notes: Digital microphone bit clock.
+  - signal: INMP441 LRCLK
+    esp32_pin: GPIO15
+    direction: I2S word select
+    notes: Boot strap pin; keep wiring passive.
+  - signal: INMP441 SD
+    esp32_pin: GPIO32
+    direction: Input
+    notes: I2S data input.
+  - signal: WS2812B DATA
+    esp32_pin: GPIO5
+    direction: Output
+    notes: Use series resistor.
+  - signal: LED strip power
+    esp32_pin: External 5 V / GND
+    direction: Power
+    notes: Common ground with ESP32.
+  circuit_explanation: I2S carries digital audio samples from the mic. GPIO5 sends timed LED data while the strip is powered
+    from its own 5 V supply.
+  engineering_explanation: The sketch calculates RMS-like amplitude, not frequency bands. BRIGHTNESS_CAP limits current draw
+    and is part of the safety design.
+  libraries:
+  - name: Adafruit NeoPixel
+    note: Install from Arduino Library Manager.
+  - name: driver/i2s.h
+    note: Bundled with Arduino ESP32 core.
+  code:
+    filename: esp32-neopixel-music-visualizer.ino
+    content: "// ESP32 amplitude-reactive NeoPixel visualizer with INMP441 I2S microphone\n// This is volume/RMS reactive,\
+      \ not FFT or spectrum analysis.\n#include <Adafruit_NeoPixel.h>\n#include \"driver/i2s.h\"\n\nconst int I2S_BCLK = 14;\n\
+      const int I2S_LRCLK = 15;\nconst int I2S_DATA = 32;\nconst int LED_PIN = 5;\nconst int LED_COUNT = 30;\nconst int BRIGHTNESS_CAP\
+      \ = 80;\n\nAdafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);\nint32_t samples[256];\n\nvoid setupI2S()\
+      \ {\n  i2s_config_t config = {};\n  config.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX);\n  config.sample_rate\
+      \ = 16000;\n  config.bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT;\n  config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;\n\
+      \  config.communication_format = I2S_COMM_FORMAT_STAND_I2S;\n  config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;\n  config.dma_buf_count\
+      \ = 4;\n  config.dma_buf_len = 256;\n  i2s_pin_config_t pins = {I2S_BCLK, I2S_LRCLK, I2S_DATA, I2S_PIN_NO_CHANGE};\n\
+      \  i2s_driver_install(I2S_NUM_0, &config, 0, nullptr);\n  i2s_set_pin(I2S_NUM_0, &pins);\n}\n\nuint32_t wheel(byte pos)\
+      \ {\n  pos = 255 - pos;\n  if (pos < 85) return strip.Color(255 - pos * 3, 0, pos * 3);\n  if (pos < 170) {\n    pos\
+      \ -= 85;\n    return strip.Color(0, pos * 3, 255 - pos * 3);\n  }\n  pos -= 170;\n  return strip.Color(pos * 3, 255\
+      \ - pos * 3, 0);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupI2S();\n  strip.begin();\n  strip.setBrightness(BRIGHTNESS_CAP);\n\
+      \  strip.clear();\n  strip.show();\n  Serial.println(\"Amplitude visualizer ready. External 5 V LED power required.\"\
+      );\n}\n\nvoid loop() {\n  size_t bytesRead = 0;\n  i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytesRead, portMAX_DELAY);\n\
+      \  int count = bytesRead / sizeof(samples[0]);\n  if (count <= 0) return;\n\n  double sumSquares = 0;\n  for (int i\
+      \ = 0; i < count; i++) {\n    int32_t s = samples[i] >> 14;\n    sumSquares += (double)s * (double)s;\n  }\n  float\
+      \ rms = sqrt(sumSquares / count);\n  int lit = constrain(map((int)rms, 100, 6000, 0, LED_COUNT), 0, LED_COUNT);\n\n\
+      \  strip.clear();\n  for (int i = 0; i < lit; i++) {\n    strip.setPixelColor(i, wheel(map(i, 0, LED_COUNT - 1, 100,\
+      \ 0)));\n  }\n  strip.show();\n  Serial.println(rms);\n}\n"
+  code_explanation: I2S reads 256 samples, computes RMS amplitude, maps it to lit LED count, and writes a capped-brightness
+    NeoPixel bar.
+  expected_output: Claps or music increase the number of lit LEDs. Silence settles toward a low or blank state.
+  common_mistakes:
+  - text: Claiming FFT or spectrum analysis.
+  - text: Powering the strip from ESP32 3.3 V.
+  - text: Forgetting common ground.
+  - text: Skipping the data resistor or bulk capacitor.
+  troubleshooting:
+  - problem: No sound response
+    fix: Check I2S pin mapping and INMP441 L/R wiring.
+  - problem: LED flicker
+    fix: Check common ground, data resistor, and external supply.
+  - problem: LEDs too bright or supply hot
+    fix: Lower BRIGHTNESS_CAP and reduce LED count.
+  testing_checklist:
+  - Test strip with brightness cap before audio.
+  - Clap near the mic and observe response.
+  - Check silence does not flicker randomly.
+  engineer_tips:
+  - Start with fewer LEDs.
+  - Keep audio and LED power wires tidy.
+  - Use RMS values only as relative volume.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Review duty cycle, LED dimming, and output timing.
+  - title: Button LED Control
+    href: /guides/button-led-control.html
+    description: Practice button-controlled outputs.
+  related_projects:
+  - title: ESP32 RGB LED Pattern Controller
+    href: /projects/esp32-rgb-led-pattern-controller.html
+    description: Compare addressable strips with single-LED PWM patterns.
+  - title: ESP32 LED Matrix Display
+    href: /projects/esp32-led-matrix-display.html
+    description: Explore another Golden LED output project.
+  faqs:
+  - question: Is this a spectrum analyzer?
+    answer: No. It reacts to amplitude/volume only.
+  - question: Why external LED power?
+    answer: WS2812B strips can draw more current than the ESP32 regulator can supply.
+  - question: Is the microphone decibel accurate?
+    answer: No. The values are relative for visual effects.
+  complete:
+    summary: You completed ESP32 NeoPixel Music Visualizer (Amplitude-Reactive) with matching wiring, code, tests, and limitations.
+    skills:
+    - I2S sampling
+    - RMS amplitude
+    - NeoPixel output
+keywords:
+- ESP32
+- ESP32 NeoPixel Music Visualizer (Amplitude-Reactive)
+- INMP441 BCLK
+- LED strip power
+- Arduino tutorial

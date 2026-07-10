@@ -25,18 +25,19 @@ Order is defined in `tools/project_page.py` → `render_project_body()`. **Do no
 | 3 | The Story | `project.story` |
 | 4 | Explain Like I'm 12 | `project.eli12` |
 | 5 | For Parents & Teachers | `project.parent_safety` |
-| 6 | What You Will Build | `project.what_you_build` |
-| 7 | Components List | `project.components` |
-| 8 | Related Components | Auto from parts with `/components/` links |
-| 9 | Wiring | `project.wiring` |
-| 10 | Code | `project.code` |
-| 11 | Expected Output | `project.expected_output` |
-| 12 | Troubleshooting | `project.troubleshooting` |
-| 13 | Common Mistakes | `project.common_mistakes` |
-| 14 | Upgrade Ideas | `project.upgrade_ideas` |
-| 15 | Related Guides | `project.related_guides` |
-| 16 | Related Projects | `project.related_projects` |
-| 17 | Project Complete | `project.complete` |
+| 6 | Learning Support (optional) | `recommended_age`, `adult_supervision`, `skills_practiced`, `learning_outcomes`, `classroom_use`, `parent_prompt`, `mini_experiments`, `screen_free_activity`, `next_challenge` |
+| 7 | What You Will Build | `project.what_you_build` |
+| 8 | Components List | `project.components` |
+| 9 | Related Components | Auto from parts with `/components/` links |
+| 10 | Wiring | `project.wiring` |
+| 11 | Code | `project.code` |
+| 12 | Expected Output | `project.expected_output` |
+| 13 | Troubleshooting | `project.troubleshooting` |
+| 14 | Common Mistakes | `project.common_mistakes` |
+| 15 | Upgrade Ideas | `project.upgrade_ideas` |
+| 16 | Related Guides | `project.related_guides` |
+| 17 | Related Projects | `project.related_projects` |
+| 18 | Project Complete | `project.complete` |
 
 ---
 

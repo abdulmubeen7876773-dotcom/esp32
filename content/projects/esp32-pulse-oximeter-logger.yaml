@@ -1,14 +1,22 @@
 slug: esp32-pulse-oximeter-logger
-title: ESP32 Pulse Oximeter Logger
+title: Build an Educational Pulse Oximeter Logger
 category: Healthcare
-description: Educational pulse and SpO2 logging with ESP32 — for learning only, not medical use. Progress
-  from serial logs to connected monitoring.
-source_base: esp32-pulse-oximeter-logger-with-local-web-server
-sensor: pulse oximeter module
-output: OLED display
+description: Use a MAX30102 with ESP32 I2C to log educational estimated BPM/SpO2 values while suppressing invalid
+  no-finger readings.
+meta_title: ESP32 Educational Pulse Oximeter Logger
+meta_description: Build an educational ESP32 MAX30102 logger with SDA GPIO21, SCL GPIO22, estimated-only output,
+  no-finger suppression, and medical-use warnings.
+source_base: esp32-pulse-oximeter-logger-golden-batch-6
+sensor: MAX30102 red/IR sensor
+output: Serial Monitor
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-18'
+date_modified: '2026-07-10'
+quality_status: golden_tutorial
+status: needs_polish
+import_tier: 1
+import_source: golden-batch-6
+format: golden
 hardware:
   sensor_pin: GPIO21
   output_pin: GPIO22
@@ -19,51 +27,187 @@ hardware:
     pin: GPIO21
   - component: MAX30102 SCL
     pin: GPIO22
-  - component: VCC
+  - component: MAX30102 VCC
     pin: 3.3V
-  - component: GND
+  - component: MAX30102 GND
     pin: GND
-meta_description: Educational MAX30102 pulse oximeter logging on ESP32 using I2C GPIO21/GPIO22. Not for medical use.
-meta_title: ESP32 Pulse Oximeter Logger for Bedside Monitor
-levels:
-  beginner:
-    level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for educational raw pulse logging: the MAX30102 uses I2C on GPIO21/GPIO22 and prints red/IR samples to Serial Monitor.</p>\n      <ul class=\"overview-list\">\n      \
-      \  <li>MAX30102 SDA connects to GPIO21</li><li>MAX30102 SCL connects to GPIO22</li><li>Power the module from 3.3 V unless your breakout explicitly supports 5 V logic</li><li>This project is for learning only, not medical monitoring</li>\n      </ul>\n\
-      \      </section>"
-    components:
-    - ESP32 Dev Board
-    - MAX30102 pulse oximeter module
-    - 3.3V Power
-    wiring:
-    - - MAX30102 SDA
-      - GPIO21
-      - I2C data
-    - - MAX30102 SCL
-      - GPIO22
-      - I2C clock
-    - - VCC
-      - 3.3V
-      - Sensor power
-    - - GND
-      - GND
-      - ''
-    how: []
-    apps:
-    - Educational raw red/IR pulse sensor logging
-    troubleshooting: []
-    upgrades:
-    - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Pulse Oximeter Logger - educational raw samples only\n#include <Wire.h>\n#include \"MAX30105.h\"\n\nMAX30105 sensor;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  if (!sensor.begin(Wire, I2C_SPEED_STANDARD)) {\n    Serial.println(\"MAX30102 not found. Check SDA/SCL wiring.\");\n    while (true) delay(1000);\n  }\n  sensor.setup();\n  Serial.println(\"Educational raw red/IR logging only - not medical data.\");\n}\n\nvoid loop() {\n  Serial.print(\"Red: \");\n  Serial.print(sensor.getRed());\n  Serial.print(\" IR: \");\n  Serial.println(sensor.getIR());\n  delay(250);\n}"
-    code_filename: ''
-  intermediate:
-    overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
-    code: ''
-  advanced:
-    overview_html: '<p>TODO: import advanced content from batch or WordPress</p>'
-    code: ''
-quality_status: legacy_import
-status: needs_polish
-import_tier: 1
-import_source: esp32-pulse-oximeter-logger-with-local-web-server-project-002.html
+project:
+  icon: PULSE
+  mission_title: Build an Educational Pulse Oximeter Logger
+  difficulty: Advanced
+  age: Ages 14+
+  recommended_age: Ages 14+
+  estimated_time: 60-75 min
+  budget: Under 35 USD
+  adult_supervision: Required for shared classroom use and for understanding the medical boundary.
+  classroom_use: Use this as an optics and signal-processing lesson, not as a health screening station.
+  parent_prompt: Ask why an estimated classroom sensor reading is not the same as a clinical measurement.
+  screen_free_activity: Draw how red and infrared light pass through a fingertip and scatter back to the sensor.
+  skills_practiced:
+  - I2C wiring
+  - Optical sensor setup
+  - Validity checks
+  - Medical-safety wording
+  learning_outcomes:
+  - Wire MAX30102 SDA to GPIO21 and SCL to GPIO22.
+  - Suppress stale readings when no finger is detected.
+  - Label BPM and SpO2 as estimated educational values.
+  - Explain why the project is not a medical device.
+  mini_experiments:
+  - Watch IR values change when a finger is placed on the sensor.
+  - Compare stable and moving-finger readings.
+  - Adjust the finger threshold only after recording idle sensor values.
+  next_challenge: Log raw red/IR values to CSV and analyze motion artifacts offline.
+  what_you_build: A MAX30102 I2C logger that prints estimated BPM, estimated SpO2, and raw red/IR values while suppressing
+    no-finger readings.
+  story: 'A pulse oximeter looks simple from the outside, but the electronics are really watching tiny changes in
+    reflected red and infrared light. This Golden version keeps the project honest: it is an educational signal
+    logger, not a health monitor, diagnosis tool, emergency device, or clinical instrument.'
+  eli12: The MAX30102 shines red and infrared light into a fingertip and measures how much light comes back. The
+    ESP32 watches the changing numbers and prints estimated values so you can learn about optical sensing. If there
+    is no finger, the sketch refuses to show stale estimates.
+  parent_safety: This is a 3.3 V USB-powered education project only. Unplug USB before rewiring. Do not use readings
+    for diagnosis, treatment, emergency decisions, fitness clearance, or health reassurance. Clean the contact area
+    between users and stop if anyone feels uncomfortable.
+  components:
+  - item: ESP32 DevKit board
+    note: Use 3.3 V logic and I2C on GPIO21/GPIO22.
+    link: /components/esp32-devkit.html
+  - item: MAX30102 breakout module
+    note: Optical red/IR sensor module; this project uses educational estimates only.
+  - item: Breadboard and jumper wires
+    note: Short, firm connections reduce I2C and power problems.
+  - item: USB data cable
+    note: Needed for upload and Serial Monitor.
+  - item: Cleaning wipes for shared demos
+    note: Clean the finger-contact area between users.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Use 3.3 V logic and I2C on GPIO21/GPIO22.
+  - part: MAX30102 breakout module
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optical red/IR sensor module; this project uses educational estimates only.
+  - part: Breadboard and jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: Short, firm connections reduce I2C and power problems.
+  - part: USB data cable
+    qty: '1'
+    estimated_cost: Varies
+    notes: Needed for upload and Serial Monitor.
+  - part: Cleaning wipes for shared demos
+    qty: '1'
+    estimated_cost: Varies
+    notes: Clean the finger-contact area between users.
+  wiring:
+    illustration_alt: ESP32 DevKit connected to a MAX30102 breakout with SDA on GPIO21, SCL on GPIO22, 3.3 V power,
+      and common ground.
+    summary: The MAX30102 uses I2C. SDA is GPIO21, SCL is GPIO22, VCC is 3.3 V, and GND is common ground.
+    steps:
+    - Unplug USB before placing or moving jumper wires.
+    - Connect MAX30102 VCC to ESP32 3V3.
+    - Connect MAX30102 GND to ESP32 GND.
+    - Connect MAX30102 SDA to GPIO21.
+    - Connect MAX30102 SCL to GPIO22.
+    - Plug in USB, upload the sketch, and open Serial Monitor at 115200 baud.
+  gpio_map:
+  - signal: MAX30102 SDA
+    esp32_pin: GPIO21
+    direction: I2C data
+    notes: Default ESP32 I2C SDA in this sketch.
+  - signal: MAX30102 SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Default ESP32 I2C SCL in this sketch.
+  circuit_explanation: The MAX30102 breakout handles the optical sensor front end and communicates with the ESP32
+    over I2C.
+  engineering_explanation: The finger threshold is a practical validity gate for this educational setup. Estimated
+    BPM and SpO2 are heuristic classroom outputs and are not calibrated clinical measurements.
+  libraries:
+  - name: SparkFun MAX3010x library
+    note: Provides MAX30105/MAX30102 sensor access and heartRate helper.
+  code:
+    filename: esp32-pulse-oximeter-logger.ino
+    content: "// ESP32 MAX30102 educational pulse-wave estimate logger\n// Not a medical device. Not for diagnosis,\
+      \ treatment, or emergency use.\n#include <Wire.h>\n#include \"MAX30105.h\"\n#include \"heartRate.h\"\n\nMAX30105\
+      \ sensor;\n\nconst long FINGER_IR_THRESHOLD = 50000;\nconst byte RATE_SIZE = 4;\nbyte rates[RATE_SIZE];\n\
+      byte rateSpot = 0;\nlong lastBeat = 0;\nfloat estimatedBpm = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  Wire.begin(21, 22);\n\n  if (!sensor.begin(Wire, I2C_SPEED_STANDARD)) {\n    Serial.println(\"MAX30102\
+      \ not found. Check SDA GPIO21, SCL GPIO22, 3.3 V, and GND.\");\n    while (true) delay(10);\n  }\n\n  sensor.setup();\n\
+      \  sensor.setPulseAmplitudeRed(0x1F);\n  sensor.setPulseAmplitudeIR(0x1F);\n  Serial.println(\"Educational\
+      \ MAX30102 logger ready - estimated values only, not medical data.\");\n}\n\nvoid loop() {\n  long irValue\
+      \ = sensor.getIR();\n  long redValue = sensor.getRed();\n\n  if (irValue < FINGER_IR_THRESHOLD) {\n    estimatedBpm\
+      \ = 0;\n    Serial.println(\"No finger detected - estimated BPM/SpO2 suppressed (educational only).\");\n\
+      \    delay(500);\n    return;\n  }\n\n  if (checkForBeat(irValue)) {\n    long now = millis();\n    long delta\
+      \ = now - lastBeat;\n    lastBeat = now;\n\n    float bpm = 60.0 / (delta / 1000.0);\n    if (bpm > 40 &&\
+      \ bpm < 180) {\n      rates[rateSpot++] = (byte)bpm;\n      rateSpot %= RATE_SIZE;\n      int total = 0;\n\
+      \      int count = 0;\n      for (byte i = 0; i < RATE_SIZE; i++) {\n        if (rates[i] > 0) {\n       \
+      \   total += rates[i];\n          count++;\n        }\n      }\n      if (count > 0) estimatedBpm = (float)total\
+      \ / count;\n    }\n  }\n\n  float ratio = redValue > 0 ? (float)irValue / (float)redValue : 0.0;\n  float\
+      \ estimatedSpo2 = constrain(104.0 - 17.0 * ratio, 70.0, 100.0);\n\n  Serial.printf(\"Estimated BPM: ~%.0f\
+      \ - educational only | Estimated SpO2: ~%.0f%% - educational only | IR: %ld Red: %ld\\n\",\n             \
+      \   estimatedBpm, estimatedSpo2, irValue, redValue);\n  delay(100);\n}\n"
+  code_explanation: The sketch initializes I2C on GPIO21/GPIO22, suppresses estimates below the IR finger threshold,
+    averages plausible beat intervals, and prints every value as estimated educational data.
+  expected_output: With no finger, Serial Monitor reports that estimates are suppressed. With a steady finger, it
+    prints lines such as Estimated BPM and Estimated SpO2 along with raw IR and red counts; these are learning values
+    only.
+  common_mistakes:
+  - text: Treating estimated values as medical readings.
+  - text: Powering a 3.3 V-only breakout from 5 V.
+  - text: Swapping SDA and SCL.
+  - text: Showing old readings after the finger is removed.
+  troubleshooting:
+  - problem: MAX30102 not found
+    fix: Check 3.3 V, GND, SDA GPIO21, SCL GPIO22, and library installation.
+  - problem: No finger detected all the time
+    fix: Check finger placement and record idle IR values before changing the threshold.
+  - problem: Estimated BPM jumps around
+    fix: Hold still, block bright ambient light, and remember the value is not clinical.
+  testing_checklist:
+  - Confirm I2C detection.
+  - Confirm no-finger suppression.
+  - Confirm labels say Estimated.
+  - Clean shared sensor surfaces.
+  engineer_tips:
+  - Keep I2C wires short.
+  - Use raw IR/red data for debugging.
+  - Never publish health claims from this sketch.
+  upgrade_ideas:
+  - Save raw red/IR samples to CSV.
+  - Add an OLED that repeats the educational-only warning.
+  - Graph raw values in a local dashboard without medical claims.
+  real_world_applications:
+  - Optical sensor classroom demo
+  - Signal-validity lesson
+  - Bioinstrumentation ethics discussion
+  related_guides:
+  - title: I2C Communication
+    href: /guides/i2c-communication.html
+    description: Review SDA/SCL wiring before connecting the MAX30102.
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, and safe low-voltage wiring.
+  related_projects:
+  - title: Build an Educational ECG Waveform Viewer
+    href: /projects/esp32-ecg-monitor.html
+    description: Compare another education-only health-signal project with strict safety limits.
+  - title: Build an Indoor Air Quality Monitor
+    href: /projects/esp32-air-quality-monitor.html
+    description: Practice sensor logging with non-medical environmental readings.
+  faqs:
+  - question: Is this a medical pulse oximeter?
+    answer: No. It is only an educational optical sensor logger.
+  - question: Can I use the estimated SpO2 value for health decisions?
+    answer: No. Do not use it for diagnosis, treatment, emergency use, or reassurance.
+  complete:
+    summary: You built an honest educational optical-sensing logger. The wiring, code, output labels, safety notes,
+      and troubleshooting all agree that the ESP32 reads MAX30102 signals for learning only.
+    skills:
+    - I2C sensor wiring
+    - Finger-presence validation
+    - Estimated-value labeling
+    - Safety-bounded troubleshooting

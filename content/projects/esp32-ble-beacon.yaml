@@ -1,10 +1,10 @@
 slug: esp32-ble-beacon
 title: ESP32 BLE Beacon
 category: IoT Projects
-description: Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets, enabling
-  proximity detection, indoor positioning, and smart location-based automation triggers.
-meta_description: A no-extra-hardware ESP32 project that advertises a BLE beacon packet and lets you detect it from a phone
-  app. Includes wiring, code, troubleshooting, safe
+description: Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets,
+  enabling proximity detection, indoor positioning, and smart location-based automation triggers.
+meta_description: A no-extra-hardware ESP32 project that advertises a BLE beacon packet and lets you detect it from
+  a phone app. Includes wiring, code, troubleshooting, safe
 source_base: esp32-ble-beacon-legacy-import
 sensor: 'TODO: sensor'
 output: 'TODO: output'
@@ -27,9 +27,9 @@ levels:
   beginner:
     level: beginner
     overview_html: <p>In this beginner project you will configure the ESP32 to broadcast a standard iBeacon advertisement
-      packet containing a UUID, major, and minor value. Any iOS or Android phone with a BLE scanner app can detect the beacon
-      and read its RSSI signal strength. No pairing or connection is required. This project teaches BLE advertising fundamentals,
-      the iBeacon payload format, and how RSSI relates to physical distance.</p>
+      packet containing a UUID, major, and minor value. Any iOS or Android phone with a BLE scanner app can detect
+      the beacon and read its RSSI signal strength. No pairing or connection is required. This project teaches BLE
+      advertising fundamentals, the iBeacon payload format, and how RSSI relates to physical distance.</p>
     components:
     - 1× ESP32 DevKit V1 — Built-in BLE 4.2
     - 1× USB cable and power supply
@@ -39,18 +39,18 @@ levels:
       - Built-in BLE antenna
       - ESP32 BLE runs on-chip without extra hardware
     how:
-    - 'iBeacon Packet Structure: An iBeacon advertisement is a standard BLE advertising payload with a 2-byte Apple manufacturer
-      ID (0x004C), a 16-byte proximity UUID, 2-byte major, 2-byte minor, and 1-byte calibrated TX power. Total payload: 30
-      bytes within the 31-byte BLE advertising limit.'
-    - 'Non-Connectable Advertising: BLE beacons broadcast advertising packets every 100-1000 ms without accepting connections.
-      setScanResponse(false) disables the scan response packet, keeping the beacon anonymous and saving power. Any scanner
-      in range receives the packet passively.'
-    - 'UUID for Namespace Grouping: The proximity UUID groups beacons belonging to the same deployment (e.g. all beacons in
-      one building). Major identifies a specific area (floor or room) and minor identifies an individual beacon position.
-      This three-level hierarchy enables scalable indoor positioning.'
-    - 'TX Power Calibration: TX_POWER is the measured RSSI when a phone is exactly 1 metre from the beacon. The receiving
-      device uses this value plus the current RSSI to estimate distance using a path-loss model. Measure it with nRF Connect
-      after mounting the beacon in its final position.'
+    - 'iBeacon Packet Structure: An iBeacon advertisement is a standard BLE advertising payload with a 2-byte Apple
+      manufacturer ID (0x004C), a 16-byte proximity UUID, 2-byte major, 2-byte minor, and 1-byte calibrated TX power.
+      Total payload: 30 bytes within the 31-byte BLE advertising limit.'
+    - 'Non-Connectable Advertising: BLE beacons broadcast advertising packets every 100-1000 ms without accepting
+      connections. setScanResponse(false) disables the scan response packet, keeping the beacon anonymous and saving
+      power. Any scanner in range receives the packet passively.'
+    - 'UUID for Namespace Grouping: The proximity UUID groups beacons belonging to the same deployment (e.g. all
+      beacons in one building). Major identifies a specific area (floor or room) and minor identifies an individual
+      beacon position. This three-level hierarchy enables scalable indoor positioning.'
+    - 'TX Power Calibration: TX_POWER is the measured RSSI when a phone is exactly 1 metre from the beacon. The
+      receiving device uses this value plus the current RSSI to estimate distance using a path-loss model. Measure
+      it with nRF Connect after mounting the beacon in its final position.'
     apps:
     - Museum exhibit proximity trigger showing exhibit information on visitor phones
     - Retail shelf beacon triggering product information or discount notifications
@@ -58,42 +58,43 @@ levels:
     - Asset tracking with zone-level presence detection
     troubleshooting:
     - - Beacon not visible in nRF Connect
-      - Ensure BLEDevice::startAdvertising() is called after setAdvertisementData(). Try restarting the ESP32. On iOS, location
-        permission must be granted to BLE scanner apps for beacon detection.
+      - Ensure BLEDevice::startAdvertising() is called after setAdvertisementData(). Try restarting the ESP32. On
+        iOS, location permission must be granted to BLE scanner apps for beacon detection.
     - - RSSI varies wildly even when stationary
-      - BLE RSSI is inherently noisy due to multipath reflections. Apply a rolling average of 5-10 RSSI samples on the receiver
-        side before calculating distance.
+      - BLE RSSI is inherently noisy due to multipath reflections. Apply a rolling average of 5-10 RSSI samples
+        on the receiver side before calculating distance.
     - - iOS does not detect the beacon in background
-      - iOS requires the app to register the specific UUID with Core Location CLBeaconRegion to receive background beacon
-        ranging. Standard BLE scan apps only work in the foreground.
+      - iOS requires the app to register the specific UUID with Core Location CLBeaconRegion to receive background
+        beacon ranging. Standard BLE scan apps only work in the foreground.
     - - Two beacons are confused for each other
-      - Assign unique Major and Minor values to each physical beacon. UUID can be shared across all beacons in a deployment;
-        Major and Minor distinguish individual positions.
+      - Assign unique Major and Minor values to each physical beacon. UUID can be shared across all beacons in a
+        deployment; Major and Minor distinguish individual positions.
     upgrades: &id001
     - Add Eddystone-URL broadcasting to push a web URL to nearby phones without an app
     - Add a button to cycle between multiple beacon profiles stored in NVS
     - Add deep sleep between advertising bursts to reduce power to under 10 uA average
     - Add an LED that blinks on each advertising interval as a visual status indicator
     code: "// ESP32 BLE Beacon - Beginner\n// Broadcasts a standard iBeacon advertisement packet\n#include <BLEDevice.h>\n\
-      #include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n\n// iBeacon identity\
-      \ — change UUID for your deployment\n#define BEACON_UUID \"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\n#define MAJOR   \
-      \     1\n#define MINOR        1\n#define TX_POWER   -59  // Measured RSSI at 1 metre (calibrate per device)\n\nBLEAdvertising\
-      \ *pAdvertising;\n\nvoid setBeacon() {\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C); // Apple iBeacon manufacturer\
-      \ ID\n  beacon.setProximityUUID(BLEUUID(BEACON_UUID));\n  beacon.setMajor(MAJOR);\n  beacon.setMinor(MINOR);\n  beacon.setSignalPower(TX_POWER);\n\
-      \n  BLEAdvertisementData adData;\n  adData.setFlags(0x04); // BR/EDR not supported, LE general discoverable\n  adData.setManufacturerData(std::string(\n\
-      \    (char*)beacon.getData().data(), beacon.getData().size()));\n\n  pAdvertising->setAdvertisementData(adData);\n}\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  BLEDevice::init(\"ESP32-Beacon\");\n  BLEServer *pServer = BLEDevice::createServer();\n\
-      \  pAdvertising = BLEDevice::getAdvertising();\n  setBeacon();\n  pAdvertising->setScanResponse(false);\n  pAdvertising->setMinPreferred(0x00);\n\
+      #include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n\n// iBeacon\
+      \ identity — change UUID for your deployment\n#define BEACON_UUID \"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\
+      \n#define MAJOR        1\n#define MINOR        1\n#define TX_POWER   -59  // Measured RSSI at 1 metre (calibrate\
+      \ per device)\n\nBLEAdvertising *pAdvertising;\n\nvoid setBeacon() {\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C);\
+      \ // Apple iBeacon manufacturer ID\n  beacon.setProximityUUID(BLEUUID(BEACON_UUID));\n  beacon.setMajor(MAJOR);\n\
+      \  beacon.setMinor(MINOR);\n  beacon.setSignalPower(TX_POWER);\n\n  BLEAdvertisementData adData;\n  adData.setFlags(0x04);\
+      \ // BR/EDR not supported, LE general discoverable\n  adData.setManufacturerData(std::string(\n    (char*)beacon.getData().data(),\
+      \ beacon.getData().size()));\n\n  pAdvertising->setAdvertisementData(adData);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  BLEDevice::init(\"ESP32-Beacon\");\n  BLEServer *pServer = BLEDevice::createServer();\n  pAdvertising =\
+      \ BLEDevice::getAdvertising();\n  setBeacon();\n  pAdvertising->setScanResponse(false);\n  pAdvertising->setMinPreferred(0x00);\n\
       \  BLEDevice::startAdvertising();\n  Serial.println(\"iBeacon advertising — UUID: \" BEACON_UUID);\n  Serial.printf(\"\
-      Major: %d  Minor: %d  TX Power: %d dBmn\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon advertises\
-      \ continuously in background\n}"
+      Major: %d  Minor: %d  TX Power: %d dBmn\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon\
+      \ advertises continuously in background\n}"
     code_filename: esp32-ble-beacon-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build broadcasts both an iBeacon packet and an Eddystone-URL frame alternating every
-      200 ms so the beacon is detectable by both Apple and Android devices. An RSSI threshold on the ESP32 itself detects
-      when a phone comes within 1 metre and triggers a GPIO output (relay, LED, or buzzer) for automatic proximity-based actions
-      without a cloud connection.</p>
+    overview_html: <p>The intermediate build broadcasts both an iBeacon packet and an Eddystone-URL frame alternating
+      every 200 ms so the beacon is detectable by both Apple and Android devices. An RSSI threshold on the ESP32
+      itself detects when a phone comes within 1 metre and triggers a GPIO output (relay, LED, or buzzer) for automatic
+      proximity-based actions without a cloud connection.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× Relay module or LED — Triggered on proximity detection
@@ -107,18 +108,18 @@ levels:
       - GPIO 21/22
       - ''
     how:
-    - 'Dual-Protocol Advertising: The ESP32 alternates between iBeacon and Eddystone-URL advertisement frames every 200 ms
-      by calling setAdvertisementData() with different payloads. iOS devices prefer iBeacon; Android phones running Chrome
-      respond to Eddystone-URL by showing a notification with the embedded web URL.'
-    - 'Active BLE Scanning for RSSI: BLEScan::start() scans for surrounding BLE advertisers for 1 second. The ScanCB callback
-      fires for each detected device, providing the current RSSI. The nearest detected device above the PROXIMITY_RSSI threshold
-      triggers the relay.'
-    - 'RSSI to Proximity Threshold: RSSI of -70 dBm corresponds approximately to 1 metre distance in an open indoor environment.
-      Values closer to 0 dBm (e.g. -50) indicate the phone is very close. Tune PROXIMITY_RSSI by measuring RSSI at the desired
-      trigger distance with nRF Connect.'
+    - 'Dual-Protocol Advertising: The ESP32 alternates between iBeacon and Eddystone-URL advertisement frames every
+      200 ms by calling setAdvertisementData() with different payloads. iOS devices prefer iBeacon; Android phones
+      running Chrome respond to Eddystone-URL by showing a notification with the embedded web URL.'
+    - 'Active BLE Scanning for RSSI: BLEScan::start() scans for surrounding BLE advertisers for 1 second. The ScanCB
+      callback fires for each detected device, providing the current RSSI. The nearest detected device above the
+      PROXIMITY_RSSI threshold triggers the relay.'
+    - 'RSSI to Proximity Threshold: RSSI of -70 dBm corresponds approximately to 1 metre distance in an open indoor
+      environment. Values closer to 0 dBm (e.g. -50) indicate the phone is very close. Tune PROXIMITY_RSSI by measuring
+      RSSI at the desired trigger distance with nRF Connect.'
     - 'Relay Proximity Trigger: The relay (active LOW) is driven LOW when a device RSSI exceeds the threshold, activating
-      a door strike, light, or other connected device. It returns HIGH (off) when the device moves out of range or no BLE
-      devices are detected in the scan window.'
+      a door strike, light, or other connected device. It returns HIGH (off) when the device moves out of range
+      or no BLE devices are detected in the scan window.'
     apps:
     - Automatic door opener when an authorised phone approaches
     - Smart shelf that illuminates when a customer is within 1 metre
@@ -126,11 +127,11 @@ levels:
     - Lab equipment that powers on when a technician enters the room
     troubleshooting:
     - - Relay triggers on random phones, not just the owner
-      - Filter by device MAC address or advertised device name in the ScanCB. Store the expected MAC in NVS and only trigger
-        the relay when a matching device is detected.
+      - Filter by device MAC address or advertised device name in the ScanCB. Store the expected MAC in NVS and
+        only trigger the relay when a matching device is detected.
     - - RSSI threshold is too sensitive or not sensitive enough
-      - Stand at the exact desired trigger distance and note the RSSI shown on the OLED. Set PROXIMITY_RSSI to 5 dBm above
-        that value to add a hysteresis margin and prevent rapid on/off toggling.
+      - Stand at the exact desired trigger distance and note the RSSI shown on the OLED. Set PROXIMITY_RSSI to 5
+        dBm above that value to add a hysteresis margin and prevent rapid on/off toggling.
     - - Scanning and advertising conflict
       - BLE cannot scan and advertise simultaneously on some ESP32 implementations. Stop advertising (BLEDevice::stopAdvertising())
         before scanning and restart it after the scan window completes.
@@ -139,31 +140,33 @@ levels:
     - 'Add multiple RSSI zones: far (>-80), near (-70 to -80), immediate (<-70)'
     - Add a web interface to set the proximity threshold without reflashing
     - Add battery-backed NVS logging of proximity events with timestamps
-    code: "// ESP32 BLE Beacon - Intermediate (iBeacon + Eddystone + RSSI proximity trigger)\n#include <BLEDevice.h>\n#include\
-      \ <BLEAdvertising.h>\n#include <BLEBeacon.h>\n#include <BLEScan.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
-      \nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nconst int RELAY=25;\nconst int PROXIMITY_RSSI=-70; // Tune: approx 1 metre\n\
-      \nBLEAdvertising *pAdvertising;\nBLEScan *pScan;\n\n// Eddystone-URL frame builder\nstd::string eddystoneURL(const char*\
-      \ url){\n  std::string frame;\n  frame+=(char)0x02; // Eddystone frame type = URL\n  frame+=(char)0x15; // TX power\n\
-      \  frame+=(char)0x03; // URL scheme: https://\n  for(const char *c=url;*c;c++) frame+=*c;\n  return frame;\n}\n\nclass\
-      \ ScanCB: public BLEAdvertisedDeviceCallbacks {\n  void onResult(BLEAdvertisedDevice dev){\n    int rssi=dev.getRSSI();\n\
-      \    oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n    oled.printf(\"Nearest devicenRSSI: %d dBmn\"\
-      ,rssi);\n    oled.println(rssi>PROXIMITY_RSSI?\"IN RANGE\":\"out of range\");\n    oled.display();\n    digitalWrite(RELAY,\
-      \ rssi>PROXIMITY_RSSI?LOW:HIGH); // active LOW relay\n  }\n};\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n\
-      \  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(RELAY,OUTPUT); digitalWrite(RELAY,HIGH);\n\
-      \n  BLEDevice::init(\"ESP32-DualBeacon\");\n  pAdvertising=BLEDevice::getAdvertising();\n\n  // Start in iBeacon mode\
-      \ (Eddystone switched in loop)\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C);\n  beacon.setProximityUUID(BLEUUID(\"\
-      8ec76ea3-6668-48da-9866-75be8bc86f4d\"));\n  beacon.setMajor(1); beacon.setMinor(1); beacon.setSignalPower(-59);\n \
-      \ BLEAdvertisementData adData;\n  adData.setFlags(0x04);\n  adData.setManufacturerData(std::string((char*)beacon.getData().data(),beacon.getData().size()));\n\
+    code: "// ESP32 BLE Beacon - Intermediate (iBeacon + Eddystone + RSSI proximity trigger)\n#include <BLEDevice.h>\n\
+      #include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n#include <BLEScan.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      \nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nconst int RELAY=25;\nconst int PROXIMITY_RSSI=-70; // Tune: approx\
+      \ 1 metre\n\nBLEAdvertising *pAdvertising;\nBLEScan *pScan;\n\n// Eddystone-URL frame builder\nstd::string\
+      \ eddystoneURL(const char* url){\n  std::string frame;\n  frame+=(char)0x02; // Eddystone frame type = URL\n\
+      \  frame+=(char)0x15; // TX power\n  frame+=(char)0x03; // URL scheme: https://\n  for(const char *c=url;*c;c++)\
+      \ frame+=*c;\n  return frame;\n}\n\nclass ScanCB: public BLEAdvertisedDeviceCallbacks {\n  void onResult(BLEAdvertisedDevice\
+      \ dev){\n    int rssi=dev.getRSSI();\n    oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n\
+      \    oled.printf(\"Nearest devicenRSSI: %d dBmn\",rssi);\n    oled.println(rssi>PROXIMITY_RSSI?\"IN RANGE\"\
+      :\"out of range\");\n    oled.display();\n    digitalWrite(RELAY, rssi>PROXIMITY_RSSI?LOW:HIGH); // active\
+      \ LOW relay\n  }\n};\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n\
+      \  oled.setTextColor(WHITE);\n  pinMode(RELAY,OUTPUT); digitalWrite(RELAY,HIGH);\n\n  BLEDevice::init(\"ESP32-DualBeacon\"\
+      );\n  pAdvertising=BLEDevice::getAdvertising();\n\n  // Start in iBeacon mode (Eddystone switched in loop)\n\
+      \  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C);\n  beacon.setProximityUUID(BLEUUID(\"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\
+      ));\n  beacon.setMajor(1); beacon.setMinor(1); beacon.setSignalPower(-59);\n  BLEAdvertisementData adData;\n\
+      \  adData.setFlags(0x04);\n  adData.setManufacturerData(std::string((char*)beacon.getData().data(),beacon.getData().size()));\n\
       \  pAdvertising->setAdvertisementData(adData);\n  pAdvertising->setScanResponse(false);\n  BLEDevice::startAdvertising();\n\
       \n  pScan=BLEDevice::getScan();\n  pScan->setAdvertisedDeviceCallbacks(new ScanCB());\n  pScan->setActiveScan(false);\n\
-      }\n\nvoid loop(){\n  pScan->start(1, false); // 1-second scan window\n  pScan->clearResults();\n  delay(200);\n}"
+      }\n\nvoid loop(){\n  pScan->start(1, false); // 1-second scan window\n  pScan->clearResults();\n  delay(200);\n\
+      }"
     code_filename: esp32-ble-beacon-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build implements a three-beacon indoor positioning system. Three ESP32 beacons in known
-      positions publish their RSSI readings for a target device to an MQTT broker. A Node-RED flow runs multilateration on
-      the three RSSI values to estimate the target device location in 2D coordinates and displays it on a live floor plan
-      dashboard. Estimated coordinates are also published back via MQTT for further automation.</p>
+    overview_html: <p>The advanced build implements a three-beacon indoor positioning system. Three ESP32 beacons
+      in known positions publish their RSSI readings for a target device to an MQTT broker. A Node-RED flow runs
+      multilateration on the three RSSI values to estimate the target device location in 2D coordinates and displays
+      it on a live floor plan dashboard. Estimated coordinates are also published back via MQTT for further automation.</p>
     components:
     - 3× ESP32 DevKit V1 — One per beacon position
     - 1× MQTT broker (Mosquitto) — Central data aggregator
@@ -175,18 +178,19 @@ levels:
       - Built-in BLE and Wi-Fi
       - Position each ESP32 at known coordinates in the room
     how:
-    - 'Distributed RSSI Collection: Each anchor ESP32 independently scans for the target device BLE advertisement and measures
-      its RSSI. An exponential moving average (alpha=0.3) smooths rapid RSSI fluctuations. Every 500 ms each anchor publishes
-      its smoothed RSSI, physical position (x, y in metres), and beacon ID to ips/rssi on MQTT.'
-    - 'MQTT Aggregation in Node-RED: A Node-RED join node collects RSSI messages from all three anchors within a 1-second
-      window. When all three are received, a function node runs the multilateration algorithm converting three (RSSI, x, y)
-      tuples into estimated (x, y) coordinates for the target device.'
-    - 'RSSI-to-Distance Conversion: Distance = 10^((TxPower - RSSI) / (10 * n)) where TxPower is the calibrated 1-metre RSSI
-      and n is the path-loss exponent (typically 2.0-3.5 indoors). Three distance estimates from three anchors define three
-      circles; their intersection is the position estimate.'
-    - 'Multilateration Position Estimate: With three distance estimates and known anchor positions, the system solves a least-squares
-      optimisation to find the (x, y) point minimising the sum of squared residuals. Node-RED publishes the result to ips/position
-      and displays it on a UI floor plan overlay.'
+    - 'Distributed RSSI Collection: Each anchor ESP32 independently scans for the target device BLE advertisement
+      and measures its RSSI. An exponential moving average (alpha=0.3) smooths rapid RSSI fluctuations. Every 500
+      ms each anchor publishes its smoothed RSSI, physical position (x, y in metres), and beacon ID to ips/rssi
+      on MQTT.'
+    - 'MQTT Aggregation in Node-RED: A Node-RED join node collects RSSI messages from all three anchors within a
+      1-second window. When all three are received, a function node runs the multilateration algorithm converting
+      three (RSSI, x, y) tuples into estimated (x, y) coordinates for the target device.'
+    - 'RSSI-to-Distance Conversion: Distance = 10^((TxPower - RSSI) / (10 * n)) where TxPower is the calibrated
+      1-metre RSSI and n is the path-loss exponent (typically 2.0-3.5 indoors). Three distance estimates from three
+      anchors define three circles; their intersection is the position estimate.'
+    - 'Multilateration Position Estimate: With three distance estimates and known anchor positions, the system solves
+      a least-squares optimisation to find the (x, y) point minimising the sum of squared residuals. Node-RED publishes
+      the result to ips/position and displays it on a UI floor plan overlay.'
     apps:
     - Office hot-desk occupancy tracking showing who is at which desk
     - Warehouse worker location monitoring for safety zone compliance
@@ -194,35 +198,37 @@ levels:
     - Hospital asset tracking for locating mobile equipment in real time
     troubleshooting:
     - - Position estimate jumps erratically
-      - Increase the ALPHA smoothing factor to 0.1 for heavier filtering. Also apply a Kalman filter in Node-RED to further
-        smooth the (x, y) estimate over time.
+      - Increase the ALPHA smoothing factor to 0.1 for heavier filtering. Also apply a Kalman filter in Node-RED
+        to further smooth the (x, y) estimate over time.
     - - One anchor never receives the target RSSI
-      - The target device BLE advertising interval may be too long. On Android, BLE advertising from apps runs at 160-1000
-        ms intervals. Extend the anchor scan window to 2 seconds.
+      - The target device BLE advertising interval may be too long. On Android, BLE advertising from apps runs at
+        160-1000 ms intervals. Extend the anchor scan window to 2 seconds.
     - - Position accuracy is poor (off by several metres)
-      - 'Calibrate TxPower for each anchor by measuring actual RSSI at 1 metre. Tune the path-loss exponent n for your environment:
-        open offices need n=2.0, cluttered spaces need n=3.0-3.5.'
+      - 'Calibrate TxPower for each anchor by measuring actual RSSI at 1 metre. Tune the path-loss exponent n for
+        your environment: open offices need n=2.0, cluttered spaces need n=3.0-3.5.'
     upgrades:
     - Add a fourth anchor beacon to improve accuracy and handle dead zones
     - Implement a particle filter in Node-RED for smoother tracking in dynamic environments
     - Add a floor plan image to the Node-RED dashboard as a background layer
     - Extend to multiple target devices tracked simultaneously using their unique BLE names
-    code: "// ESP32 BLE Beacon - Advanced (Indoor positioning via RSSI + MQTT)\n// Deploy one instance per anchor beacon;\
-      \ set BEACON_ID and POSITION per device\n#include <BLEDevice.h>\n#include <BLEScan.h>\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      #include <ArduinoJson.h>\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\"\
-      ;\nconst char* BEACON_ID=\"beacon-A\";    // Unique per anchor: beacon-A, beacon-B, beacon-C\nconst float POS_X=0.0,\
-      \ POS_Y=0.0;   // Anchor position in metres\nconst char* TARGET_NAME=\"YourPhone\"; // BLE name of target device\n\n\
-      WiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\nBLEScan *pScan;\n\n// Smooth RSSI with exponential moving average\n\
-      float smoothRSSI=-100.0f;\nconst float ALPHA=0.3f;\n\nclass ScanCB: public BLEAdvertisedDeviceCallbacks {\n  void onResult(BLEAdvertisedDevice\
-      \ dev){\n    String name=dev.getName().c_str();\n    if(name==TARGET_NAME){\n      float rssi=(float)dev.getRSSI();\n\
-      \      smoothRSSI=ALPHA*rssi+(1-ALPHA)*smoothRSSI;\n    }\n  }\n};\n\nvoid publishRSSI(){\n  if(!mqtt.connected()) return;\n\
-      \  StaticJsonDocument<128> doc;\n  doc[\"beacon\"]  = BEACON_ID;\n  doc[\"rssi\"]    = (int)smoothRSSI;\n  doc[\"x\"\
-      ]       = POS_X;\n  doc[\"y\"]       = POS_Y;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"ips/rssi\"\
-      ,buf);\n  Serial.printf(\"%s RSSI=%.1fn\",BEACON_ID,smoothRSSI);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  WiFi.begin(SSID,PASS);\n\
-      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n  BLEDevice::init(\"Anchor-\"\
-      +String(BEACON_ID));\n  pScan=BLEDevice::getScan();\n  pScan->setAdvertisedDeviceCallbacks(new ScanCB());\n  pScan->setActiveScan(false);\n\
-      \  pScan->setInterval(50); pScan->setWindow(40);\n}\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(BEACON_ID);\n\
-      \  mqtt.loop();\n  pScan->start(1,false);\n  pScan->clearResults();\n  publishRSSI();\n  delay(500);\n}"
+    code: "// ESP32 BLE Beacon - Advanced (Indoor positioning via RSSI + MQTT)\n// Deploy one instance per anchor\
+      \ beacon; set BEACON_ID and POSITION per device\n#include <BLEDevice.h>\n#include <BLEScan.h>\n#include <WiFi.h>\n\
+      #include <PubSubClient.h>\n#include <ArduinoJson.h>\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\n\
+      const char* MQTT_HOST=\"192.168.1.100\";\nconst char* BEACON_ID=\"beacon-A\";    // Unique per anchor: beacon-A,\
+      \ beacon-B, beacon-C\nconst float POS_X=0.0, POS_Y=0.0;   // Anchor position in metres\nconst char* TARGET_NAME=\"\
+      YourPhone\"; // BLE name of target device\n\nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\nBLEScan\
+      \ *pScan;\n\n// Smooth RSSI with exponential moving average\nfloat smoothRSSI=-100.0f;\nconst float ALPHA=0.3f;\n\
+      \nclass ScanCB: public BLEAdvertisedDeviceCallbacks {\n  void onResult(BLEAdvertisedDevice dev){\n    String\
+      \ name=dev.getName().c_str();\n    if(name==TARGET_NAME){\n      float rssi=(float)dev.getRSSI();\n      smoothRSSI=ALPHA*rssi+(1-ALPHA)*smoothRSSI;\n\
+      \    }\n  }\n};\n\nvoid publishRSSI(){\n  if(!mqtt.connected()) return;\n  StaticJsonDocument<128> doc;\n\
+      \  doc[\"beacon\"]  = BEACON_ID;\n  doc[\"rssi\"]    = (int)smoothRSSI;\n  doc[\"x\"]       = POS_X;\n  doc[\"\
+      y\"]       = POS_Y;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"ips/rssi\",buf);\n  Serial.printf(\"\
+      %s RSSI=%.1fn\",BEACON_ID,smoothRSSI);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n  BLEDevice::init(\"\
+      Anchor-\"+String(BEACON_ID));\n  pScan=BLEDevice::getScan();\n  pScan->setAdvertisedDeviceCallbacks(new ScanCB());\n\
+      \  pScan->setActiveScan(false);\n  pScan->setInterval(50); pScan->setWindow(40);\n}\n\nvoid loop(){\n  if(!mqtt.connected())\
+      \ mqtt.connect(BEACON_ID);\n  mqtt.loop();\n  pScan->start(1,false);\n  pScan->clearResults();\n  publishRSSI();\n\
+      \  delay(500);\n}"
     code_filename: esp32-ble-beacon-advanced.ino
 related_slugs:
 - esp32-mqtt-sensor-dashboard
@@ -243,20 +249,20 @@ project:
   age: Ages 12+
   estimated_time: 45-70 min
   budget: Under 15 USD
-  what_you_build: A no-extra-hardware ESP32 project that advertises a BLE beacon packet and lets you detect it from a phone
-    app.
-  story: 'ESP32 BLE Beacon solves a real beginner problem: turning an ESP32 reading into a useful physical or networked result.
-    Build this to understand wireless advertising before building BLE sensors, asset tags, attendance systems, or proximity
-    projects.
+  what_you_build: A no-extra-hardware ESP32 project that advertises a BLE beacon packet and lets you detect it from
+    a phone app.
+  story: 'ESP32 BLE Beacon solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
+    result. Build this to understand wireless advertising before building BLE sensors, asset tags, attendance systems,
+    or proximity projects.
 
 
-    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
-    the output under real conditions.'
-  eli12: A BLE beacon is like a lighthouse. It does not hold a conversation; it repeatedly announces a small identity signal
-    so nearby devices can notice it.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
-    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
-    enclosure, and adult supervision are used.
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
+    then test the output under real conditions.'
+  eli12: A BLE beacon is like a lighthouse. It does not hold a conversation; it repeatedly announces a small identity
+    signal so nearby devices can notice it.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
+    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
+    unless a proper driver, enclosure, and adult supervision are used.
   learning_objectives:
   - Create a BLE advertiser on the ESP32.
   - Read the beacon from a phone scanner app.
@@ -296,8 +302,8 @@ project:
     notes: For safe low-voltage prototyping
   wiring:
     illustration_alt: ESP32 BLE Beacon wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. No external
-      wiring is required because the ESP32 includes a Bluetooth radio and PCB antenna.
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
+      No external wiring is required because the ESP32 includes a Bluetooth radio and PCB antenna.
     steps:
     - Unplug USB before changing wires.
     - Connect No external wiring required to Built-in BLE antenna (ESP32 BLE runs on-chip without extra hardware).
@@ -307,35 +313,37 @@ project:
     esp32_pin: Built-in BLE antenna
     direction: Signal
     notes: ESP32 BLE runs on-chip without extra hardware
-  circuit_explanation: No external wiring is required because the ESP32 includes a Bluetooth radio and PCB antenna. USB powers
-    the board and uploads the sketch. The important hardware rule is to keep the antenna area clear of metal and your hand
-    during testing.
-  engineering_explanation: BLE advertising is designed for short, low-power messages. A phone scanner receives the advertisement
-    and estimates signal strength with RSSI. RSSI is useful for near/far behavior, but it is not a precise distance measurement
-    because walls, hands, and antenna orientation change the reading.
+  circuit_explanation: No external wiring is required because the ESP32 includes a Bluetooth radio and PCB antenna.
+    USB powers the board and uploads the sketch. The important hardware rule is to keep the antenna area clear of
+    metal and your hand during testing.
+  engineering_explanation: BLE advertising is designed for short, low-power messages. A phone scanner receives the
+    advertisement and estimates signal strength with RSSI. RSSI is useful for near/far behavior, but it is not a
+    precise distance measurement because walls, hands, and antenna orientation change the reading.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
   code:
     filename: esp32-ble-beacon.ino
     content: "// ESP32 BLE Beacon - Beginner\n// Broadcasts a standard iBeacon advertisement packet\n#include <BLEDevice.h>\n\
-      #include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n\n// iBeacon identity\
-      \ — change UUID for your deployment\n#define BEACON_UUID \"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\n#define MAJOR   \
-      \     1\n#define MINOR        1\n#define TX_POWER   -59  // Measured RSSI at 1 metre (calibrate per device)\n\nBLEAdvertising\
-      \ *pAdvertising;\n\nvoid setBeacon() {\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C); // Apple iBeacon manufacturer\
-      \ ID\n  beacon.setProximityUUID(BLEUUID(BEACON_UUID));\n  beacon.setMajor(MAJOR);\n  beacon.setMinor(MINOR);\n  beacon.setSignalPower(TX_POWER);\n\
-      \n  BLEAdvertisementData adData;\n  adData.setFlags(0x04); // BR/EDR not supported, LE general discoverable\n  adData.setManufacturerData(std::string(\n\
-      \    (char*)beacon.getData().data(), beacon.getData().size()));\n\n  pAdvertising->setAdvertisementData(adData);\n}\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  BLEDevice::init(\"ESP32-Beacon\");\n  BLEServer *pServer = BLEDevice::createServer();\n\
-      \  pAdvertising = BLEDevice::getAdvertising();\n  setBeacon();\n  pAdvertising->setScanResponse(false);\n  pAdvertising->setMinPreferred(0x00);\n\
+      #include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n\n// iBeacon\
+      \ identity — change UUID for your deployment\n#define BEACON_UUID \"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\
+      \n#define MAJOR        1\n#define MINOR        1\n#define TX_POWER   -59  // Measured RSSI at 1 metre (calibrate\
+      \ per device)\n\nBLEAdvertising *pAdvertising;\n\nvoid setBeacon() {\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C);\
+      \ // Apple iBeacon manufacturer ID\n  beacon.setProximityUUID(BLEUUID(BEACON_UUID));\n  beacon.setMajor(MAJOR);\n\
+      \  beacon.setMinor(MINOR);\n  beacon.setSignalPower(TX_POWER);\n\n  BLEAdvertisementData adData;\n  adData.setFlags(0x04);\
+      \ // BR/EDR not supported, LE general discoverable\n  adData.setManufacturerData(std::string(\n    (char*)beacon.getData().data(),\
+      \ beacon.getData().size()));\n\n  pAdvertising->setAdvertisementData(adData);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  BLEDevice::init(\"ESP32-Beacon\");\n  BLEServer *pServer = BLEDevice::createServer();\n  pAdvertising =\
+      \ BLEDevice::getAdvertising();\n  setBeacon();\n  pAdvertising->setScanResponse(false);\n  pAdvertising->setMinPreferred(0x00);\n\
       \  BLEDevice::startAdvertising();\n  Serial.println(\"iBeacon advertising — UUID: \" BEACON_UUID);\n  Serial.printf(\"\
-      Major: %d  Minor: %d  TX Power: %d dBmn\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon advertises\
-      \ continuously in background\n}"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
-    setup(), then repeats the measurement and decision logic in loop(). The BLE setup creates an advertiser, sets the beacon
-    identity, and starts broadcasting. The loop can stay light because advertising continues in the BLE stack.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
-    condition for esp32 ble beacon is reached.
+      Major: %d  Minor: %d  TX Power: %d dBmn\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon\
+      \ advertises continuously in background\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
+    pins in setup(), then repeats the measurement and decision logic in loop(). The BLE setup creates an advertiser,
+    sets the beacon identity, and starts broadcasting. The loop can stay light because advertising continues in
+    the BLE stack.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
+    the tested condition for esp32 ble beacon is reached.
   common_mistakes:
   - text: Expecting RSSI to behave like a tape measure.
   - text: Holding the ESP32 antenna while testing signal strength.
@@ -398,36 +406,15 @@ project:
     href: /projects/esp32-rfid-inventory-tracker.html
     description: Continue with a related ESP32 build that uses the same engineering idea.
   faqs:
-  - question: Is ESP32 BLE Beacon good for beginners?
-    answer: Yes, if you build the beginner version first and test one part at a time. Build this to understand wireless advertising
-      before building BLE sensors, asset tags, attendance systems, or proximity projects.
-  - question: Which ESP32 board should I use?
-    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
-      ESP32-CAM module and a reliable FTDI adapter.
-  - question: Can I power this from a phone charger?
-    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
-      and LED matrices may need a separate regulated supply.
-  - question: Why should I print values to Serial Monitor first?
-    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
-      from LED, relay, display, or network problems.
-  - question: Can I change the GPIO pins?
-    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
-      Analog-only pins such as GPIO34 cannot drive outputs.
-  - question: What should I test before installing it permanently?
-    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
-      that should trigger the project.
-  - question: Can I add Wi-Fi or a dashboard?
-    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
-      after Wi-Fi is added.
-  - question: What is the most common failure?
-    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
-      raw reading and wiring table first.
-  - question: How do I make it more reliable?
-    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
-      hysteresis where the output might chatter.
-  - question: Where should I learn next?
-    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
-      part of this project you want to improve.
+  - question: Why does RSSI change when the beacon is not moving?
+    answer: BLE signal strength changes with walls, metal objects, phone position, antenna direction, and people near
+      the board. Use RSSI as a rough signal clue, not as a stable measurement.
+  - question: Can the beacon measure exact distance?
+    answer: No. The TX_POWER value gives a calibration reference, but RSSI is too environment-dependent for exact
+      distance without extra filtering and testing.
+  - question: Does this BLE beacon need internet?
+    answer: No. The ESP32 advertises over Bluetooth Low Energy locally, and a phone scanner app can see it without
+      Wi-Fi or cloud services.
   references:
   - title: Bluetooth Assigned Numbers
     href: https://www.bluetooth.com/specifications/assigned-numbers/
@@ -436,8 +423,8 @@ project:
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32 BLE Beacon as a real ESP32 engineering build, not just a wiring demo. You now know how to
-      test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed ESP32 BLE Beacon as a real ESP32 engineering build, not just a wiring demo. You now know
+      how to test the input, protect the circuit, explain the code, and improve the project safely.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins

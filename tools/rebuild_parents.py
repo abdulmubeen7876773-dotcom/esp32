@@ -1,4 +1,4 @@
-import html
+﻿import html
 import re
 import sys
 from pathlib import Path
@@ -6,6 +6,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS, PARENT_BY_SLUG
 from project_page import is_golden_project, render_golden_project_page
+from project_text import breadcrumb_label, html_page_title, project_meta_description, project_title
+from site_counts import site_counts
 from staged_content import LEVELS, LEVEL_LABELS, build_all_levels
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from project_images import project_image_path
@@ -234,7 +236,7 @@ def build_head(parent: dict, hardware: dict) -> str:
             {
                 "@type": "HowToStep",
                 "position": i + 1,
-                "name": (step[:100] + "…") if len(step) > 100 else step,
+                "name": (step[:100] + "â€¦") if len(step) > 100 else step,
                 "text": step,
             }
             for i, step in enumerate(beginner_how)
@@ -396,7 +398,7 @@ def section_toc_html(active_level: str = "beginner") -> str:
 
 
 def mobile_nav_select(active_level: str = "beginner") -> str:
-    opts = ['<option value="">Jump to section…</option>']
+    opts = ['<option value="">Jump to sectionâ€¦</option>']
     for sec_id, label in SECTION_NAV:
         opts.append(f'<option value="sec-{active_level}-{sec_id}">{esc(label)}</option>')
     opts.append('<option value="related">Related Projects</option>')
@@ -447,14 +449,14 @@ def render_difficulty_content(level: dict, parent: dict) -> str:
 def render_golden_parent(parent: dict) -> str:
     slug = parent["slug"]
     path = f"projects/{slug}.html"
-    title = f"{parent['title']} | {SITE_NAME}"
-    desc = parent["description"]
+    title = html_page_title(parent)
+    desc = project_meta_description(parent)
     proj = parent.get("project") or {}
     crumbs = breadcrumb_schema(
         [
             ("Home", "/"),
             ("Projects", "projects.html"),
-            (parent["title"], path),
+            (breadcrumb_label(parent), path),
         ]
     )
     url = f"{SITE_DOMAIN}/{path}"
@@ -463,7 +465,7 @@ def render_golden_parent(parent: dict) -> str:
     article = {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": parent["title"],
+        "headline": project_title(parent),
         "description": desc,
         "datePublished": parent.get("date_published", "2026-06-14"),
         "dateModified": parent.get("date_modified", "2026-06-29"),
@@ -480,7 +482,7 @@ def render_golden_parent(parent: dict) -> str:
     howto = {
         "@context": "https://schema.org",
         "@type": "HowTo",
-        "name": f"How to build {parent['title']}",
+        "name": f"How to build {project_title(parent)}",
         "description": desc,
         "totalTime": proj.get("estimated_time", ""),
         "supply": [{"@type": "HowToSupply", "name": item.get("item", "")} for item in proj.get("components", []) if isinstance(item, dict)],
@@ -618,7 +620,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
   </article>
   <aside class="sidebar-right">
     <div class="sidebar-sticky">
-      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">15 parent projects with Beginner, Intermediate, and Advanced stages.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects »</a></p></div>
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">{site_counts()['total_projects']} projects with practical wiring, code, and troubleshooting.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects Â»</a></p></div>
     </div>
   </aside>
 </div>

@@ -1,0 +1,300 @@
+slug: esp32-cam
+name: ESP32-CAM (AI-Thinker)
+category: Boards
+difficulty: Intermediate
+icon: CAM
+date_modified: '2026-07-10'
+summary: AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring,
+  5 V power guidance, and privacy-first local camera use.
+applications:
+- Local image capture demos
+- ESP32-CAM snapshot servers
+- Classroom camera pinout lessons
+- Local QR scanning projects
+- Bounded computer-vision experiments
+- Privacy and consent discussions
+eli12: 'The ESP32-CAM is an ESP32 board with a tiny camera already connected to it. Instead of wiring every camera
+  signal yourself, you use the board''s fixed AI-Thinker pin map and write code with the built-in esp_camera driver.
+
+
+  It is different from a normal ESP32 DevKit because it usually does not have a USB port. You program it with an
+  FTDI or CP2102 USB-to-serial adapter, ground IO0 only while uploading, then disconnect IO0 so the sketch can run.
+
+
+  The board is a low-voltage learning module, but cameras create privacy responsibilities. Use it only with consent,
+  keep examples local by default, and do not present it as a professional security system.'
+quick_facts:
+- label: Board profile
+  value: AI-Thinker ESP32-CAM
+  why: Matches the camera pin map used by this site's ESP32-CAM projects.
+- label: Camera
+  value: OV2640
+  why: The onboard camera is connected through a fixed parallel bus.
+- label: Programming
+  value: FTDI serial adapter
+  why: Adapter TX crosses to board U0R, adapter RX crosses to board U0T.
+- label: Boot mode
+  value: IO0 to GND for upload only
+  why: Leaving IO0 grounded after flashing keeps the board in bootloader mode.
+- label: Power
+  value: Stable 5 V supply
+  why: Weak 5 V sources commonly cause brownouts during Wi-Fi or camera capture.
+- label: Library
+  value: esp_camera.h
+  why: Bundled with the Arduino ESP32 camera support, not a separate camera library.
+how_it_works: 'The AI-Thinker ESP32-CAM routes the OV2640 camera signals to fixed ESP32 GPIOs on the board. Firmware
+  fills a camera_config_t structure with that pin map, selects a conservative frame size and JPEG quality, and calls
+  esp_camera_init(). A project can then request a frame with esp_camera_fb_get(), use or serve the image, and return
+  the frame buffer with esp_camera_fb_return().
+
+
+  Programming uses the ESP32 UART bootloader. IO0 grounded at reset selects upload mode. IO0 disconnected or high
+  at reset lets the uploaded sketch run. That one jumper explains many upload and ''sketch will not start'' problems.
+
+
+  Camera capture and Wi-Fi both raise current demand. If the 5 V source or wiring is weak, the board may reset or
+  report camera initialization errors even when the code and pin map are correct.'
+specs:
+- name: Board variant
+  value: AI-Thinker ESP32-CAM
+  why: The pinout below is for the AI-Thinker profile used by the repository camera projects.
+- name: Camera sensor
+  value: OV2640
+  why: The camera is already connected to the ESP32 on the module.
+- name: Logic level
+  value: 3.3 V GPIO
+  why: Do not drive ESP32 signal pins with 5 V logic.
+- name: Power input
+  value: 5 V board input
+  why: Use a stable 5 V source; weak FTDI adapters often brown out.
+- name: Recommended current headroom
+  value: 500 mA minimum, 1 A practical bench supply
+  why: Wi-Fi and frame capture create current spikes.
+- name: Programming mode
+  value: IO0 grounded at reset
+  why: Selects UART bootloader mode for flashing.
+- name: Normal run mode
+  value: IO0 disconnected from GND
+  why: Allows the uploaded sketch to boot normally.
+- name: PSRAM
+  value: Common on AI-Thinker boards; verify at runtime
+  why: Larger frame sizes require PSRAM and fail if allocation is unavailable.
+- name: Arduino board profile
+  value: AI Thinker ESP32-CAM
+  why: Use the matching board profile in Arduino-ESP32.
+pinout:
+- pin: 5V
+  role: Power input
+  connects: Stable 5 V supply
+  note: Use enough current headroom for Wi-Fi and camera capture.
+- pin: GND
+  role: Ground
+  connects: FTDI GND and supply GND
+  note: All power and serial connections share ground.
+- pin: U0R / RX0
+  role: UART receive
+  connects: FTDI TX
+  note: Cross TX from the adapter to RX on the board.
+- pin: U0T / TX0
+  role: UART transmit
+  connects: FTDI RX
+  note: Cross RX from the adapter to TX on the board.
+- pin: IO0
+  role: Boot strap
+  connects: GND only during upload
+  note: Disconnect from GND after flashing so the sketch runs.
+- pin: PWDN
+  role: Camera power-down
+  connects: GPIO32
+  note: AI-Thinker camera control pin.
+- pin: RESET
+  role: Camera reset
+  connects: -1 / not connected
+  note: The AI-Thinker profile leaves camera reset unconnected.
+- pin: XCLK
+  role: Camera clock
+  connects: GPIO0
+  note: Part of the fixed camera map; avoid extra loads.
+- pin: SIOD
+  role: Camera I2C data
+  connects: GPIO26
+  note: OV2640 control bus SDA.
+- pin: SIOC
+  role: Camera I2C clock
+  connects: GPIO27
+  note: OV2640 control bus SCL.
+- pin: VSYNC
+  role: Camera sync
+  connects: GPIO25
+  note: Fixed AI-Thinker sync pin.
+- pin: HREF
+  role: Camera sync
+  connects: GPIO23
+  note: Fixed AI-Thinker sync pin.
+- pin: PCLK
+  role: Camera pixel clock
+  connects: GPIO22
+  note: Fixed AI-Thinker pixel clock.
+- pin: Y9
+  role: Camera data
+  connects: GPIO35
+  note: Fixed OV2640 data line.
+- pin: Y8
+  role: Camera data
+  connects: GPIO34
+  note: Fixed OV2640 data line.
+- pin: Y7
+  role: Camera data
+  connects: GPIO39
+  note: Fixed OV2640 data line.
+- pin: Y6
+  role: Camera data
+  connects: GPIO36
+  note: Fixed OV2640 data line.
+- pin: Y5
+  role: Camera data
+  connects: GPIO21
+  note: Fixed OV2640 data line.
+- pin: Y4
+  role: Camera data
+  connects: GPIO19
+  note: Fixed OV2640 data line.
+- pin: Y3
+  role: Camera data
+  connects: GPIO18
+  note: Fixed OV2640 data line.
+- pin: Y2
+  role: Camera data
+  connects: GPIO5
+  note: Fixed OV2640 data line.
+- pin: Flash LED
+  role: Illumination/status
+  connects: GPIO4 on common AI-Thinker boards
+  note: Confirm clone-board wiring before relying on this LED.
+wiring:
+  illustration_alt: 'ESP32-CAM connected to an FTDI programmer: 5V to 5V, GND to GND, FTDI TX to U0R, FTDI RX to
+    U0T, and IO0 to GND only for programming mode; IO0 is disconnected for normal run mode.'
+  summary: 'Programming mode and normal run mode use the same 5 V, GND, and crossed TX/RX wiring. The only difference
+    is IO0: connect IO0 to GND while uploading, then disconnect IO0 from GND and reset the board to run the sketch.'
+  steps:
+  - Unplug the 5 V supply and USB-to-serial adapter before rewiring.
+  - Connect adapter GND to ESP32-CAM GND.
+  - Connect a stable 5 V supply to ESP32-CAM 5V.
+  - Connect adapter TX to ESP32-CAM U0R/RX0.
+  - Connect adapter RX to ESP32-CAM U0T/TX0.
+  - For upload only, connect IO0 to GND and reset the board.
+  - After upload, remove the IO0-to-GND jumper and reset the board for normal sketch execution.
+library: Arduino ESP32 core esp_camera.h camera driver
+code:
+  filename: esp32_cam_ai_thinker_init_check.ino
+  notes: This minimal sketch checks that the AI-Thinker pin map, board profile, camera ribbon, PSRAM/frame setting,
+    and 5 V power are suitable before adding a web server or project-specific logic.
+  content: "#include \"esp_camera.h\"\n\n#define PWDN_GPIO_NUM     32\n#define RESET_GPIO_NUM    -1\n#define XCLK_GPIO_NUM\
+    \      0\n#define SIOD_GPIO_NUM     26\n#define SIOC_GPIO_NUM     27\n#define Y9_GPIO_NUM       35\n#define\
+    \ Y8_GPIO_NUM       34\n#define Y7_GPIO_NUM       39\n#define Y6_GPIO_NUM       36\n#define Y5_GPIO_NUM    \
+    \   21\n#define Y4_GPIO_NUM       19\n#define Y3_GPIO_NUM       18\n#define Y2_GPIO_NUM        5\n#define VSYNC_GPIO_NUM\
+    \    25\n#define HREF_GPIO_NUM     23\n#define PCLK_GPIO_NUM     22\n\nvoid setup() {\n  Serial.begin(115200);\n\
+    \n  camera_config_t config = {};\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n\
+    \  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3\
+    \ = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n\
+    \  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync\
+    \ = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl\
+    \ = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz\
+    \ = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = psramFound() ? FRAMESIZE_VGA :\
+    \ FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = psramFound() ? 2 : 1;\n\n  esp_err_t err\
+    \ = esp_camera_init(&config);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x\\n\", err);\n\
+    \    Serial.println(\"Check AI-Thinker board profile, 5 V power, ribbon cable, and PSRAM/frame settings.\");\n\
+    \    while (true) delay(1000);\n  }\n\n  Serial.println(\"ESP32-CAM initialized with AI-Thinker pin map.\");\n\
+    }\n\nvoid loop() {\n  delay(1000);\n}\n"
+output: Serial Monitor at 115200 baud prints 'ESP32-CAM initialized with AI-Thinker pin map' when the board profile,
+  power, ribbon cable, and frame-buffer settings are correct. If initialization fails, the sketch prints a clear
+  error.
+common_mistakes:
+- text: Leaving IO0 grounded after flashing, which keeps the board in bootloader mode.
+- text: Connecting FTDI TX-to-TX and RX-to-RX instead of crossing TX/RX.
+- text: Powering the camera from a weak FTDI adapter or unstable USB port.
+- text: Choosing a frame size that needs PSRAM when PSRAM is not available.
+- text: Treating a local classroom demo as a professional security camera.
+- text: Pointing the camera at people or private spaces without consent.
+troubleshooting:
+- problem: Upload does not start
+  cause: IO0 is not grounded during reset or TX/RX are not crossed.
+  fix: Ground IO0, reset, confirm adapter TX goes to U0R and adapter RX goes to U0T, then upload again.
+- problem: Upload succeeds but sketch will not run
+  cause: IO0 is still tied to GND after flashing.
+  fix: Remove the IO0-to-GND jumper and reset the board.
+- problem: Camera init failed
+  cause: Wrong board profile, loose ribbon cable, unsupported frame size, or weak power.
+  fix: Select AI Thinker ESP32-CAM, reseat the camera ribbon gently, start with QVGA/VGA, and use stable 5 V power.
+- problem: Random resets or brownout messages
+  cause: Wi-Fi or camera capture current spikes exceed the supply or wiring capability.
+  fix: Use a dedicated 5 V supply with more current headroom and short power wires; add a bulk capacitor only as
+    practical filtering, not as a universal fix.
+- problem: Large frames fail
+  cause: PSRAM is missing, disabled, or not detected.
+  fix: Check psramFound(), use the AI Thinker profile, and reduce frame size when PSRAM is unavailable.
+related_guides:
+- title: Installing Arduino IDE for ESP32
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Set up the Arduino ESP32 board package before uploading ESP32-CAM sketches.
+- title: What is ESP32?
+  href: /guides/what-is-esp32.html
+  description: Review ESP32 power, boot, GPIO, and Wi-Fi basics before using the camera board.
+related_projects:
+- title: Build a Camera Capture Server
+  href: /projects/esp32-camera-capture-server.html
+  description: Start with a local snapshot server that uses the same AI-Thinker pin map.
+- title: ESP32-CAM Local Network Camera Demo
+  href: /projects/esp32-security-camera-system.html
+  description: Use the board as a privacy-bounded local camera demo, not a professional security system.
+- title: Build a Local Face Detection Demo
+  href: /projects/esp32-cam-face-detection.html
+  description: Compare another local ESP32-CAM project with consent and privacy limits.
+- title: Build an ESP32-CAM QR Scanner
+  href: /projects/esp32-cam-qr-scanner.html
+  description: Use the same board for local QR scanning experiments.
+- title: Build a Color Object Presence Demo
+  href: /projects/esp32-ai-object-detector.html
+  description: Study a bounded computer-vision project that avoids unsupported AI claims.
+related_components:
+- title: ESP32 DevKit Board
+  href: /components/esp32-devkit.html
+  description: Compare this camera board with a plain USB-programmable ESP32 DevKit.
+faqs:
+- question: What is the ESP32-CAM AI-Thinker board?
+  answer: It is an ESP32 board with an OV2640 camera connected through a fixed AI-Thinker pin map.
+- question: How do I connect IO0 when flashing?
+  answer: Connect IO0 to GND only during upload, then disconnect it from GND before resetting the board to run the
+    sketch.
+- question: Why does my ESP32-CAM reset randomly?
+  answer: The most common cause is weak 5 V power during Wi-Fi or camera capture current spikes.
+- question: Why does upload fail even though power is connected?
+  answer: 'Check IO0-to-GND for upload mode and cross the serial lines: adapter TX to board U0R, adapter RX to board
+    U0T.'
+- question: Is ESP32-CAM a professional security camera?
+  answer: No. Treat it as an educational local camera board; do not expose example projects to the public internet.
+- question: Glossary - What is IO0?
+  answer: IO0 is a boot strap pin. Grounded at reset means programming mode; disconnected or high at reset means
+    normal sketch execution.
+- question: Glossary - What is PSRAM?
+  answer: PSRAM is extra memory on many ESP32-CAM boards. It helps larger camera frames fit in memory.
+- question: Parent tips - What is the main safety issue?
+  answer: The board is low voltage; the main concern is privacy and consent. Keep the camera visible and use it
+    only with awareness of people nearby.
+- question: Parent tips - What should I check before a child uses it?
+  answer: Check stable 5 V power, remove IO0 from GND after flashing, and confirm the camera is not aimed at private
+    spaces.
+- question: Teacher tips - How can this fit into class?
+  answer: Use it to teach boot modes, pin maps, local web servers, and privacy-by-design in one contained lab.
+- question: Teacher tips - What should students document?
+  answer: Have students record upload wiring, normal-run wiring, selected frame size, and how they handled consent.
+- question: Challenge yourself - How can I prove the pin map works?
+  answer: Run the init-check sketch, then capture one local frame before adding any larger project logic.
+- question: Challenge yourself - How can I improve privacy?
+  answer: Add a visible status LED or physical lens cover and keep all access on the local network.
+- question: Mini quiz - What changes between upload and run mode?
+  answer: 'Only IO0 changes: grounded for upload, disconnected from GND for normal run.'
+- question: Mini quiz - Why cross TX and RX?
+  answer: The adapter transmits into the board receiver, and the board transmits back into the adapter receiver.
+datasheet_url: https://github.com/espressif/esp32-camera
+datasheet_note: Espressif camera driver reference used by Arduino ESP32 camera examples.

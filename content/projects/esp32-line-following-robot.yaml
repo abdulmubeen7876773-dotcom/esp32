@@ -1,358 +1,227 @@
-{
-  "format": "golden",
-  "slug": "esp32-line-following-robot",
-  "title": "ESP32 Line Following Robot",
-  "category": "Robotics",
-  "image": "/assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg",
-  "featured_image": "/assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg",
-  "hero_image": "/assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg",
-  "placeholder_image": "/assets/visuals/projects/placeholders/esp32-line-following-robot-placeholder.svg",
-  "og_image": "/assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg",
-  "description": "Build a two-motor robot that reads line sensors and steers itself along a dark track.",
-  "source_base": "esp32-line-following-robot",
-  "sensor": "left and right IR line sensors",
-  "output": "motor driver",
-  "featured": true,
-  "date_published": "2026-06-14",
-  "date_modified": "2026-06-29",
-  "keywords": [
-    "ESP32",
-    "ESP32 Line Following Robot",
-    "left and right IR line sensors",
-    "motor driver",
-    "Arduino tutorial"
-  ],
-  "hardware": {
-    "sensor_pin": "GPIO34/GPIO35",
-    "output_pin": "GPIO16-GPIO19",
-    "sensor_name": "left and right IR line sensors",
-    "output_name": "motor driver",
-    "wiring": [
-      {
-        "component": "left and right IR line sensors",
-        "pin": "GPIO34/GPIO35"
-      },
-      {
-        "component": "motor driver",
-        "pin": "GPIO16-GPIO19"
-      }
-    ]
-  },
-  "project": {
-    "icon": "ESP",
-    "mission_title": "Build Your Line Following Robot",
-    "difficulty": "Intermediate",
-    "age": "Ages 12+",
-    "estimated_time": "90-150 min",
-    "budget": "Under $35",
-    "what_you_build": "A working line-following robot with an ESP32, a real input, a controlled output, Serial Monitor diagnostics, and a wiring map you can expand into a more advanced version.",
-    "components": [
-      {
-        "item": "ESP32 DevKit board",
-        "note": "Main controller",
-        "icon": "PART",
-        "link": "/components/esp32-devkit.html"
-      },
-      {
-        "item": "Left And Right Ir Line Sensors",
-        "note": "Primary input for the project",
-        "icon": "PART"
-      },
-      {
-        "item": "Motor Driver",
-        "note": "Physical output controlled by ESP32",
-        "icon": "PART"
-      },
-      {
-        "item": "Breadboard and jumper wires",
-        "note": "Prototype wiring",
-        "icon": "PART"
-      },
-      {
-        "item": "USB data cable",
-        "note": "Programming and testing",
-        "icon": "PART"
-      }
-    ],
-    "bom": [
-      {
-        "part": "ESP32 DevKit",
-        "qty": "1",
-        "estimated_cost": "$6-$10",
-        "notes": "USB board"
-      },
-      {
-        "part": "Left And Right Ir Line Sensors",
-        "qty": "1",
-        "estimated_cost": "$2-$10",
-        "notes": "Project input"
-      },
-      {
-        "part": "Motor Driver",
-        "qty": "1",
-        "estimated_cost": "$3-$12",
-        "notes": "Use low-voltage test hardware"
-      },
-      {
-        "part": "Breadboard and wires",
-        "qty": "1 set",
-        "estimated_cost": "$3-$5",
-        "notes": "Prototype wiring"
-      }
-    ],
-    "wiring": {
-      "illustration_alt": "ESP32 Line Following Robot wiring diagram",
-      "summary": "Wire the left and right IR line sensors first, verify readings, then connect the motor driver.",
-      "steps": [
-        "Unplug USB before placing modules on the breadboard.",
-        "Connect the left and right IR line sensors power pins to the correct 3.3 V or 5 V rail according to its module label.",
-        "Connect the left and right IR line sensors signal line to GPIO34/GPIO35.",
-        "Connect the motor driver control input to GPIO16-GPIO19 and share ground with the ESP32.",
-        "Power the ESP32 from USB and test the input reading before enabling the output."
-      ]
-    },
-    "gpio_map": [
-      {
-        "signal": "left and right IR line sensors",
-        "esp32_pin": "GPIO34/GPIO35",
-        "direction": "Input",
-        "notes": "Read before controlling output"
-      },
-      {
-        "signal": "motor driver",
-        "esp32_pin": "GPIO16-GPIO19",
-        "direction": "Output",
-        "notes": "Drive through a module or driver"
-      },
-      {
-        "signal": "Status LED",
-        "esp32_pin": "GPIO2",
-        "direction": "Output",
-        "notes": "Optional debug indicator"
-      },
-      {
-        "signal": "Serial Monitor",
-        "esp32_pin": "USB",
-        "direction": "Debug",
-        "notes": "115200 baud"
-      }
-    ],
-    "code": {
-      "filename": "line-following-robot.ino",
-      "content": "const int LEFT_SENSOR = 34;\nconst int RIGHT_SENSOR = 35;\nconst int L_IN1 = 16;\nconst int L_IN2 = 17;\nconst int R_IN1 = 18;\nconst int R_IN2 = 19;\nconst int LINE_THRESHOLD = 1800;\n\nvoid leftMotor(bool forward) {\n  digitalWrite(L_IN1, forward ? HIGH : LOW);\n  digitalWrite(L_IN2, forward ? LOW : HIGH);\n}\n\nvoid rightMotor(bool forward) {\n  digitalWrite(R_IN1, forward ? HIGH : LOW);\n  digitalWrite(R_IN2, forward ? LOW : HIGH);\n}\n\nvoid stopMotors() {\n  digitalWrite(L_IN1, LOW); digitalWrite(L_IN2, LOW);\n  digitalWrite(R_IN1, LOW); digitalWrite(R_IN2, LOW);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(L_IN1, OUTPUT); pinMode(L_IN2, OUTPUT);\n  pinMode(R_IN1, OUTPUT); pinMode(R_IN2, OUTPUT);\n}\n\nvoid loop() {\n  bool leftOnLine = analogRead(LEFT_SENSOR) > LINE_THRESHOLD;\n  bool rightOnLine = analogRead(RIGHT_SENSOR) > LINE_THRESHOLD;\n\n  if (leftOnLine && rightOnLine) { leftMotor(true); rightMotor(true); }\n  else if (leftOnLine) { stopMotors(); rightMotor(true); }\n  else if (rightOnLine) { leftMotor(true); stopMotors(); }\n  else { stopMotors(); }\n\n  Serial.printf(\"L:%d R:%d\\n\", leftOnLine, rightOnLine);\n  delay(40);\n}\n"
-    },
-    "expected_output": "Serial Monitor should show a changing reading. When the left and right IR line sensors reaches the test condition, the status LED and motor driver should switch state. If the reading changes but the output does not, debug the output wiring separately.",
-    "common_mistakes": [
-      {
-        "text": "Testing input and output for the first time together."
-      },
-      {
-        "text": "Using a GPIO pin that does not match the code constant."
-      },
-      {
-        "text": "Expecting an ESP32 GPIO to power a motor, pump, or lock directly."
-      },
-      {
-        "text": "Forgetting the shared ground between modules."
-      }
-    ],
-    "troubleshooting": [
-      {
-        "problem": "left and right IR line sensors never changes",
-        "fix": "Check power, ground, signal pin, and whether the sensor is analog or digital."
-      },
-      {
-        "problem": "motor driver does not switch",
-        "fix": "Test the output module with a simple blink-style sketch before using the full project."
-      },
-      {
-        "problem": "ESP32 resets under load",
-        "fix": "Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32."
-      },
-      {
-        "problem": "Behavior is reversed",
-        "fix": "Your module may be active LOW; invert the output logic after confirming with Serial Monitor."
-      }
-    ],
-    "upgrade_ideas": [
-      "Add OLED status feedback.",
-      "Add Wi-Fi dashboard or mobile alerts.",
-      "Store event history in flash or a cloud service.",
-      "Add calibration settings instead of hard-coded thresholds."
-    ],
-    "related_guides": [
-      {
-        "title": "Read Temperature with DHT22",
-        "href": "/guides/read-temperature-dht22.html",
-        "description": "Learn the sensor-reading workflow used in many ESP32 projects."
-      },
-      {
-        "title": "Connect an OLED Display",
-        "href": "/guides/connect-oled-esp32.html",
-        "description": "Add a local display for values, status, and debugging."
-      }
-    ],
-    "related_projects": [
-      {
-        "title": "ESP32 IoT Weather Station",
-        "href": "/projects/esp32-iot-weather-station.html",
-        "description": "Practice sensor readings and clean Serial output."
-      },
-      {
-        "title": "ESP32 Home Climate Automation",
-        "href": "/projects/esp32-home-climate-automation.html",
-        "description": "Turn measurements into automatic control decisions."
-      }
-    ],
-    "complete": {
-      "summary": "You built a real line-following robot and learned how to connect sensing, decision logic, and output control in one ESP32 project.",
-      "skills": [
-        "Wire and test left and right IR line sensors",
-        "Control motor driver from ESP32",
-        "Debug hardware with Serial Monitor",
-        "Improve the project safely"
-      ]
-    },
-    "story": "ESP32 Line Following Robot turns the ESP32 into a real object that senses something, decides what it means, and reacts in the physical world.\n\nThe important lesson is not only the finished line-following robot. You learn how to separate input, decision logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.",
-    "eli12": "Think of the ESP32 as the brain. The left and right IR line sensors is how it notices the world. The motor driver is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.",
-    "parent_safety": "This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming circuit. Do not use mains voltage on a breadboard.",
-    "learning_objectives": [
-      "Wire and test the left and right IR line sensors before connecting the rest of the circuit.",
-      "Map each signal to a named ESP32 GPIO and keep the code constants readable.",
-      "Control motor driver using a clear threshold or command instead of hidden magic numbers.",
-      "Use Serial Monitor as an engineering tool, not only as a success message.",
-      "Identify power, wiring, and timing faults using a repeatable test checklist."
-    ],
-    "circuit_explanation": "The circuit is split into an input side and an output side. The left and right IR line sensors tells the ESP32 what is happening. The motor driver receives a controlled signal from the ESP32, usually through a driver, relay, or module that can handle more current than a GPIO pin.",
-    "engineering_explanation": "A reliable line-following robot is built in layers. First prove the input, then prove the output, then join them with simple state logic. This prevents a common beginner problem where the robot, lock, or automation fails and every wire looks suspicious at the same time.",
-    "code_explanation": "The example uses named pins, reads the input, converts the reading into a true or false decision, and then updates the output and status LED. Replace the threshold with values measured from your own left and right IR line sensors because modules vary.",
-    "testing_checklist": [
-      "ESP32 appears on the correct port and accepts a basic blink upload.",
-      "Ground is shared between every module that exchanges signals with the ESP32.",
-      "Each GPIO in the code matches the wire connected on the breadboard.",
-      "Serial Monitor prints startup text at 115200 baud.",
-      "The left and right IR line sensors value changes when you create a real test condition.",
-      "The motor driver changes only when the expected condition is reached.",
-      "The circuit still behaves correctly after power is removed and restored."
-    ],
-    "build_photos": [
-      {
-        "title": "Breadboard overview",
-        "note": "Show the ESP32, module placement, and power rails clearly."
-      },
-      {
-        "title": "Close-up wiring",
-        "note": "Capture each GPIO wire so beginners can compare their build."
-      },
-      {
-        "title": "Working output",
-        "note": "Show the Serial Monitor, display, robot, pump, or lock state after the code runs."
-      }
-    ],
-    "downloads": [
-      {
-        "text": "ESP32 Line Following Robot Arduino sketch",
-        "note": "Use the code section as the downloadable source until file downloads are published."
-      },
-      {
-        "text": "Wiring checklist",
-        "note": "Match the GPIO table and wiring steps before powering the circuit."
-      },
-      {
-        "text": "Troubleshooting worksheet",
-        "note": "Record symptoms, Serial output, voltage checks, and fixes."
-      }
-    ],
-    "real_world_applications": [
-      "Classroom line-following robot trainer",
-      "STEM lab demonstration",
-      "Home automation prototype",
-      "Engineering debugging practice",
-      "IoT portfolio project"
-    ],
-    "faqs": [
-      {
-        "question": "Is ESP32 Line Following Robot good for beginners?",
-        "answer": "Yes. Start with USB power, build the wiring slowly, and test one signal at a time before adding the full line-following robot behavior."
-      },
-      {
-        "question": "Which ESP32 board should I use for ESP32 Line Following Robot?",
-        "answer": "A standard ESP32 DevKit is the safest choice because it has USB programming, many GPIO pins, and strong Arduino IDE support."
-      },
-      {
-        "question": "Can I power ESP32 Line Following Robot from a phone charger?",
-        "answer": "For bench testing, use the USB cable connected to your computer. Use a regulated 5 V supply only after the circuit works and the current requirement is known."
-      },
-      {
-        "question": "Why does my left and right IR line sensors reading look wrong?",
-        "answer": "Most wrong readings come from reversed power, loose breadboard rows, the wrong GPIO number in code, or reading the sensor before it has settled."
-      },
-      {
-        "question": "Can I change the GPIO pins?",
-        "answer": "Yes, but update the constants at the top of the sketch and avoid ESP32 boot strapping pins unless you understand their startup behavior."
-      },
-      {
-        "question": "Does ESP32 Line Following Robot need Wi-Fi?",
-        "answer": "The core lesson works locally. Wi-Fi is useful for dashboards, alerts, and remote control, but it should be added after the hardware is stable."
-      },
-      {
-        "question": "Can I use 5 V signals with ESP32 in ESP32 Line Following Robot?",
-        "answer": "Do not feed 5 V logic into an ESP32 GPIO. ESP32 pins are 3.3 V logic pins and can be damaged by 5 V signals."
-      },
-      {
-        "question": "Why does motor driver not respond?",
-        "answer": "Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the output module uses active HIGH or active LOW logic."
-      },
-      {
-        "question": "What should I test first?",
-        "answer": "Upload a tiny sketch that reads only left and right IR line sensors. Once that is reliable, add motor driver, then add the full decision logic."
-      },
-      {
-        "question": "How accurate is this project?",
-        "answer": "It is accurate enough for learning and prototypes. For production work you should calibrate sensors, protect wiring, and test across temperature and voltage changes."
-      },
-      {
-        "question": "Can this run on batteries?",
-        "answer": "Yes, but runtime depends on Wi-Fi usage, sensor current, output current, and sleep mode. First measure current with a multimeter."
-      },
-      {
-        "question": "Should I solder the circuit?",
-        "answer": "Use a breadboard while learning. Solder a final version only after every wire and GPIO has been tested for several sessions."
-      },
-      {
-        "question": "Why does the ESP32 reset randomly?",
-        "answer": "Random resets usually mean weak USB power, motor or relay noise, brownout from high current loads, or a loose breadboard power rail."
-      },
-      {
-        "question": "Can I use PlatformIO instead of Arduino IDE?",
-        "answer": "Yes. The same sketch structure works in PlatformIO after adding the required libraries to the project configuration."
-      },
-      {
-        "question": "How do I make ESP32 Line Following Robot safer?",
-        "answer": "Keep high-current loads isolated, unplug before rewiring, use fused supplies for motors or pumps, and never connect mains voltage on a breadboard."
-      },
-      {
-        "question": "What is the most common mistake?",
-        "answer": "Beginners often trust the breadboard rows without checking continuity. Always trace each signal from ESP32 pin to module pin."
-      },
-      {
-        "question": "Can I add an OLED display?",
-        "answer": "Yes. An I2C OLED can share GPIO21 and GPIO22 with other I2C sensors as long as every device has a unique address."
-      },
-      {
-        "question": "How do I debug the code?",
-        "answer": "Print each important value to Serial Monitor: raw sensor reading, threshold, decision state, and output state."
-      },
-      {
-        "question": "Can this become a real product?",
-        "answer": "The idea can, but a product also needs enclosure design, electrical protection, watchdog recovery, calibration, and long-term testing."
-      },
-      {
-        "question": "What should I build next after ESP32 Line Following Robot?",
-        "answer": "Add logging, a web dashboard, OTA updates, or a second sensor so the line-following robot system can make better decisions."
-      }
-    ]
-  },
-  "quality_status": "golden",
-  "status": "complete"
-}
+format: golden
+slug: esp32-line-following-robot
+title: ESP32 Line Following Robot
+category: Robotics
+image: /assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg
+featured_image: /assets/visuals/projects/thumbs/esp32-line-following-robot-thumb.svg
+hero_image: /assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg
+placeholder_image: /assets/visuals/projects/placeholders/esp32-line-following-robot-placeholder.svg
+og_image: /assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg
+description: Build a two-motor robot that reads line sensors and steers itself along a dark track.
+meta_description: Build a two-motor robot that reads line sensors and steers itself along a dark track.
+source_base: esp32-line-following-robot
+sensor: left and right IR line sensors
+output: motor driver
+featured: true
+date_published: '2026-06-14'
+date_modified: '2026-06-29'
+keywords:
+- ESP32
+- ESP32 Line Following Robot
+- left and right IR line sensors
+- motor driver
+- Arduino tutorial
+hardware:
+  sensor_pin: GPIO34/GPIO35
+  output_pin: GPIO16-GPIO19
+  sensor_name: left and right IR line sensors
+  output_name: motor driver
+  wiring:
+  - component: left and right IR line sensors
+    pin: GPIO34/GPIO35
+  - component: motor driver
+    pin: GPIO16-GPIO19
+project:
+  icon: ESP
+  mission_title: Build Your Line Following Robot
+  difficulty: Intermediate
+  age: Ages 12+
+  estimated_time: 90-150 min
+  budget: Under $35
+  what_you_build: A working line-following robot with an ESP32, a real input, a controlled output, Serial Monitor
+    diagnostics, and a wiring map you can expand into a more advanced version.
+  components:
+  - item: ESP32 DevKit board
+    note: Main controller
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: Left And Right Ir Line Sensors
+    note: Primary input for the project
+    icon: PART
+  - item: Motor Driver
+    note: Physical output controlled by ESP32
+    icon: PART
+  - item: Breadboard and jumper wires
+    note: Prototype wiring
+    icon: PART
+  - item: USB data cable
+    note: Programming and testing
+    icon: PART
+  bom:
+  - part: ESP32 DevKit
+    qty: '1'
+    estimated_cost: $6-$10
+    notes: USB board
+  - part: Left And Right Ir Line Sensors
+    qty: '1'
+    estimated_cost: $2-$10
+    notes: Project input
+  - part: Motor Driver
+    qty: '1'
+    estimated_cost: $3-$12
+    notes: Use low-voltage test hardware
+  - part: Breadboard and wires
+    qty: 1 set
+    estimated_cost: $3-$5
+    notes: Prototype wiring
+  wiring:
+    illustration_alt: ESP32 Line Following Robot wiring diagram
+    summary: Wire the left and right IR line sensors first, verify readings, then connect the motor driver.
+    steps:
+    - Unplug USB before placing modules on the breadboard.
+    - Connect the left and right IR line sensors power pins to the correct 3.3 V or 5 V rail according to its module
+      label.
+    - Connect the left and right IR line sensors signal line to GPIO34/GPIO35.
+    - Connect the motor driver control input to GPIO16-GPIO19 and share ground with the ESP32.
+    - Power the ESP32 from USB and test the input reading before enabling the output.
+  gpio_map:
+  - signal: left and right IR line sensors
+    esp32_pin: GPIO34/GPIO35
+    direction: Input
+    notes: Read before controlling output
+  - signal: motor driver
+    esp32_pin: GPIO16-GPIO19
+    direction: Output
+    notes: Drive through a module or driver
+  - signal: Status LED
+    esp32_pin: GPIO2
+    direction: Output
+    notes: Optional debug indicator
+  - signal: Serial Monitor
+    esp32_pin: USB
+    direction: Debug
+    notes: 115200 baud
+  code:
+    filename: line-following-robot.ino
+    content: "const int LEFT_SENSOR = 34;\nconst int RIGHT_SENSOR = 35;\nconst int L_IN1 = 16;\nconst int L_IN2\
+      \ = 17;\nconst int R_IN1 = 18;\nconst int R_IN2 = 19;\nconst int LINE_THRESHOLD = 1800;\n\nvoid leftMotor(bool\
+      \ forward) {\n  digitalWrite(L_IN1, forward ? HIGH : LOW);\n  digitalWrite(L_IN2, forward ? LOW : HIGH);\n\
+      }\n\nvoid rightMotor(bool forward) {\n  digitalWrite(R_IN1, forward ? HIGH : LOW);\n  digitalWrite(R_IN2,\
+      \ forward ? LOW : HIGH);\n}\n\nvoid stopMotors() {\n  digitalWrite(L_IN1, LOW); digitalWrite(L_IN2, LOW);\n\
+      \  digitalWrite(R_IN1, LOW); digitalWrite(R_IN2, LOW);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(L_IN1,\
+      \ OUTPUT); pinMode(L_IN2, OUTPUT);\n  pinMode(R_IN1, OUTPUT); pinMode(R_IN2, OUTPUT);\n}\n\nvoid loop() {\n\
+      \  bool leftOnLine = analogRead(LEFT_SENSOR) > LINE_THRESHOLD;\n  bool rightOnLine = analogRead(RIGHT_SENSOR)\
+      \ > LINE_THRESHOLD;\n\n  if (leftOnLine && rightOnLine) { leftMotor(true); rightMotor(true); }\n  else if\
+      \ (leftOnLine) { stopMotors(); rightMotor(true); }\n  else if (rightOnLine) { leftMotor(true); stopMotors();\
+      \ }\n  else { stopMotors(); }\n\n  Serial.printf(\"L:%d R:%d\\n\", leftOnLine, rightOnLine);\n  delay(40);\n\
+      }\n"
+  expected_output: Serial Monitor should show a changing reading. When the left and right IR line sensors reaches
+    the test condition, the status LED and motor driver should switch state. If the reading changes but the output
+    does not, debug the output wiring separately.
+  common_mistakes:
+  - text: Testing input and output for the first time together.
+  - text: Using a GPIO pin that does not match the code constant.
+  - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
+  - text: Forgetting the shared ground between modules.
+  troubleshooting:
+  - problem: left and right IR line sensors never changes
+    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
+  - problem: motor driver does not switch
+    fix: Test the output module with a simple blink-style sketch before using the full project.
+  - problem: ESP32 resets under load
+    fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
+  - problem: Behavior is reversed
+    fix: Your module may be active LOW; invert the output logic after confirming with Serial Monitor.
+  upgrade_ideas:
+  - Add OLED status feedback.
+  - Add Wi-Fi dashboard or mobile alerts.
+  - Store event history in flash or a cloud service.
+  - Add calibration settings instead of hard-coded thresholds.
+  related_guides:
+  - title: Read Temperature with DHT22
+    href: /guides/read-temperature-dht22.html
+    description: Learn the sensor-reading workflow used in many ESP32 projects.
+  - title: Connect an OLED Display
+    href: /guides/connect-oled-esp32.html
+    description: Add a local display for values, status, and debugging.
+  related_projects:
+  - title: ESP32 IoT Weather Station
+    href: /projects/esp32-iot-weather-station.html
+    description: Practice sensor readings and clean Serial output.
+  - title: ESP32 Home Climate Automation
+    href: /projects/esp32-home-climate-automation.html
+    description: Turn measurements into automatic control decisions.
+  complete:
+    summary: You built a real line-following robot and learned how to connect sensing, decision logic, and output
+      control in one ESP32 project.
+    skills:
+    - Wire and test left and right IR line sensors
+    - Control motor driver from ESP32
+    - Debug hardware with Serial Monitor
+    - Improve the project safely
+  story: 'ESP32 Line Following Robot turns the ESP32 into a real object that senses something, decides what it means,
+    and reacts in the physical world.
+
+
+    The important lesson is not only the finished line-following robot. You learn how to separate input, decision
+    logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.'
+  eli12: Think of the ESP32 as the brain. The left and right IR line sensors is how it notices the world. The motor
+    driver is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.
+  parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
+    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
+    circuit. Do not use mains voltage on a breadboard.
+  learning_objectives:
+  - Wire and test the left and right IR line sensors before connecting the rest of the circuit.
+  - Map each signal to a named ESP32 GPIO and keep the code constants readable.
+  - Control motor driver using a clear threshold or command instead of hidden magic numbers.
+  - Use Serial Monitor as an engineering tool, not only as a success message.
+  - Identify power, wiring, and timing faults using a repeatable test checklist.
+  circuit_explanation: The circuit is split into an input side and an output side. The left and right IR line sensors
+    tells the ESP32 what is happening. The motor driver receives a controlled signal from the ESP32, usually through
+    a driver, relay, or module that can handle more current than a GPIO pin.
+  engineering_explanation: A reliable line-following robot is built in layers. First prove the input, then prove
+    the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
+    lock, or automation fails and every wire looks suspicious at the same time.
+  code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
+    and then updates the output and status LED. Replace the threshold with values measured from your own left and
+    right IR line sensors because modules vary.
+  testing_checklist:
+  - ESP32 appears on the correct port and accepts a basic blink upload.
+  - Ground is shared between every module that exchanges signals with the ESP32.
+  - Each GPIO in the code matches the wire connected on the breadboard.
+  - Serial Monitor prints startup text at 115200 baud.
+  - The left and right IR line sensors value changes when you create a real test condition.
+  - The motor driver changes only when the expected condition is reached.
+  - The circuit still behaves correctly after power is removed and restored.
+  build_photos:
+  - title: Breadboard overview
+    note: Show the ESP32, module placement, and power rails clearly.
+  - title: Close-up wiring
+    note: Capture each GPIO wire so beginners can compare their build.
+  - title: Working output
+    note: Show the Serial Monitor, display, robot, pump, or lock state after the code runs.
+  downloads:
+  - text: ESP32 Line Following Robot Arduino sketch
+    note: Use the code section as the downloadable source until file downloads are published.
+  - text: Wiring checklist
+    note: Match the GPIO table and wiring steps before powering the circuit.
+  - text: Troubleshooting worksheet
+    note: Record symptoms, Serial output, voltage checks, and fixes.
+  real_world_applications:
+  - Classroom line-following robot trainer
+  - STEM lab demonstration
+  - Home automation prototype
+  - Engineering debugging practice
+  - IoT portfolio project
+  faqs:
+  - question: Why does my left and right IR line sensors reading look wrong?
+    answer: Check the sensor height, track contrast, and GPIO34/GPIO35 wiring. Glossy paper and uneven lighting can
+      make the two sensors disagree.
+  - question: Why does motor driver not respond?
+    answer: Confirm the shared ground, motor supply, and GPIO16-GPIO19 control wiring. The ESP32 GPIO pins control
+      the driver; they do not power the motors directly.
+  - question: Why does the robot reset when motors start?
+    answer: Motor startup current can pull the supply down. Use a separate motor supply with common ground and test
+      sensor readings before enabling movement.
+quality_status: golden
+status: complete

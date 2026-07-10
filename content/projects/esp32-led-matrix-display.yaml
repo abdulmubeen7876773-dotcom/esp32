@@ -1,10 +1,11 @@
 slug: esp32-led-matrix-display
 title: ESP32 LED Matrix Display
 category: LED Projects
-description: Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the message and
-  brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time ticker board.
-meta_description: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring and brightness
-  control. Includes wiring, code, troublesho
+description: Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the
+  message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time
+  ticker board.
+meta_description: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring
+  and brightness control. Includes wiring, code, troublesho
 source_base: esp32-led-matrix-display-legacy-import
 sensor: 'TODO: sensor'
 output: MAX7219 DIN (MOSI)
@@ -34,10 +35,10 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect a single MAX7219 8x8 LED matrix module to the ESP32 via SPI
-      and use the MD_MAX72XX library to scroll a text message across the display. The message, scroll speed, and brightness
-      are set in the sketch. This teaches SPI communication, the MAX7219 daisy-chain architecture, and font rendering on an
-      8x8 dot matrix.</p>
+    overview_html: <p>In this beginner project you will connect a single MAX7219 8x8 LED matrix module to the ESP32
+      via SPI and use the MD_MAX72XX library to scroll a text message across the display. The message, scroll speed,
+      and brightness are set in the sketch. This teaches SPI communication, the MAX7219 daisy-chain architecture,
+      and font rendering on an 8x8 dot matrix.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× MAX7219 8x8 LED matrix module — Pre-assembled module with MAX7219 and 64 LEDs
@@ -59,18 +60,19 @@ levels:
       - GND
       - ''
     how:
-    - 'MAX7219 Serial Interface: The MAX7219 uses a 3-wire SPI interface (DIN, CLK, CS) to receive 16-bit words: 4-bit register
-      address and 8-bit data. It decodes the address to control individual rows of 8 LEDs. The ESP32 Arduino SPI driver sends
-      bytes at up to 10 MHz; the MAX7219 accepts up to 25 MHz.'
-    - 'Daisy-Chain Architecture: Multiple MAX7219 modules chain together by connecting DOUT of one to DIN of the next. The
-      CS pin is shared. To write to module N in a chain of M modules, the SPI data is shifted through all M modules and each
-      module latches its 16-bit word when CS rises. This is why the number of devices (MAX_DEVICES) must match the chain length.'
-    - 'MD_Parola Scroll Library: MD_Parola abstracts scrolling, fading, and display animations over MD_MAX72XX. displayScroll()
-      configures a non-blocking scroll that advances one pixel per SCROLL_SPEED milliseconds. displayAnimate() must be called
-      in loop() to advance the animation; it returns true when the current animation cycle completes.'
-    - 'Brightness Control: The MAX7219 has a 4-bit intensity register controlling PWM duty cycle from 1/32 (dim, level 0)
-      to 31/32 (bright, level 15). setIntensity(5) sets a comfortable indoor brightness. Reduce to 1-2 for dark rooms; increase
-      to 12-15 for bright retail environments.'
+    - 'MAX7219 Serial Interface: The MAX7219 uses a 3-wire SPI interface (DIN, CLK, CS) to receive 16-bit words:
+      4-bit register address and 8-bit data. It decodes the address to control individual rows of 8 LEDs. The ESP32
+      Arduino SPI driver sends bytes at up to 10 MHz; the MAX7219 accepts up to 25 MHz.'
+    - 'Daisy-Chain Architecture: Multiple MAX7219 modules chain together by connecting DOUT of one to DIN of the
+      next. The CS pin is shared. To write to module N in a chain of M modules, the SPI data is shifted through
+      all M modules and each module latches its 16-bit word when CS rises. This is why the number of devices (MAX_DEVICES)
+      must match the chain length.'
+    - 'MD_Parola Scroll Library: MD_Parola abstracts scrolling, fading, and display animations over MD_MAX72XX.
+      displayScroll() configures a non-blocking scroll that advances one pixel per SCROLL_SPEED milliseconds. displayAnimate()
+      must be called in loop() to advance the animation; it returns true when the current animation cycle completes.'
+    - 'Brightness Control: The MAX7219 has a 4-bit intensity register controlling PWM duty cycle from 1/32 (dim,
+      level 0) to 31/32 (bright, level 15). setIntensity(5) sets a comfortable indoor brightness. Reduce to 1-2
+      for dark rooms; increase to 12-15 for bright retail environments.'
     apps:
     - Reception desk name ticker display
     - Desk clock with scrolling date and time
@@ -78,36 +80,38 @@ levels:
     - Workshop safety message board
     troubleshooting:
     - - Display shows random lit pixels
-      - The hardware type (FC16_HW, DR0CR0RR0_HW, etc.) must match your module. Try each hardware type constant in the MD_MAX72XX
-        enumeration until the display shows correct output. FC16_HW is the most common for cheap Chinese modules.
+      - The hardware type (FC16_HW, DR0CR0RR0_HW, etc.) must match your module. Try each hardware type constant
+        in the MD_MAX72XX enumeration until the display shows correct output. FC16_HW is the most common for cheap
+        Chinese modules.
     - - Text appears mirrored or upside down
-      - Some MAX7219 modules have the connector on a different side. Add display.setZoneEffect(0, true, PA_FLIP_LR) or PA_FLIP_UD
-        to correct orientation. Also try changing HARDWARE_TYPE to MD_MAX72XX::GENERIC_HW.
+      - Some MAX7219 modules have the connector on a different side. Add display.setZoneEffect(0, true, PA_FLIP_LR)
+        or PA_FLIP_UD to correct orientation. Also try changing HARDWARE_TYPE to MD_MAX72XX::GENERIC_HW.
     - - Scrolling is very dim even at intensity 15
-      - The MAX7219 module VCC must be 5 V. At 3.3 V the LED current is limited and brightness is reduced. Use the ESP32 Vin
-        pin which provides 5 V from the USB supply. Also check the module ISET resistor; a 10 kohm resistor sets full-scale
-        current to approximately 40 mA per LED.
+      - The MAX7219 module VCC must be 5 V. At 3.3 V the LED current is limited and brightness is reduced. Use the
+        ESP32 Vin pin which provides 5 V from the USB supply. Also check the module ISET resistor; a 10 kohm resistor
+        sets full-scale current to approximately 40 mA per LED.
     upgrades: &id001
     - Chain 4 MAX7219 modules for a 32x8 display with longer message capacity
     - Add a button to cycle through several preset messages
     - Add an RTC module and display the current time and date
     - Add Wi-Fi and set the message via a web interface
-    code: "// ESP32 LED Matrix Display - Beginner\n// Single MAX7219 8x8; scrolling text via MD_MAX72XX library\n// Install:\
-      \ MD_MAX72XX by MajicDesigns in Library Manager\n// Install: MD_Parola by MajicDesigns in Library Manager\n\n#include\
-      \ <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n#define MAX_DEVICES\
-      \   1\n#define CS_PIN        5\n\nMD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\n\nconst char*\
-      \ message = \"Hello ESP32! \";\nconst uint8_t SCROLL_SPEED = 60; // milliseconds per step (lower = faster)\nconst uint8_t\
-      \ BRIGHTNESS   = 5;  // 0 (dim) to 15 (full)\n\nvoid setup() {\n  Serial.begin(115200);\n  display.begin();\n  display.setIntensity(BRIGHTNESS);\n\
-      \  display.displayClear();\n  display.displayScroll(message, PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);\n  Serial.println(\"\
-      LED matrix display ready.\");\n}\n\nvoid loop() {\n  if (display.displayAnimate()) {\n    // Animation complete — restart\
-      \ scroll\n    display.displayReset();\n  }\n}"
+    code: "// ESP32 LED Matrix Display - Beginner\n// Single MAX7219 8x8; scrolling text via MD_MAX72XX library\n\
+      // Install: MD_MAX72XX by MajicDesigns in Library Manager\n// Install: MD_Parola by MajicDesigns in Library\
+      \ Manager\n\n#include <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n\
+      #define MAX_DEVICES   1\n#define CS_PIN        5\n\nMD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\n\
+      \nconst char* message = \"Hello ESP32! \";\nconst uint8_t SCROLL_SPEED = 60; // milliseconds per step (lower\
+      \ = faster)\nconst uint8_t BRIGHTNESS   = 5;  // 0 (dim) to 15 (full)\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  display.begin();\n  display.setIntensity(BRIGHTNESS);\n  display.displayClear();\n  display.displayScroll(message,\
+      \ PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);\n  Serial.println(\"LED matrix display ready.\");\n}\n\nvoid loop()\
+      \ {\n  if (display.displayAnimate()) {\n    // Animation complete — restart scroll\n    display.displayReset();\n\
+      \  }\n}"
     code_filename: esp32-led-matrix-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build chains four MAX7219 modules for a 32x8 display and adds a web interface where
-      users type a custom message and set scroll speed and brightness from a browser. The current message and settings are
-      stored in NVS so they survive power cuts. An NTP clock mode displays the current time scrolling continuously when no
-      custom message is set.</p>
+    overview_html: <p>The intermediate build chains four MAX7219 modules for a 32x8 display and adds a web interface
+      where users type a custom message and set scroll speed and brightness from a browser. The current message
+      and settings are stored in NVS so they survive power cuts. An NTP clock mode displays the current time scrolling
+      continuously when no custom message is set.</p>
     components:
     - 1× ESP32 DevKit V1
     - 4× MAX7219 8x8 LED matrix module — Chained for 32x8 display
@@ -117,17 +121,18 @@ levels:
       - GPIO 23 / 5 / 18
       - Same as beginner; chain modules DOUT to DIN
     how:
-    - 'Four-Module Chain: Setting MAX_DEVICES=4 tells MD_Parola the chain length. SPI data is shifted through all four MAX7219
-      chips on each write. The display presents a continuous 32-pixel-wide canvas. The scroll message moves across all four
-      modules seamlessly without gaps.'
-    - 'Web Settings Form: The HTML form POST sends message, speed, brightness, and a clock-mode checkbox to /set. Server-side,
-      each arg() call extracts the posted value. After updating and saving to NVS, applyDisplay() reconfigures the scroll
-      with the new parameters immediately.'
-    - 'NVS Persistence: Message, speed, and brightness are saved to NVS after each web form submission. On the next power-on,
-      loadSettings() retrieves the last configured values so the display boots with the same message without requiring reconfiguration.'
-    - 'NTP Clock Mode: When clockMode is true, the loop builds a HH:MM:SS time string every iteration. When it differs from
-      the current message, applyDisplay() restarts the scroll with the new time. The scroll runs continuously across the four
-      modules showing the current time.'
+    - 'Four-Module Chain: Setting MAX_DEVICES=4 tells MD_Parola the chain length. SPI data is shifted through all
+      four MAX7219 chips on each write. The display presents a continuous 32-pixel-wide canvas. The scroll message
+      moves across all four modules seamlessly without gaps.'
+    - 'Web Settings Form: The HTML form POST sends message, speed, brightness, and a clock-mode checkbox to /set.
+      Server-side, each arg() call extracts the posted value. After updating and saving to NVS, applyDisplay() reconfigures
+      the scroll with the new parameters immediately.'
+    - 'NVS Persistence: Message, speed, and brightness are saved to NVS after each web form submission. On the next
+      power-on, loadSettings() retrieves the last configured values so the display boots with the same message without
+      requiring reconfiguration.'
+    - 'NTP Clock Mode: When clockMode is true, the loop builds a HH:MM:SS time string every iteration. When it differs
+      from the current message, applyDisplay() restarts the scroll with the new time. The scroll runs continuously
+      across the four modules showing the current time.'
     apps:
     - Reception message board updated from any browser
     - Retail promotion display remotely updated by staff
@@ -148,37 +153,39 @@ levels:
     - Add MQTT subscription so messages can be sent from Node-RED or Home Assistant
     - Add OTA firmware update so the sketch can be updated without physical access
     - Add multiple message slots rotatable via buttons on the web page
-    code: "// ESP32 LED Matrix - Intermediate (4x MAX7219 + web control + NTP clock)\n#include <MD_Parola.h>\n#include <MD_MAX72xx.h>\n\
-      #include <SPI.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include <Preferences.h>\n#include <time.h>\n\n#define\
-      \ HARDWARE_TYPE MD_MAX72XX::FC16_HW\n#define MAX_DEVICES 4\n#define CS_PIN 5\n\nMD_Parola display(HARDWARE_TYPE, CS_PIN,\
-      \ MAX_DEVICES);\nWebServer server(80);\nPreferences prefs;\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\n\nString\
-      \ message=\"Hello!\";\nint speed=60, brightness=5;\nbool clockMode=false;\n\nvoid saveSettings(){\n  prefs.begin(\"\
-      matrix\",false);\n  prefs.putString(\"msg\",message);\n  prefs.putInt(\"spd\",speed);\n  prefs.putInt(\"bri\",brightness);\n\
-      \  prefs.end();\n}\n\nvoid loadSettings(){\n  prefs.begin(\"matrix\",true);\n  message=prefs.getString(\"msg\",\"Hello!\"\
-      );\n  speed=prefs.getInt(\"spd\",60);\n  brightness=prefs.getInt(\"bri\",5);\n  prefs.end();\n}\n\nvoid applyDisplay(){\n\
-      \  display.setIntensity(brightness);\n  display.displayClear();\n  display.displayScroll(message.c_str(),PA_LEFT,PA_SCROLL_LEFT,speed);\n\
-      }\n\nvoid servePanel(){\n  String html=\"<html><body><h2>LED Matrix Control</h2>\"\n    \"<form method=POST action=/set>\"\
-      \n    \"<label>Message: <input name=msg value=\"\"+message+\"\"></label><br><br>\"\n    \"<label>Speed (ms): <input\
-      \ name=spd type=number value=\"+String(speed)+\"></label><br><br>\"\n    \"<label>Brightness 0-15: <input name=bri type=number\
-      \ min=0 max=15 value=\"+String(brightness)+\"></label><br><br>\"\n    \"<input type=checkbox name=clk\"+(clockMode?\"\
-      \ checked\":\"\")+\"> Clock mode<br><br>\"\n    \"<button type=submit>Update</button></form></body></html>\";\n  server.send(200,\"\
-      text/html\",html);\n}\n\nvoid handleSet(){\n  if(server.hasArg(\"msg\"))  message=server.arg(\"msg\");\n  if(server.hasArg(\"\
-      spd\"))  speed=server.arg(\"spd\").toInt();\n  if(server.hasArg(\"bri\"))  brightness=constrain(server.arg(\"bri\").toInt(),0,15);\n\
-      \  clockMode=server.hasArg(\"clk\");\n  saveSettings();\n  applyDisplay();\n  server.sendHeader(\"Location\",\"/\");\
-      \ server.send(302,\"\",\"\");\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  display.begin(); display.setIntensity(5);\n\
-      \  loadSettings();\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"\
-      pool.ntp.org\");\n  server.on(\"/\",servePanel);\n  server.on(\"/set\",HTTP_POST,handleSet);\n  server.begin();\n  applyDisplay();\n\
-      \  Serial.printf(\"Matrix: http://%s/n\",WiFi.localIP().toString().c_str());\n}\n\nchar clockBuf[32];\nvoid loop(){\n\
-      \  server.handleClient();\n  if(clockMode){\n    struct tm ti; getLocalTime(&ti);\n    sprintf(clockBuf,\"%02d:%02d:%02d\"\
-      ,ti.tm_hour,ti.tm_min,ti.tm_sec);\n    if(String(clockBuf)!=message){ message=String(clockBuf); applyDisplay(); }\n\
-      \  }\n  if(display.displayAnimate()) display.displayReset();\n}"
+    code: "// ESP32 LED Matrix - Intermediate (4x MAX7219 + web control + NTP clock)\n#include <MD_Parola.h>\n#include\
+      \ <MD_MAX72xx.h>\n#include <SPI.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include <Preferences.h>\n\
+      #include <time.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n#define MAX_DEVICES 4\n#define CS_PIN 5\n\n\
+      MD_Parola display(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\nWebServer server(80);\nPreferences prefs;\nconst char*\
+      \ SSID=\"YourSSID\", *PASS=\"YourPass\";\n\nString message=\"Hello!\";\nint speed=60, brightness=5;\nbool\
+      \ clockMode=false;\n\nvoid saveSettings(){\n  prefs.begin(\"matrix\",false);\n  prefs.putString(\"msg\",message);\n\
+      \  prefs.putInt(\"spd\",speed);\n  prefs.putInt(\"bri\",brightness);\n  prefs.end();\n}\n\nvoid loadSettings(){\n\
+      \  prefs.begin(\"matrix\",true);\n  message=prefs.getString(\"msg\",\"Hello!\");\n  speed=prefs.getInt(\"\
+      spd\",60);\n  brightness=prefs.getInt(\"bri\",5);\n  prefs.end();\n}\n\nvoid applyDisplay(){\n  display.setIntensity(brightness);\n\
+      \  display.displayClear();\n  display.displayScroll(message.c_str(),PA_LEFT,PA_SCROLL_LEFT,speed);\n}\n\n\
+      void servePanel(){\n  String html=\"<html><body><h2>LED Matrix Control</h2>\"\n    \"<form method=POST action=/set>\"\
+      \n    \"<label>Message: <input name=msg value=\"\"+message+\"\"></label><br><br>\"\n    \"<label>Speed (ms):\
+      \ <input name=spd type=number value=\"+String(speed)+\"></label><br><br>\"\n    \"<label>Brightness 0-15:\
+      \ <input name=bri type=number min=0 max=15 value=\"+String(brightness)+\"></label><br><br>\"\n    \"<input\
+      \ type=checkbox name=clk\"+(clockMode?\" checked\":\"\")+\"> Clock mode<br><br>\"\n    \"<button type=submit>Update</button></form></body></html>\"\
+      ;\n  server.send(200,\"text/html\",html);\n}\n\nvoid handleSet(){\n  if(server.hasArg(\"msg\"))  message=server.arg(\"\
+      msg\");\n  if(server.hasArg(\"spd\"))  speed=server.arg(\"spd\").toInt();\n  if(server.hasArg(\"bri\"))  brightness=constrain(server.arg(\"\
+      bri\").toInt(),0,15);\n  clockMode=server.hasArg(\"clk\");\n  saveSettings();\n  applyDisplay();\n  server.sendHeader(\"\
+      Location\",\"/\"); server.send(302,\"\",\"\");\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  display.begin();\
+      \ display.setIntensity(5);\n  loadSettings();\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
+      \ delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  server.on(\"/\",servePanel);\n  server.on(\"/set\",HTTP_POST,handleSet);\n\
+      \  server.begin();\n  applyDisplay();\n  Serial.printf(\"Matrix: http://%s/n\",WiFi.localIP().toString().c_str());\n\
+      }\n\nchar clockBuf[32];\nvoid loop(){\n  server.handleClient();\n  if(clockMode){\n    struct tm ti; getLocalTime(&ti);\n\
+      \    sprintf(clockBuf,\"%02d:%02d:%02d\",ti.tm_hour,ti.tm_min,ti.tm_sec);\n    if(String(clockBuf)!=message){\
+      \ message=String(clockBuf); applyDisplay(); }\n  }\n  if(display.displayAnimate()) display.displayReset();\n\
+      }"
     code_filename: esp32-led-matrix-intermediate.ino
   advanced:
     level: advanced
-    overview_html: '<p>The advanced build subscribes to multiple MQTT topics and renders a live ticker board: top row shows
-      the current time, bottom row alternates between MQTT data feeds (stock ticker, weather, sensor readings). A Node-RED
-      dashboard feeds live data to the MQTT topics. Custom animated transitions (slide, fade, wipe) between data items use
-      MD_Parola zone effects.</p>'
+    overview_html: '<p>The advanced build subscribes to multiple MQTT topics and renders a live ticker board: top
+      row shows the current time, bottom row alternates between MQTT data feeds (stock ticker, weather, sensor readings).
+      A Node-RED dashboard feeds live data to the MQTT topics. Custom animated transitions (slide, fade, wipe) between
+      data items use MD_Parola zone effects.</p>'
     components:
     - 1× ESP32 DevKit V1
     - 4× MAX7219 8x8 modules
@@ -189,18 +196,18 @@ levels:
       - GPIO 23/5/18
       - ''
     how:
-    - 'Dual-Topic MQTT Ticker: Two MQTT topics feed the display: matrix/line0 for the primary content (time, headline) and
-      matrix/line1 for secondary content (temperature, score). The callback sets a newData flag. The next loop() iteration
-      calls updateDisplay(), which combines both lines with a pipe separator and restarts the scroll.'
-    - 'Node-RED Data Publisher: A Node-RED flow fetches weather data from an HTTP endpoint every 5 minutes and publishes the
-      temperature and conditions to matrix/line1. An inject node with a 1-second interval publishes the current time formatted
-      as HH:MM to matrix/line0. Additional flows can publish news headlines or sensor readings.'
+    - 'Dual-Topic MQTT Ticker: Two MQTT topics feed the display: matrix/line0 for the primary content (time, headline)
+      and matrix/line1 for secondary content (temperature, score). The callback sets a newData flag. The next loop()
+      iteration calls updateDisplay(), which combines both lines with a pipe separator and restarts the scroll.'
+    - 'Node-RED Data Publisher: A Node-RED flow fetches weather data from an HTTP endpoint every 5 minutes and publishes
+      the temperature and conditions to matrix/line1. An inject node with a 1-second interval publishes the current
+      time formatted as HH:MM to matrix/line0. Additional flows can publish news headlines or sensor readings.'
     - 'Non-Blocking Display Animation: display.displayAnimate() returns true when the current scroll animation completes.
-      displayReset() restarts the same scroll from the beginning. This non-blocking design allows mqtt.loop() to process incoming
-      messages between each animation step without interrupting the display.'
-    - 'Connection Status During Boot: While connecting to Wi-Fi, the display shows "Connecting..." scrolling across the modules.
-      The animation loop runs during the Wi-Fi connection attempt so the display appears active rather than frozen. Once connected,
-      the first MQTT data arrives and replaces the placeholder text.'
+      displayReset() restarts the same scroll from the beginning. This non-blocking design allows mqtt.loop() to
+      process incoming messages between each animation step without interrupting the display.'
+    - 'Connection Status During Boot: While connecting to Wi-Fi, the display shows "Connecting..." scrolling across
+      the modules. The animation loop runs during the Wi-Fi connection attempt so the display appears active rather
+      than frozen. Once connected, the first MQTT data arrives and replaces the placeholder text.'
     apps:
     - Office ticker showing real-time KPI metrics from a business dashboard
     - Cryptocurrency price ticker with live MQTT data feed
@@ -208,35 +215,37 @@ levels:
     - Building lobby information board updated via MQTT from a CMS
     troubleshooting:
     - - MQTT messages arrive but display does not update
-      - Verify newData is set to true in mqttCallback and checked in loop(). If updateDisplay() calls displayScroll() while
-        a previous scroll is running, the new content may not start until displayAnimate() is called and returns true. Move
-        updateDisplay() to inside the displayAnimate() completion block.
+      - Verify newData is set to true in mqttCallback and checked in loop(). If updateDisplay() calls displayScroll()
+        while a previous scroll is running, the new content may not start until displayAnimate() is called and returns
+        true. Move updateDisplay() to inside the displayAnimate() completion block.
     - - Combined message is too long and scroll is very slow
-      - Limit line0 and line1 to 20 characters each. Longer combined messages increase the scroll duration linearly. Add truncation
-        in the mqttCallback with line0=msg.substring(0,20).
+      - Limit line0 and line1 to 20 characters each. Longer combined messages increase the scroll duration linearly.
+        Add truncation in the mqttCallback with line0=msg.substring(0,20).
     - - Display freezes when Wi-Fi reconnects
-      - The PubSubClient reconnect call in loop() is brief. Ensure mqtt.loop() is called every iteration and does not block.
-        If reconnection takes more than a few hundred milliseconds, the displayAnimate() calls stop and the display freezes
-        on the current frame.
+      - The PubSubClient reconnect call in loop() is brief. Ensure mqtt.loop() is called every iteration and does
+        not block. If reconnection takes more than a few hundred milliseconds, the displayAnimate() calls stop and
+        the display freezes on the current frame.
     upgrades:
     - Add a photoresistor to auto-adjust brightness based on ambient light level
     - Add animated zone transitions between line0 and line1 using MD_Parola zone effects
     - Add a web configurator to assign MQTT topics to each display zone at runtime
     - 'Add an alert mode: publish to matrix/alert for a red-flashing urgent message overlay'
-    code: "// ESP32 LED Matrix - Advanced (MQTT multi-feed ticker)\n// Subscribes to matrix/line0 and matrix/line1 for dual-row\
-      \ ticker content\n#include <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      \n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n#define MAX_DEVICES 4\n#define CS_PIN 5\n\nMD_Parola display(HARDWARE_TYPE,\
-      \ CS_PIN, MAX_DEVICES);\nWiFiClient wc; PubSubClient mqtt(wc);\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\"\
-      ;\nconst char* MQTT_HOST=\"192.168.1.100\";\n\nString line0=\"Loading...\", line1=\"\";\nbool newData=false;\n\nvoid\
-      \ mqttCallback(char* topic, byte* payload, unsigned int len){\n  String msg((char*)payload,len);\n  if(String(topic)==\"\
-      matrix/line0\") line0=msg;\n  if(String(topic)==\"matrix/line1\") line1=msg;\n  newData=true;\n}\n\nvoid updateDisplay(){\n\
-      \  String combined = line0;\n  if(line1.length()) combined += \"  |  \" + line1;\n  display.setIntensity(5);\n  display.displayClear();\n\
-      \  display.displayScroll(combined.c_str(), PA_LEFT, PA_SCROLL_LEFT, 50);\n  newData=false;\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  display.begin(); display.setIntensity(5);\n  display.displayScroll(\"Connecting...\",PA_LEFT,PA_SCROLL_LEFT,60);\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED){\n    delay(500); if(display.displayAnimate()) display.displayReset();\n\
+    code: "// ESP32 LED Matrix - Advanced (MQTT multi-feed ticker)\n// Subscribes to matrix/line0 and matrix/line1\
+      \ for dual-row ticker content\n#include <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n#include\
+      \ <WiFi.h>\n#include <PubSubClient.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n#define MAX_DEVICES 4\n\
+      #define CS_PIN 5\n\nMD_Parola display(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\nWiFiClient wc; PubSubClient mqtt(wc);\n\
+      \nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\n\nString line0=\"\
+      Loading...\", line1=\"\";\nbool newData=false;\n\nvoid mqttCallback(char* topic, byte* payload, unsigned int\
+      \ len){\n  String msg((char*)payload,len);\n  if(String(topic)==\"matrix/line0\") line0=msg;\n  if(String(topic)==\"\
+      matrix/line1\") line1=msg;\n  newData=true;\n}\n\nvoid updateDisplay(){\n  String combined = line0;\n  if(line1.length())\
+      \ combined += \"  |  \" + line1;\n  display.setIntensity(5);\n  display.displayClear();\n  display.displayScroll(combined.c_str(),\
+      \ PA_LEFT, PA_SCROLL_LEFT, 50);\n  newData=false;\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  display.begin();\
+      \ display.setIntensity(5);\n  display.displayScroll(\"Connecting...\",PA_LEFT,PA_SCROLL_LEFT,60);\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED){\n    delay(500); if(display.displayAnimate()) display.displayReset();\n\
       \  }\n  mqtt.setServer(MQTT_HOST,1883);\n  mqtt.setCallback(mqttCallback);\n}\n\nvoid loop(){\n  if(!mqtt.connected()){\n\
-      \    mqtt.connect(\"MatrixDisplay\");\n    mqtt.subscribe(\"matrix/line0\");\n    mqtt.subscribe(\"matrix/line1\");\n\
-      \  }\n  mqtt.loop();\n  if(newData) updateDisplay();\n  if(display.displayAnimate()) display.displayReset();\n}"
+      \    mqtt.connect(\"MatrixDisplay\");\n    mqtt.subscribe(\"matrix/line0\");\n    mqtt.subscribe(\"matrix/line1\"\
+      );\n  }\n  mqtt.loop();\n  if(newData) updateDisplay();\n  if(display.displayAnimate()) display.displayReset();\n\
+      }"
     code_filename: esp32-led-matrix-advanced.ino
 related_slugs:
 - esp32-neopixel-music-visualizer
@@ -257,20 +266,20 @@ project:
   age: Ages 12+
   estimated_time: 60-90 min
   budget: Under 25 USD
-  what_you_build: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring and brightness
-    control.
-  story: 'ESP32 LED Matrix Display solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
-    result. Build this if you want to move beyond single LEDs and learn how display driver chips control many LEDs with only
-    a few ESP32 pins.
+  what_you_build: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring
+    and brightness control.
+  story: 'ESP32 LED Matrix Display solves a real beginner problem: turning an ESP32 reading into a useful physical
+    or networked result. Build this if you want to move beyond single LEDs and learn how display driver chips control
+    many LEDs with only a few ESP32 pins.
 
 
-    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
-    the output under real conditions.'
-  eli12: The MAX7219 is a tiny display manager. Instead of asking the ESP32 to control 64 LEDs one by one, the ESP32 sends
-    a message to the manager and the chip refreshes the LEDs for you.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
-    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
-    enclosure, and adult supervision are used.
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
+    then test the output under real conditions.'
+  eli12: The MAX7219 is a tiny display manager. Instead of asking the ESP32 to control 64 LEDs one by one, the ESP32
+    sends a message to the manager and the chip refreshes the LEDs for you.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
+    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
+    unless a proper driver, enclosure, and adult supervision are used.
   learning_objectives:
   - Wire a MAX7219 LED matrix to ESP32 SPI pins.
   - Understand why a driver chip is used for many LEDs.
@@ -310,8 +319,8 @@ project:
     notes: Programming and bench power
   wiring:
     illustration_alt: ESP32 LED Matrix Display wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. The ESP32
-      sends serial data to the MAX7219 through DIN, CLK, and CS.
+    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
+      The ESP32 sends serial data to the MAX7219 through DIN, CLK, and CS.
     steps:
     - Unplug USB before changing wires.
     - Connect MAX7219 DIN (MOSI) to GPIO 23 (SPI MOSI).
@@ -341,32 +350,33 @@ project:
     esp32_pin: GND
     direction: Ground
     notes: Match this wire to the code constant.
-  circuit_explanation: The ESP32 sends serial data to the MAX7219 through DIN, CLK, and CS. The MAX7219 multiplexes rows and
-    columns inside the matrix and controls LED current. The module usually needs 5 V for full brightness, while the ESP32
-    signal pins still provide logic control.
-  engineering_explanation: Matrix displays are multiplexed. Only part of the display is driven at any instant, but it refreshes
-    fast enough that your eyes see a steady image. Brightness, power supply stability, and wiring length matter more as you
-    chain more modules.
+  circuit_explanation: The ESP32 sends serial data to the MAX7219 through DIN, CLK, and CS. The MAX7219 multiplexes
+    rows and columns inside the matrix and controls LED current. The module usually needs 5 V for full brightness,
+    while the ESP32 signal pins still provide logic control.
+  engineering_explanation: Matrix displays are multiplexed. Only part of the display is driven at any instant, but
+    it refreshes fast enough that your eyes see a steady image. Brightness, power supply stability, and wiring length
+    matter more as you chain more modules.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
   code:
     filename: esp32-led-matrix-display.ino
-    content: "// ESP32 LED Matrix Display - Beginner\n// Single MAX7219 8x8; scrolling text via MD_MAX72XX library\n// Install:\
-      \ MD_MAX72XX by MajicDesigns in Library Manager\n// Install: MD_Parola by MajicDesigns in Library Manager\n\n#include\
-      \ <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n#define MAX_DEVICES\
-      \   1\n#define CS_PIN        5\n\nMD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\n\nconst char*\
-      \ message = \"Hello ESP32! \";\nconst uint8_t SCROLL_SPEED = 60; // milliseconds per step (lower = faster)\nconst uint8_t\
-      \ BRIGHTNESS   = 5;  // 0 (dim) to 15 (full)\n\nvoid setup() {\n  Serial.begin(115200);\n  display.begin();\n  display.setIntensity(BRIGHTNESS);\n\
-      \  display.displayClear();\n  display.displayScroll(message, PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);\n  Serial.println(\"\
-      LED matrix display ready.\");\n}\n\nvoid loop() {\n  if (display.displayAnimate()) {\n    // Animation complete — restart\
-      \ scroll\n    display.displayReset();\n  }\n}"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
-    setup(), then repeats the measurement and decision logic in loop(). The display library converts text into matrix patterns
-    while the ESP32 sends data through the MAX7219 control pins. Brightness and update speed are intentionally separated from
-    the message text.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
-    condition for esp32 led matrix display is reached.
+    content: "// ESP32 LED Matrix Display - Beginner\n// Single MAX7219 8x8; scrolling text via MD_MAX72XX library\n\
+      // Install: MD_MAX72XX by MajicDesigns in Library Manager\n// Install: MD_Parola by MajicDesigns in Library\
+      \ Manager\n\n#include <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n\
+      #define MAX_DEVICES   1\n#define CS_PIN        5\n\nMD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\n\
+      \nconst char* message = \"Hello ESP32! \";\nconst uint8_t SCROLL_SPEED = 60; // milliseconds per step (lower\
+      \ = faster)\nconst uint8_t BRIGHTNESS   = 5;  // 0 (dim) to 15 (full)\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  display.begin();\n  display.setIntensity(BRIGHTNESS);\n  display.displayClear();\n  display.displayScroll(message,\
+      \ PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);\n  Serial.println(\"LED matrix display ready.\");\n}\n\nvoid loop()\
+      \ {\n  if (display.displayAnimate()) {\n    // Animation complete — restart scroll\n    display.displayReset();\n\
+      \  }\n}"
+  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
+    pins in setup(), then repeats the measurement and decision logic in loop(). The display library converts text
+    into matrix patterns while the ESP32 sends data through the MAX7219 control pins. Brightness and update speed
+    are intentionally separated from the message text.
+  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
+    the tested condition for esp32 led matrix display is reached.
   common_mistakes:
   - text: Powering several matrix modules from the ESP32 3.3 V pin.
   - text: Mixing up DIN and DOUT when chaining modules.
@@ -432,44 +442,23 @@ project:
     href: /projects/esp32-smart-street-light.html
     description: Continue with a related ESP32 build that uses the same engineering idea.
   faqs:
-  - question: Is ESP32 LED Matrix Display good for beginners?
-    answer: Yes, if you build the beginner version first and test one part at a time. Build this if you want to move beyond
-      single LEDs and learn how display driver chips control many LEDs with only a few ESP32 pins.
-  - question: Which ESP32 board should I use?
-    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
-      ESP32-CAM module and a reliable FTDI adapter.
-  - question: Can I power this from a phone charger?
-    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
-      and LED matrices may need a separate regulated supply.
-  - question: Why should I print values to Serial Monitor first?
-    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
-      from LED, relay, display, or network problems.
-  - question: Can I change the GPIO pins?
-    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
-      Keep display clock, data, and chip-select wiring matched to the code.
-  - question: What should I test before installing it permanently?
-    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
-      that should trigger the project.
-  - question: Can I add Wi-Fi or a dashboard?
-    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
-      after Wi-Fi is added.
-  - question: What is the most common failure?
-    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
-      raw reading and wiring table first.
-  - question: How do I make it more reliable?
-    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
-      hysteresis where the output might chatter.
-  - question: Where should I learn next?
-    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
-      part of this project you want to improve.
+  - question: Why is the MAX7219 matrix blank?
+    answer: Check 5 V, GND, DIN, CS, and CLK first, then confirm the library hardware type matches your module. The
+      project uses GPIO 23, GPIO 5, and GPIO 18 for SPI-style wiring.
+  - question: Can I power several LED matrix modules from the ESP32 3.3 V pin?
+    answer: No. The page wires the matrix VCC to 5 V because the LEDs need more current than the ESP32 3.3 V pin
+      should provide, especially when brightness is high.
+  - question: Why does text scroll backward?
+    answer: Matrix modules are sold in different orientations. Change the library hardware type or rotate the module
+      after the basic wiring is proven.
   references:
   - title: MAX7219 Datasheet
     href: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX7219-MAX7221.pdf
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32 LED Matrix Display as a real ESP32 engineering build, not just a wiring demo. You now know
-      how to test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed ESP32 LED Matrix Display as a real ESP32 engineering build, not just a wiring demo. You
+      now know how to test the input, protect the circuit, explain the code, and improve the project safely.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins

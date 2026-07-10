@@ -1,289 +1,313 @@
 slug: esp32-lightning-detector
-title: ESP32 Lightning Detector
+title: Build an Educational Lightning Sensor Demo
 category: Environmental
-description: Detect approaching electrical storms with the ESP32 and AS3935 Franklin lightning sensor
-  IC. Measure estimated distance to lightning strikes in kilometres, filter false positives from indoor
-  noise, and publish alerts to Telegram and MQTT the moment a strike is detected.
-meta_description: Build an ESP32 lightning detector using the AS3935 Franklin lightning sensor. Detect
-  electrical storms, estimate distance to the strike, and send real-time Telegram alerts with strike maps.
+description: Use an AS3935 module with ESP32 SPI interrupts to classify noise, disturber, and lightning-like events without
+  life-safety claims.
+meta_description: Build an ESP32 AS3935 lightning sensor demo with SPI wiring, interrupt handling, noise/disturber classification,
+  and official-alert safety limits.
 source_base: esp32-lightning-detector-legacy-import
-sensor: AS3935 CS/SCK/MOSI/MISO
-output: AS3935 IRQ
+sensor: AS3935 CS
+output: OLED SDA/SCL
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
 hardware:
-  sensor_pin: GPIO 5/18/23/19
-  output_pin: GPIO 4
-  sensor_name: AS3935 CS/SCK/MOSI/MISO
-  output_name: AS3935 IRQ
+  sensor_pin: GPIO5
+  output_pin: GPIO21/GPIO22
+  sensor_name: AS3935 CS
+  output_name: OLED SDA/SCL
   wiring:
-  - component: AS3935 CS/SCK/MOSI/MISO
-    pin: GPIO 5/18/23/19
+  - component: AS3935 CS
+    pin: GPIO5
+  - component: AS3935 SCK
+    pin: GPIO18
+  - component: AS3935 MOSI
+    pin: GPIO23
+  - component: AS3935 MISO
+    pin: GPIO19
   - component: AS3935 IRQ
-    pin: GPIO 4
-  - component: AS3935 VCC/GND
-    pin: 3.3 V / GND
+    pin: GPIO4
+  - component: Event LED
+    pin: GPIO26
   - component: OLED SDA/SCL
-    pin: GPIO 21/22
-  - component: Red LED anode via 220R
-    pin: GPIO 26
+    pin: GPIO21/GPIO22
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect an AS3935 lightning sensor module to the
-      ESP32 via SPI and configure it to detect cloud-to-ground and intra-cloud lightning. When a strike
-      is detected, the estimated distance (1-40 km) is printed to Serial and an LED flashes rapidly. The
-      sensor filters disturbers (electrical noise from motors and fluorescent lights) automatically.</p>
+    overview_html: <p>An AS3935 educational sensor demo that logs event types and displays lightning-like distance codes.
+      Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not go outside to test during
+      lightning.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× AS3935 lightning sensor module — DFRobot Gravity or SparkFun; SPI or I2C
-    - 1× Red LED and 220 ohm resistor — Strike indicator
-    - 1× SSD1306 OLED 128x64 I2C
+    - ESP32 DevKit board
+    - AS3935 lightning sensor module
+    - SSD1306 OLED display
+    - Red LED and 220 ohm resistor
+    - Breadboard and jumper wires
     wiring:
-    - - AS3935 CS/SCK/MOSI/MISO
-      - GPIO 5/18/23/19
-      - SPI interface
+    - - AS3935 CS
+      - GPIO5
+      - Keep stable during boot.
+    - - AS3935 SCK
+      - GPIO18
+      - VSPI clock.
+    - - AS3935 MOSI
+      - GPIO23
+      - ESP32 to sensor.
+    - - AS3935 MISO
+      - GPIO19
+      - Sensor to ESP32.
     - - AS3935 IRQ
-      - GPIO 4
-      - Interrupt; strike event signal
-    - - AS3935 VCC/GND
-      - 3.3 V / GND
-      - 3.3 V only; not 5 V tolerant
+      - GPIO4
+      - Interrupt event line.
+    - - Event LED
+      - GPIO26
+      - Series resistor required.
     - - OLED SDA/SCL
-      - GPIO 21/22
-      - ''
-    - - Red LED anode via 220R
-      - GPIO 26
-      - ''
-    how:
-    - 'AS3935 RF Detection Principle: The AS3935 contains a tuned antenna resonating at 500 kHz that detects
-      the broadband radio frequency burst (sferic) emitted by lightning discharge. The IC applies a matched
-      filter and statistical algorithm to distinguish genuine lightning sferics from narrowband interference
-      sources like motors, switching supplies, and fluorescent lights.'
-    - 'Interrupt-Driven Detection: The AS3935 IRQ pin goes HIGH for approximately 1 ms when any event
-      is detected (noise, disturber, or lightning). The interrupt service routine sets a strikeDetected
-      flag. The main loop checks this flag and reads the interrupt register to determine which event type
-      occurred. The 5 ms delay allows the AS3935 registers to stabilise after IRQ.'
-    - 'Distance Estimation Algorithm: The AS3935 estimates distance to the storm front based on the signal
-      strength and time-frequency signature of the sferic. It returns 14 distance values from 1 km (overhead)
-      to 40 km (storm approaching from distant horizon) plus a value indicating the storm is overhead.
-      Accuracy is approximately +/-3 km at 20 km.'
-    - 'Indoor vs Outdoor Mode: Indoor mode reduces the antenna gain by 6 dB to decrease sensitivity, reducing
-      false positives from building electrical noise. Outdoor mode uses full gain for maximum range. For
-      an outdoor-mounted detector connected to an ESP32 indoors via long wires, use outdoor mode with
-      increased noise floor level to compensate for wire-conducted interference.'
-    apps:
-    - Outdoor worker safety alert system for approaching electrical storms
-    - Golf course automatic lightning siren controller
-    - Drone flight safety automatic ground recall trigger
-    - Amateur radio station antenna disconnection automation on lightning alert
+      - GPIO21/GPIO22
+      - Optional display.
+    key_concepts:
+    - The AS3935 reports event types through registers after raising IRQ. SPI reads classify noise, disturber, or lightning-like
+      events.
+    - Distance codes are estimates from the sensor algorithm, not guaranteed strike distance. Indoor electronics can cause
+      false positives.
+    applications: &id003
+    - Weather-sensor education
+    - Interrupt classification lesson
+    - False-positive analysis demo
     troubleshooting:
-    - - Frequent DISTURBER_INT interrupts with no storms
-      - 'Disturbers are electrical noise sources: fluorescent lights, switching power supplies, AC motors.
-        Move the AS3935 away from these sources. Increase spikeRejection() from 2 to 4 or 5. If disturbers
-        persist, keep maskDisturber(true) to prevent the disturber interrupt and only respond to confirmed
-        lightning events.'
-    - - No interrupts at all even during confirmed thunderstorms
-      - 'Verify the IRQ pin wiring and the interrupt attachment. Print the AS3935 register dump using
-        lightning.printAllRegs() to verify communication. Ensure the antenna calibration is correct: call
-        lightning.tuneCap() and check the returned value is between 0-15.'
-    - - Distance always reads 63 km (out of range)
-      - The distance register returns 63 when the storm is estimated to be over 40 km away or the energy
-        was too low for a reliable distance estimate. This is normal for weak distant strikes. Readings
-        will become more specific as the storm approaches within 40 km.
-    upgrades:
-    - Add a buzzer with increasing alarm rate as storm distance decreases
-    - Add a second AS3935 outdoors and compare indoor/outdoor readings to improve accuracy
-    - Add Wi-Fi and Telegram alerts with the estimated distance and time
-    - Add NVS logging of all strike events with timestamps for storm tracking
-    code: "// ESP32 Lightning Detector - Beginner\n// AS3935 SPI -> interrupt-driven strike detection\
-      \ with distance estimate\n// Library: SparkFun AS3935 Lightning Detector Arduino Library\n\n#include\
-      \ <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <SPI.h>\n#include <SparkFun_AS3935.h>\n\n#define\
-      \ AS3935_CS  5\n#define AS3935_IRQ 4\n#define LED_PIN    26\n\nSparkFun_AS3935 lightning(AS3935_CS);\n\
-      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nvolatile bool strikeDetected = false;\nvoid IRAM_ATTR\
-      \ onStrike() { strikeDetected = true; }\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21,\
-      \ 22);\n  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); oled.setTextColor(WHITE);\n  SPI.begin();\n  pinMode(AS3935_IRQ,\
-      \ INPUT);\n  pinMode(LED_PIN, OUTPUT);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ), onStrike,\
-      \ RISING);\n\n  if (!lightning.beginSPI(AS3935_CS, 2000000)) {\n    Serial.println(\"AS3935 not\
-      \ detected\"); while (1);\n  }\n  // Indoor mode reduces antenna gain for less false positives in\
-      \ buildings\n  lightning.setIndoorOutdoor(INDOOR);\n  // Disturber rejection: masks false triggers\
-      \ from noise sources\n  lightning.maskDisturber(true);\n  // Spike rejection (0-15): higher = stricter;\
-      \ default 2\n  lightning.spikeRejection(2);\n  // Noise floor level (0-7): increase if frequent\
-      \ false positives\n  lightning.setNoiseLevel(2);\n\n  Serial.println(\"Lightning detector armed.\
-      \ Watching for storms...\");\n  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n\
-      \  oled.println(\"Lightning Detector\"); oled.println(\"Watching...\"); oled.display();\n}\n\nvoid\
-      \ loop() {\n  if (!strikeDetected) return;\n  strikeDetected = false;\n  delay(5); // brief delay\
-      \ for AS3935 to update registers\n\n  int intType = lightning.readInterruptReg();\n  if (intType\
-      \ == NOISE_INT) {\n    Serial.println(\"Noise detected — increase noise floor level\");\n  } else\
-      \ if (intType == DISTURBER_INT) {\n    Serial.println(\"Disturber detected (electrical noise, not\
-      \ lightning)\");\n  } else if (intType == LIGHTNING_INT) {\n    int dist = lightning.distanceToStorm();\n\
-      \    int energy = lightning.lightningEnergy();\n    Serial.printf(\"LIGHTNING! Distance: %d km \
-      \ Energy: %dn\", dist, energy);\n    // Flash LED\n    for (int i = 0; i < 5; i++) {\n      digitalWrite(LED_PIN,\
-      \ HIGH); delay(50);\n      digitalWrite(LED_PIN, LOW);  delay(50);\n    }\n    oled.clearDisplay();\
-      \ oled.setCursor(0,0); oled.setTextSize(1);\n    oled.println(\"LIGHTNING DETECTED!\");\n    oled.printf(\"\
-      Distance: ~%d kmn\", dist);\n    oled.printf(\"Energy: %dn\", energy);\n    oled.display();\n  }\n\
-      }"
-    code_filename: esp32-lightning-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build logs all strike events with NTP timestamps and estimated
-      distances to NVS. A Telegram alert fires within seconds of each detected strike, including the distance
-      and whether the storm appears to be approaching (decreasing distances) or retreating. An OLED shows
-      a text storm-distance timeline for the last five strikes.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× AS3935 module
-    - 1× SSD1306 OLED
-    - 1× Wi-Fi router — NTP + Telegram
-    wiring:
-    - - Same as beginner
-      - AS3935 SPI + IRQ + OLED I2C
-      - ''
-    how:
-    - 'Storm Trend Detection: The history[] circular buffer stores the last five strike distances. After
-      each strike, the current distance is compared to the previous strike distance. If current is smaller
-      than previous, the storm is approaching. This simple delta-based trend gives actionable direction
-      information that a single distance reading cannot provide.'
-    - 'NTP Timestamps for Alerts: configTime() syncs the ESP32 clock from the NTP pool. localtime_r()
-      converts the Unix timestamp to local time for the alert message. Including the detection time in
-      the Telegram message allows correlation with official weather radar and provides audit records if
-      the strike caused damage.'
-    - 'Circular Strike History Buffer: The five-element history[] array with histIdx incremented on each
-      strike stores the most recent five events. The display iterates back from histIdx-1 to show events
-      in reverse chronological order. This provides a visual trend without persistent storage — the history
-      clears on power cycle.'
-    - 'Disturber Masking in Wi-Fi Environments: Wi-Fi radio frequency bursts can occasionally trigger
-      AS3935 disturber interrupts. maskDisturber(true) prevents disturber events from reaching the main
-      code. The ESP32 Wi-Fi transceiver operates at 2.4 GHz, far from the 500 kHz lightning detection
-      band, but switch-mode converters on the development board may generate broadband interference.'
-    apps:
-    - Campsite or outdoor event lightning safety alert system
-    - Automated irrigation system shutdown on storm approach
-    - Lightning rod effectiveness monitoring station
-    - Citizen science lightning detection network for storm tracking
-    troubleshooting:
-    - - Storm trend always shows approaching even for retreating storm
-      - The AS3935 distance estimate has variance between strikes; two consecutive measurements from the
-        same storm may fluctuate. Average the last three distances before comparing trend. Require at
-        least three consecutive decreasing readings before classifying as approaching.
-    - - Telegram alert arrives 10-30 seconds after interrupt
-      - 'The WiFiClientSecure TLS handshake takes 1-3 seconds. The 1000 ms delay after sending adds more
-        latency. Reduce latency by keeping the Telegram connection open with Connection: keep-alive or
-        switch to a lightweight HTTP client without TLS (use http instead of https for non-sensitive alerts).'
-    upgrades:
-    - Add an NVS log that persists across power cycles for post-storm analysis
-    - Add a Home Assistant webhook so the lightning event can trigger automations like closing skylights
-    - Add GPS to share your location with the Telegram alert for remote-site safety monitoring
-    - Add multiple detectors at different locations and triangulate the strike position
-    code: "// ESP32 Lightning Detector - Intermediate (NTP log + Telegram + storm trend)\n#include <Wire.h>\n\
-      #include <Adafruit_SSD1306.h>\n#include <SPI.h>\n#include <SparkFun_AS3935.h>\n#include <WiFi.h>\n\
-      #include <WiFiClientSecure.h>\n#include <time.h>\n\n#define AS3935_CS 5\n#define AS3935_IRQ 4\n\n\
-      SparkFun_AS3935 lightning(AS3935_CS);\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nconst char* SSID=\"\
-      YourSSID\", *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\";\nconst char* CHAT_ID=\"\
-      YOUR_CHAT_ID\";\n\nvolatile bool strike=false;\nvoid IRAM_ATTR onStrike(){ strike=true; }\n\nstruct\
-      \ StrikeLog { time_t ts; int dist; };\nStrikeLog history[5]; int histIdx=0;\n\nvoid sendTelegram(const\
-      \ String &msg){\n  WiFiClientSecure c; c.setInsecure();\n  if(!c.connect(\"api.telegram.org\",443))\
-      \ return;\n  String body=\"chat_id=\"+String(CHAT_ID)+\"&text=\"+msg;\n  c.printf(\"POST /bot%s/sendMessage\
-      \ HTTP/1.1rnHost: api.telegram.orgrn\"\n    \"Content-Type: application/x-www-form-urlencodedrnContent-Length:\
-      \ %drnrn%s\",\n    BOT_TOKEN,(int)body.length(),body.c_str());\n  delay(1000); c.stop();\n}\n\n\
-      void updateOLED(){\n  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n  oled.println(\"\
-      Recent strikes (km):\");\n  for(int i=0;i<5;i++){\n    int idx=(histIdx-1-i+5)%5;\n    if(history[idx].ts)\
-      \ oled.printf(\"%d km agon\",history[idx].dist);\n  }\n  oled.display();\n}\n\nvoid setup(){\n \
-      \ Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);\n\
-      \  SPI.begin();\n  pinMode(AS3935_IRQ,INPUT);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),onStrike,RISING);\n\
-      \  lightning.beginSPI(AS3935_CS,2000000);\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.maskDisturber(true);\n\
-      \  WiFi.begin(SSID,PASS); while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\"\
-      );\n  Serial.printf(\"Lightning detector: %sn\",WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n\
-      \  if(!strike) return;\n  strike=false; delay(5);\n  if(lightning.readInterruptReg()!=LIGHTNING_INT)\
-      \ return;\n  int dist=lightning.distanceToStorm();\n  time_t now=time(nullptr);\n  history[histIdx%5]={now,dist};\
-      \ histIdx++;\n  // Check trend: is storm approaching?\n  bool approaching=false;\n  if(histIdx>=2){\n\
-      \    int prev=history[(histIdx-2+5)%5].dist;\n    int curr=history[(histIdx-1+5)%5].dist;\n    approaching=(curr<prev);\n\
-      \  }\n  String msg=\"LIGHTNING! ~\"+String(dist)+\"km \"+(approaching?\"APPROACHING\":\"retreating\"\
-      );\n  struct tm ti; localtime_r(&now,&ti);\n  char ts[20]; strftime(ts,sizeof(ts),\"%H:%M:%S\",&ti);\n\
-      \  msg+=\" (\"+String(ts)+\")\";\n  Serial.println(msg);\n  sendTelegram(msg);\n  updateOLED();\n\
-      }"
-    code_filename: esp32-lightning-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: '<p>The advanced build publishes strike events to MQTT in real time, with Node-RED
-      plotting each strike on a time-distance chart. Strike energy values are accumulated to estimate
-      storm intensity. When a storm is detected approaching within 15 km, the ESP32 publishes a high-priority
-      MQTT alert that triggers Home Assistant automations: closing Velux windows, activating an outdoor
-      siren, and pausing lawn irrigation.</p>'
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× AS3935 module
-    - 1× MQTT broker + Node-RED
-    - 1× Home Assistant — Automation on proximity alert
-    wiring:
-    - - Same as intermediate
-      - ''
-      - ''
-    how:
-    - 'Proximity Alert Hysteresis: The proximity alert activates when any strike registers within PROXIMITY_KM
-      (15 km). It clears only when a strike registers beyond PROXIMITY_KM+10 (25 km), providing a 10 km
-      hysteresis band. This prevents the alert from flickering on and off as the storm distance estimate
-      fluctuates around the threshold.'
-    - 'MQTT Topic Separation: lightning/strike receives every detected strike as a JSON object for logging
-      and charting. lightning/proximity receives only the high-priority state change (DANGER or CLEAR).
-      Separating topics allows consumers to subscribe selectively: Node-RED subscribes to strike for charting;
-      Home Assistant subscribes to proximity for automation.'
-    - 'Home Assistant Automation Trigger: An HA MQTT trigger on lightning/proximity matching "DANGER"
-      fires an automation sequence: service call to close cover entities (skylights), switch on siren
-      switch, and turn off irrigation switch. The CLEAR payload fires the reverse automation. All in under
-      1 second of the MQTT message arrival.'
-    - 'Strike Energy Accumulation: The AS3935 lightningEnergy() returns a 21-bit value proportional to
-      the electromagnetic energy of the detected sferic. Summing energy values over a window indicates
-      storm intensity. Node-RED processes the accumulated energy series and renders it as a storm intensity
-      bar chart alongside the distance time series.'
-    apps:
-    - Smart home storm protection automating windows, gates, and outdoor equipment
-    - Golf course or sports venue automated safety siren and PA announcement trigger
-    - Outdoor wedding or event venue lightning safety management system
-    - IoT lightning strike density mapping network for meteorological research
-    troubleshooting:
-    - - Proximity alert fires and never clears
-      - The clear condition requires a strike to be detected beyond 25 km. If the storm passes directly
-        overhead and no subsequent strikes are detected, the alert stays active indefinitely. Add a 30-minute
-        timer that clears the alert if no strikes are detected within the timeout.
-    - - Home Assistant does not respond to lightning/proximity messages
-      - 'Verify the MQTT integration is connected in HA Settings. Create a Manual Trigger in the automation
-        with Platform: MQTT, Topic: lightning/proximity, Payload: DANGER. Test the trigger by manually
-        publishing "DANGER" to the topic from MQTT Explorer before relying on the live detector.'
-    upgrades:
-    - Add multiple detector nodes at different sites and publish to a common MQTT topic for distributed
-      coverage
-    - Add a lightning strike heatmap in Node-RED using a world-map node with strike GPS coordinates from
-      detector location metadata
-    - Add integration with the Blitzortung.org open lightning detection network for comparison
-    - Add a battery backup so the detector continues operating during storm-induced power outages
-    code: "// ESP32 Lightning Detector - Advanced (MQTT + storm proximity automation)\n#include <SPI.h>\n\
-      #include <SparkFun_AS3935.h>\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n\
-      #include <time.h>\n\n#define AS3935_CS 5\n#define AS3935_IRQ 4\nSparkFun_AS3935 lightning(AS3935_CS);\n\
-      WiFiClient wc; PubSubClient mqtt(wc);\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst\
-      \ char* MQTT_HOST=\"192.168.1.100\";\nconst int PROXIMITY_KM=15; // trigger automation within 15\
-      \ km\n\nvolatile bool strike=false;\nvoid IRAM_ATTR onStrike(){ strike=true; }\n\nint recentDist[10];\
-      \ int distIdx=0;\nbool proximityAlertActive=false;\n\nvoid publishStrike(int dist, int energy){\n\
-      \  StaticJsonDocument<128> doc;\n  doc[\"dist\"]=dist; doc[\"energy\"]=energy; doc[\"ts\"]=(long)time(nullptr);\n\
-      \  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"lightning/strike\",buf);\n  Serial.printf(\"\
-      Strike: %dkm energy:%dn\",dist,energy);\n}\n\nvoid checkProximity(int dist){\n  recentDist[distIdx%10]=dist;\
-      \ distIdx++;\n  if(dist<=PROXIMITY_KM&&!proximityAlertActive){\n    mqtt.publish(\"lightning/proximity\"\
-      ,\"DANGER\");\n    proximityAlertActive=true;\n    Serial.println(\"PROXIMITY ALERT published\"\
-      );\n  }\n  if(dist>PROXIMITY_KM+10&&proximityAlertActive){\n    mqtt.publish(\"lightning/proximity\"\
-      ,\"CLEAR\");\n    proximityAlertActive=false;\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  SPI.begin();\n  pinMode(AS3935_IRQ,INPUT);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),onStrike,RISING);\n\
-      \  lightning.beginSPI(AS3935_CS,2000000);\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.maskDisturber(true);\n\
-      \  WiFi.begin(SSID,PASS); while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\"\
-      );\n  mqtt.setServer(MQTT_HOST,1883);\n}\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"\
-      LightningDet\");\n  mqtt.loop();\n  if(!strike) return;\n  strike=false; delay(5);\n  if(lightning.readInterruptReg()!=LIGHTNING_INT)\
-      \ return;\n  int dist=lightning.distanceToStorm();\n  int energy=lightning.lightningEnergy();\n\
-      \  publishStrike(dist,energy);\n  checkProximity(dist);\n}"
-    code_filename: esp32-lightning-advanced.ino
+    - - AS3935 not found
+      - Check SPI wiring, chip select GPIO5, and 3.3 V power.
+    - - Frequent disturbers
+      - Move away from switching supplies, motors, and LED lamps; adjust noise settings.
+    - - No events
+      - Confirm IRQ wiring and module library configuration with a register read example.
+    improvements: &id002
+    - Add local timestamp logging.
+    - Add a display page for event counts.
+    - Compare indoor noise floor settings.
+    code: "// ESP32 AS3935 educational lightning sensor demo\n// Not a life-safety warning system. Follow official weather\
+      \ alerts.\n#include <SPI.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <SparkFun_AS3935.h>\n\nconst\
+      \ int AS3935_CS = 5;\nconst int AS3935_IRQ = 4;\nconst int LED_PIN = 26;\n\nSparkFun_AS3935 lightning(AS3935_CS);\n\
+      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nvolatile bool eventFlag = false;\n\nvoid IRAM_ATTR onAs3935Event() {\n\
+      \  eventFlag = true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  SPI.begin(18, 19, 23, AS3935_CS);\n\
+      \  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(LED_PIN, OUTPUT);\n  pinMode(AS3935_IRQ,\
+      \ INPUT);\n\n  if (!lightning.beginSPI(AS3935_CS, 2000000)) {\n    Serial.println(\"AS3935 not found. Check SPI wiring\
+      \ and 3.3 V power.\");\n    while (true) delay(10);\n  }\n\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.maskDisturber(false);\n\
+      \  lightning.setNoiseLevel(2);\n  lightning.spikeRejection(2);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),\
+      \ onAs3935Event, RISING);\n\n  Serial.println(\"AS3935 demo ready. Do not test outdoors during storms.\");\n}\n\nvoid\
+      \ loop() {\n  if (!eventFlag) return;\n  eventFlag = false;\n  delay(5);\n\n  int type = lightning.readInterruptReg();\n\
+      \  if (type == NOISE_INT) {\n    Serial.println(\"Noise event. Move the sensor away from electronics or raise noise\
+      \ level.\");\n  } else if (type == DISTURBER_INT) {\n    Serial.println(\"Disturber event. Electrical interference,\
+      \ not confirmed lightning.\");\n  } else if (type == LIGHTNING_INT) {\n    int distanceKm = lightning.distanceToStorm();\n\
+      \    Serial.print(\"Lightning-like event. Estimated distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
+      \ km. Treat as educational only.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
+      \ LOW);\n\n    oled.clearDisplay();\n    oled.setTextSize(1);\n    oled.setCursor(0, 0);\n    oled.println(\"Lightning-like\
+      \ event\");\n    oled.print(\"Distance code: \");\n    oled.print(distanceKm);\n    oled.println(\" km\");\n    oled.println(\"\
+      Use official alerts\");\n    oled.display();\n  }\n}\n"
+    code_filename: esp32-lightning-detector-beginner.ino
 related_slugs:
 - esp32-uv-index-monitor
 - esp32-iot-weather-station
+format: golden
+meta_title: ESP32 Educational Lightning Sensor Demo
+project:
+  icon: LITE
+  mission_title: Build an Educational Lightning Sensor Demo
+  difficulty: Advanced
+  age: Ages 14+
+  recommended_age: Ages 14+
+  estimated_time: 75-90 min
+  budget: Under 40 USD
+  adult_supervision: Adult supervision required; do not test outdoors during storms.
+  classroom_use: Use the project indoors as a sensor-classification and false-positive discussion, not as a storm warning.
+  parent_prompt: Ask why official weather alerts matter more than a hobby sensor.
+  screen_free_activity: Draw noise, disturber, and lightning-like event categories.
+  skills_practiced:
+  - SPI wiring
+  - Interrupt handling
+  - Noise classification
+  - Safety limitations
+  learning_outcomes: &id001
+  - Wire AS3935 SPI on GPIO5/GPIO18/GPIO23/GPIO19.
+  - Use GPIO4 as the interrupt input.
+  - Distinguish noise, disturber, and lightning-like events.
+  - Explain false positives and life-safety limits.
+  mini_experiments:
+  - Change noise level setting indoors.
+  - Move the module away from power supplies.
+  - Log event types without storm claims.
+  next_challenge: Add timestamped local logging after the sensor is stable indoors.
+  what_you_build: An AS3935 educational sensor demo that logs event types and displays lightning-like distance codes.
+  story: This is a technically honest lightning-sensor lesson. It is not weather forecasting, protection equipment, or a certified
+    warning system.
+  eli12: Lightning makes radio noise. The AS3935 listens for patterns like that, but other electronics can also make noise,
+    so the ESP32 labels what the chip reports.
+  parent_safety: Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not go outside
+    to test during lightning. Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board for the low-voltage logic side.
+    link: /components/esp32-devkit.html
+  - item: AS3935 lightning sensor module
+    note: SPI-capable module powered at 3.3 V unless the breakout states otherwise.
+  - item: SSD1306 OLED display
+    note: Optional I2C status display on GPIO21/GPIO22.
+    link: /components/ssd1306-oled.html
+  - item: Red LED and 220 ohm resistor
+    note: Event indicator on GPIO26.
+  - item: Breadboard and jumper wires
+    note: Keep sensor away from noisy power wiring.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board for the low-voltage logic side.
+  - part: AS3935 lightning sensor module
+    qty: '1'
+    estimated_cost: Varies
+    notes: SPI-capable module powered at 3.3 V unless the breakout states otherwise.
+  - part: SSD1306 OLED display
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optional I2C status display on GPIO21/GPIO22.
+  - part: Red LED and 220 ohm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Event indicator on GPIO26.
+  - part: Breadboard and jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: Keep sensor away from noisy power wiring.
+  wiring:
+    illustration_alt: Build an Educational Lightning Sensor Demo wiring diagram
+    summary: AS3935 uses SPI CS GPIO5, SCK GPIO18, MOSI GPIO23, MISO GPIO19, and IRQ GPIO4. OLED uses I2C GPIO21/GPIO22.
+    steps:
+    - Unplug USB before wiring.
+    - Connect AS3935 VCC to 3.3 V and GND to GND.
+    - Connect AS3935 CS to GPIO5, SCK to GPIO18, MOSI to GPIO23, and MISO to GPIO19.
+    - Connect AS3935 IRQ to GPIO4.
+    - Connect OLED SDA to GPIO21 and SCL to GPIO22.
+    - Connect the red LED through 220 ohm resistor to GPIO26.
+  gpio_map:
+  - signal: AS3935 CS
+    esp32_pin: GPIO5
+    direction: SPI chip select
+    notes: Keep stable during boot.
+  - signal: AS3935 SCK
+    esp32_pin: GPIO18
+    direction: SPI clock
+    notes: VSPI clock.
+  - signal: AS3935 MOSI
+    esp32_pin: GPIO23
+    direction: SPI MOSI
+    notes: ESP32 to sensor.
+  - signal: AS3935 MISO
+    esp32_pin: GPIO19
+    direction: SPI MISO
+    notes: Sensor to ESP32.
+  - signal: AS3935 IRQ
+    esp32_pin: GPIO4
+    direction: Input
+    notes: Interrupt event line.
+  - signal: Event LED
+    esp32_pin: GPIO26
+    direction: Output
+    notes: Series resistor required.
+  - signal: OLED SDA/SCL
+    esp32_pin: GPIO21/GPIO22
+    direction: I2C
+    notes: Optional display.
+  circuit_explanation: The AS3935 reports event types through registers after raising IRQ. SPI reads classify noise, disturber,
+    or lightning-like events.
+  engineering_explanation: Distance codes are estimates from the sensor algorithm, not guaranteed strike distance. Indoor
+    electronics can cause false positives.
+  libraries:
+  - name: SparkFun AS3935
+    note: Install SparkFun AS3935 Lightning Detector library.
+  - name: Adafruit SSD1306
+    note: For OLED output.
+  code:
+    filename: esp32-lightning-detector.ino
+    content: "// ESP32 AS3935 educational lightning sensor demo\n// Not a life-safety warning system. Follow official weather\
+      \ alerts.\n#include <SPI.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <SparkFun_AS3935.h>\n\nconst\
+      \ int AS3935_CS = 5;\nconst int AS3935_IRQ = 4;\nconst int LED_PIN = 26;\n\nSparkFun_AS3935 lightning(AS3935_CS);\n\
+      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nvolatile bool eventFlag = false;\n\nvoid IRAM_ATTR onAs3935Event() {\n\
+      \  eventFlag = true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  SPI.begin(18, 19, 23, AS3935_CS);\n\
+      \  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(LED_PIN, OUTPUT);\n  pinMode(AS3935_IRQ,\
+      \ INPUT);\n\n  if (!lightning.beginSPI(AS3935_CS, 2000000)) {\n    Serial.println(\"AS3935 not found. Check SPI wiring\
+      \ and 3.3 V power.\");\n    while (true) delay(10);\n  }\n\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.maskDisturber(false);\n\
+      \  lightning.setNoiseLevel(2);\n  lightning.spikeRejection(2);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),\
+      \ onAs3935Event, RISING);\n\n  Serial.println(\"AS3935 demo ready. Do not test outdoors during storms.\");\n}\n\nvoid\
+      \ loop() {\n  if (!eventFlag) return;\n  eventFlag = false;\n  delay(5);\n\n  int type = lightning.readInterruptReg();\n\
+      \  if (type == NOISE_INT) {\n    Serial.println(\"Noise event. Move the sensor away from electronics or raise noise\
+      \ level.\");\n  } else if (type == DISTURBER_INT) {\n    Serial.println(\"Disturber event. Electrical interference,\
+      \ not confirmed lightning.\");\n  } else if (type == LIGHTNING_INT) {\n    int distanceKm = lightning.distanceToStorm();\n\
+      \    Serial.print(\"Lightning-like event. Estimated distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
+      \ km. Treat as educational only.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
+      \ LOW);\n\n    oled.clearDisplay();\n    oled.setTextSize(1);\n    oled.setCursor(0, 0);\n    oled.println(\"Lightning-like\
+      \ event\");\n    oled.print(\"Distance code: \");\n    oled.print(distanceKm);\n    oled.println(\" km\");\n    oled.println(\"\
+      Use official alerts\");\n    oled.display();\n  }\n}\n"
+  code_explanation: GPIO4 sets an event flag. The loop reads the AS3935 interrupt register and prints noise, disturber, or
+    lightning-like event messages.
+  expected_output: Serial Monitor reports noise/disturber/lightning-like event categories. The LED flashes only on lightning-like
+    events.
+  common_mistakes:
+  - text: Treating the project as a life-safety warning system.
+  - text: Testing outdoors during storms.
+  - text: Ignoring disturber events.
+  - text: Claiming exact distance accuracy.
+  troubleshooting:
+  - problem: AS3935 not found
+    fix: Check SPI wiring, chip select GPIO5, and 3.3 V power.
+  - problem: Frequent disturbers
+    fix: Move away from switching supplies, motors, and LED lamps; adjust noise settings.
+  - problem: No events
+    fix: Confirm IRQ wiring and module library configuration with a register read example.
+  testing_checklist:
+  - Verify SPI communication indoors.
+  - Trigger and log only safe noise/disturber behavior.
+  - Compare messages with official weather alerts without relying on the sensor.
+  engineer_tips:
+  - Keep antenna/module away from noisy electronics.
+  - Use official alerts for safety decisions.
+  - Document false positives instead of hiding them.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: Digital Inputs and Floating Pins
+    href: /guides/digital-inputs-floating-pins.html
+    description: Learn why clean digital inputs and pull-ups matter.
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, boot behavior, and power basics.
+  related_projects:
+  - title: ESP32 IoT Weather Station
+    href: /projects/esp32-iot-weather-station.html
+    description: Compare environmental sensing with safer weather measurements.
+  - title: ESP32 Air Quality Monitor
+    href: /projects/esp32-air-quality-monitor.html
+    description: Review another environmental sensor with calibration limits.
+  faqs:
+  - question: Is this a safety alarm?
+    answer: No. Follow official weather alerts.
+  - question: Can I test it in a storm?
+    answer: No. Do not go outdoors during lightning.
+  - question: Are distance readings exact?
+    answer: No. Treat them as sensor distance codes with false-positive limits.
+  complete:
+    summary: You completed Build an Educational Lightning Sensor Demo with matching wiring, code, tests, and limitations.
+    skills:
+    - SPI wiring
+    - Interrupt handling
+    - Noise classification
+keywords:
+- ESP32
+- Build an Educational Lightning Sensor Demo
+- AS3935 CS
+- OLED SDA/SCL
+- Arduino tutorial

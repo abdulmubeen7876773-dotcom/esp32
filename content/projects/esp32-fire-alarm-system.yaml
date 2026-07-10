@@ -1,91 +1,72 @@
-﻿slug: esp32-fire-alarm-system
+slug: esp32-fire-alarm-system
 title: ESP32 Fire Alarm System
 category: Smart City
-description: Combine an MQ-2 smoke sensor and DHT22 temperature sensor with the ESP32 to build a fire
-  alarm that sounds locally, displays alerts on an OLED, and publishes MQTT notifications to a smart-home
-  hub.
-meta_description: Build an ESP32 fire alarm with MQ-2 smoke sensor and DHT22 temperature sensor. Covers
-  local buzzer alerts, OLED display, and MQTT smart-home integration.
+description: Combine an MQ-2 smoke sensor and DHT22 temperature sensor with the ESP32 to build a fire alarm that sounds locally,
+  displays alerts on an OLED, and publishes MQTT notifications to a smart-home hub.
+meta_description: Build an ESP32 fire alarm with MQ-2 smoke sensor and DHT22 temperature sensor. Covers local buzzer alerts,
+  OLED display, and MQTT smart-home integration.
 source_base: esp32-fire-alarm-system-legacy-import
-sensor: MQ-2 AOUT
-output: MQ-2 DOUT
+sensor: MQ-2 AOUT divided
+output: Buzzer
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: GPIO 34
-  output_pin: GPIO 35
-  sensor_name: MQ-2 AOUT
-  output_name: MQ-2 DOUT
+  sensor_pin: GPIO34
+  output_pin: GPIO27
+  sensor_name: MQ-2 AOUT divided
+  output_name: Buzzer
   wiring:
-  - component: MQ-2 AOUT
-    pin: GPIO 34
-  - component: MQ-2 DOUT
-    pin: GPIO 35
-  - component: MQ-2 VCC
-    pin: 5 V (Vin)
-  - component: MQ-2 GND
-    pin: GND
-  - component: Red LED anode
-    pin: GPIO 25
-  - component: Green LED anode
-    pin: GPIO 26
-  - component: Buzzer +
-    pin: GPIO 27
+  - component: MQ-2 AOUT divided
+    pin: GPIO34
+  - component: Red LED
+    pin: GPIO25
+  - component: Green LED
+    pin: GPIO26
+  - component: Buzzer
+    pin: GPIO27
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner build you will connect an MQ-2 smoke and gas sensor to the ESP32
-      and compare the analog reading against a threshold. When smoke is detected, a buzzer sounds and
-      a red LED turns on. A green LED shows the normal status. The Serial Monitor prints the raw sensor
-      value every second so you can calibrate the threshold for your environment. No Wi-Fi is required.</p>
+    overview_html: <p>In this beginner build you will connect an MQ-2 smoke and gas sensor to the ESP32 and compare the analog
+      reading against a threshold. When smoke is detected, a buzzer sounds and a red LED turns on. A green LED shows the normal
+      status. The Serial Monitor prints the raw sensor value every second so you can calibrate the threshold for your environment.
+      No Wi-Fi is required.</p>
     components:
-    - 1Ã— ESP32 DevKit V1
-    - 1Ã— MQ-2 smoke and gas sensor module â€” Analog + digital output; 5 V heater
-    - 1Ã— Active buzzer 5 V
-    - 1Ã— Red LED 5 mm â€” Alarm indicator
-    - 1Ã— Green LED 5 mm â€” Normal status indicator
-    - 2Ã— 220 ohm resistor â€” LED current limiting
-    - 1x 10k/20k resistor pair - Voltage divider for MQ-2 AOUT
-    - 1Ã— Breadboard and jumper wires
+    - ESP32 DevKit board
+    - MQ-2 smoke/gas sensor module
+    - 10 kOhm resistor
+    - 20 kOhm resistor
+    - Red and green LEDs with resistors
+    - Active buzzer module
     wiring:
-    - - MQ-2 AOUT
-      - GPIO 34
-      - Analog input; 0-3.3 V (use voltage divider from 5 V output)
-    - - MQ-2 DOUT
-      - GPIO 35
-      - Digital threshold output from module
-    - - MQ-2 VCC
-      - 5 V (Vin)
-      - Heater requires 5 V at 150 mA
-    - - MQ-2 GND
-      - GND
-      - ''
-    - - Red LED anode
-      - GPIO 25
-      - 220 ohm resistor
-    - - Green LED anode
-      - GPIO 26
-      - 220 ohm resistor
-    - - Buzzer +
-      - GPIO 27
-      - Active buzzer; drive HIGH to sound
+    - - MQ-2 AOUT divided
+      - GPIO34
+      - ADC1 input-only pin; do not drive it as output.
+    - - Red LED
+      - GPIO25
+      - Alert indicator.
+    - - Green LED
+      - GPIO26
+      - Normal indicator.
+    - - Buzzer
+      - GPIO27
+      - Local alert output.
     how:
-    - 'MQ-2 Electrochemical Sensing: The MQ-2 contains a tin-dioxide (SnO2) sensing element heated to
-      300 C by an internal coil. Smoke, LPG, CO, and H2 molecules reduce surface resistance. The lower
-      the resistance, the higher the AOUT voltage â€” so a rising analog reading indicates gas or smoke.'
-    - 'Dual-Output Detection: The module provides both an analog output (continuous 0-5 V proportional
-      to concentration) and a digital output (LOW when concentration exceeds the onboard potentiometer
-      threshold). Both are read to give redundant detection.'
-    - '30-Second Preheat: The MQ-2 heater must reach operating temperature before readings stabilise.
-      The 30-second delay on startup prevents false alarms from the cold-sensor transient. In a real installation,
-      leave the sensor powered permanently.'
-    - 'Alarm Logic: An alarm triggers when either the analog reading exceeds SMOKE_THRESHOLD or the digital
-      pin goes LOW. Using both ensures detection even if the analog potentiometer or threshold is miscalibrated.'
+    - 'MQ-2 Electrochemical Sensing: The MQ-2 contains a tin-dioxide (SnO2) sensing element heated to 300 C by an internal
+      coil. Smoke, LPG, CO, and H2 molecules reduce surface resistance. The lower the resistance, the higher the AOUT voltage
+      â€” so a rising analog reading indicates gas or smoke.'
+    - 'Dual-Output Detection: The module provides both an analog output (continuous 0-5 V proportional to concentration) and
+      a digital output (LOW when concentration exceeds the onboard potentiometer threshold). Both are read to give redundant
+      detection.'
+    - '30-Second Preheat: The MQ-2 heater must reach operating temperature before readings stabilise. The 30-second delay
+      on startup prevents false alarms from the cold-sensor transient. In a real installation, leave the sensor powered permanently.'
+    - 'Alarm Logic: An alarm triggers when either the analog reading exceeds SMOKE_THRESHOLD or the digital pin goes LOW.
+      Using both ensures detection even if the analog potentiometer or threshold is miscalibrated.'
     apps:
     - Home smoke detector with local siren
     - Kitchen gas leak alert for LPG and propane
@@ -93,46 +74,38 @@ levels:
     - Server room early smoke detection system
     troubleshooting:
     - - Alarm triggers immediately after power-on
-      - The sensor needs 30 seconds to stabilise. Add the preheat delay and avoid testing during warmup.
-        Also check that the MQ-2 AOUT is not connected to the ESP32 ADC directly from the 5 V output;
-        use a voltage divider to scale to 3.3 V.
+      - The sensor needs 30 seconds to stabilise. Add the preheat delay and avoid testing during warmup. Also check that the
+        MQ-2 AOUT is not connected to the ESP32 ADC directly from the 5 V output; use a voltage divider to scale to 3.3 V.
     - - No alarm even with lighter smoke near sensor
-      - Lower the SMOKE_THRESHOLD constant. Read the baseline value in clean air from the Serial Monitor,
-        then set the threshold 20-30 percent above that value. Also trim the onboard potentiometer for
-        the digital output.
+      - Lower the SMOKE_THRESHOLD constant. Read the baseline value in clean air from the Serial Monitor, then set the threshold
+        20-30 percent above that value. Also trim the onboard potentiometer for the digital output.
     - - ESP32 ADC reads maximum 4095 always
-      - The MQ-2 AOUT is a 5 V signal. Connect it to the ESP32 ADC through a voltage divider (10 kohm
-        + 20 kohm) to scale to 3.3 V maximum, preventing ADC input damage.
+      - The MQ-2 AOUT is a 5 V signal. Connect it to the ESP32 ADC through a voltage divider (10 kohm + 20 kohm) to scale
+        to 3.3 V maximum, preventing ADC input damage.
     - - Buzzer sounds continuously in clean air
-      - The baseline gas concentration in the environment (paint fumes, cooking oil vapour) may be above
-        the threshold. Increase SMOKE_THRESHOLD until the alarm is silent in normal conditions, then retest
-        with a smoke source.
+      - The baseline gas concentration in the environment (paint fumes, cooking oil vapour) may be above the threshold. Increase
+        SMOKE_THRESHOLD until the alarm is silent in normal conditions, then retest with a smoke source.
     upgrades:
     - Add a DHT22 temperature sensor and alarm if temperature exceeds 60 C
     - Add an OLED display showing gas level bar graph and current reading
     - Add Wi-Fi and send a Telegram alert when alarm is triggered
     - Add a reset button to silence the buzzer while keeping the LED on
-    code: "// ESP32 Fire Alarm - Beginner\n// MQ-2 smoke sensor + LED + buzzer, no Wi-Fi required\n\n\
-      const int MQ2_AOUT = 34;\nconst int MQ2_DOUT = 35;\nconst int LED_R    = 25;\nconst int LED_G  \
-      \  = 26;\nconst int BUZZER   = 27;\n\n// Tune this threshold based on Serial Monitor readings in\
-      \ clean air\nconst int SMOKE_THRESHOLD = 1800; // out of 4095 (12-bit ADC)\n\nvoid setup() {\n \
-      \ Serial.begin(115200);\n  pinMode(MQ2_DOUT, INPUT);\n  pinMode(LED_R,  OUTPUT);\n  pinMode(LED_G,\
-      \  OUTPUT);\n  pinMode(BUZZER, OUTPUT);\n  analogReadResolution(12);\n\n  // MQ-2 preheat: sensor\
-      \ needs ~30 s warmup for stable readings\n  Serial.println(\"Preheating MQ-2 sensor (30 s)...\"\
-      );\n  digitalWrite(LED_G, HIGH);\n  delay(30000);\n  Serial.println(\"Ready. Monitoring for smoke.\"\
-      );\n}\n\nvoid loop() {\n  int raw = analogRead(MQ2_AOUT);\n  bool alarm = (raw > SMOKE_THRESHOLD)\
-      \ || (digitalRead(MQ2_DOUT) == LOW);\n\n  Serial.printf(\"MQ2 raw: %d  Alarm: %sn\", raw, alarm\
-      \ ? \"YES\" : \"no\");\n\n  if (alarm) {\n    digitalWrite(LED_R, HIGH);\n    digitalWrite(LED_G,\
-      \ LOW);\n    digitalWrite(BUZZER, HIGH);\n  } else {\n    digitalWrite(LED_R, LOW);\n    digitalWrite(LED_G,\
-      \ HIGH);\n    digitalWrite(BUZZER, LOW);\n  }\n  delay(1000);\n}"
+    code: "// ESP32 Smoke Sensor Alarm Demo - educational low-voltage prototype\nconst int MQ2_AOUT = 34;   // ADC1 input\
+      \ through voltage divider\nconst int LED_R = 25;\nconst int LED_G = 26;\nconst int BUZZER = 27;\nconst int SMOKE_THRESHOLD\
+      \ = 1800; // tune from clean-air Serial Monitor readings\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  pinMode(LED_R, OUTPUT);\n  pinMode(LED_G, OUTPUT);\n  pinMode(BUZZER, OUTPUT);\n  digitalWrite(LED_G, HIGH);\n  Serial.println(\"\
+      Educational smoke/gas sensor demo. Not a certified fire alarm.\");\n  Serial.println(\"MQ-2 warmup: wait at least 30\
+      \ seconds before judging readings.\");\n  delay(30000);\n}\n\nvoid loop() {\n  int raw = analogRead(MQ2_AOUT);\n  bool\
+      \ alert = raw > SMOKE_THRESHOLD;\n  Serial.printf(\"MQ2 raw=%d alert=%s\\n\", raw, alert ? \"YES\" : \"no\");\n  digitalWrite(LED_R,\
+      \ alert ? HIGH : LOW);\n  digitalWrite(LED_G, alert ? LOW : HIGH);\n  digitalWrite(BUZZER, alert ? HIGH : LOW);\n  delay(1000);\n\
+      }\n"
     code_filename: esp32-fire-alarm-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: '<p>The intermediate build adds a DHT22 temperature and humidity sensor for combined
-      fire detection: an alarm triggers on smoke above threshold OR temperature above 60 C. An SSD1306
-      OLED displays live readings, current status, and an alarm countdown. Wi-Fi connects to an NTP server
-      for timestamps, and each alarm event is logged to NVS with time, sensor values, and trigger reason
-      for later review.</p>'
+    overview_html: '<p>The intermediate build adds a DHT22 temperature and humidity sensor for combined fire detection: an
+      alarm triggers on smoke above threshold OR temperature above 60 C. An SSD1306 OLED displays live readings, current status,
+      and an alarm countdown. Wi-Fi connects to an NTP server for timestamps, and each alarm event is logged to NVS with time,
+      sensor values, and trigger reason for later review.</p>'
     components:
     - 1Ã— ESP32 DevKit V1
     - 1Ã— MQ-2 smoke sensor module
@@ -164,18 +137,17 @@ levels:
       - GPIO 26
       - 220 ohm
     how:
-    - 'Dual-Sensor Fusion: Smoke alone can be a cooking false alarm; temperature alone can be a hot day
-      false alarm. Combining both reduces false positives significantly. A kitchen fire will trigger both
-      sensors simultaneously, while burning toast may trigger only smoke.'
-    - 'NVS Alarm Event Log: Each alarm event is saved to NVS as an indexed string containing the Unix
-      timestamp, trigger reason, smoke ADC value, and temperature. The log survives power cuts. Up to
-      100 events can be stored before the NVS namespace fills.'
-    - 'NTP Timestamp: configTime() syncs the ESP32 clock over Wi-Fi. If Wi-Fi is unavailable at boot the
-      alarm system still operates; events are logged with Unix time 0 (epoch) rather than actual time.
-      Wi-Fi is optional, not required for alarm function.'
-    - 'OLED Status Display: The OLED shows live smoke ADC value, temperature, humidity, current status,
-      and total alarm event count. During an alarm the status line changes to "*** ALARM ***" in a single
-      large text row for visibility at a distance.'
+    - 'Dual-Sensor Fusion: Smoke alone can be a cooking false alarm; temperature alone can be a hot day false alarm. Combining
+      both reduces false positives significantly. A kitchen fire will trigger both sensors simultaneously, while burning toast
+      may trigger only smoke.'
+    - 'NVS Alarm Event Log: Each alarm event is saved to NVS as an indexed string containing the Unix timestamp, trigger reason,
+      smoke ADC value, and temperature. The log survives power cuts. Up to 100 events can be stored before the NVS namespace
+      fills.'
+    - 'NTP Timestamp: configTime() syncs the ESP32 clock over Wi-Fi. If Wi-Fi is unavailable at boot the alarm system still
+      operates; events are logged with Unix time 0 (epoch) rather than actual time. Wi-Fi is optional, not required for alarm
+      function.'
+    - 'OLED Status Display: The OLED shows live smoke ADC value, temperature, humidity, current status, and total alarm event
+      count. During an alarm the status line changes to "*** ALARM ***" in a single large text row for visibility at a distance.'
     apps:
     - Home fire and gas leak detector with audit log
     - Restaurant kitchen safety monitor with chef temperature alert
@@ -183,52 +155,46 @@ levels:
     - Industrial boiler room overheat and smoke monitor
     troubleshooting:
     - - DHT22 reads NaN
-      - The DHT22 requires a 10 kohm pull-up resistor between DATA and 3.3 V. Check the resistor is present.
-        DHT22 also needs at least 2 seconds between reads; do not call dht.read() faster than once every
-        2 seconds.
+      - The DHT22 requires a 10 kohm pull-up resistor between DATA and 3.3 V. Check the resistor is present. DHT22 also needs
+        at least 2 seconds between reads; do not call dht.read() faster than once every 2 seconds.
     - - Alarm events fill NVS quickly
-      - Add a minimum 60-second lockout between logged alarms using a lastAlarm timestamp. Continuous
-        alarm events from a persistent smoke source should only log once per minute, not every 2 seconds.
+      - Add a minimum 60-second lockout between logged alarms using a lastAlarm timestamp. Continuous alarm events from a
+        persistent smoke source should only log once per minute, not every 2 seconds.
     - - NTP time is unavailable in offline environments
-      - Add a DS3231 RTC module for battery-backed timekeeping. Fall back to the RTC time when Wi-Fi is
-        not available and sync the RTC to NTP when connectivity returns.
+      - Add a DS3231 RTC module for battery-backed timekeeping. Fall back to the RTC time when Wi-Fi is not available and
+        sync the RTC to NTP when connectivity returns.
     upgrades:
     - Add a Telegram bot that sends an alert message on every new alarm event
     - Add an MQ-7 CO sensor for carbon monoxide detection independent of smoke
     - Add a web page to view the full NVS alarm event log from a browser
     - Add a test button that temporarily raises the threshold to verify the alarm circuit works
-    code: "// ESP32 Fire Alarm - Intermediate (DHT22 + OLED + NVS event log + NTP)\n#include <Wire.h>\n\
-      #include <Adafruit_SSD1306.h>\n#include <DHT.h>\n#include <Preferences.h>\n#include <WiFi.h>\n#include\
-      \ <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nDHT dht(4, DHT22);\nPreferences prefs;\n\n\
-      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int MQ2=34, DOUT=35, LED_R=25, LED_G=26,\
-      \ BUZ=27;\nconst int SMOKE_THRESH=1800;\nconst float TEMP_THRESH=60.0f;\n\nint alarmCount=0;\n\n\
-      void logAlarm(const String &reason, int smoke, float temp){\n  prefs.begin(\"alarm\",false);\n \
-      \ int n=prefs.getInt(\"count\",0);\n  time_t now=time(nullptr);\n  String entry=String(now)+\",\"\
-      +reason+\",\"+String(smoke)+\",\"+String(temp,1);\n  prefs.putString(String(n).c_str(),entry);\n\
-      \  prefs.putInt(\"count\",n+1);\n  prefs.end();\n  alarmCount=n+1;\n  Serial.println(\"ALARM logged:\
-      \ \"+entry);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  dht.begin();\n\
-      \  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(DOUT,INPUT); pinMode(LED_R,OUTPUT);\n\
-      \  pinMode(LED_G,OUTPUT); pinMode(BUZ,OUTPUT);\n  analogReadResolution(12);\n  WiFi.begin(SSID,PASS);\n\
-      \  int tries=0;\n  while(WiFi.status()!=WL_CONNECTED && tries<20){ delay(500); tries++; }\n  if(WiFi.status()==WL_CONNECTED)\
-      \ configTime(0,0,\"pool.ntp.org\");\n  // Preheat\n  oled.clearDisplay(); oled.setCursor(0,0); oled.println(\"\
-      Preheating 30s...\");\n  oled.display(); delay(30000);\n}\n\nvoid loop(){\n  int smoke=analogRead(MQ2);\n\
-      \  float temp=dht.readTemperature();\n  float hum=dht.readHumidity();\n  bool smokeAlarm=(smoke>SMOKE_THRESH)||(digitalRead(DOUT)==LOW);\n\
-      \  bool tempAlarm=(!isnan(temp)&&temp>TEMP_THRESH);\n  bool alarm=smokeAlarm||tempAlarm;\n\n  if(alarm){\n\
-      \    String reason=smokeAlarm&&tempAlarm?\"SMOKE+TEMP\":smokeAlarm?\"SMOKE\":\"TEMP\";\n    logAlarm(reason,smoke,isnan(temp)?-1:temp);\n\
-      \    digitalWrite(LED_R,HIGH); digitalWrite(LED_G,LOW); digitalWrite(BUZ,HIGH);\n  } else {\n  \
-      \  digitalWrite(LED_R,LOW); digitalWrite(LED_G,HIGH); digitalWrite(BUZ,LOW);\n  }\n\n  oled.clearDisplay();\
-      \ oled.setTextSize(1); oled.setCursor(0,0);\n  oled.printf(\"Smoke: %dn\",smoke);\n  oled.printf(\"\
-      Temp:  %.1fCn\",isnan(temp)?0:temp);\n  oled.printf(\"Hum:   %.1f%%n\",isnan(hum)?0:hum);\n  oled.println(alarm?\"\
-      *** ALARM ***\":\"Status: OK\");\n  oled.printf(\"Events: %dn\",alarmCount);\n  oled.display();\n\
-      \  delay(2000);\n}"
+    code: "// ESP32 Fire Alarm - Intermediate (DHT22 + OLED + NVS event log + NTP)\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <DHT.h>\n#include <Preferences.h>\n#include <WiFi.h>\n#include <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\
+      DHT dht(4, DHT22);\nPreferences prefs;\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int MQ2=34, DOUT=35,\
+      \ LED_R=25, LED_G=26, BUZ=27;\nconst int SMOKE_THRESH=1800;\nconst float TEMP_THRESH=60.0f;\n\nint alarmCount=0;\n\n\
+      void logAlarm(const String &reason, int smoke, float temp){\n  prefs.begin(\"alarm\",false);\n  int n=prefs.getInt(\"\
+      count\",0);\n  time_t now=time(nullptr);\n  String entry=String(now)+\",\"+reason+\",\"+String(smoke)+\",\"+String(temp,1);\n\
+      \  prefs.putString(String(n).c_str(),entry);\n  prefs.putInt(\"count\",n+1);\n  prefs.end();\n  alarmCount=n+1;\n  Serial.println(\"\
+      ALARM logged: \"+entry);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  dht.begin();\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n\
+      \  oled.setTextColor(WHITE);\n  pinMode(DOUT,INPUT); pinMode(LED_R,OUTPUT);\n  pinMode(LED_G,OUTPUT); pinMode(BUZ,OUTPUT);\n\
+      \  analogReadResolution(12);\n  WiFi.begin(SSID,PASS);\n  int tries=0;\n  while(WiFi.status()!=WL_CONNECTED && tries<20){\
+      \ delay(500); tries++; }\n  if(WiFi.status()==WL_CONNECTED) configTime(0,0,\"pool.ntp.org\");\n  // Preheat\n  oled.clearDisplay();\
+      \ oled.setCursor(0,0); oled.println(\"Preheating 30s...\");\n  oled.display(); delay(30000);\n}\n\nvoid loop(){\n  int\
+      \ smoke=analogRead(MQ2);\n  float temp=dht.readTemperature();\n  float hum=dht.readHumidity();\n  bool smokeAlarm=(smoke>SMOKE_THRESH)||(digitalRead(DOUT)==LOW);\n\
+      \  bool tempAlarm=(!isnan(temp)&&temp>TEMP_THRESH);\n  bool alarm=smokeAlarm||tempAlarm;\n\n  if(alarm){\n    String\
+      \ reason=smokeAlarm&&tempAlarm?\"SMOKE+TEMP\":smokeAlarm?\"SMOKE\":\"TEMP\";\n    logAlarm(reason,smoke,isnan(temp)?-1:temp);\n\
+      \    digitalWrite(LED_R,HIGH); digitalWrite(LED_G,LOW); digitalWrite(BUZ,HIGH);\n  } else {\n    digitalWrite(LED_R,LOW);\
+      \ digitalWrite(LED_G,HIGH); digitalWrite(BUZ,LOW);\n  }\n\n  oled.clearDisplay(); oled.setTextSize(1); oled.setCursor(0,0);\n\
+      \  oled.printf(\"Smoke: %dn\",smoke);\n  oled.printf(\"Temp:  %.1fCn\",isnan(temp)?0:temp);\n  oled.printf(\"Hum:  \
+      \ %.1f%%n\",isnan(hum)?0:hum);\n  oled.println(alarm?\"*** ALARM ***\":\"Status: OK\");\n  oled.printf(\"Events: %dn\"\
+      ,alarmCount);\n  oled.display();\n  delay(2000);\n}"
     code_filename: esp32-fire-alarm-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build publishes all sensor readings and alarm events to an MQTT broker
-      in JSON format so Home Assistant or Node-RED can trigger sirens, notifications, and automated responses
-      across the whole smart home. Multiple ESP32 fire alarm nodes in different rooms subscribe to a central
-      MQTT topic to coordinate â€” if one room detects fire, all buzzers activate simultaneously. A web
-      admin page shows a live floor plan with per-room status indicators.</p>
+    overview_html: <p>The advanced build publishes all sensor readings and alarm events to an MQTT broker in JSON format so
+      Home Assistant or Node-RED can trigger sirens, notifications, and automated responses across the whole smart home. Multiple
+      ESP32 fire alarm nodes in different rooms subscribe to a central MQTT topic to coordinate â€” if one room detects fire,
+      all buzzers activate simultaneously. A web admin page shows a live floor plan with per-room status indicators.</p>
     components:
     - 1Ã— ESP32 DevKit V1 per room â€” Minimum 2 for multi-room demo
     - 1Ã— MQ-2 smoke sensor â€” Per unit
@@ -241,19 +207,18 @@ levels:
       - Same as intermediate
       - Replicate per room node
     how:
-    - 'Multi-Room MQTT Coordination: Each room node publishes its sensor readings and alarm status to
-      fire/status and a room ID to fire/alarm when triggered. All other nodes subscribe to fire/alarm
-      and activate their local buzzers when any room publishes an alarm, creating a building-wide alert
-      from any single detection.'
-    - 'JSON Status Publishing: The fire/status JSON payload includes room ID, smoke ADC value, temperature,
-      and alarm boolean. Home Assistant MQTT sensor entities subscribe to this topic and display per-room
-      status on a Lovelace dashboard with coloured indicators.'
-    - 'Global Alarm Propagation: When mqttCallback receives a fire/alarm message, globalAlarm is set true
-      regardless of local sensor readings. This ensures all rooms alert even if the fire is only in one
-      area. Publishing "CLEAR" resets globalAlarm across all nodes.'
-    - 'Home Assistant Integration: Home Assistant MQTT binary sensor entities detect the alarm boolean
-      in the JSON payload. Automations then trigger TTS announcements on smart speakers, send push notifications
-      to phones, and activate Z-Wave or Zigbee sirens throughout the building.'
+    - 'Multi-Room MQTT Coordination: Each room node publishes its sensor readings and alarm status to fire/status and a room
+      ID to fire/alarm when triggered. All other nodes subscribe to fire/alarm and activate their local buzzers when any room
+      publishes an alarm, creating a building-wide alert from any single detection.'
+    - 'JSON Status Publishing: The fire/status JSON payload includes room ID, smoke ADC value, temperature, and alarm boolean.
+      Home Assistant MQTT sensor entities subscribe to this topic and display per-room status on a Lovelace dashboard with
+      coloured indicators.'
+    - 'Global Alarm Propagation: When mqttCallback receives a fire/alarm message, globalAlarm is set true regardless of local
+      sensor readings. This ensures all rooms alert even if the fire is only in one area. Publishing "CLEAR" resets globalAlarm
+      across all nodes.'
+    - 'Home Assistant Integration: Home Assistant MQTT binary sensor entities detect the alarm boolean in the JSON payload.
+      Automations then trigger TTS announcements on smart speakers, send push notifications to phones, and activate Z-Wave
+      or Zigbee sirens throughout the building.'
     apps:
     - Whole-home fire and gas alarm network with central monitoring
     - Commercial building fire panel replacement with IoT connectivity
@@ -261,38 +226,34 @@ levels:
     - School classroom fire safety network with office admin alert
     troubleshooting:
     - - Global alarm does not clear when fire/alarm receives CLEAR
-      - Check that the CLEAR message is published with the retain flag set to false so it does not persist
-        in the broker. Also ensure the mqtt.subscribe(TOPIC_ALARM) call succeeds after reconnection.
+      - Check that the CLEAR message is published with the retain flag set to false so it does not persist in the broker.
+        Also ensure the mqtt.subscribe(TOPIC_ALARM) call succeeds after reconnection.
     - - Multiple nodes publish conflicting status
-      - 'Use unique ROOM_ID values per node. Add the room ID to all MQTT topics: fire/status/living-room,
-        fire/status/kitchen, etc. This prevents JSON payload collisions on a shared topic.'
+      - 'Use unique ROOM_ID values per node. Add the room ID to all MQTT topics: fire/status/living-room, fire/status/kitchen,
+        etc. This prevents JSON payload collisions on a shared topic.'
     - - Network latency delays alarm propagation
-      - Add mqtt.setSocketTimeout(1) to reduce MQTT network wait time. For critical safety applications
-        add an ESP-NOW fallback that directly broadcasts the alarm without relying on the Wi-Fi router
-        or broker.
+      - Add mqtt.setSocketTimeout(1) to reduce MQTT network wait time. For critical safety applications add an ESP-NOW fallback
+        that directly broadcasts the alarm without relying on the Wi-Fi router or broker.
     upgrades:
     - Add a 4G modem so the alarm works even if home internet is down
     - Integrate with Google Home or Amazon Alexa for voice alarm announcements
     - Add a battery backup and use deep sleep between readings to extend runtime
     - Add a local web server as an MQTT broker fallback if the central broker is offline
-    code: "// ESP32 Fire Alarm - Advanced (MQTT multi-room coordination)\n#include <WiFi.h>\n#include\
-      \ <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <DHT.h>\n\nDHT dht(4,DHT22);\nWiFiClient\
-      \ wifiClient;\nPubSubClient mqtt(wifiClient);\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\"\
-      ;\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* ROOM_ID=\"living-room\"; // Unique per\
-      \ node\nconst char* TOPIC_STATUS =\"fire/status\";\nconst char* TOPIC_ALARM  =\"fire/alarm\";\n\
-      const char* TOPIC_CMD    =\"fire/command\";\n\nconst int MQ2=34, DOUT=35, LED_R=25, BUZ=27;\nconst\
-      \ int SMOKE_THRESH=1800;\nconst float TEMP_THRESH=60.0f;\n\nbool localAlarm=false, globalAlarm=false;\n\
-      \nvoid mqttCallback(char* topic, byte* payload, unsigned int len){\n  String msg((char*)payload,len);\n\
-      \  // Another room triggered alarm â€” activate buzzer here too\n  if(msg!=\"CLEAR\") globalAlarm=true;\n\
-      \  else globalAlarm=false;\n}\n\nvoid publishStatus(int smoke, float temp, bool alarm){\n  StaticJsonDocument<128>\
-      \ doc;\n  doc[\"room\"]  = ROOM_ID;\n  doc[\"smoke\"] = smoke;\n  doc[\"temp\"]  = temp;\n  doc[\"\
-      alarm\"] = alarm;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(TOPIC_STATUS,buf);\n\
-      \  if(alarm) mqtt.publish(TOPIC_ALARM,ROOM_ID);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n \
-      \ dht.begin();\n  pinMode(DOUT,INPUT); pinMode(LED_R,OUTPUT); pinMode(BUZ,OUTPUT);\n  analogReadResolution(12);\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      \  mqtt.setCallback(mqttCallback);\n  delay(30000); // preheat\n}\n\nvoid loop(){\n  if(!mqtt.connected()){\
-      \ mqtt.connect(ROOM_ID); mqtt.subscribe(TOPIC_ALARM); }\n  mqtt.loop();\n\n  int smoke=analogRead(MQ2);\n\
-      \  float temp=dht.readTemperature();\n  bool smokeAlarm=(smoke>SMOKE_THRESH)||(digitalRead(DOUT)==LOW);\n\
+    code: "// ESP32 Fire Alarm - Advanced (MQTT multi-room coordination)\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include\
+      \ <ArduinoJson.h>\n#include <DHT.h>\n\nDHT dht(4,DHT22);\nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\n\
+      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* ROOM_ID=\"\
+      living-room\"; // Unique per node\nconst char* TOPIC_STATUS =\"fire/status\";\nconst char* TOPIC_ALARM  =\"fire/alarm\"\
+      ;\nconst char* TOPIC_CMD    =\"fire/command\";\n\nconst int MQ2=34, DOUT=35, LED_R=25, BUZ=27;\nconst int SMOKE_THRESH=1800;\n\
+      const float TEMP_THRESH=60.0f;\n\nbool localAlarm=false, globalAlarm=false;\n\nvoid mqttCallback(char* topic, byte*\
+      \ payload, unsigned int len){\n  String msg((char*)payload,len);\n  // Another room triggered alarm â€” activate buzzer\
+      \ here too\n  if(msg!=\"CLEAR\") globalAlarm=true;\n  else globalAlarm=false;\n}\n\nvoid publishStatus(int smoke, float\
+      \ temp, bool alarm){\n  StaticJsonDocument<128> doc;\n  doc[\"room\"]  = ROOM_ID;\n  doc[\"smoke\"] = smoke;\n  doc[\"\
+      temp\"]  = temp;\n  doc[\"alarm\"] = alarm;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(TOPIC_STATUS,buf);\n\
+      \  if(alarm) mqtt.publish(TOPIC_ALARM,ROOM_ID);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  dht.begin();\n  pinMode(DOUT,INPUT);\
+      \ pinMode(LED_R,OUTPUT); pinMode(BUZ,OUTPUT);\n  analogReadResolution(12);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
+      \ delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n  mqtt.setCallback(mqttCallback);\n  delay(30000); // preheat\n}\n\
+      \nvoid loop(){\n  if(!mqtt.connected()){ mqtt.connect(ROOM_ID); mqtt.subscribe(TOPIC_ALARM); }\n  mqtt.loop();\n\n \
+      \ int smoke=analogRead(MQ2);\n  float temp=dht.readTemperature();\n  bool smokeAlarm=(smoke>SMOKE_THRESH)||(digitalRead(DOUT)==LOW);\n\
       \  bool tempAlarm=(!isnan(temp)&&temp>TEMP_THRESH);\n  localAlarm=smokeAlarm||tempAlarm;\n\n  publishStatus(smoke,isnan(temp)?-1:temp,localAlarm);\n\
       \n  bool anyAlarm=localAlarm||globalAlarm;\n  digitalWrite(LED_R,anyAlarm?HIGH:LOW);\n  digitalWrite(BUZ,anyAlarm?HIGH:LOW);\n\
       \  delay(5000); // Publish every 5 seconds\n}"
@@ -300,3 +261,186 @@ levels:
 related_slugs:
 - esp32-motion-security-alert
 - esp32-smart-street-light
+format: golden
+project:
+  icon: FIRE
+  mission_title: Build a Smoke Sensor Alert Demo
+  difficulty: Intermediate
+  age: Ages 13+
+  recommended_age: Ages 13+
+  estimated_time: 75-90 min
+  budget: Under 25 USD
+  adult_supervision: Adult supervision required for sensor warmup, buzzer noise, and any smoke/gas test source.
+  classroom_use: Use as a sensor-threshold and safety-boundary discussion, not as a life-safety demonstration.
+  parent_prompt: Ask what makes this different from a certified smoke detector.
+  screen_free_activity: 'Draw the alert decision tree: clean air, rising reading, alert output, reset.'
+  skills_practiced:
+  - ADC1 analog input
+  - Voltage divider protection
+  - Threshold tuning
+  - Safety limits
+  learning_outcomes: &id001
+  - Read MQ-2 analog output on ADC1 GPIO34.
+  - Use LEDs and buzzer as local outputs.
+  - Explain why the prototype is not a certified fire alarm.
+  - Tune a threshold from Serial Monitor readings.
+  mini_experiments:
+  - Record clean-air readings after warmup.
+  - Change SMOKE_THRESHOLD and observe when the alert starts.
+  - Cover and uncover the sensor area without using flame.
+  next_challenge: Add an OLED that shows raw sensor readings before adding any network notification.
+  what_you_build: A low-voltage educational smoke/gas sensor demo using MQ-2 AOUT on GPIO34 through a divider, red/green LEDs,
+    and a buzzer.
+  story: 'Fire-alarm wording can be dangerous if it sounds like building-compliance hardware. This project is intentionally
+    a bench demo for learning sensor thresholds and local alerts. This Golden version keeps the promise narrow: the parts
+    list, code constants, GPIO table, expected output, safety notes, and troubleshooting all describe the same low-voltage
+    educational build.'
+  eli12: 'The MQ-2 module gives the ESP32 a number that tends to rise when the sensor reacts to smoke or gas around it. The
+    ESP32 is the decision maker: it reads one signal, compares it with simple rules, then changes an output you can see or
+    hear.'
+  parent_safety: This is not a certified fire alarm, smoke detector, or life-safety system. Do not test with open flame. Unplug
+    USB and any external supply before rewiring. Keep the build low-voltage on the bench and do not treat it as certified
+    equipment.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board used as the controller.
+    link: /components/esp32-devkit.html
+  - item: MQ-2 smoke/gas sensor module
+    note: 5 V heater module; analog output must be divided before GPIO34.
+  - item: 10 kOhm resistor
+    note: Upper resistor for AOUT divider.
+  - item: 20 kOhm resistor
+    note: Lower resistor for AOUT divider.
+  - item: Red and green LEDs with resistors
+    note: Status outputs on GPIO25 and GPIO26.
+  - item: Active buzzer module
+    note: GPIO27 alert output; use a driver if the buzzer module needs more current.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board used as the controller.
+  - part: MQ-2 smoke/gas sensor module
+    qty: '1'
+    estimated_cost: Varies
+    notes: 5 V heater module; analog output must be divided before GPIO34.
+  - part: 10 kOhm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Upper resistor for AOUT divider.
+  - part: 20 kOhm resistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Lower resistor for AOUT divider.
+  - part: Red and green LEDs with resistors
+    qty: '1'
+    estimated_cost: Varies
+    notes: Status outputs on GPIO25 and GPIO26.
+  - part: Active buzzer module
+    qty: '1'
+    estimated_cost: Varies
+    notes: GPIO27 alert output; use a driver if the buzzer module needs more current.
+  wiring:
+    illustration_alt: ESP32 Fire Alarm System wiring diagram
+    summary: MQ-2 AOUT goes to GPIO34 through a 10 kOhm / 20 kOhm divider. LEDs use GPIO25 and GPIO26; buzzer uses GPIO27.
+    steps:
+    - Unplug USB before changing sensor, LED, or buzzer wiring.
+    - Power MQ-2 VCC from 5 V/VIN and connect MQ-2 GND to ESP32 GND.
+    - Route MQ-2 AOUT through the 10 kOhm / 20 kOhm divider and connect the divided node to GPIO34.
+    - Connect red LED through a resistor to GPIO25 and green LED through a resistor to GPIO26.
+    - Connect the buzzer module signal to GPIO27 and its ground to GND.
+    - Reconnect USB, wait for sensor warmup, and watch Serial Monitor.
+  gpio_map:
+  - signal: MQ-2 AOUT divided
+    esp32_pin: GPIO34
+    direction: Input
+    notes: ADC1 input-only pin; do not drive it as output.
+  - signal: Red LED
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Alert indicator.
+  - signal: Green LED
+    esp32_pin: GPIO26
+    direction: Output
+    notes: Normal indicator.
+  - signal: Buzzer
+    esp32_pin: GPIO27
+    direction: Output
+    notes: Local alert output.
+  circuit_explanation: The ESP32 reads the MQ-2 analog voltage after the divider. The code compares the 12-bit ADC value to
+    SMOKE_THRESHOLD and switches the LEDs and buzzer.
+  engineering_explanation: The threshold is a learning value, not a calibrated smoke limit. MQ sensors need warmup and can
+    react to many gases, so false positives and missed conditions are possible.
+  libraries:
+  - name: Arduino ESP32 core
+    note: No extra libraries required.
+  code:
+    filename: esp32-fire-alarm-system.ino
+    content: "// ESP32 Smoke Sensor Alarm Demo - educational low-voltage prototype\nconst int MQ2_AOUT = 34;   // ADC1 input\
+      \ through voltage divider\nconst int LED_R = 25;\nconst int LED_G = 26;\nconst int BUZZER = 27;\nconst int SMOKE_THRESHOLD\
+      \ = 1800; // tune from clean-air Serial Monitor readings\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  pinMode(LED_R, OUTPUT);\n  pinMode(LED_G, OUTPUT);\n  pinMode(BUZZER, OUTPUT);\n  digitalWrite(LED_G, HIGH);\n  Serial.println(\"\
+      Educational smoke/gas sensor demo. Not a certified fire alarm.\");\n  Serial.println(\"MQ-2 warmup: wait at least 30\
+      \ seconds before judging readings.\");\n  delay(30000);\n}\n\nvoid loop() {\n  int raw = analogRead(MQ2_AOUT);\n  bool\
+      \ alert = raw > SMOKE_THRESHOLD;\n  Serial.printf(\"MQ2 raw=%d alert=%s\\n\", raw, alert ? \"YES\" : \"no\");\n  digitalWrite(LED_R,\
+      \ alert ? HIGH : LOW);\n  digitalWrite(LED_G, alert ? LOW : HIGH);\n  digitalWrite(BUZZER, alert ? HIGH : LOW);\n  delay(1000);\n\
+      }\n"
+  code_explanation: MQ2_AOUT is GPIO34. The sketch waits for warmup, reads the ADC value, compares it with 1800, and drives
+    GPIO25, GPIO26, and GPIO27.
+  expected_output: Serial Monitor prints MQ2 raw values once per second. Values over 1800 turn the red LED and buzzer on while
+    the green LED turns off.
+  common_mistakes:
+  - text: Calling the prototype a certified fire alarm.
+  - text: Connecting MQ-2 AOUT directly to ESP32 when the module output can exceed 3.3 V.
+  - text: Testing with open flame.
+  - text: Skipping warmup before judging readings.
+  troubleshooting:
+  - problem: Reading is stuck near 0
+    fix: Check MQ-2 power, common ground, and the divided AOUT node to GPIO34.
+  - problem: Buzzer is always on
+    fix: Raise the threshold after recording clean-air readings.
+  - problem: Board resets
+    fix: Use a stable USB supply and avoid powering high-current buzzers from GPIO.
+  testing_checklist:
+  - Power the sensor and wait at least 30 seconds.
+  - Record clean-air readings.
+  - Change the threshold and confirm outputs follow the printed value.
+  - Power-cycle and confirm the normal green state returns.
+  engineer_tips:
+  - Label this as a smoke/gas sensor demo.
+  - Keep the divider close to GPIO34.
+  - Never install this as a real alarm.
+  upgrade_ideas:
+  - Add OLED raw reading display.
+  - Add a silence button for bench testing.
+  - Log readings only after local behavior is understood.
+  real_world_applications:
+  - Sensor threshold lesson
+  - Safety-boundary classroom discussion
+  - Local alert prototype
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, Wi-Fi, and safe beginner wiring.
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Learn how ESP32 output timing controls buzzers, LEDs, and other signals.
+  related_projects:
+  - title: ESP32 Air Quality Monitor
+    href: /projects/esp32-air-quality-monitor.html
+    description: Compare this threshold demo with an air-quality monitoring build.
+  faqs:
+  - question: Can this replace a smoke detector?
+    answer: No. It is only an educational prototype.
+  - question: Why use a voltage divider?
+    answer: The MQ-2 module is powered from 5 V, so the analog signal must be kept safe for ESP32 GPIO.
+  - question: Is 1800 a fire threshold?
+    answer: No. It is a starter value to tune from Serial Monitor readings.
+  complete:
+    summary: You completed ESP32 Fire Alarm System as a trustworthy ESP32 learning build with matching wiring, code, testing,
+      and safety boundaries.
+    skills:
+    - ADC1 analog input
+    - Voltage divider protection
+    - Threshold tuning

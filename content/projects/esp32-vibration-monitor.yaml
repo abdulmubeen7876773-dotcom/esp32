@@ -1,96 +1,63 @@
 slug: esp32-vibration-monitor
 title: ESP32 Vibration Monitor
 category: Industrial Automation
-description: Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration
-  levels, perform FFT spectrum analysis, and publish maintenance alerts over MQTT before failures occur.
-meta_description: Build an ESP32 vibration monitor with MPU6050 accelerometer. From threshold alerts to
-  FFT spectrum analysis and MQTT predictive maintenance dashboards.
+description: Mount an MPU6050 IMU on rotating machinery and use the ESP32 to detect abnormal vibration levels, perform FFT
+  spectrum analysis, and publish maintenance alerts over MQTT before failures occur.
+meta_description: Build an ESP32 vibration monitor with MPU6050 accelerometer. From threshold alerts to FFT spectrum analysis
+  and MQTT predictive maintenance dashboards.
 source_base: esp32-vibration-monitor-legacy-import
-sensor: 'TODO: sensor'
-output: Red LED anode
+sensor: MPU6050 SDA
+output: Red/Green/Buzzer
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 2
-  sensor_name: 'TODO: sensor'
-  output_name: Red LED anode
+  sensor_pin: GPIO21
+  output_pin: GPIO25 / GPIO26 / GPIO27
+  sensor_name: MPU6050 SDA
+  output_name: Red/Green/Buzzer
   wiring:
   - component: MPU6050 SDA
-    pin: GPIO 21
+    pin: GPIO21
   - component: MPU6050 SCL
-    pin: GPIO 22
-  - component: MPU6050 VCC
-    pin: 3V3
-  - component: MPU6050 GND
-    pin: GND
-  - component: MPU6050 AD0
-    pin: GND
-  - component: Red LED anode
-    pin: GPIO 2
-  - component: Green LED anode
-    pin: GPIO 4
-  - component: Buzzer +
-    pin: GPIO 15
+    pin: GPIO22
+  - component: Red/Green/Buzzer
+    pin: GPIO25 / GPIO26 / GPIO27
 levels:
   beginner:
     level: beginner
-    overview_html: '<p>In this beginner project you will mount an MPU6050 IMU on a surface and use the
-      ESP32 to read 3-axis acceleration data over I2C. The combined vibration magnitude is compared to
-      a threshold: if exceeded, a red LED and buzzer alert the user. The Serial Plotter lets you watch
-      vibration in real time. This project teaches I2C sensor communication, vector magnitude calculation,
-      and simple threshold alerting.</p>'
+    overview_html: '<p>In this beginner project you will mount an MPU6050 IMU on a surface and use the ESP32 to read 3-axis
+      acceleration data over I2C. The combined vibration magnitude is compared to a threshold: if exceeded, a red LED and
+      buzzer alert the user. The Serial Plotter lets you watch vibration in real time. This project teaches I2C sensor communication,
+      vector magnitude calculation, and simple threshold alerting.</p>'
     components:
-    - 1× ESP32 DevKit V1
-    - 1× MPU6050 IMU module — Accelerometer + gyroscope, I2C
-    - 1× Red LED 5 mm — Alert indicator
-    - 1× Green LED 5 mm — Normal status indicator
-    - 1× Active buzzer 5 V
-    - 2× 220 ohm resistor — LED current limiting
-    - 1× Breadboard and jumper wires
+    - ESP32 DevKit board
+    - MPU6050 IMU module
+    - Red and green LEDs with resistors
+    - Active buzzer module
     wiring:
     - - MPU6050 SDA
-      - GPIO 21
-      - I2C data line; 3.3 V pullup
+      - GPIO21
+      - I2C data.
     - - MPU6050 SCL
-      - GPIO 22
-      - I2C clock line
-    - - MPU6050 VCC
-      - 3V3
-      - Do not use 5 V
-    - - MPU6050 GND
-      - GND
-      - ''
-    - - MPU6050 AD0
-      - GND
-      - I2C address 0x68; tie HIGH for 0x69
-    - - Red LED anode
-      - GPIO 2
-      - 220 ohm resistor
-    - - Green LED anode
-      - GPIO 4
-      - 220 ohm resistor
-    - - Buzzer +
-      - GPIO 15
-      - ''
+      - GPIO22
+      - I2C clock.
+    - - Red/Green/Buzzer
+      - GPIO25 / GPIO26 / GPIO27
+      - Local alert outputs.
     how:
-    - 'MPU6050 I2C Communication: The MPU6050 communicates over I2C at address 0x68 (AD0 low) or 0x69
-      (AD0 high). The Adafruit MPU6050 library handles register reads and converts raw 16-bit ADC values
-      into calibrated m/s^2 acceleration values.'
-    - 'Vector Magnitude Calculation: The 3-axis acceleration vector magnitude sqrt(ax^2+ay^2+az^2) represents
-      total vibration energy from all directions. At rest this equals approximately 9.81 m/s^2 (gravity).
-      Dynamic vibration adds to this value.'
-    - 'Threshold Alert Logic: If magnitude exceeds THRESHOLD (default 15 m/s^2) the red LED and buzzer
-      activate. The green LED indicates normal operation. Adjust the threshold based on the baseline vibration
-      of the specific machine.'
-    - 'Serial Plotter Visualisation: Printing the magnitude value to Serial at 50 Hz lets the Arduino
-      IDE Serial Plotter display a live vibration waveform. Open Tools > Serial Plotter to see peaks when
-      the machine vibrates.'
+    - 'MPU6050 I2C Communication: The MPU6050 communicates over I2C at address 0x68 (AD0 low) or 0x69 (AD0 high). The Adafruit
+      MPU6050 library handles register reads and converts raw 16-bit ADC values into calibrated m/s^2 acceleration values.'
+    - 'Vector Magnitude Calculation: The 3-axis acceleration vector magnitude sqrt(ax^2+ay^2+az^2) represents total vibration
+      energy from all directions. At rest this equals approximately 9.81 m/s^2 (gravity). Dynamic vibration adds to this value.'
+    - 'Threshold Alert Logic: If magnitude exceeds THRESHOLD (default 15 m/s^2) the red LED and buzzer activate. The green
+      LED indicates normal operation. Adjust the threshold based on the baseline vibration of the specific machine.'
+    - 'Serial Plotter Visualisation: Printing the magnitude value to Serial at 50 Hz lets the Arduino IDE Serial Plotter display
+      a live vibration waveform. Open Tools > Serial Plotter to see peaks when the machine vibrates.'
     apps:
     - Factory machine bearing wear early detection
     - Pump cavitation monitoring on fluid systems
@@ -98,41 +65,39 @@ levels:
     - Motor imbalance detection on rotating equipment
     troubleshooting:
     - - MPU6050 not found error at startup
-      - Check that SDA is on GPIO 21 and SCL on GPIO 22. Ensure VCC is 3.3 V, not 5 V. Run an I2C scanner
-        sketch to confirm the device appears at address 0x68.
+      - Check that SDA is on GPIO 21 and SCL on GPIO 22. Ensure VCC is 3.3 V, not 5 V. Run an I2C scanner sketch to confirm
+        the device appears at address 0x68.
     - - Magnitude reads 9.81 m/s^2 with no vibration
-      - 'This is correct: gravity contributes to the Z-axis reading when the sensor is horizontal. Subtract
-        the gravity component or use only the AC portion of the signal for vibration analysis.'
+      - 'This is correct: gravity contributes to the Z-axis reading when the sensor is horizontal. Subtract the gravity component
+        or use only the AC portion of the signal for vibration analysis.'
     - - Alert triggers on normal machine vibration
-      - Increase the THRESHOLD constant. Run the machine in normal operation and note the peak magnitude
-        in the Serial Plotter. Set the threshold 30 percent above that baseline.
+      - Increase the THRESHOLD constant. Run the machine in normal operation and note the peak magnitude in the Serial Plotter.
+        Set the threshold 30 percent above that baseline.
     - - LED flickers rapidly during vibration
-      - 'Add hysteresis: only trigger the alert when magnitude stays above threshold for 5 consecutive
-        samples, and clear it when magnitude stays below for 5 consecutive samples.'
+      - 'Add hysteresis: only trigger the alert when magnitude stays above threshold for 5 consecutive samples, and clear
+        it when magnitude stays below for 5 consecutive samples.'
     upgrades:
     - Log peak vibration values to NVS with a timestamp
     - Add an OLED display showing live magnitude and alert status
     - Send an alert SMS via a GSM module when vibration is detected
     - Add a calibration routine that automatically measures the at-rest baseline
-    code: "// ESP32 Vibration Monitor - Beginner\n// MPU6050 I2C + threshold LED/buzzer alert\n#include\
-      \ <Adafruit_MPU6050.h>\n#include <Adafruit_Sensor.h>\n#include <Wire.h>\n\nAdafruit_MPU6050 mpu;\n\
-      \nconst int LED_R=2, LED_G=4, BUZ=15;\nconst float THRESHOLD = 15.0; // m/s^2 combined; gravity=9.81\n\
-      \nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  if(!mpu.begin()){\n    Serial.println(\"\
-      MPU6050 not found - check wiring\");\n    while(1) delay(10);\n  }\n  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n\
-      \  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);\n  pinMode(LED_R,OUTPUT); pinMode(LED_G,OUTPUT);\
-      \ pinMode(BUZ,OUTPUT);\n  Serial.println(\"magnitude_m_s2\");\n}\n\nvoid loop(){\n  sensors_event_t\
-      \ a, g, temp;\n  mpu.getEvent(&a,&g,&temp);\n\n  float ax=a.acceleration.x;\n  float ay=a.acceleration.y;\n\
-      \  float az=a.acceleration.z;\n  float mag=sqrt(ax*ax+ay*ay+az*az);\n\n  // Print for Serial Plotter\n\
-      \  Serial.println(mag);\n\n  if(mag > THRESHOLD){\n    digitalWrite(LED_R,HIGH); digitalWrite(LED_G,LOW);\n\
-      \    digitalWrite(BUZ,HIGH);\n  } else {\n    digitalWrite(LED_R,LOW); digitalWrite(LED_G,HIGH);\n\
-      \    digitalWrite(BUZ,LOW);\n  }\n  delay(20); // 50 Hz sample rate\n}"
+    code: "// ESP32 Vibration Monitor - MPU6050 threshold demo\n#include <Adafruit_MPU6050.h>\n#include <Adafruit_Sensor.h>\n\
+      #include <Wire.h>\n\nAdafruit_MPU6050 mpu;\nconst int LED_R = 25;\nconst int LED_G = 26;\nconst int BUZZER = 27;\nconst\
+      \ float THRESHOLD_M_S2 = 15.0;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  if (!mpu.begin())\
+      \ {\n    Serial.println(\"MPU6050 not found - check SDA, SCL, 3V3, and GND.\");\n    while (true) delay(10);\n  }\n\
+      \  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);\n  pinMode(LED_R, OUTPUT);\n\
+      \  pinMode(LED_G, OUTPUT);\n  pinMode(BUZZER, OUTPUT);\n  Serial.println(\"magnitude_m_s2\");\n}\n\nvoid loop() {\n\
+      \  sensors_event_t accel, gyro, temp;\n  mpu.getEvent(&accel, &gyro, &temp);\n  float ax = accel.acceleration.x;\n \
+      \ float ay = accel.acceleration.y;\n  float az = accel.acceleration.z;\n  float magnitude = sqrt(ax * ax + ay * ay +\
+      \ az * az);\n  bool alert = magnitude > THRESHOLD_M_S2;\n  Serial.println(magnitude);\n  digitalWrite(LED_R, alert ?\
+      \ HIGH : LOW);\n  digitalWrite(LED_G, alert ? LOW : HIGH);\n  digitalWrite(BUZZER, alert ? HIGH : LOW);\n  delay(20);\n\
+      }\n"
     code_filename: esp32-vibration-monitor-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build samples acceleration at 500 Hz, calculates RMS (root mean
-      square) vibration amplitude, identifies the peak frequency using a basic FFT, and serves a web page
-      showing a rolling 60-second chart. RMS values are compared against ISO 10816 vibration severity
-      limits and stored in NVS for trend analysis over time.</p>
+    overview_html: <p>The intermediate build samples acceleration at 500 Hz, calculates RMS (root mean square) vibration amplitude,
+      identifies the peak frequency using a basic FFT, and serves a web page showing a rolling 60-second chart. RMS values
+      are compared against ISO 10816 vibration severity limits and stored in NVS for trend analysis over time.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× MPU6050 IMU
@@ -151,18 +116,16 @@ levels:
       - GPIO 15
       - ''
     how:
-    - 'High-Rate Sampling: The MPU6050 is sampled 256 times with a 2 ms delay (500 Hz effective rate).
-      The gravity component (9.81 m/s^2) is subtracted from the magnitude so only dynamic vibration contributes
-      to the RMS and FFT calculations.'
-    - 'RMS Amplitude: RMS = sqrt(sum of squared samples / N). RMS in mm/s is the industry standard metric
-      for vibration severity. The Adafruit MPU6050 returns m/s^2; convert to mm/s by integrating over
-      the dominant frequency period if needed.'
-    - 'FFT Peak Frequency: The arduinoFFT library applies a Hamming window to reduce spectral leakage,
-      computes the DFT of the 256-sample buffer, converts to magnitude spectrum, and returns the dominant
-      frequency in Hz. This identifies imbalance (1x RPM), misalignment (2x RPM), or bearing fault signatures.'
-    - 'ISO 10816 Severity Zones: ISO 10816-3 defines four vibration severity zones for industrial machines.
-      The display shows Zone A (new machines), B (acceptable), C (alarm condition), or D (shut down).
-      Thresholds here are approximate; consult the standard for machine-class-specific limits.'
+    - 'High-Rate Sampling: The MPU6050 is sampled 256 times with a 2 ms delay (500 Hz effective rate). The gravity component
+      (9.81 m/s^2) is subtracted from the magnitude so only dynamic vibration contributes to the RMS and FFT calculations.'
+    - 'RMS Amplitude: RMS = sqrt(sum of squared samples / N). RMS in mm/s is the industry standard metric for vibration severity.
+      The Adafruit MPU6050 returns m/s^2; convert to mm/s by integrating over the dominant frequency period if needed.'
+    - 'FFT Peak Frequency: The arduinoFFT library applies a Hamming window to reduce spectral leakage, computes the DFT of
+      the 256-sample buffer, converts to magnitude spectrum, and returns the dominant frequency in Hz. This identifies imbalance
+      (1x RPM), misalignment (2x RPM), or bearing fault signatures.'
+    - 'ISO 10816 Severity Zones: ISO 10816-3 defines four vibration severity zones for industrial machines. The display shows
+      Zone A (new machines), B (acceptable), C (alarm condition), or D (shut down). Thresholds here are approximate; consult
+      the standard for machine-class-specific limits.'
     apps:
     - Predictive maintenance programme for pump and motor monitoring
     - HVAC fan bearing wear detection before failure
@@ -170,52 +133,48 @@ levels:
     - Research platform for vibration signature analysis
     troubleshooting:
     - - FFT peak frequency is always at 0 Hz
-      - The DC offset from gravity subtraction may be imperfect. Apply a high-pass filter by subtracting
-        the mean of the sample buffer before running the FFT.
+      - The DC offset from gravity subtraction may be imperfect. Apply a high-pass filter by subtracting the mean of the sample
+        buffer before running the FFT.
     - - RMS values vary wildly between readings
-      - Ensure the MPU6050 is rigidly mounted to the surface being monitored. Any loose connection acts
-        as a mechanical filter and introduces random variation.
+      - Ensure the MPU6050 is rigidly mounted to the surface being monitored. Any loose connection acts as a mechanical filter
+        and introduces random variation.
     - - Web chart does not update
-      - Add a meta refresh tag to the HTML page or use JavaScript fetch() with a 1-second interval to
-        auto-reload the data endpoint without refreshing the full page.
+      - Add a meta refresh tag to the HTML page or use JavaScript fetch() with a 1-second interval to auto-reload the data
+        endpoint without refreshing the full page.
     upgrades:
     - Log RMS and peak frequency to SD card with timestamp for long-term trending
     - Add email alerts when Zone C or D thresholds are exceeded
     - Display the full FFT magnitude spectrum as a bar chart on the OLED
     - Add a second MPU6050 at a different bearing location for comparative analysis
-    code: "// ESP32 Vibration Monitor - Intermediate (RMS + peak frequency + web chart)\n#include <Adafruit_MPU6050.h>\n\
-      #include <Adafruit_Sensor.h>\n#include <Wire.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include\
-      \ <Adafruit_SSD1306.h>\n#include <arduinoFFT.h>\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\"\
-      ;\nAdafruit_MPU6050 mpu;\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nWebServer server(80);\n\nconst\
-      \ int SAMPLES=256;\ndouble vReal[SAMPLES], vImag[SAMPLES];\nArduinoFFT<double> FFT=ArduinoFFT<double>(vReal,vImag,SAMPLES,500.0);\n\
-      \nfloat rmsHistory[60]={0}; // 1-minute rolling buffer\nint   histIdx=0;\nfloat currentRMS=0, peakFreq=0;\n\
-      \nfloat computeRMS(){\n  float sum=0;\n  sensors_event_t a,g,t;\n  for(int i=0;i<SAMPLES;i++){\n\
-      \    mpu.getEvent(&a,&g,&t);\n    float mag=sqrt(a.acceleration.x*a.acceleration.x+\n          \
-      \         a.acceleration.y*a.acceleration.y+\n                   a.acceleration.z*a.acceleration.z)-9.81f;\n\
-      \    vReal[i]=mag; vImag[i]=0;\n    sum+=mag*mag;\n    delayMicroseconds(2000); // 500 Hz\n  }\n\
-      \  FFT.windowing(FFT_WIN_TYP_HAMMING,FFT_FORWARD);\n  FFT.compute(FFT_FORWARD);\n  FFT.complexToMagnitude();\n\
-      \  peakFreq=FFT.majorPeak();\n  return sqrt(sum/SAMPLES);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  Wire.begin(21,22);\n  mpu.begin(); mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n\
-      \  oled.setTextSize(1); oled.setTextColor(WHITE);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(500);\n  server.on(\"/\",[](){\n    String body=\"<h2>Vibration Monitor</h2><p>RMS: \"+String(currentRMS,3)+\n\
-      \      \" m/s2 | Peak: \"+String(peakFreq,1)+\" Hz</p>\";\n    body+=\"<canvas id=c width=600 height=200></canvas><script>\"\
-      \n      \"var d=[\";\n    for(int i=0;i<60;i++) body+=String(rmsHistory[(histIdx+i)%60])+\",\";\n\
-      \    body+=\"];\"\n      \"var c=document.getElementById(\"c\").getContext(\"2d\");\"\n      \"\
-      c.beginPath();\"\n      \"for(var i=0;i<d.length;i++){c.lineTo(i*10,200-d[i]*20);}\"\n      \"c.stroke();</script>\"\
-      ;\n    server.send(200,\"text/html\",body);\n  });\n  server.begin();\n}\n\nvoid loop(){\n  currentRMS=computeRMS();\n\
-      \  rmsHistory[histIdx%60]=currentRMS;\n  histIdx++;\n\n  oled.clearDisplay(); oled.setCursor(0,0);\n\
-      \  oled.printf(\"RMS: %.3f m/s2n\",currentRMS);\n  oled.printf(\"Peak: %.1f Hzn\",peakFreq);\n \
-      \ // ISO 10816 Zone A < 0.71, B < 1.8, C < 4.5, D >= 4.5 mm/s\n  oled.println(currentRMS<0.71?\"\
-      Zone A OK\":currentRMS<1.8?\"Zone B GOOD\":\n               currentRMS<4.5?\"Zone C WARN\":\"Zone\
-      \ D ALARM\");\n  oled.display();\n  digitalWrite(15, currentRMS>=4.5?HIGH:LOW);\n  server.handleClient();\n\
-      }"
+    code: "// ESP32 Vibration Monitor - Intermediate (RMS + peak frequency + web chart)\n#include <Adafruit_MPU6050.h>\n#include\
+      \ <Adafruit_Sensor.h>\n#include <Wire.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <arduinoFFT.h>\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nAdafruit_MPU6050 mpu;\nAdafruit_SSD1306\
+      \ oled(128,64,&Wire,-1);\nWebServer server(80);\n\nconst int SAMPLES=256;\ndouble vReal[SAMPLES], vImag[SAMPLES];\n\
+      ArduinoFFT<double> FFT=ArduinoFFT<double>(vReal,vImag,SAMPLES,500.0);\n\nfloat rmsHistory[60]={0}; // 1-minute rolling\
+      \ buffer\nint   histIdx=0;\nfloat currentRMS=0, peakFreq=0;\n\nfloat computeRMS(){\n  float sum=0;\n  sensors_event_t\
+      \ a,g,t;\n  for(int i=0;i<SAMPLES;i++){\n    mpu.getEvent(&a,&g,&t);\n    float mag=sqrt(a.acceleration.x*a.acceleration.x+\n\
+      \                   a.acceleration.y*a.acceleration.y+\n                   a.acceleration.z*a.acceleration.z)-9.81f;\n\
+      \    vReal[i]=mag; vImag[i]=0;\n    sum+=mag*mag;\n    delayMicroseconds(2000); // 500 Hz\n  }\n  FFT.windowing(FFT_WIN_TYP_HAMMING,FFT_FORWARD);\n\
+      \  FFT.compute(FFT_FORWARD);\n  FFT.complexToMagnitude();\n  peakFreq=FFT.majorPeak();\n  return sqrt(sum/SAMPLES);\n\
+      }\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  mpu.begin(); mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n\
+      \  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextSize(1); oled.setTextColor(WHITE);\n  WiFi.begin(SSID,PASS);\n\
+      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  server.on(\"/\",[](){\n    String body=\"<h2>Vibration Monitor</h2><p>RMS:\
+      \ \"+String(currentRMS,3)+\n      \" m/s2 | Peak: \"+String(peakFreq,1)+\" Hz</p>\";\n    body+=\"<canvas id=c width=600\
+      \ height=200></canvas><script>\"\n      \"var d=[\";\n    for(int i=0;i<60;i++) body+=String(rmsHistory[(histIdx+i)%60])+\"\
+      ,\";\n    body+=\"];\"\n      \"var c=document.getElementById(\"c\").getContext(\"2d\");\"\n      \"c.beginPath();\"\
+      \n      \"for(var i=0;i<d.length;i++){c.lineTo(i*10,200-d[i]*20);}\"\n      \"c.stroke();</script>\";\n    server.send(200,\"\
+      text/html\",body);\n  });\n  server.begin();\n}\n\nvoid loop(){\n  currentRMS=computeRMS();\n  rmsHistory[histIdx%60]=currentRMS;\n\
+      \  histIdx++;\n\n  oled.clearDisplay(); oled.setCursor(0,0);\n  oled.printf(\"RMS: %.3f m/s2n\",currentRMS);\n  oled.printf(\"\
+      Peak: %.1f Hzn\",peakFreq);\n  // ISO 10816 Zone A < 0.71, B < 1.8, C < 4.5, D >= 4.5 mm/s\n  oled.println(currentRMS<0.71?\"\
+      Zone A OK\":currentRMS<1.8?\"Zone B GOOD\":\n               currentRMS<4.5?\"Zone C WARN\":\"Zone D ALARM\");\n  oled.display();\n\
+      \  digitalWrite(15, currentRMS>=4.5?HIGH:LOW);\n  server.handleClient();\n}"
     code_filename: esp32-vibration-monitor-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build publishes vibration RMS and peak FFT frequency to an MQTT broker
-      every minute, where a Node-RED or Grafana dashboard plots long-term trends. A predictive maintenance
-      score (0-100) is computed from trend slope and severity zone history. When the score drops below
-      40 the ESP32 publishes an MQTT maintenance request and sends an email alert via SMTP.</p>
+    overview_html: <p>The advanced build publishes vibration RMS and peak FFT frequency to an MQTT broker every minute, where
+      a Node-RED or Grafana dashboard plots long-term trends. A predictive maintenance score (0-100) is computed from trend
+      slope and severity zone history. When the score drops below 40 the ESP32 publishes an MQTT maintenance request and sends
+      an email alert via SMTP.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× MPU6050 IMU — Rigidly mounted on machine housing
@@ -234,19 +193,16 @@ levels:
       - GPIO 15
       - ''
     how:
-    - 'Rolling RMS History: Each 1-minute RMS measurement is stored in a circular buffer of 60 entries.
-      This gives a 60-minute trend window. logIdx%HISTORY keeps the write index within bounds, automatically
-      overwriting the oldest sample.'
-    - 'Linear Regression Trend Score: A least-squares linear regression is computed over the 60-sample
-      RMS history. A positive slope means vibration is increasing over time. The predictive score converts
-      slope to a 0-100 index: 100 = stable, 0 = rapidly increasing. Below 40 suggests maintenance intervention
-      within days.'
-    - 'MQTT JSON Publishing: ArduinoJson serialises the RMS and predictive score into a compact JSON string
-      published to vibration/data. Node-RED subscribes, parses the JSON, and feeds data to a Grafana InfluxDB
-      panel for historical trending.'
+    - 'Rolling RMS History: Each 1-minute RMS measurement is stored in a circular buffer of 60 entries. This gives a 60-minute
+      trend window. logIdx%HISTORY keeps the write index within bounds, automatically overwriting the oldest sample.'
+    - 'Linear Regression Trend Score: A least-squares linear regression is computed over the 60-sample RMS history. A positive
+      slope means vibration is increasing over time. The predictive score converts slope to a 0-100 index: 100 = stable, 0
+      = rapidly increasing. Below 40 suggests maintenance intervention within days.'
+    - 'MQTT JSON Publishing: ArduinoJson serialises the RMS and predictive score into a compact JSON string published to vibration/data.
+      Node-RED subscribes, parses the JSON, and feeds data to a Grafana InfluxDB panel for historical trending.'
     - 'Maintenance Alert: When the predictive score drops below the 40-point threshold, a plain-text "MAINTENANCE_REQUIRED"
-      message is published to vibration/alert. A Node-RED node subscribing to this topic can trigger email,
-      SMS, or a ticketing system notification.'
+      message is published to vibration/alert. A Node-RED node subscribing to this topic can trigger email, SMS, or a ticketing
+      system notification.'
     apps:
     - Factory predictive maintenance programme reducing unplanned downtime
     - HVAC system health monitoring with monthly trend reports
@@ -254,42 +210,208 @@ levels:
     - Industrial IoT integration with Grafana and InfluxDB dashboards
     troubleshooting:
     - - Predictive score drops to 0 immediately
-      - The regression slope is very sensitive to outlier readings in the first few samples. Prefill the
-        rmsLog array with the first measured value before starting the trend calculation.
+      - The regression slope is very sensitive to outlier readings in the first few samples. Prefill the rmsLog array with
+        the first measured value before starting the trend calculation.
     - - MQTT publish fails during 256-sample measurement
-      - The measurement takes 512 ms (256 x 2 ms). Move the MQTT loop to a FreeRTOS task on core 0 so
-        it runs concurrently with the ADC sampling on core 1.
+      - The measurement takes 512 ms (256 x 2 ms). Move the MQTT loop to a FreeRTOS task on core 0 so it runs concurrently
+        with the ADC sampling on core 1.
     - - Grafana shows gaps in the vibration trend
-      - The 60-second delay between publishes is acceptable but confirm the MQTT keep-alive is longer
-        than 60 seconds. Set mqtt.setKeepAlive(90) to prevent broker-side disconnection between publishes.
+      - The 60-second delay between publishes is acceptable but confirm the MQTT keep-alive is longer than 60 seconds. Set
+        mqtt.setKeepAlive(90) to prevent broker-side disconnection between publishes.
     upgrades:
     - Store RMS history in InfluxDB directly from Node-RED for unlimited retention
     - Add a second vibration axis (vertical vs horizontal) and publish separately
     - Implement adaptive thresholds that learn the machine normal baseline over 24 hours
     - Integrate with a CMMS (Computerised Maintenance Management System) via REST API webhook
-    code: "// ESP32 Vibration Monitor - Advanced (MQTT + predictive score + alerts)\n#include <Adafruit_MPU6050.h>\n\
-      #include <Adafruit_Sensor.h>\n#include <Wire.h>\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      #include <ArduinoJson.h>\n#include <Preferences.h>\n\nAdafruit_MPU6050 mpu;\nWiFiClient wifiClient;\n\
-      PubSubClient mqtt(wifiClient);\nPreferences prefs;\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\"\
-      ;\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* TOPIC_DATA =\"vibration/data\";\nconst\
-      \ char* TOPIC_ALERT=\"vibration/alert\";\n\nconst int HISTORY=60; // 60-minute trend window\nfloat\
-      \ rmsLog[HISTORY]={0};\nint   logIdx=0;\n\nfloat measureRMS(){\n  float sum=0;\n  sensors_event_t\
-      \ a,g,t;\n  for(int i=0;i<256;i++){\n    mpu.getEvent(&a,&g,&t);\n    float m=sqrt(a.acceleration.x*a.acceleration.x+\n\
-      \                 a.acceleration.y*a.acceleration.y+\n                 a.acceleration.z*a.acceleration.z)-9.81f;\n\
-      \    sum+=m*m;\n    delayMicroseconds(2000);\n  }\n  return sqrt(sum/256.0f);\n}\n\nint predictiveScore(){\n\
-      \  // Linear regression slope of last HISTORY readings\n  float sumX=0,sumY=0,sumXY=0,sumX2=0;\n\
-      \  for(int i=0;i<HISTORY;i++){\n    sumX+=i; sumY+=rmsLog[i]; sumXY+=i*rmsLog[i]; sumX2+=i*i;\n\
-      \  }\n  float slope=(HISTORY*sumXY-sumX*sumY)/(HISTORY*sumX2-sumX*sumX);\n  // Score 100 = flat\
-      \ trend near zero, 0 = steep upward trend\n  int score=100-(int)(slope*200.0f);\n  return constrain(score,0,100);\n\
+    code: "// ESP32 Vibration Monitor - Advanced (MQTT + predictive score + alerts)\n#include <Adafruit_MPU6050.h>\n#include\
+      \ <Adafruit_Sensor.h>\n#include <Wire.h>\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include\
+      \ <Preferences.h>\n\nAdafruit_MPU6050 mpu;\nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\nPreferences prefs;\n\
+      \nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* TOPIC_DATA\
+      \ =\"vibration/data\";\nconst char* TOPIC_ALERT=\"vibration/alert\";\n\nconst int HISTORY=60; // 60-minute trend window\n\
+      float rmsLog[HISTORY]={0};\nint   logIdx=0;\n\nfloat measureRMS(){\n  float sum=0;\n  sensors_event_t a,g,t;\n  for(int\
+      \ i=0;i<256;i++){\n    mpu.getEvent(&a,&g,&t);\n    float m=sqrt(a.acceleration.x*a.acceleration.x+\n              \
+      \   a.acceleration.y*a.acceleration.y+\n                 a.acceleration.z*a.acceleration.z)-9.81f;\n    sum+=m*m;\n\
+      \    delayMicroseconds(2000);\n  }\n  return sqrt(sum/256.0f);\n}\n\nint predictiveScore(){\n  // Linear regression\
+      \ slope of last HISTORY readings\n  float sumX=0,sumY=0,sumXY=0,sumX2=0;\n  for(int i=0;i<HISTORY;i++){\n    sumX+=i;\
+      \ sumY+=rmsLog[i]; sumXY+=i*rmsLog[i]; sumX2+=i*i;\n  }\n  float slope=(HISTORY*sumXY-sumX*sumY)/(HISTORY*sumX2-sumX*sumX);\n\
+      \  // Score 100 = flat trend near zero, 0 = steep upward trend\n  int score=100-(int)(slope*200.0f);\n  return constrain(score,0,100);\n\
       }\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  mpu.begin(); mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      }\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"ESP32Vibe\");\n  mqtt.loop();\n\n  float\
-      \ rms=measureRMS();\n  rmsLog[logIdx%HISTORY]=rms;\n  logIdx++;\n\n  int score=predictiveScore();\n\
-      \n  StaticJsonDocument<128> doc;\n  doc[\"rms\"]=rms; doc[\"score\"]=score;\n  char buf[128]; serializeJson(doc,buf);\n\
-      \  mqtt.publish(TOPIC_DATA,buf);\n\n  if(score<40){\n    mqtt.publish(TOPIC_ALERT,\"MAINTENANCE_REQUIRED\"\
-      );\n    Serial.println(\"ALERT: Maintenance required\");\n  }\n\n  Serial.printf(\"RMS=%.3f score=%dn\"\
+      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n}\n\n\
+      void loop(){\n  if(!mqtt.connected()) mqtt.connect(\"ESP32Vibe\");\n  mqtt.loop();\n\n  float rms=measureRMS();\n  rmsLog[logIdx%HISTORY]=rms;\n\
+      \  logIdx++;\n\n  int score=predictiveScore();\n\n  StaticJsonDocument<128> doc;\n  doc[\"rms\"]=rms; doc[\"score\"\
+      ]=score;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(TOPIC_DATA,buf);\n\n  if(score<40){\n    mqtt.publish(TOPIC_ALERT,\"\
+      MAINTENANCE_REQUIRED\");\n    Serial.println(\"ALERT: Maintenance required\");\n  }\n\n  Serial.printf(\"RMS=%.3f score=%dn\"\
       ,rms,score);\n  delay(60000); // publish every minute\n}"
     code_filename: esp32-vibration-monitor-advanced.ino
 related_slugs:
 - esp32-machine-monitoring-node
 - esp32-mqtt-sensor-dashboard
+format: golden
+project:
+  icon: VIBE
+  mission_title: Build a Vibration Threshold Monitor
+  difficulty: Intermediate
+  age: Ages 13+
+  recommended_age: Ages 13+
+  estimated_time: 75-90 min
+  budget: Under 25 USD
+  adult_supervision: Adult supervision required around moving objects; test with safe bench vibration only.
+  classroom_use: Useful for measuring acceleration magnitude and discussing thresholds versus certification.
+  parent_prompt: Ask why one threshold cannot prove a machine is failing.
+  screen_free_activity: Draw a normal reading band and an alert reading band before running the code.
+  skills_practiced:
+  - I2C sensor wiring
+  - Acceleration magnitude
+  - Threshold calibration
+  - False-trigger analysis
+  learning_outcomes: &id001
+  - Read MPU6050 acceleration over I2C.
+  - Calculate magnitude from x, y, and z acceleration.
+  - Drive local alert outputs.
+  - Explain false triggers and calibration limits.
+  mini_experiments:
+  - Record still readings on the bench.
+  - Tap the board gently and watch the spike.
+  - Change THRESHOLD_M_S2 and compare alert behavior.
+  next_challenge: Add averaging or hysteresis after recording real baseline readings.
+  what_you_build: A bench vibration threshold monitor using an MPU6050 on I2C and local LED/buzzer outputs.
+  story: 'Machine-monitoring language can overpromise. This project stays educational: it measures acceleration magnitude
+    and shows how a simple threshold behaves. This Golden version keeps the promise narrow: the parts list, code constants,
+    GPIO table, expected output, safety notes, and troubleshooting all describe the same low-voltage educational build.'
+  eli12: 'The MPU6050 feels movement in three directions. The ESP32 combines those numbers into one movement size and turns
+    on the alert when it is above the threshold. The ESP32 is the decision maker: it reads one signal, compares it with simple
+    rules, then changes an output you can see or hear.'
+  parent_safety: Do not attach the breadboard to unsafe machinery. Test with a small fan, table tap, or handheld movement
+    only. Unplug USB and any external supply before rewiring. Keep the build low-voltage on the bench and do not treat it
+    as certified equipment.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board used as the controller.
+    link: /components/esp32-devkit.html
+  - item: MPU6050 IMU module
+    note: 3.3 V I2C accelerometer/gyroscope module.
+  - item: Red and green LEDs with resistors
+    note: Alert and normal indicators on GPIO25 and GPIO26.
+  - item: Active buzzer module
+    note: Local alert on GPIO27; use a driver if current is high.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board used as the controller.
+  - part: MPU6050 IMU module
+    qty: '1'
+    estimated_cost: Varies
+    notes: 3.3 V I2C accelerometer/gyroscope module.
+  - part: Red and green LEDs with resistors
+    qty: '1'
+    estimated_cost: Varies
+    notes: Alert and normal indicators on GPIO25 and GPIO26.
+  - part: Active buzzer module
+    qty: '1'
+    estimated_cost: Varies
+    notes: Local alert on GPIO27; use a driver if current is high.
+  wiring:
+    illustration_alt: ESP32 Vibration Monitor wiring diagram
+    summary: MPU6050 uses I2C on GPIO21/GPIO22 at 3.3 V. Alert outputs use GPIO25, GPIO26, and GPIO27.
+    steps:
+    - Unplug USB before changing MPU6050 or output wiring.
+    - Connect MPU6050 VCC to 3V3 and GND to GND.
+    - Connect MPU6050 SDA to GPIO21 and SCL to GPIO22.
+    - Tie AD0 to GND for address 0x68.
+    - Connect red LED to GPIO25, green LED to GPIO26, and buzzer signal to GPIO27.
+    - Reconnect USB and open Serial Plotter.
+  gpio_map:
+  - signal: MPU6050 SDA
+    esp32_pin: GPIO21
+    direction: I/O
+    notes: I2C data.
+  - signal: MPU6050 SCL
+    esp32_pin: GPIO22
+    direction: Output
+    notes: I2C clock.
+  - signal: Red/Green/Buzzer
+    esp32_pin: GPIO25 / GPIO26 / GPIO27
+    direction: Output
+    notes: Local alert outputs.
+  circuit_explanation: The ESP32 reads acceleration over I2C, calculates magnitude, and turns on the alert outputs if the
+    value exceeds THRESHOLD_M_S2.
+  engineering_explanation: A single magnitude threshold is a lesson, not predictive maintenance. Mounting, noise, gravity,
+    and machine type all affect readings.
+  libraries:
+  - name: Adafruit MPU6050
+    note: Install with Adafruit Unified Sensor.
+  - name: Adafruit Unified Sensor
+    note: Dependency used by the MPU6050 library.
+  code:
+    filename: esp32-vibration-monitor.ino
+    content: "// ESP32 Vibration Monitor - MPU6050 threshold demo\n#include <Adafruit_MPU6050.h>\n#include <Adafruit_Sensor.h>\n\
+      #include <Wire.h>\n\nAdafruit_MPU6050 mpu;\nconst int LED_R = 25;\nconst int LED_G = 26;\nconst int BUZZER = 27;\nconst\
+      \ float THRESHOLD_M_S2 = 15.0;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  if (!mpu.begin())\
+      \ {\n    Serial.println(\"MPU6050 not found - check SDA, SCL, 3V3, and GND.\");\n    while (true) delay(10);\n  }\n\
+      \  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);\n  pinMode(LED_R, OUTPUT);\n\
+      \  pinMode(LED_G, OUTPUT);\n  pinMode(BUZZER, OUTPUT);\n  Serial.println(\"magnitude_m_s2\");\n}\n\nvoid loop() {\n\
+      \  sensors_event_t accel, gyro, temp;\n  mpu.getEvent(&accel, &gyro, &temp);\n  float ax = accel.acceleration.x;\n \
+      \ float ay = accel.acceleration.y;\n  float az = accel.acceleration.z;\n  float magnitude = sqrt(ax * ax + ay * ay +\
+      \ az * az);\n  bool alert = magnitude > THRESHOLD_M_S2;\n  Serial.println(magnitude);\n  digitalWrite(LED_R, alert ?\
+      \ HIGH : LOW);\n  digitalWrite(LED_G, alert ? LOW : HIGH);\n  digitalWrite(BUZZER, alert ? HIGH : LOW);\n  delay(20);\n\
+      }\n"
+  code_explanation: Wire.begin uses GPIO21 and GPIO22. The loop reads acceleration, computes magnitude, prints it, and drives
+    GPIO25/GPIO26/GPIO27 from the threshold comparison.
+  expected_output: Serial Plotter shows magnitude values around the still baseline and spikes when the module is moved. Values
+    above 15.0 turn on red LED and buzzer.
+  common_mistakes:
+  - text: Claiming predictive maintenance from one threshold.
+  - text: Powering MPU6050 from 5 V when the module is not 5 V tolerant.
+  - text: Using boot pins for alert outputs.
+  - text: Mounting the circuit on unsafe machinery.
+  troubleshooting:
+  - problem: MPU6050 not found
+    fix: Check 3V3, GND, SDA GPIO21, SCL GPIO22, and AD0.
+  - problem: Alerts never stop
+    fix: Record a still baseline and raise the threshold.
+  - problem: Readings are noisy
+    fix: Secure the module and add averaging or filtering.
+  testing_checklist:
+  - Confirm the sensor is detected.
+  - Record still readings.
+  - Tap gently and observe spikes.
+  - Change the threshold and repeat.
+  engineer_tips:
+  - Use Serial Plotter for calibration.
+  - Secure the sensor before comparing readings.
+  - Add hysteresis before driving real outputs.
+  upgrade_ideas:
+  - Add averaging or hysteresis.
+  - Log readings to SD card.
+  - Publish calibrated readings to MQTT.
+  real_world_applications:
+  - Vibration threshold lesson
+  - Bench machine demo
+  - Sensor-noise experiment
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, Wi-Fi, and safe beginner wiring.
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Learn how ESP32 output timing controls buzzers, LEDs, and other signals.
+  related_projects:
+  - title: ESP32 Machine Monitoring Node
+    href: /projects/esp32-machine-monitoring-node.html
+    description: Compare analog current monitoring with motion-based monitoring.
+  faqs:
+  - question: Is this predictive maintenance?
+    answer: No. It is a threshold-learning prototype.
+  - question: Why use GPIO21 and GPIO22?
+    answer: They are the common ESP32 I2C pins.
+  - question: Why is gravity in the reading?
+    answer: The accelerometer measures acceleration including gravity, so calibration matters.
+  complete:
+    summary: You completed ESP32 Vibration Monitor as a trustworthy ESP32 learning build with matching wiring, code, testing,
+      and safety boundaries.
+    skills:
+    - I2C sensor wiring
+    - Acceleration magnitude
+    - Threshold calibration

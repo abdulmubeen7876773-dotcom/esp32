@@ -37,6 +37,26 @@ python tools\validate_project_quality.py
 if errorlevel 1 goto :fail
 
 echo.
+echo === validate_project_metadata_sync.py ===
+python tools\validate_project_metadata_sync.py
+if errorlevel 1 goto :fail
+
+echo.
+echo === validate_phase_b_homepage.py ===
+python tools\validate_phase_b_homepage.py
+if errorlevel 1 goto :fail
+
+echo.
+echo === validate_phase_c_cleanup.py ===
+python tools\validate_phase_c_cleanup.py
+if errorlevel 1 goto :fail
+
+echo.
+echo === validate_faq_quality.py ===
+python tools\validate_faq_quality.py
+if errorlevel 1 goto :fail
+
+echo.
 echo === validate_visual_assets.py ===
 python tools\validate_visual_assets.py
 if errorlevel 1 goto :fail

@@ -1,289 +1,305 @@
 slug: esp32-gesture-recognition
-title: ESP32 Gesture Recognition
+title: Build an APDS-9960 Gesture Control Demo
 category: Sensor Projects
-description: Connect the APDS-9960 proximity and gesture sensor to the ESP32 to detect up, down, left,
-  and right swipe gestures and use them to control LEDs, RGB strips, and MQTT-connected smart home devices.
-meta_description: Build an ESP32 gesture recognition system using the APDS-9960 sensor. Detect swipe gestures
-  to control LEDs, RGB strips, and home automation via MQTT.
+description: Use an APDS-9960 sensor with ESP32 I2C to detect simple directional hand swipes and light matching LEDs.
+meta_description: Build a technically honest ESP32 gesture demo with APDS-9960 I2C wiring, interrupt handling, LED outputs,
+  and false-trigger limits.
 source_base: esp32-gesture-recognition-legacy-import
-sensor: 'TODO: sensor'
-output: APDS-9960 INT
+sensor: APDS-9960 SDA
+output: RIGHT LED
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 4
-  sensor_name: 'TODO: sensor'
-  output_name: APDS-9960 INT
+  sensor_pin: GPIO21
+  output_pin: GPIO14
+  sensor_name: APDS-9960 SDA
+  output_name: RIGHT LED
   wiring:
   - component: APDS-9960 SDA
-    pin: GPIO 21
+    pin: GPIO21
   - component: APDS-9960 SCL
-    pin: GPIO 22
+    pin: GPIO22
   - component: APDS-9960 INT
-    pin: GPIO 4
-  - component: APDS-9960 VCC
-    pin: 3V3
-  - component: APDS-9960 GND
-    pin: GND
-  - component: Red LED anode
-    pin: GPIO 25
-  - component: Green LED anode
-    pin: GPIO 26
-  - component: Blue LED anode
-    pin: GPIO 27
-  - component: Yellow LED anode
-    pin: GPIO 14
+    pin: GPIO4
+  - component: UP LED
+    pin: GPIO25
+  - component: DOWN LED
+    pin: GPIO26
+  - component: LEFT LED
+    pin: GPIO27
+  - component: RIGHT LED
+    pin: GPIO14
 levels:
   beginner:
     level: beginner
-    overview_html: '<p>In this beginner project you will connect the APDS-9960 sensor to the ESP32 over
-      I2C and detect four directional swipe gestures: up, down, left, and right. Each gesture lights a
-      different colour LED and prints the direction to the Serial Monitor. No Wi-Fi is needed. The project
-      teaches I2C sensor setup, interrupt-driven gesture events, and basic GPIO output control.</p>'
+    overview_html: <p>A local APDS-9960 directional hand-swipe demo with four indicator LEDs. Use 3.3 V APDS-9960 power unless
+      your breakout explicitly supports another voltage. Use resistors on LEDs.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× APDS-9960 proximity and gesture sensor — SparkFun or compatible breakout
-    - 4× LED (red, green, blue, yellow) — 5 mm through-hole
-    - 4× 220 ohm resistor — One per LED
-    - 1× Breadboard and jumper wires
+    - ESP32 DevKit board
+    - APDS-9960 gesture sensor breakout
+    - Four LEDs
+    - 220 ohm resistors
+    - Breadboard and jumper wires
     wiring:
     - - APDS-9960 SDA
-      - GPIO 21
-      - I2C data
+      - GPIO21
+      - Shared I2C bus.
     - - APDS-9960 SCL
-      - GPIO 22
-      - I2C clock
+      - GPIO22
+      - Shared I2C bus.
     - - APDS-9960 INT
-      - GPIO 4
-      - Interrupt; active LOW
-    - - APDS-9960 VCC
-      - 3V3
-      - 3.3 V only
-    - - APDS-9960 GND
-      - GND
-      - ''
-    - - Red LED anode
-      - GPIO 25
-      - Gesture UP
-    - - Green LED anode
-      - GPIO 26
-      - Gesture DOWN
-    - - Blue LED anode
-      - GPIO 27
-      - Gesture LEFT
-    - - Yellow LED anode
-      - GPIO 14
-      - Gesture RIGHT
-    how:
-    - 'Photodiode Array Detection: The APDS-9960 contains four directional photodiodes (north, south,
-      east, west) and an IR LED. As a hand passes over the sensor, the timing and magnitude difference
-      between opposing photodiode pairs encodes the swipe direction.'
-    - 'Interrupt-Driven Reading: The INT pin goes LOW when gesture data is ready. An IRAM-resident ISR
-      sets a flag, and the main loop processes gestures only when the flag is set. This avoids polling
-      the I2C bus on every loop iteration.'
-    - 'readGesture() Direction Enum: The SparkFun library processes the raw photodiode time-series internally
-      and returns a DIR_UP, DIR_DOWN, DIR_LEFT, or DIR_RIGHT constant. No signal processing is needed
-      in user code.'
-    - 'LED Visual Feedback: Each direction maps to a unique LED colour. clearLEDs() extinguishes all LEDs
-      before lighting the correct one, ensuring only one LED is on at a time after each gesture.'
-    apps:
-    - Touchless page turner for music stand tablet
-    - Accessibility device for users who cannot touch screens
-    - Touchless control of a presentation slideshow
-    - Smart mirror gesture navigation for menu selection
+      - GPIO4
+      - Interrupt input with pull-up.
+    - - UP LED
+      - GPIO25
+      - Series resistor required.
+    - - DOWN LED
+      - GPIO26
+      - Series resistor required.
+    - - LEFT LED
+      - GPIO27
+      - Series resistor required.
+    - - RIGHT LED
+      - GPIO14
+      - Avoid using this as a boot strap output.
+    key_concepts:
+    - The APDS-9960 reports gesture events over I2C and pulls INT low when data is ready. The ESP32 reads the direction and
+      lights one LED.
+    - Gesture detection depends on hand distance, speed, sensor orientation, and ambient light. The sketch classifies directional
+      swipes only.
+    applications: &id003
+    - Touchless menu prototype
+    - Gesture-controlled LED lesson
+    - Human-interface sensor demo
     troubleshooting:
-    - - APDS-9960 init fails
-      - 'Check power supply: the APDS-9960 runs at 3.3 V only; 5 V will damage it. Run an I2C scanner
-        and confirm the device appears at address 0x39. Check SDA and SCL wiring.'
-    - - Gestures are not detected or inconsistent
-      - Swipe speed matters. Move your hand at approximately 10-20 cm/s at a distance of 5-15 cm from
-        the sensor. Too slow or too close suppresses detection.
-    - - Gesture direction is reversed (left reads as right)
-      - Rotate the sensor module 180 degrees. The north/south/east/west photodiode orientation is fixed;
-        mounting direction determines which swipe maps to which direction constant.
-    - - Multiple gestures register for a single swipe
-      - Increase the gesture threshold in apds.setGestureGain() to require a stronger signal before registering.
-        Also add a longer post-gesture delay before re-enabling the interrupt.
-    upgrades:
-    - Use gestures to control a WS2812B NeoPixel strip colour and brightness
-    - Add a proximity reading to wake the ESP32 when a hand approaches
-    - Map gestures to keyboard shortcuts using ESP32 BLE HID
-    - Add an OLED to display the last detected gesture and direction arrow
-    code: "// ESP32 Gesture Recognition - Beginner\n// APDS-9960 four-direction swipe to LED\n#include\
-      \ <Wire.h>\n#include <SparkFun_APDS9960.h>\n\nSparkFun_APDS9960 apds;\nconst int INT_PIN=4;\nconst\
-      \ int LED_UP=25, LED_DN=26, LED_LT=27, LED_RT=14;\n\nvolatile bool gestureAvailable=false;\nvoid\
-      \ IRAM_ATTR isr(){ gestureAvailable=true; }\n\nvoid clearLEDs(){\n  digitalWrite(LED_UP,LOW); digitalWrite(LED_DN,LOW);\n\
-      \  digitalWrite(LED_LT,LOW); digitalWrite(LED_RT,LOW);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  Wire.begin(21,22);\n  pinMode(INT_PIN,INPUT);\n  attachInterrupt(INT_PIN,isr,FALLING);\n  pinMode(LED_UP,OUTPUT);\
-      \ pinMode(LED_DN,OUTPUT);\n  pinMode(LED_LT,OUTPUT); pinMode(LED_RT,OUTPUT);\n\n  if(!apds.init()){\
-      \ Serial.println(\"APDS-9960 init failed\"); while(1); }\n  apds.enableGestureSensor(true);\n  Serial.println(\"\
-      Gesture sensor ready — swipe your hand\");\n}\n\nvoid loop(){\n  if(!gestureAvailable) return;\n\
-      \  gestureAvailable=false;\n\n  if(!apds.isGestureAvailable()) return;\n  int gesture=apds.readGesture();\n\
-      \  clearLEDs();\n  switch(gesture){\n    case DIR_UP:    digitalWrite(LED_UP,HIGH); Serial.println(\"\
-      UP\");    break;\n    case DIR_DOWN:  digitalWrite(LED_DN,HIGH); Serial.println(\"DOWN\");  break;\n\
-      \    case DIR_LEFT:  digitalWrite(LED_LT,HIGH); Serial.println(\"LEFT\");  break;\n    case DIR_RIGHT:\
-      \ digitalWrite(LED_RT,HIGH); Serial.println(\"RIGHT\"); break;\n    default: Serial.println(\"NEAR/FAR\"\
-      ); break;\n  }\n  delay(500);\n}"
+    - - Sensor not found
+      - Check 3.3 V, ground, SDA GPIO21, SCL GPIO22, and I2C address.
+    - - Gestures are inconsistent
+      - Change swipe speed, distance, and lighting; keep the hand centered over the sensor.
+    - - Direction appears reversed
+      - Rotate the module or remap directions in code.
+    improvements: &id002
+    - Add an OLED that shows the last direction.
+    - Count gestures over one minute.
+    - Use gestures to control a low-current LED pattern.
+    code: "// ESP32 APDS-9960 directional gesture demo\n// Detects directional hand swipes; this is not AI gesture recognition.\n\
+      #include <Wire.h>\n#include <SparkFun_APDS9960.h>\n\nSparkFun_APDS9960 apds;\n\nconst int INT_PIN = 4;\nconst int LED_UP\
+      \ = 25;\nconst int LED_DOWN = 26;\nconst int LED_LEFT = 27;\nconst int LED_RIGHT = 14;\n\nvolatile bool gestureFlag\
+      \ = false;\n\nvoid IRAM_ATTR onGesture() {\n  gestureFlag = true;\n}\n\nvoid clearLeds() {\n  digitalWrite(LED_UP, LOW);\n\
+      \  digitalWrite(LED_DOWN, LOW);\n  digitalWrite(LED_LEFT, LOW);\n  digitalWrite(LED_RIGHT, LOW);\n}\n\nvoid setup()\
+      \ {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n\n  pinMode(INT_PIN, INPUT_PULLUP);\n  pinMode(LED_UP, OUTPUT);\n\
+      \  pinMode(LED_DOWN, OUTPUT);\n  pinMode(LED_LEFT, OUTPUT);\n  pinMode(LED_RIGHT, OUTPUT);\n  clearLeds();\n\n  if (!apds.init())\
+      \ {\n    Serial.println(\"APDS-9960 not found. Check 3.3 V, SDA GPIO21, and SCL GPIO22.\");\n    while (true) delay(10);\n\
+      \  }\n  if (!apds.enableGestureSensor(true)) {\n    Serial.println(\"Gesture sensor did not enable.\");\n    while (true)\
+      \ delay(10);\n  }\n\n  attachInterrupt(digitalPinToInterrupt(INT_PIN), onGesture, FALLING);\n  Serial.println(\"APDS-9960\
+      \ gesture demo ready. Swipe above the sensor.\");\n}\n\nvoid loop() {\n  if (!gestureFlag) return;\n  gestureFlag =\
+      \ false;\n\n  if (!apds.isGestureAvailable()) return;\n  int gesture = apds.readGesture();\n  clearLeds();\n\n  switch\
+      \ (gesture) {\n    case DIR_UP:\n      digitalWrite(LED_UP, HIGH);\n      Serial.println(\"UP\");\n      break;\n  \
+      \  case DIR_DOWN:\n      digitalWrite(LED_DOWN, HIGH);\n      Serial.println(\"DOWN\");\n      break;\n    case DIR_LEFT:\n\
+      \      digitalWrite(LED_LEFT, HIGH);\n      Serial.println(\"LEFT\");\n      break;\n    case DIR_RIGHT:\n      digitalWrite(LED_RIGHT,\
+      \ HIGH);\n      Serial.println(\"RIGHT\");\n      break;\n    default:\n      Serial.println(\"Gesture not classified.\"\
+      );\n      break;\n  }\n}\n"
     code_filename: esp32-gesture-recognition-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build uses gestures to control a WS2812B NeoPixel LED strip. Swiping
-      up increases brightness, down decreases it, left cycles backward through colour presets, and right
-      cycles forward. A proximity reading wakes the strip from a low-power sleep mode when a hand approaches
-      within 10 cm. Current colour and brightness settings are saved to NVS so they persist across power
-      cycles.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× APDS-9960 sensor module
-    - 1× WS2812B NeoPixel LED strip 30 LEDs — 5 V, 1 m
-    - 1× 5 V 3 A power supply — 30 LEDs at full white draw 1.8 A
-    - 1× 470 ohm resistor — Data line protection for NeoPixel
-    - 1× 1000 uF capacitor — Across 5 V supply for NeoPixel
-    wiring:
-    - - APDS-9960 SDA/SCL/INT/VCC/GND
-      - Same as beginner
-      - ''
-    - - NeoPixel DIN
-      - GPIO 18 via 470 ohm
-      - Data line; level shift may be needed
-    - - NeoPixel 5V
-      - External 5 V 3 A supply
-      - Do not power from ESP32
-    - - NeoPixel GND
-      - Common GND with ESP32
-      - ''
-    how:
-    - 'Gesture-to-Strip Mapping: Up and down swipes increment and decrement the brightness integer (clamped
-      0-255). Left and right swipes decrement and increment the colorIdx with modulo wrapping. applyStrip()
-      applies both changes atomically using setBrightness() and setPixelColor().'
-    - 'Proximity Wake Detection: apds.readProximity() returns 0-255 with 255 being closest. A threshold
-      of 150 (about 5 cm) wakes the strip from sleep. A low proximity reading after a timeout period can
-      dim or turn off the strip automatically.'
-    - 'NVS State Persistence: saveState() writes colorIdx and brightness to NVS after every gesture. On
-      next power-on the setup() block reads these values and restores the strip to its last colour and
-      brightness before the first gesture.'
-    - 'NeoPixel Power Budget: Each WS2812B LED draws up to 60 mA at full white. The strip.setBrightness()
-      call scales all pixel values globally so total current stays proportional to brightness. At brightness=128
-      (50 percent) a 30-LED strip draws approximately 900 mA.'
-    apps:
-    - Touchless LED ambience control for living room lighting
-    - Gesture-controlled stage or DJ lighting effects
-    - Accessibility lighting for users with motor impairments
-    - Smart mirror ambient lighting with proximity auto-on
-    troubleshooting:
-    - - NeoPixel strip flickers or shows wrong colours
-      - Add a 470 ohm resistor on the data line and a 1000 uF capacitor across the 5 V strip supply. Ensure
-        the strip GND is connected to the ESP32 GND (common ground is required).
-    - - Proximity sensor does not trigger wake
-      - 'Make sure apds.enableProximitySensor(false) is called first then re-enable it: apds.enableProximitySensor(true).
-        The APDS-9960 cannot run both gesture and proximity modes simultaneously on some library versions.'
-    - - Brightness goes negative or exceeds 255
-      - Use constrain(brightness+30,0,255) instead of min/max for safer bounds checking without separate
-        clamping logic.
-    upgrades:
-    - Add a double-tap gesture (rapid UP-DOWN) to toggle the strip on and off
-    - Add Wi-Fi and a web UI to manually set colour and brightness remotely
-    - Add a sunrise alarm mode that gradually increases brightness from 0 at a set time
-    - Add animated colour-cycle effects triggered by a specific gesture sequence
-    code: "// ESP32 Gesture Recognition - Intermediate (NeoPixel control + proximity wake)\n#include <Wire.h>\n\
-      #include <SparkFun_APDS9960.h>\n#include <Adafruit_NeoPixel.h>\n#include <Preferences.h>\n\nSparkFun_APDS9960\
-      \ apds;\nAdafruit_NeoPixel strip(30, 18, NEO_GRB + NEO_KHZ800);\nPreferences prefs;\n\nconst int\
-      \ INT_PIN=4;\nvolatile bool gestureReady=false;\nvoid IRAM_ATTR isr(){ gestureReady=true; }\n\n\
-      uint32_t COLORS[]={\n  strip.Color(255,0,0),   // red\n  strip.Color(0,255,0),   // green\n  strip.Color(0,0,255),\
-      \   // blue\n  strip.Color(255,128,0), // amber\n  strip.Color(128,0,255), // purple\n  strip.Color(0,255,255)\
-      \  // cyan\n};\nconst int NUM_COLORS=6;\nint colorIdx=0;\nint brightness=128;\nbool sleeping=false;\n\
-      \nvoid applyStrip(){\n  strip.setBrightness(brightness);\n  for(int i=0;i<30;i++) strip.setPixelColor(i,COLORS[colorIdx]);\n\
-      \  strip.show();\n}\n\nvoid saveState(){\n  prefs.begin(\"gesture\",false);\n  prefs.putInt(\"color\"\
-      ,colorIdx);\n  prefs.putInt(\"bright\",brightness);\n  prefs.end();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  Wire.begin(21,22);\n  strip.begin(); strip.show();\n  prefs.begin(\"gesture\",true);\n  colorIdx=prefs.getInt(\"\
-      color\",0);\n  brightness=prefs.getInt(\"bright\",128);\n  prefs.end();\n  applyStrip();\n  pinMode(INT_PIN,INPUT);\n\
-      \  attachInterrupt(INT_PIN,isr,FALLING);\n  apds.init();\n  apds.enableGestureSensor(true);\n  apds.enableProximitySensor(false);\n\
-      }\n\nvoid loop(){\n  // Proximity wake\n  uint8_t prox=0;\n  apds.readProximity(prox);\n  if(prox>150\
-      \ && sleeping){\n    sleeping=false; applyStrip(); Serial.println(\"Wake\");\n  } else if(prox<30\
-      \ && !sleeping){\n    // Dim after no proximity for 30 s\n  }\n\n  if(!gestureReady) return;\n \
-      \ gestureReady=false;\n  if(!apds.isGestureAvailable()) return;\n  int g=apds.readGesture();\n \
-      \ switch(g){\n    case DIR_UP:    brightness=min(255,brightness+30);   break;\n    case DIR_DOWN:\
-      \  brightness=max(0,brightness-30);     break;\n    case DIR_LEFT:  colorIdx=(colorIdx-1+NUM_COLORS)%NUM_COLORS;\
-      \ break;\n    case DIR_RIGHT: colorIdx=(colorIdx+1)%NUM_COLORS;   break;\n  }\n  applyStrip(); saveState();\n\
-      \  Serial.printf(\"Color=%d Brightness=%dn\",colorIdx,brightness);\n}"
-    code_filename: esp32-gesture-recognition-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build publishes gesture events to an MQTT broker so any smart home
-      device can respond to hand gestures. Up/down gestures control thermostat setpoints, left/right switch
-      between rooms or scenes, and a sustained proximity event triggers a "do not disturb" mode. A Node-RED
-      dashboard shows a live gesture history log. BLE HID mode lets the same sensor act as a Bluetooth
-      air-mouse when Wi-Fi is disabled.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× APDS-9960 sensor
-    - 1× MQTT broker — Mosquitto or cloud broker
-    - 1× Node-RED instance — For dashboard and automations
-    - 1× SSD1306 OLED 128x64 — Last gesture display
-    wiring:
-    - - APDS-9960 + OLED
-      - SDA=GPIO 21, SCL=GPIO 22
-      - Shared I2C bus; APDS-9960=0x39, OLED=0x3C
-    - - APDS-9960 INT
-      - GPIO 4
-      - ''
-    how:
-    - 'MQTT Gesture Events: Each gesture publishes a small JSON object to home/gesture containing the
-      direction string and millisecond timestamp. Node-RED subscribes, parses the JSON, and routes each
-      direction to the corresponding home automation action (thermostat up, scene change, etc.).'
-    - 'OLED Real-Time Display: The OLED shows the last gesture direction in large 2x text for immediate
-      visual confirmation. This provides feedback to the user without needing to check a phone or dashboard.'
-    - 'Node-RED Routing: A Node-RED switch node on the gesture topic routes UP/DOWN to a thermostat setpoint
-      increment/decrement flow, and LEFT/RIGHT to a scene selector. A separate subflow logs all gestures
-      to a dashboard history chart.'
-    - 'MQTT Command Subscription: The ESP32 subscribes to home/gesture/cmd to receive mode-switch commands
-      from the broker, allowing remote configuration of what each gesture does without reflashing the
-      device.'
-    apps:
-    - Whole-home gesture control hub integrated with Home Assistant
-    - Meeting room lighting and AV control via touchless gestures
-    - Smart kitchen controller to change recipes or timers without touching screens
-    - Accessibility remote for users who cannot operate physical buttons
-    troubleshooting:
-    - - Node-RED does not receive gesture events
-      - Check the MQTT topic string is identical in both the ESP32 publish call and the Node-RED MQTT-in
-        node. Topic strings are case-sensitive. Use MQTT Explorer to monitor traffic in real time.
-    - - OLED and APDS-9960 conflict on I2C bus
-      - 'Confirm I2C addresses: APDS-9960 is at 0x39 and SSD1306 is at 0x3C. Use an I2C scanner sketch
-        to verify. Address conflict only occurs if two devices share the same address.'
-    - - Gesture events flood the MQTT broker
-      - Add a 500 ms cooldown after each publish using a lastPublish timestamp check. The APDS-9960 gesture
-        engine can fire multiple events for a single hand motion.
-    upgrades:
-    - Add ESP32 BLE HID mode as a fallback when Wi-Fi is unavailable
-    - Map gesture sequences (UP-RIGHT) to macro actions in Node-RED
-    - 'Add a room-aware mode: different gesture mappings per detected Bluetooth beacon location'
-    - Build a mobile companion app to customise gesture-to-action mappings at runtime
-    code: "// ESP32 Gesture Recognition - Advanced (MQTT home automation + BLE HID)\n#include <Wire.h>\n\
-      #include <SparkFun_APDS9960.h>\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n\
-      #include <Adafruit_SSD1306.h>\n\nSparkFun_APDS9960 apds;\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\
-      WiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\nconst char* SSID=\"YourSSID\", *PASS=\"\
-      YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst char* TOPIC_GESTURE=\"home/gesture\"\
-      ;\nconst char* TOPIC_CMD    =\"home/gesture/cmd\";\n\nconst int INT_PIN=4;\nvolatile bool gReady=false;\n\
-      void IRAM_ATTR isr(){ gReady=true; }\n\nconst char* dirName(int d){\n  switch(d){\n    case DIR_UP:\
-      \    return \"UP\";\n    case DIR_DOWN:  return \"DOWN\";\n    case DIR_LEFT:  return \"LEFT\";\n\
-      \    case DIR_RIGHT: return \"RIGHT\";\n    default: return \"NEAR\";\n  }\n}\n\nvoid publishGesture(const\
-      \ char* dir){\n  StaticJsonDocument<64> doc;\n  doc[\"gesture\"]=dir; doc[\"ts\"]=millis();\n  char\
-      \ buf[64]; serializeJson(doc,buf);\n  mqtt.publish(TOPIC_GESTURE,buf);\n  oled.clearDisplay(); oled.setCursor(0,0);\n\
-      \  oled.setTextSize(2); oled.println(dir); oled.display();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextColor(WHITE);\n \
-      \ apds.init(); apds.enableGestureSensor(true);\n  pinMode(INT_PIN,INPUT);\n  attachInterrupt(INT_PIN,isr,FALLING);\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      }\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"ESP32Gesture\");\n  mqtt.loop();\n  if(!gReady)\
-      \ return;\n  gReady=false;\n  if(!apds.isGestureAvailable()) return;\n  int g=apds.readGesture();\n\
-      \  publishGesture(dirName(g));\n}"
-    code_filename: esp32-gesture-recognition-advanced.ino
 related_slugs:
 - esp32-rgb-led-pattern-controller
 - esp32-home-climate-automation
+format: golden
+meta_title: ESP32 APDS-9960 Gesture Control Demo
+project:
+  icon: GEST
+  mission_title: Build an APDS-9960 Gesture Control Demo
+  difficulty: Intermediate
+  age: Ages 12+
+  recommended_age: Ages 12+
+  estimated_time: 60-75 min
+  budget: Under 25 USD
+  adult_supervision: Adult help recommended for checking APDS-9960 voltage and LED resistor wiring.
+  classroom_use: Use it to compare directional gestures, speed, distance, and false triggers without calling it AI.
+  parent_prompt: Ask how a swipe differs from a trained gesture class.
+  screen_free_activity: Draw the sensor and four LEDs, then map each hand direction to one output.
+  skills_practiced:
+  - I2C wiring
+  - Interrupt input
+  - LED outputs
+  - Sensor limitations
+  learning_outcomes: &id001
+  - Wire APDS-9960 SDA/SCL on GPIO21/GPIO22.
+  - Use GPIO4 as an interrupt input.
+  - Map four gesture directions to four LEDs.
+  - Explain speed, distance, and lighting limits.
+  mini_experiments:
+  - Swipe faster and slower.
+  - Move the hand higher above the sensor.
+  - Swap which LED lights for each direction.
+  next_challenge: Log gesture counts before connecting the sensor to home automation.
+  what_you_build: A local APDS-9960 directional hand-swipe demo with four indicator LEDs.
+  story: This project detects directional swipes from a real gesture sensor. It is not camera AI, accessibility hardware,
+    or a security system.
+  eli12: The sensor shines invisible light and watches how your hand reflects it while moving. The ESP32 turns that direction
+    into an LED color.
+  parent_safety: Use 3.3 V APDS-9960 power unless your breakout explicitly supports another voltage. Use resistors on LEDs.
+    Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board for the low-voltage logic side.
+    link: /components/esp32-devkit.html
+  - item: APDS-9960 gesture sensor breakout
+    note: I2C gesture/proximity sensor; confirm 3.3 V logic.
+  - item: Four LEDs
+    note: One LED for each direction.
+  - item: 220 ohm resistors
+    note: One resistor in series with each LED.
+  - item: Breadboard and jumper wires
+    note: For low-voltage prototyping.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board for the low-voltage logic side.
+  - part: APDS-9960 gesture sensor breakout
+    qty: '1'
+    estimated_cost: Varies
+    notes: I2C gesture/proximity sensor; confirm 3.3 V logic.
+  - part: Four LEDs
+    qty: '1'
+    estimated_cost: Varies
+    notes: One LED for each direction.
+  - part: 220 ohm resistors
+    qty: '1'
+    estimated_cost: Varies
+    notes: One resistor in series with each LED.
+  - part: Breadboard and jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: For low-voltage prototyping.
+  wiring:
+    illustration_alt: Build an APDS-9960 Gesture Control Demo wiring diagram
+    summary: APDS-9960 uses I2C on GPIO21/GPIO22 and INT on GPIO4. LEDs use GPIO25, GPIO26, GPIO27, and GPIO14 through resistors.
+    steps:
+    - Unplug USB before wiring.
+    - Connect APDS-9960 VCC to 3.3 V and GND to GND.
+    - Connect SDA to GPIO21 and SCL to GPIO22.
+    - Connect INT to GPIO4.
+    - Connect LED anodes through 220 ohm resistors to GPIO25, GPIO26, GPIO27, and GPIO14; connect cathodes to GND.
+    - Upload the sketch and open Serial Monitor at 115200 baud.
+  gpio_map:
+  - signal: APDS-9960 SDA
+    esp32_pin: GPIO21
+    direction: I2C data
+    notes: Shared I2C bus.
+  - signal: APDS-9960 SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Shared I2C bus.
+  - signal: APDS-9960 INT
+    esp32_pin: GPIO4
+    direction: Input
+    notes: Interrupt input with pull-up.
+  - signal: UP LED
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Series resistor required.
+  - signal: DOWN LED
+    esp32_pin: GPIO26
+    direction: Output
+    notes: Series resistor required.
+  - signal: LEFT LED
+    esp32_pin: GPIO27
+    direction: Output
+    notes: Series resistor required.
+  - signal: RIGHT LED
+    esp32_pin: GPIO14
+    direction: Output
+    notes: Avoid using this as a boot strap output.
+  circuit_explanation: The APDS-9960 reports gesture events over I2C and pulls INT low when data is ready. The ESP32 reads
+    the direction and lights one LED.
+  engineering_explanation: Gesture detection depends on hand distance, speed, sensor orientation, and ambient light. The sketch
+    classifies directional swipes only.
+  libraries:
+  - name: SparkFun APDS9960
+    note: Install SparkFun_APDS9960 Arduino library.
+  - name: Wire
+    note: Bundled with Arduino ESP32 core.
+  code:
+    filename: esp32-gesture-recognition.ino
+    content: "// ESP32 APDS-9960 directional gesture demo\n// Detects directional hand swipes; this is not AI gesture recognition.\n\
+      #include <Wire.h>\n#include <SparkFun_APDS9960.h>\n\nSparkFun_APDS9960 apds;\n\nconst int INT_PIN = 4;\nconst int LED_UP\
+      \ = 25;\nconst int LED_DOWN = 26;\nconst int LED_LEFT = 27;\nconst int LED_RIGHT = 14;\n\nvolatile bool gestureFlag\
+      \ = false;\n\nvoid IRAM_ATTR onGesture() {\n  gestureFlag = true;\n}\n\nvoid clearLeds() {\n  digitalWrite(LED_UP, LOW);\n\
+      \  digitalWrite(LED_DOWN, LOW);\n  digitalWrite(LED_LEFT, LOW);\n  digitalWrite(LED_RIGHT, LOW);\n}\n\nvoid setup()\
+      \ {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n\n  pinMode(INT_PIN, INPUT_PULLUP);\n  pinMode(LED_UP, OUTPUT);\n\
+      \  pinMode(LED_DOWN, OUTPUT);\n  pinMode(LED_LEFT, OUTPUT);\n  pinMode(LED_RIGHT, OUTPUT);\n  clearLeds();\n\n  if (!apds.init())\
+      \ {\n    Serial.println(\"APDS-9960 not found. Check 3.3 V, SDA GPIO21, and SCL GPIO22.\");\n    while (true) delay(10);\n\
+      \  }\n  if (!apds.enableGestureSensor(true)) {\n    Serial.println(\"Gesture sensor did not enable.\");\n    while (true)\
+      \ delay(10);\n  }\n\n  attachInterrupt(digitalPinToInterrupt(INT_PIN), onGesture, FALLING);\n  Serial.println(\"APDS-9960\
+      \ gesture demo ready. Swipe above the sensor.\");\n}\n\nvoid loop() {\n  if (!gestureFlag) return;\n  gestureFlag =\
+      \ false;\n\n  if (!apds.isGestureAvailable()) return;\n  int gesture = apds.readGesture();\n  clearLeds();\n\n  switch\
+      \ (gesture) {\n    case DIR_UP:\n      digitalWrite(LED_UP, HIGH);\n      Serial.println(\"UP\");\n      break;\n  \
+      \  case DIR_DOWN:\n      digitalWrite(LED_DOWN, HIGH);\n      Serial.println(\"DOWN\");\n      break;\n    case DIR_LEFT:\n\
+      \      digitalWrite(LED_LEFT, HIGH);\n      Serial.println(\"LEFT\");\n      break;\n    case DIR_RIGHT:\n      digitalWrite(LED_RIGHT,\
+      \ HIGH);\n      Serial.println(\"RIGHT\");\n      break;\n    default:\n      Serial.println(\"Gesture not classified.\"\
+      );\n      break;\n  }\n}\n"
+  code_explanation: GPIO4 sets a flag on the APDS-9960 interrupt. The main loop reads the gesture and updates GPIO25/GPIO26/GPIO27/GPIO14
+    LEDs.
+  expected_output: Serial Monitor prints UP, DOWN, LEFT, or RIGHT and exactly one LED lights after a recognized swipe.
+  common_mistakes:
+  - text: Calling the project AI gesture recognition.
+  - text: Powering a 3.3 V-only breakout from 5 V.
+  - text: Forgetting LED resistors.
+  - text: Mounting the sensor backwards and expecting directions to match.
+  troubleshooting:
+  - problem: Sensor not found
+    fix: Check 3.3 V, ground, SDA GPIO21, SCL GPIO22, and I2C address.
+  - problem: Gestures are inconsistent
+    fix: Change swipe speed, distance, and lighting; keep the hand centered over the sensor.
+  - problem: Direction appears reversed
+    fix: Rotate the module or remap directions in code.
+  testing_checklist:
+  - Run an I2C scan if initialization fails.
+  - Test each LED output with a simple blink first.
+  - Swipe each direction five times and note misses without claiming accuracy.
+  engineer_tips:
+  - Keep wires short on I2C.
+  - Place the sensor flat and unobstructed.
+  - Treat false triggers as part of the lesson.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: Digital Inputs and Floating Pins
+    href: /guides/digital-inputs-floating-pins.html
+    description: Learn why clean digital inputs and pull-ups matter.
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, boot behavior, and power basics.
+  related_projects:
+  - title: ESP32 LED Matrix Display
+    href: /projects/esp32-led-matrix-display.html
+    description: Use gesture input to drive a richer visual output.
+  - title: ESP32 Smart Door Lock
+    href: /projects/esp32-smart-door-lock.html
+    description: Compare user-input limits with a security-sensitive Golden build.
+  faqs:
+  - question: Is this AI?
+    answer: No. It uses the APDS-9960 sensor's directional gesture engine.
+  - question: Can it detect custom gestures?
+    answer: Not with this sketch; it detects simple directions only.
+  - question: Why do gestures fail sometimes?
+    answer: Distance, speed, lighting, and sensor orientation affect detection.
+  complete:
+    summary: You completed Build an APDS-9960 Gesture Control Demo with matching wiring, code, tests, and limitations.
+    skills:
+    - I2C wiring
+    - Interrupt input
+    - LED outputs
+keywords:
+- ESP32
+- Build an APDS-9960 Gesture Control Demo
+- APDS-9960 SDA
+- RIGHT LED
+- Arduino tutorial

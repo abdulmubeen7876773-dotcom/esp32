@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
+from project_text import project_meta_description, project_title
 from site_layout import SITE_DOMAIN, SITE_NAME, esc
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -37,8 +38,8 @@ def rfc_date(dt: datetime) -> str:
 
 def feed_item(parent: dict) -> str:
     link = f"{SITE_DOMAIN}/projects/{parent['slug']}.html"
-    title = esc(parent["title"])
-    desc = esc(parent["description"])
+    title = esc(project_title(parent))
+    desc = esc(project_meta_description(parent))
     pub = rfc_date(project_pub_date(parent))
     return f"""    <item>
       <title>{title}</title>

@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-07-10T11:08:34Z
+Generated: 2026-07-10T20:50:10Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: VALIDATION
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 52
+- WARNING: 54
 - INFO: 300
-- Total findings: 352
+- Total findings: 354
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 52
+Count: 54
 
 ### missing_illustrations (16)
 
@@ -67,17 +67,18 @@ Count: 52
 - guides/reading-analog-sensors.yaml: missing concept illustration (guides/reading-analog-sensors.yaml)
 - guides/smart-environment-monitor-capstone.yaml: missing concept illustration (guides/smart-environment-monitor-capstone.yaml)
 
-### missing_photos (7)
+### missing_photos (8)
 
 - components/bme280.yaml: no local component photo in /assets/visuals/ (https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg)
 - components/dht22.yaml: no local component photo in /assets/visuals/ (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
+- components/esp32-cam.yaml: no local component photo in /assets/visuals/ (components/esp32-cam.yaml)
 - components/esp32-devkit.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
 - components/hc-sr04.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg)
 - components/pir-sensor.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/0/3/1/0/101-10627-01.jpg)
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
 
-### missing_wiring_diagrams (22)
+### missing_wiring_diagrams (23)
 
 - guides/analog-inputs-reading-real-world.yaml: missing wiring diagram file (guides/analog-inputs-reading-real-world.yaml)
 - guides/analog-inputs.yaml: missing wiring diagram file (guides/analog-inputs.yaml)
@@ -96,6 +97,7 @@ Count: 52
 - guides/smart-environment-monitor-capstone.yaml: missing wiring diagram file (guides/smart-environment-monitor-capstone.yaml)
 - components/bme280.yaml: missing wiring diagram file (components/bme280.yaml)
 - components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
+- components/esp32-cam.yaml: missing wiring diagram file (components/esp32-cam.yaml)
 - components/esp32-devkit.yaml: missing wiring diagram file (components/esp32-devkit.yaml)
 - components/hc-sr04.yaml: missing wiring diagram file (components/hc-sr04.yaml)
 - components/pir-sensor.yaml: missing wiring diagram file (components/pir-sensor.yaml)

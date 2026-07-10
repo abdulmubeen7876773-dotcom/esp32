@@ -4,6 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import assert_phase1_static, get_content_store
+from project_text import project_meta_description, project_title
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_OUT = ROOT / "search-index.json"
@@ -48,13 +49,12 @@ def build_index() -> list:
         )
     for p in store.projects():
         cat = p.get("category", "")
-        desc = p.get("description", p.get("desc", ""))
-        snippet = f"{cat} · {desc}" if cat and desc else (desc or cat)
+        desc = project_meta_description(p)
         items.append(
             entry(
                 "Project",
-                p["title"],
-                snippet,
+                project_title(p),
+                desc,
                 f"/projects/{p['slug']}.html",
                 slug=p["slug"],
                 category=cat,

@@ -1,8 +1,8 @@
 slug: esp32-smart-energy-meter
 title: ESP32 Smart Energy Meter
 category: Energy Monitoring
-description: Track power usage with ESP32 and a current sensor — serial readings, calibrated LCD output,
-  and cloud logging options.
+description: Track power usage with ESP32 and a current sensor — serial readings, calibrated LCD output, and cloud logging
+  options.
 source_base: esp32-smart-energy-meter-with-cloud-logging
 sensor: current sensor
 output: relay cutoff
@@ -11,73 +11,70 @@ date_published: '2026-06-14'
 date_modified: '2026-06-18'
 hardware:
   sensor_pin: GPIO36
-  output_pin: GPIO39
-  sensor_name: Voltage Sensor signal
-  output_name: Current Sensor control
+  output_pin: GPIO21/GPIO22
+  sensor_name: Voltage and current analog sensors
+  output_name: Optional SSD1306 OLED display
   wiring:
-  - component: Voltage Sensor signal
+  - component: Voltage sensor signal
     pin: GPIO36
-  - component: Current Sensor control
-    pin: GPIO39
-  - component: Lcd Display SDA
+  - component: Current sensor signal
+    pin: GPIO34
+  - component: OLED SDA
     pin: GPIO21
-  - component: SCL
+  - component: OLED SCL
     pin: GPIO22
   - component: VCC
-    pin: 3.3V/5V
+    pin: Module-rated low-voltage supply
   - component: GND
     pin: GND
-meta_description: Production-ready walkthrough — Voltage Sensor signal on GPIO36 drives Current Sensor
-  control with a tuned threshold sketch you can deploy today.
+meta_description: Production-ready walkthrough — Voltage Sensor signal on GPIO36 drives Current Sensor control with a tuned
+  threshold sketch you can deploy today.
 meta_title: ESP32 Energy Meter for Solar Panel with Cloud Sync
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for Current Sense: ESP32 watches Voltage Sensor signal and activates Current\
-      \ Sensor control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n\
-      \        <li>Voltage Sensor signal connects to GPIO36 (ADC input)</li><li>Threshold is set to 1605\
-      \ in firmware (adjust after calibration)</li><li>Current Sensor control is driven on GPIO39 when\
-      \ the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
-      \      </section>"
+    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
+      \ for Current Sense: ESP32 watches Voltage Sensor signal and activates Current Sensor control when conditions cross\
+      \ your threshold.</p>\n      <ul class=\"overview-list\">\n        <li>Voltage Sensor signal connects to GPIO36 (ADC\
+      \ input)</li><li>Threshold is set to 1605 in firmware (adjust after calibration)</li><li>Current Sensor control is driven\
+      \ on GPIO39 when the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n \
+      \     </section>"
     components:
     - ESP32 Dev Board
-    - Voltage Sensor
-    - Current Sensor
-    - Lcd Display
-    - 5V Power Supply
+    - Low-voltage voltage sensor module
+    - Low-voltage current sensor module
+    - Optional SSD1306 OLED display
+    - Low-voltage test supply
     wiring:
-    - - Voltage Sensor signal
+    - - Voltage sensor signal
       - GPIO36
-      - ''
-    - - Current Sensor control
-      - GPIO39
-      - ''
-    - - Lcd Display SDA
+      - ADC1 input
+    - - Current sensor signal
+      - GPIO34
+      - ADC1 input
+    - - OLED SDA
       - GPIO21
-      - ''
-    - - SCL
+      - Optional I2C display
+    - - OLED SCL
       - GPIO22
-      - ''
-    - - VCC
-      - 3.3V/5V
-      - ''
+      - Optional I2C display
     - - GND
       - GND
-      - ''
+      - Common ground
     how: []
     apps:
     - Current Sense monitoring with Voltage Sensor signal
     troubleshooting: []
     upgrades:
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Energy Meter for Solar Panel with Cloud Sync\nconst int SENSOR_PIN = 36;\nconst int\
-      \ OUTPUT_PIN = 39;\nconst int THRESHOLD = 1812;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"\
-      Starting: energy meter for solar panel with cloud sync\");\n  Serial.print(\"Threshold: \");\n \
-      \ Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"\
-      Voltage Sensor signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n\
-      \  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code: "// ESP32 Smart Energy Meter - low-voltage ADC demo\n// Reads voltage sensor on GPIO36 and current sensor on GPIO34.\n\
+      // This sketch is for isolated low-voltage learning circuits, not direct mains measurement.\n\nconst int VOLTAGE_PIN\
+      \ = 36;  // ADC1 input\nconst int CURRENT_PIN = 34;  // ADC1 input\nconst int SAMPLE_DELAY_MS = 500;\n\nvoid setup()\
+      \ {\n  Serial.begin(115200);\n  pinMode(VOLTAGE_PIN, INPUT);\n  pinMode(CURRENT_PIN, INPUT);\n  Serial.println(\"ESP32\
+      \ Smart Energy Meter low-voltage demo\");\n}\n\nvoid loop() {\n  int voltageRaw = analogRead(VOLTAGE_PIN);\n  int currentRaw\
+      \ = analogRead(CURRENT_PIN);\n  float relativePower = (voltageRaw / 4095.0) * (currentRaw / 4095.0);\n\n  Serial.print(\"\
+      voltageRaw=\");\n  Serial.print(voltageRaw);\n  Serial.print(\" currentRaw=\");\n  Serial.print(currentRaw);\n  Serial.print(\"\
+      \ relativePower=\");\n  Serial.println(relativePower, 4);\n  delay(SAMPLE_DELAY_MS);\n}\n"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
@@ -85,7 +82,162 @@ levels:
   advanced:
     overview_html: '<p>TODO: import advanced content from batch or WordPress</p>'
     code: ''
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
 import_source: esp32-smart-energy-meter-with-cloud-logging-project-001.html
+format: golden
+project:
+  icon: PROJ
+  mission_title: Build a Low-Voltage Energy Meter
+  difficulty: Intermediate
+  age: Ages 13+
+  estimated_time: 90-120 min
+  budget: Under 30 USD
+  what_you_build: A bench-safe energy meter demo that reads voltage on GPIO36 and current on GPIO34, then prints a relative
+    power estimate.
+  story: Energy monitoring must be documented carefully because unsafe shortcuts are dangerous. This upgrade removes the staged-source
+    mistake that treated GPIO39 as an output and keeps the build on ADC1 input pins. The component list, wiring table, GPIO
+    map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build so a learner can verify
+    each step instead of guessing.
+  eli12: The ESP32 reads one number for voltage and one number for current. Multiplying the scaled readings gives a simple
+    power estimate for a safe classroom circuit. Prove the local wiring and code first, then add displays, logging, or Wi-Fi
+    after the simple version behaves exactly as expected.
+  parent_safety: Do not connect this project directly to AC mains. Use only isolated low-voltage sensor modules or a supervised
+    lab source. Unplug USB and any external supply before rewiring, keep the build low-voltage on the bench, and stop immediately
+    if a module becomes hot or behaves unexpectedly.
+  learning_objectives:
+  - Wire the exact GPIO pins used by the sketch.
+  - Run the starter code and compare output with the wiring table.
+  - Explain the main sensor or input signal in plain language.
+  - Troubleshoot one wiring mistake using Serial Monitor evidence.
+  components:
+  - item: ESP32 DevKit board
+    note: Reads ADC1 pins GPIO36 and GPIO34.
+    link: /components/esp32-devkit.html
+  - item: Low-voltage voltage sensor module
+    note: Analog output to GPIO36 within ESP32-safe range.
+  - item: Low-voltage current sensor module
+    note: Analog output to GPIO34 within ESP32-safe range.
+  - item: SSD1306 OLED display
+    note: Optional local display on GPIO21/GPIO22.
+    link: /components/ssd1306-oled.html
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Reads ADC1 pins GPIO36 and GPIO34.
+  - part: Low-voltage voltage sensor module
+    qty: '1'
+    estimated_cost: Varies
+    notes: Analog output to GPIO36 within ESP32-safe range.
+  - part: Low-voltage current sensor module
+    qty: '1'
+    estimated_cost: Varies
+    notes: Analog output to GPIO34 within ESP32-safe range.
+  - part: SSD1306 OLED display
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optional local display on GPIO21/GPIO22.
+  wiring:
+    illustration_alt: ESP32 Smart Energy Meter wiring diagram
+    summary: A bench-safe energy meter demo that reads voltage on GPIO36 and current on GPIO34, then prints a relative power
+      estimate.
+    steps:
+    - Unplug USB and the low-voltage test source before rewiring.
+    - Connect the voltage sensor analog output to GPIO36.
+    - Connect the current sensor analog output to GPIO34.
+    - Connect sensor grounds to ESP32 GND and keep outputs within ESP32-safe input range.
+    - 'Optional: connect OLED SDA to GPIO21 and SCL to GPIO22.'
+    - Reconnect power and verify raw ADC readings before calculating or displaying power.
+  gpio_map:
+  - signal: Voltage sensor signal
+    esp32_pin: GPIO36
+    direction: Input
+    notes: ADC1 input-only analog pin.
+  - signal: Current sensor signal
+    esp32_pin: GPIO34
+    direction: Input
+    notes: ADC1 input-only analog pin.
+  - signal: OLED SDA
+    esp32_pin: GPIO21
+    direction: I/O
+    notes: Optional I2C data.
+  - signal: OLED SCL
+    esp32_pin: GPIO22
+    direction: Output
+    notes: Optional I2C clock.
+  circuit_explanation: GPIO36 and GPIO34 sample analog sensor outputs. The optional OLED is an I2C display, not a relay cutoff.
+  engineering_explanation: The sketch reports raw ADC values and relative power until exact sensor modules are calibrated.
+    It avoids invented voltage scaling, current limits, and ADC2 Wi-Fi conflicts.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-smart-energy-meter.ino
+    content: "// ESP32 Smart Energy Meter - low-voltage ADC demo\n// Reads voltage sensor on GPIO36 and current sensor on\
+      \ GPIO34.\n// This sketch is for isolated low-voltage learning circuits, not direct mains measurement.\n\nconst int\
+      \ VOLTAGE_PIN = 36;  // ADC1 input\nconst int CURRENT_PIN = 34;  // ADC1 input\nconst int SAMPLE_DELAY_MS = 500;\n\n\
+      void setup() {\n  Serial.begin(115200);\n  pinMode(VOLTAGE_PIN, INPUT);\n  pinMode(CURRENT_PIN, INPUT);\n  Serial.println(\"\
+      ESP32 Smart Energy Meter low-voltage demo\");\n}\n\nvoid loop() {\n  int voltageRaw = analogRead(VOLTAGE_PIN);\n  int\
+      \ currentRaw = analogRead(CURRENT_PIN);\n  float relativePower = (voltageRaw / 4095.0) * (currentRaw / 4095.0);\n\n\
+      \  Serial.print(\"voltageRaw=\");\n  Serial.print(voltageRaw);\n  Serial.print(\" currentRaw=\");\n  Serial.print(currentRaw);\n\
+      \  Serial.print(\" relativePower=\");\n  Serial.println(relativePower, 4);\n  delay(SAMPLE_DELAY_MS);\n}\n"
+  code_explanation: The sketch reads voltageRaw from GPIO36 and currentRaw from GPIO34, then multiplies scaled ratios for
+    relativePower. No GPIO is used as a relay cutoff output.
+  expected_output: Serial Monitor prints voltageRaw, currentRaw, and relativePower every 500 ms. The values are for calibration
+    practice, not billing or direct mains measurement.
+  common_mistakes:
+  - text: Connecting AC mains directly to an ESP32 or breadboard.
+  - text: Using GPIO39 or another input-only pin as an output.
+  - text: Assuming raw ADC counts are calibrated volts or amps.
+  troubleshooting:
+  - problem: Readings stay at 0
+    fix: Check sensor power, ground, and analog outputs on GPIO36/GPIO34.
+  - problem: Readings stay near 4095
+    fix: Disconnect and confirm the sensor output is within ESP32-safe range.
+  - problem: OLED does not show data
+    fix: First confirm Serial Monitor readings, then check SDA on GPIO21 and SCL on GPIO22.
+  testing_checklist:
+  - Upload the sketch with only the documented circuit attached.
+  - Open Serial Monitor and confirm the expected messages.
+  - Move or trigger the input and watch the output change.
+  - Power-cycle the project and confirm it starts safely.
+  engineer_tips:
+  - Change one variable at a time.
+  - Keep wires short and labeled while testing.
+  - Record any calibrated threshold before installing the project.
+  upgrade_ideas:
+  - Add calibrated scaling constants after measuring known references.
+  - Display voltage, current, and relative power on the OLED.
+  - Publish readings to MQTT only after local calibration is repeatable.
+  real_world_applications:
+  - Classroom lab build
+  - Bench prototype
+  - Local ESP32 learning project
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, Wi-Fi, and the beginner wiring rules used by this build.
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Confirm uploads and simple GPIO behavior before adding sensors, storage, or displays.
+  related_projects:
+  - title: ESP32 MQTT Sensor Dashboard
+    href: /projects/esp32-mqtt-sensor-dashboard.html
+    description: Send calibrated values to a dashboard after local testing.
+  faqs:
+  - question: Can this measure house mains directly?
+    answer: No. Do not connect mains to the ESP32 or a breadboard.
+  - question: Why use GPIO36 and GPIO34?
+    answer: They are ADC1 input-only pins, appropriate for analog readings and Wi-Fi compatibility.
+  - question: Why print relative power?
+    answer: Exact voltage and current scaling depends on the sensor modules, so the starter code avoids inventing calibration
+      values.
+  complete:
+    summary: You completed ESP32 Smart Energy Meter as a real ESP32 engineering build with matching wiring, code, testing,
+      and troubleshooting.
+    skills:
+    - Read the GPIO map
+    - Verify code against hardware
+    - Troubleshoot with Serial Monitor

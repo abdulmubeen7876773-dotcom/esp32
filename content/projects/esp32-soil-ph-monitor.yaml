@@ -1,319 +1,205 @@
 slug: esp32-soil-ph-monitor
-title: ESP32 Soil pH Monitor
+title: Build an Educational Soil pH Monitor
 category: Agriculture
-description: Connect an analog pH sensor probe to the ESP32 to continuously monitor soil acidity. Display
-  readings on an OLED, log data to an SD card, and publish MQTT alerts when pH drifts outside the optimal
-  range for your crops.
-meta_description: Build an ESP32 soil pH monitor using an analog pH sensor probe. From basic pH reading
-  to OLED display with automatic lime or fertiliser dosing recommendations via MQTT.
-source_base: esp32-soil-ph-monitor-legacy-import
-sensor: pH module AOUT
-output: Red LED anode
+description: Use a pH probe interface board on ESP32 ADC1 GPIO34 to estimate soil-water slurry pH after mandatory
+  two-point calibration.
+meta_title: ESP32 Educational Soil pH Monitor
+meta_description: Build an educational ESP32 soil pH monitor with a conditioning board, GPIO34 ADC1 input, pH 4/pH
+  7 calibration, and no fertilizer advice.
+source_base: esp32-soil-ph-monitor-golden-batch-6
+sensor: pH interface AOUT
+output: Serial Monitor
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
+date_modified: '2026-07-10'
+quality_status: golden_tutorial
 status: needs_polish
-import_tier: 2
-import_source: batch-php
+import_tier: 1
+import_source: golden-batch-6
+format: golden
 hardware:
-  sensor_pin: GPIO 34
-  output_pin: GPIO 25
-  sensor_name: pH module AOUT
-  output_name: Red LED anode
+  sensor_pin: GPIO34
+  output_pin: Serial Monitor
+  sensor_name: pH interface AOUT
+  output_name: Estimated calibrated pH
   wiring:
-  - component: pH module AOUT
-    pin: GPIO 34
-  - component: pH module VCC
-    pin: 3.3 V or 5 V
-  - component: pH module GND
+  - component: pH interface AOUT
+    pin: GPIO34
+  - component: pH interface GND
     pin: GND
-  - component: Red LED anode
-    pin: GPIO 25
-  - component: Green LED anode
-    pin: GPIO 26
-  - component: Blue LED anode
-    pin: GPIO 27
-levels:
-  beginner:
-    level: beginner
-    overview_html: <p>In this beginner project you will connect an analog pH sensor module to the ESP32
-      ADC and read a voltage that corresponds to the current soil pH. A two-point calibration using pH
-      4.0 and pH 7.0 buffer solutions converts the voltage to a pH value. The reading is printed to the
-      Serial Monitor and an LED indicates whether the soil is acidic (below 6.0), neutral (6.0-7.5), or
-      alkaline (above 7.5).</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× Analog pH sensor module (e.g. DFRobot SEN0161) — Includes BNC probe and signal conditioning board
-    - 1× pH 4.0 and pH 7.0 calibration buffer solutions — Sachets or small bottles
-    - 1× Red LED (acidic indicator)
-    - 1× Green LED (neutral indicator)
-    - 1× Blue LED (alkaline indicator)
-    - 3× 220 ohm resistor — LED current limiting
-    wiring:
-    - - pH module AOUT
-      - GPIO 34
-      - Module output 0-3.3 V; confirm module supports 3.3 V operation
-    - - pH module VCC
-      - 3.3 V or 5 V
-      - Check module spec; most accept either
-    - - pH module GND
-      - GND
-      - ''
-    - - Red LED anode
-      - GPIO 25
-      - Acidic (pH < 6.0)
-    - - Green LED anode
-      - GPIO 26
-      - Neutral (pH 6.0-7.5)
-    - - Blue LED anode
-      - GPIO 27
-      - Alkaline (pH > 7.5)
-    how:
-    - 'Electrochemical pH Measurement: The pH probe is a glass membrane electrode. The potential difference
-      across the membrane is proportional to the hydrogen ion concentration (pH). The signal conditioning
-      module amplifies this millivolt signal to 0-3.3 V using a high-impedance operational amplifier.'
-    - 'Two-Point Linear Calibration: A single-point calibration assumes a fixed slope; a two-point calibration
-      measures the slope empirically using two buffer solutions. The slope (mV per pH unit) and intercept
-      are derived from the two (raw, pH) pairs and stored as constants.'
-    - '20-Sample Averaging: pH sensor outputs are noisy due to the extremely high impedance of the glass
-      electrode and susceptibility to electrical interference. Averaging 20 readings taken 10 ms apart
-      reduces the standard deviation from several tenths of a pH unit to under 0.05.'
-    - 'Three-Zone LED Indication: Most crops grow optimally between pH 6.0 and 7.0. Red (acidic) indicates
-      lime may be needed; green (neutral) indicates optimal conditions; blue (alkaline) indicates sulphur
-      or acidic fertiliser may be needed.'
-    apps:
-    - Greenhouse soil monitoring for optimal crop pH range
-    - Home vegetable garden pH checker
-    - Hydroponic nutrient solution pH monitoring
-    - Soil science education demonstration
-    troubleshooting:
-    - - pH reading is far from expected value
-      - The calibration constants in the code are placeholders. You must calibrate the probe using real
-        buffer solutions. Place the probe in pH 7.0 buffer, wait 60 seconds for the reading to stabilise,
-        note the ADC value, repeat for pH 4.0, then update CAL_PH7_RAW and CAL_PH4_RAW.
-    - - Reading drifts slowly over several minutes
-      - The glass electrode needs at least 2-3 minutes to equilibrate when moved between solutions. Always
-        wait for the reading to stabilise before recording a calibration value or final measurement.
-    - - Very noisy readings even with averaging
-      - Ground loops and 50/60 Hz electrical interference couple into the high-impedance probe cable.
-        Keep the probe cable short (under 50 cm), away from mains wiring, and use shielded cable for the
-        probe connection to the module.
-    - - Module output exceeds 3.3 V
-      - Some pH modules are designed for 5 V Arduino ADCs. If the AOUT range exceeds 3.3 V, add a voltage
-        divider (10k + 20k) on the signal line to scale it down, or use a module specifically rated for
-        3.3 V operation.
-    upgrades:
-    - Add an OLED display to show pH value and status text without needing a computer
-    - Add a DS18B20 temperature sensor (soil pH readings are temperature-dependent)
-    - Add Wi-Fi and log readings to a Google Sheets spreadsheet via HTTP POST
-    - Add a button to trigger a calibration sequence stored in NVS
-    code: "// ESP32 Soil pH Monitor - Beginner\n// Two-point calibration: pH 4.0 and pH 7.0 buffer solutions\n\
-      \nconst int PH_PIN   = 34;\nconst int LED_ACID = 25; // Red\nconst int LED_NEUT = 26; // Green\n\
-      const int LED_ALK  = 27; // Blue\n\n// --- Calibration values ---\n// Step 1: Place probe in pH\
-      \ 7.0 buffer, wait 60 s, record raw ADC.\n// Step 2: Place probe in pH 4.0 buffer, wait 60 s, record\
-      \ raw ADC.\n// Set these constants from your measurements.\nconst float CAL_PH7_RAW  = 2048.0; //\
-      \ ADC reading in pH 7.0 buffer\nconst float CAL_PH4_RAW  = 1024.0; // ADC reading in pH 4.0 buffer\n\
-      \n// Derived calibration slope and intercept\nconst float SLOPE     = (7.0 - 4.0) / (CAL_PH7_RAW\
-      \ - CAL_PH4_RAW);\nconst float INTERCEPT = 7.0 - SLOPE * CAL_PH7_RAW;\n\nfloat readPH() {\n  //\
-      \ Average 20 ADC readings to reduce noise\n  long sum = 0;\n  for (int i = 0; i < 20; i++) {\n \
-      \   sum += analogRead(PH_PIN);\n    delay(10);\n  }\n  float raw = sum / 20.0;\n  return SLOPE *\
-      \ raw + INTERCEPT;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
-      \  pinMode(LED_ACID, OUTPUT);\n  pinMode(LED_NEUT, OUTPUT);\n  pinMode(LED_ALK,  OUTPUT);\n}\n\n\
-      void loop() {\n  float ph = readPH();\n  Serial.printf(\"Soil pH: %.2fn\", ph);\n\n  bool acid =\
-      \ ph < 6.0;\n  bool alk  = ph > 7.5;\n  bool neut = !acid && !alk;\n\n  digitalWrite(LED_ACID, acid\
-      \ ? HIGH : LOW);\n  digitalWrite(LED_NEUT, neut ? HIGH : LOW);\n  digitalWrite(LED_ALK,  alk  ?\
-      \ HIGH : LOW);\n  delay(2000);\n}"
-    code_filename: esp32-soil-ph-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build adds a DS18B20 temperature sensor for temperature-compensated
-      pH readings and an SSD1306 OLED displaying pH, temperature, and a recommendation (add lime / optimal
-      / add sulphur). Readings are logged to an SD card with timestamps from an NTP server. If pH stays
-      outside the optimal band for more than 10 minutes, an alert is printed and a relay output is activated
-      for an optional dosing pump.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× Analog pH sensor module
-    - 1× DS18B20 waterproof temperature probe — Temperature compensation for pH
-    - 1× SSD1306 OLED 128x64 I2C
-    - 1× MicroSD card module — Data logging
-    - 1× Relay module — Optional dosing pump trigger
-    - 1× 4.7 kohm resistor — DS18B20 pull-up
-    - 1× Wi-Fi router — NTP timestamps
-    wiring:
-    - - pH module AOUT
-      - GPIO 34
-      - ''
-    - - DS18B20 DATA
-      - GPIO 4
-      - 4.7k pull-up to 3.3 V
-    - - SD CS / MOSI / MISO / SCK
-      - GPIO 5 / 23 / 19 / 18
-      - SPI bus
-    - - OLED SDA / SCL
-      - GPIO 21 / 22
-      - ''
-    - - Relay IN
-      - GPIO 25
-      - Dosing pump trigger
-    how:
-    - 'Temperature Compensation: The Nernst equation shows pH electrode sensitivity is temperature-dependent:
-      approximately 59.2 mV/pH at 25 C but varying with temperature. A linear approximation of 0.003 pH
-      units per degree Celsius from 25 C corrects for temperature variation. The DS18B20 provides the
-      soil temperature for this correction.'
-    - 'SD Card CSV Logging: Each reading is appended to /ph_log.csv with Unix timestamp, pH, temperature,
-      and recommendation. The CSV format can be opened directly in Excel or imported into Google Sheets
-      for graphing soil pH trends over a growing season.'
-    - '10-Minute Alert Lockout: Momentary pH excursions (probe movement, rain) should not trigger a dosing
-      pump. The 10-minute timer only activates the relay if the out-of-range condition persists continuously.
-      Any return to optimal range resets the timer.'
-    - 'Relay Dosing Pump Trigger: The relay (active LOW) activates a peristaltic dosing pump that adds
-      lime solution (to raise pH) or sulphuric acid solution (to lower pH) to an irrigation system. The
-      pump turns off automatically when pH returns to the optimal range.'
-    apps:
-    - Automated greenhouse pH control with lime dosing
-    - Hydroponic system pH monitoring with acid/base dosing
-    - Field crop soil pH seasonal trend logging
-    - Soil remediation project monitoring
-    troubleshooting:
-    - - DS18B20 returns -127 C
-      - 'The 4.7 kohm pull-up resistor between DATA and 3.3 V is missing or has the wrong value. Also
-        verify the probe wiring polarity: red=VCC, black=GND, yellow=DATA (colours vary by manufacturer).'
-    - - SD card not found on SD.begin()
-      - Check SPI wiring and CS pin number. Format the SD card as FAT32. Try a different SD card (some
-        large-capacity cards use exFAT which the Arduino SD library does not support without additional
-        libraries).
-    - - Relay triggers after only seconds, not 10 minutes
-      - Verify that millis() arithmetic is correct. The outOfRangeStart timestamp must be set only once
-        when the condition first begins; using = millis() inside every loop iteration resets it continuously.
-    upgrades:
-    - Add a second pH probe for a different bed and monitor both channels on one OLED
-    - Add a Telegram bot alert when the 10-minute threshold is reached
-    - Add a flow meter to log how much lime or sulphur solution was dispensed
-    - Add a solar panel and LiPo battery for off-grid field deployment
-    code: "// ESP32 Soil pH Monitor - Intermediate (DS18B20 + OLED + SD logging + relay)\n#include <Wire.h>\n\
-      #include <Adafruit_SSD1306.h>\n#include <OneWire.h>\n#include <DallasTemperature.h>\n#include <SD.h>\n\
-      #include <WiFi.h>\n#include <time.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nOneWire ow(4);\
-      \ DallasTemperature ds(&ow);\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int PH_PIN=34,\
-      \ SD_CS=5, RELAY=25;\nconst float CAL_PH7_RAW=2048.0, CAL_PH4_RAW=1024.0;\nconst float SLOPE=(7.0-4.0)/(CAL_PH7_RAW-CAL_PH4_RAW);\n\
-      const float INTERCEPT=7.0-SLOPE*CAL_PH7_RAW;\n\n// Temperature compensation: pH shifts ~0.003/C\
-      \ from 25C baseline\nfloat tempCompPH(float rawPH, float tempC){\n  return rawPH + 0.003f*(tempC-25.0f);\n\
-      }\n\nfloat readPH(){\n  long sum=0;\n  for(int i=0;i<20;i++){ sum+=analogRead(PH_PIN); delay(10);\
-      \ }\n  return SLOPE*(sum/20.0)+INTERCEPT;\n}\n\nunsigned long outOfRangeStart=0;\nconst unsigned\
-      \ long ALERT_MS=600000UL; // 10 minutes\n\nvoid logToSD(float ph, float temp, const String &rec){\n\
-      \  File f=SD.open(\"/ph_log.csv\",FILE_APPEND);\n  if(!f) return;\n  time_t now=time(nullptr);\n\
-      \  f.printf(\"%ld,%.2f,%.1f,%sn\",(long)now,ph,temp,rec.c_str());\n  f.close();\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  oled.setTextColor(WHITE);\n\
-      \  ds.begin();\n  analogReadResolution(12);\n  SD.begin(SD_CS);\n  pinMode(RELAY,OUTPUT); digitalWrite(RELAY,HIGH);\n\
-      \  WiFi.begin(SSID,PASS);\n  int t=0; while(WiFi.status()!=WL_CONNECTED&&t++<20) delay(500);\n \
-      \ if(WiFi.status()==WL_CONNECTED) configTime(0,0,\"pool.ntp.org\");\n}\n\nvoid loop(){\n  ds.requestTemperatures();\n\
-      \  float temp=ds.getTempCByIndex(0);\n  float rawPH=readPH();\n  float ph=(temp!=-127.0f)?tempCompPH(rawPH,temp):rawPH;\n\
-      \n  String rec=\"OPTIMAL\";\n  bool outOfRange=false;\n  if(ph<6.0f){ rec=\"ADD-LIME\"; outOfRange=true;\
-      \ }\n  else if(ph>7.5f){ rec=\"ADD-SULPHUR\"; outOfRange=true; }\n\n  if(outOfRange){\n    if(outOfRangeStart==0)\
-      \ outOfRangeStart=millis();\n    if(millis()-outOfRangeStart>ALERT_MS){\n      Serial.printf(\"\
-      ALERT: pH %.2f out of range >10 minn\",ph);\n      digitalWrite(RELAY,LOW); // activate dosing pump\n\
-      \    }\n  } else {\n    outOfRangeStart=0;\n    digitalWrite(RELAY,HIGH);\n  }\n\n  logToSD(ph,temp,rec);\n\
-      \  Serial.printf(\"pH: %.2f  Temp: %.1fC  Rec: %sn\",ph,temp,rec.c_str());\n\n  oled.clearDisplay();\
-      \ oled.setTextSize(1); oled.setCursor(0,0);\n  oled.printf(\"pH:   %.2fn\",ph);\n  oled.printf(\"\
-      Temp: %.1fCn\",temp);\n  oled.printf(\"Rec:  %sn\",rec.c_str());\n  oled.display();\n  delay(30000);\
-      \ // Read every 30 seconds\n}"
-    code_filename: esp32-soil-ph-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build publishes pH, temperature, EC (electrical conductivity), and
-      dosing events to an MQTT broker. A Node-RED dashboard plots pH trends over 24 hours and 7 days.
-      Automated lime and pH-down dosing runs on a PID controller loop that calculates the precise volume
-      needed based on soil buffer capacity. Daily summary reports are emailed using SMTP.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× Analog pH probe module
-    - 1× DS18B20 temperature probe
-    - 1× Analog EC (conductivity) sensor module — DFRobot DFR0300 or similar
-    - 2× Peristaltic pump 12 V — One for lime, one for acid
-    - 2× Relay module — One per pump
-    - 1× MQTT broker and Node-RED
-    wiring:
-    - - pH module AOUT
-      - GPIO 34
-      - ''
-    - - EC module AOUT
-      - GPIO 35
-      - ''
-    - - DS18B20 DATA
-      - GPIO 4
-      - 4.7k pull-up
-    - - Lime pump relay
-      - GPIO 25
-      - ''
-    - - Acid pump relay
-      - GPIO 26
-      - ''
-    how:
-    - 'PID Closed-Loop pH Control: The PID controller calculates the error (target pH minus measured pH).
-      Proportional term reacts to current error; integral term corrects accumulated drift; derivative
-      term damps oscillation. Output is converted to pump run time in milliseconds — more error means
-      longer dosing pulse.'
-    - 'Deadband to Prevent Over-Dosing: A deadband of 0.2 pH units around the target prevents constant
-      micro-dosing. If output magnitude is less than 0.2, neither pump activates. This prevents oscillation
-      and excessive consumption of lime or acid solution.'
-    - 'EC Monitoring for Nutrient Salinity: Electrical conductivity measures total dissolved salts. High
-      EC (above 2000 uS/cm) combined with optimal pH may indicate over-fertilisation; low EC with low
-      pH suggests acid soils leaching nutrients. Publishing both to MQTT enables correlation analysis
-      in Node-RED.'
-    - 'Node-RED 24-Hour Trend Plot: Node-RED stores soil/sensors MQTT messages in a context variable array,
-      trimmed to the last 288 readings (24 hours at 5-minute intervals). A chart widget plots the pH trend
-      line, with horizontal rule markers at 6.0 and 7.5 showing the optimal band boundaries.'
-    apps:
-    - Commercial greenhouse automated pH management system
-    - Large-scale hydroponic farm nutrient solution control
-    - Research plot long-term soil pH manipulation experiment
-    - Precision agriculture soil health monitoring network
-    troubleshooting:
-    - - PID causes pH to overshoot the target
-      - Reduce KP (proportional gain) first. Soil pH changes slowly after dosing; the PID should be conservative.
-        Set integral windup limits to prevent the integral term from accumulating during the long wait
-        period between dose cycles.
-    - - Pump runs continuously or for unreasonable durations
-      - The constrain(abs(output)*100, 0, 5000) caps pump run time at 5 seconds per cycle. Verify this
-        limit matches your pump flow rate; a high-flow pump may add too much reagent in 5 seconds. Reduce
-        the maximum cap or scale KP down.
-    - - EC reading is constant regardless of solution
-      - EC sensors require AC excitation to avoid electrode polarisation. The analog read approach in
-        the beginner code is a simplified approximation. For accurate EC use the DFRobot EC library which
-        handles AC measurement through PWM.
-    upgrades:
-    - Add SMTP email report with a 24-hour pH trend chart attachment each morning
-    - Add a moisture sensor to suspend dosing when soil is too dry for reagent diffusion
-    - Add a UV steriliser relay to run after dosing to prevent bacterial contamination of nutrient lines
-    - Add a TFT display showing a full-color real-time pH trend graph on the controller unit
-    code: "// ESP32 Soil pH Monitor - Advanced (PID dosing + EC + MQTT)\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      #include <ArduinoJson.h>\n#include <OneWire.h>\n#include <DallasTemperature.h>\n\nOneWire ow(4);\
-      \ DallasTemperature ds(&ow);\nWiFiClient wifiClient; PubSubClient mqtt(wifiClient);\n\nconst char*\
-      \ SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst int PH_PIN=34,\
-      \ EC_PIN=35, PUMP_LIME=25, PUMP_ACID=26;\nconst float CAL_PH7_RAW=2048.0, CAL_PH4_RAW=1024.0;\n\
-      const float SLOPE=(7.0f-4.0f)/(CAL_PH7_RAW-CAL_PH4_RAW);\nconst float INTERCEPT=7.0f-SLOPE*CAL_PH7_RAW;\n\
-      const float TARGET_PH=6.5f;\n\n// PID coefficients (tune to your soil volume and pump rate)\nconst\
-      \ float KP=2.0f, KI=0.1f, KD=0.5f;\nfloat integral=0.0f, prevError=0.0f;\n\nfloat readPH(){\n  long\
-      \ s=0; for(int i=0;i<20;i++){s+=analogRead(PH_PIN);delay(10);}\n  float raw=s/20.0f; return SLOPE*raw+INTERCEPT;\n\
-      }\nfloat readEC(){\n  // Simplified: voltage divides into EC range; calibrate with known solution\n\
-      \  long s=0; for(int i=0;i<10;i++){s+=analogRead(EC_PIN);delay(5);}\n  return (s/10.0f)/4095.0f*2000.0f;\
-      \ // 0-2000 uS/cm approximate\n}\n\nvoid doPID(float ph){\n  float err=TARGET_PH-ph;\n  integral+=err;\n\
-      \  float deriv=err-prevError;\n  float output=KP*err+KI*integral+KD*deriv;\n  prevError=err;\n \
-      \ int pumpMs=(int)constrain(abs(output)*100,0,5000);\n  if(output>0.2f){ // pH too low, add lime\n\
-      \    digitalWrite(PUMP_LIME,LOW); delay(pumpMs); digitalWrite(PUMP_LIME,HIGH);\n    Serial.printf(\"\
-      Lime dose: %d msn\",pumpMs);\n  } else if(output<-0.2f){ // pH too high, add acid\n    digitalWrite(PUMP_ACID,LOW);\
-      \ delay(pumpMs); digitalWrite(PUMP_ACID,HIGH);\n    Serial.printf(\"Acid dose: %d msn\",pumpMs);\n\
-      \  }\n}\n\nvoid publishAll(float ph, float ec, float temp){\n  StaticJsonDocument<128> doc;\n  doc[\"\
-      ph\"]=ph; doc[\"ec\"]=ec; doc[\"temp\"]=temp;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"\
-      soil/sensors\",buf);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  ds.begin();\n  analogReadResolution(12);\n\
-      \  pinMode(PUMP_LIME,OUTPUT); digitalWrite(PUMP_LIME,HIGH);\n  pinMode(PUMP_ACID,OUTPUT); digitalWrite(PUMP_ACID,HIGH);\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      }\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"SoilMonitor\");\n  mqtt.loop();\n  ds.requestTemperatures();\n\
-      \  float temp=ds.getTempCByIndex(0);\n  float rawPH=readPH();\n  float ph=(temp!=-127.0f)?rawPH+0.003f*(temp-25.0f):rawPH;\n\
-      \  float ec=readEC();\n  publishAll(ph,ec,temp);\n  doPID(ph);\n  delay(300000); // Dose cycle every\
-      \ 5 minutes\n}"
-    code_filename: esp32-soil-ph-advanced.ino
-related_slugs:
-- esp32-soil-moisture-monitor
-- esp32-weather-station
+  - component: pH interface VCC
+    pin: Per module datasheet; AOUT max 3.3V
+project:
+  icon: PH
+  mission_title: Build an Educational Soil pH Monitor
+  difficulty: Advanced
+  age: Ages 13+
+  recommended_age: Ages 13+
+  estimated_time: 75-90 min
+  budget: Under 45 USD
+  adult_supervision: Recommended for handling calibration liquids and caring for the probe.
+  classroom_use: Run as a calibration and measurement-limits lab; do not make crop-treatment decisions from the
+    result.
+  parent_prompt: Ask why calibration has to happen before the ESP32 prints a pH estimate.
+  screen_free_activity: Make a table for pH 7 buffer ADC, pH 4 buffer ADC, slurry ADC, and estimated pH.
+  skills_practiced:
+  - ADC1 analog reading
+  - Two-point calibration
+  - Sensor interface limits
+  - Measurement uncertainty
+  learning_outcomes:
+  - Use a pH conditioning board output on ADC1 GPIO34.
+  - Require pH 7 and pH 4 calibration before readings.
+  - Prepare a soil-water slurry instead of pushing a probe into dry soil.
+  - Explain drift, stabilization, storage, and cleaning limits.
+  mini_experiments:
+  - Record stable pH 7 ADC values.
+  - Record stable pH 4 ADC values.
+  - Compare two soil slurries after the readings settle.
+  next_challenge: Store calibration values in nonvolatile memory after validating the manual constants.
+  what_you_build: An educational soil pH estimator that reads a conditioned pH interface output on GPIO34 after
+    mandatory two-point calibration.
+  story: Soil pH sounds like one number, but the measurement depends on calibration, probe care, temperature, slurry
+    preparation, and patience. This Golden project teaches the engineering workflow without pretending to be a lab
+    instrument or agricultural decision system.
+  eli12: A pH probe makes a tiny chemical voltage that needs a special interface board before the ESP32 can read
+    it. You first teach the code what pH 7 and pH 4 look like, then it estimates a soil-water slurry reading from
+    the ADC number.
+  parent_safety: Use low-voltage 3.3 V ESP32 wiring and unplug USB before rewiring. Do not connect a bare pH probe
+    directly to GPIO34. Keep calibration liquids away from eyes and mouths, rinse the probe gently, and do not use
+    readings to decide fertilizer or crop treatment.
+  components:
+  - item: ESP32 DevKit board
+    note: Uses ADC1 GPIO34 for the conditioned analog signal.
+    link: /components/esp32-devkit.html
+  - item: pH probe with conditioning/interface board
+    note: Do not connect a bare pH probe directly to the ESP32 ADC.
+  - item: pH 7 and pH 4 calibration buffers
+    note: Required for two-point calibration before soil readings.
+  - item: Distilled water and clean cup
+    note: Used for rinsing and making a soil-water slurry.
+  - item: Soil sample
+    note: Measured as a settled slurry for educational estimates.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Uses ADC1 GPIO34 for the conditioned analog signal.
+  - part: pH probe with conditioning/interface board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Do not connect a bare pH probe directly to the ESP32 ADC.
+  - part: pH 7 and pH 4 calibration buffers
+    qty: '1'
+    estimated_cost: Varies
+    notes: Required for two-point calibration before soil readings.
+  - part: Distilled water and clean cup
+    qty: '1'
+    estimated_cost: Varies
+    notes: Used for rinsing and making a soil-water slurry.
+  - part: Soil sample
+    qty: '1'
+    estimated_cost: Varies
+    notes: Measured as a settled slurry for educational estimates.
+  wiring:
+    illustration_alt: ESP32 DevKit GPIO34 connected to the analog output of a pH conditioning board, with 3.3 V-compatible
+      output and common ground.
+    summary: The pH probe connects to its interface board. Only the conditioned AOUT signal goes to ESP32 ADC1 GPIO34,
+      and the interface output must stay within 0-3.3 V.
+    steps:
+    - Unplug USB before wiring the pH interface board.
+    - Connect the pH probe to the conditioning/interface board, not directly to the ESP32.
+    - Connect interface GND to ESP32 GND.
+    - Power the interface only as its datasheet allows, and confirm AOUT cannot exceed 3.3 V at the ESP32 pin.
+    - Connect interface AOUT to GPIO34.
+    - Calibrate with pH 7 and pH 4 buffers before measuring a soil-water slurry.
+  gpio_map:
+  - signal: pH interface AOUT
+    esp32_pin: GPIO34
+    direction: ADC1 input
+    notes: Conditioned analog output only; must be 0-3.3 V.
+  circuit_explanation: The glass pH probe is high impedance and must feed a conditioning board. The ESP32 reads
+    only the board's conditioned voltage on ADC1 GPIO34.
+  engineering_explanation: Two-point calibration sets the line between pH 7 and pH 4 buffer ADC values. Readings
+    drift with probe condition, temperature, contamination, slurry preparation, and stabilization time, so the output
+    is an estimated educational value.
+  libraries:
+  - name: Arduino ESP32 core
+    note: No external library is required for the basic ADC sketch.
+  code:
+    filename: esp32-soil-ph-monitor.ino
+    content: "// ESP32 educational soil pH monitor\n// Uses a pH interface board on ADC1 GPIO34. Calibrate before\
+      \ reading soil slurry samples.\nconst int PH_PIN = 34;\n\nconst bool CALIBRATION_RECORDED = false; // Set\
+      \ true only after recording your own pH 7 and pH 4 ADC values.\nconst float PH7_ADC = 2048.0;            //\
+      \ Replace with stabilized ADC average in pH 7 buffer.\nconst float PH4_ADC = 1530.0;            // Replace\
+      \ with stabilized ADC average in pH 4 buffer.\n\nfloat averageAdc() {\n  long sum = 0;\n  for (int i = 0;\
+      \ i < 30; i++) {\n    sum += analogRead(PH_PIN);\n    delay(20);\n  }\n  return sum / 30.0;\n}\n\nfloat estimatedPh(float\
+      \ raw) {\n  float slope = (7.0 - 4.0) / (PH7_ADC - PH4_ADC);\n  return 7.0 + slope * (raw - PH7_ADC);\n}\n\
+      \nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(PH_PIN,\
+      \ ADC_11db);\n  Serial.println(\"Educational soil pH monitor - calibrated estimates only.\");\n}\n\nvoid loop()\
+      \ {\n  if (!CALIBRATION_RECORDED) {\n    Serial.println(\"Calibration required: record stable pH 7 and pH\
+      \ 4 buffer ADC values, update constants, then set CALIBRATION_RECORDED true.\");\n    delay(2000);\n    return;\n\
+      \  }\n\n  float raw = averageAdc();\n  float voltage = raw * 3.3 / 4095.0;\n  float ph = estimatedPh(raw);\n\
+      \n  Serial.printf(\"Estimated calibrated pH: %.2f | ADC: %.0f | Interface voltage: %.2f V\\n\", ph, raw, voltage);\n\
+      \  delay(5000);\n}\n"
+  code_explanation: The sketch refuses to calculate pH until the user records real pH 7 and pH 4 ADC averages, updates
+    the constants, and sets CALIBRATION_RECORDED true.
+  expected_output: Before calibration, Serial Monitor repeatedly prints the calibration-required message. After
+    valid constants are entered, it prints Estimated calibrated pH, ADC average, and interface voltage for the slurry
+    sample.
+  common_mistakes:
+  - text: Connecting a bare pH probe directly to GPIO34.
+  - text: Skipping pH 7 and pH 4 calibration.
+  - text: Letting the interface output exceed 3.3 V at the ESP32 ADC pin.
+  - text: Treating the estimate as lab-grade or agricultural advice.
+  troubleshooting:
+  - problem: Code only prints calibration required
+    fix: Record stabilized pH 7 and pH 4 ADC values, update constants, and set CALIBRATION_RECORDED true.
+  - problem: Readings drift
+    fix: Rinse the probe, wait for stabilization, check probe storage, and repeat calibration if needed.
+  - problem: ADC values are stuck or saturated
+    fix: Confirm AOUT is wired to GPIO34, grounds are common, and the interface output stays within 0-3.3 V.
+  testing_checklist:
+  - Verify interface output range.
+  - Record pH 7 buffer ADC.
+  - Record pH 4 buffer ADC.
+  - Measure only a soil-water slurry after stabilization.
+  engineer_tips:
+  - Use ADC1, not ADC2, when Wi-Fi may be added later.
+  - Let readings stabilize.
+  - Store and clean the probe according to its datasheet.
+  upgrade_ideas:
+  - Add an OLED that shows the calibration-required state.
+  - Store calibration constants in NVS.
+  - Add a temperature sensor and document compensation limits.
+  real_world_applications:
+  - Soil science classroom lab
+  - Calibration workflow lesson
+  - Sensor uncertainty demonstration
+  related_guides:
+  - title: Reading Analog Sensors
+    href: /guides/reading-analog-sensors.html
+    description: Review ADC readings and averaging before calibrating the pH interface.
+  - title: Analog Inputs
+    href: /guides/analog-inputs.html
+    description: Learn why ADC pin choice and input voltage limits matter on ESP32.
+  related_projects:
+  - title: Build a Soil Moisture Monitor
+    href: /projects/esp32-soil-moisture-monitor.html
+    description: Compare another soil sensor project with low-voltage ADC readings.
+  - title: Build Your Smart Irrigation System
+    href: /projects/esp32-smart-irrigation-system.html
+    description: Use calibrated sensor thinking before automating garden systems.
+  faqs:
+  - question: Can I connect the pH probe directly to the ESP32?
+    answer: No. Use a proper high-impedance pH interface board.
+  - question: Can this tell me what fertilizer to add?
+    answer: No. It is an educational estimate, not lab-grade advice or crop-treatment guidance.
+  complete:
+    summary: You built an educational soil pH estimator with mandatory calibration, ADC1 GPIO34, interface-board
+      voltage limits, and honest measurement boundaries. The project teaches calibration before conclusions.
+    skills:
+    - ADC1 analog measurement
+    - Two-point calibration
+    - Voltage-limit verification
+    - Probe care and drift troubleshooting

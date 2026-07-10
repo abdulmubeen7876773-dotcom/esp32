@@ -139,6 +139,11 @@ def load_learning_paths() -> list[dict]:
     return []
 
 
+def load_home_recommendations() -> dict:
+    data = load_yaml(CONTENT / "home-recommendations.yaml")
+    return data if isinstance(data, dict) else {}
+
+
 def load_component_categories() -> list[str]:
     data = load_yaml(CONTENT / "component-categories.yaml")
     if isinstance(data, dict) and "categories" in data:

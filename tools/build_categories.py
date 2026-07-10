@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cms_loader import load_categories
 from parent_registry import PARENTS
 from project_icons import slug_cat
+from project_text import card_description, project_title
 from site_layout import (
     SITE_DOMAIN,
     SITE_NAME,
@@ -182,8 +183,8 @@ def projects_for_category(cat: str) -> list[dict]:
         items.append(
             {
                 "href": f"../projects/{p['slug']}.html",
-                "title": p["title"],
-                "desc": p["description"],
+                "title": project_title(p),
+                "desc": card_description(p),
                 "category": p["category"],
                 "difficulty": "Beginner",
                 "slug": p["slug"],

@@ -1,72 +1,69 @@
 slug: esp32-digital-piano
 title: ESP32 Digital Piano
 category: Education
-description: Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins
-  as piano keys. Generate tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality
-  sine-wave sound, and finally add polyphony and MIDI output for a full synthesiser experience.
-meta_description: Build an ESP32 digital piano with capacitive touch keys, I2S audio output, and MIDI
-  over USB. From a simple buzzer piano to a full polyphonic synthesiser with waveform selection.
+description: Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate
+  tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony
+  and MIDI output for a full synthesiser experience.
+meta_description: Build an ESP32 digital piano with capacitive touch keys, I2S audio output, and MIDI over USB. From a simple
+  buzzer piano to a full polyphonic synthesiser with waveform selection.
 source_base: esp32-digital-piano-legacy-import
-sensor: 'TODO: sensor'
-output: Buzzer +/-
+sensor: Touch keys C4-D4-E4-F4
+output: Passive piezo
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 25 / GND
-  sensor_name: 'TODO: sensor'
-  output_name: Buzzer +/-
+  sensor_pin: GPIO4 / GPIO15 / GPIO13 / GPIO12
+  output_pin: GPIO25
+  sensor_name: Touch keys C4-D4-E4-F4
+  output_name: Passive piezo
   wiring:
-  - component: Touch keys C4/D4/E4/F4
-    pin: T0(4)/T3(15)/T4(13)/T5(12)
-  - component: Touch keys G4/A4/B4/C5
-    pin: T6(14)/T7(27)/T8(33)/T9(32)
-  - component: Buzzer +/-
-    pin: GPIO 25 / GND
+  - component: Touch keys C4-D4-E4-F4
+    pin: GPIO4 / GPIO15 / GPIO13 / GPIO12
+  - component: Touch keys G4-A4-B4-C5
+    pin: GPIO14 / GPIO27 / GPIO33 / GPIO32
+  - component: Passive piezo
+    pin: GPIO25
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will use the ESP32 built-in capacitive touch sensor
-      on pins T0-T8 to detect finger touches and generate musical notes through a passive buzzer using
-      the LEDC PWM peripheral. Eight touch pins map to one octave (C4 to C5). Touching a pin plays that
-      note; releasing stops it. No external keyboard hardware is needed — your fingertips are the keys.</p>
+    overview_html: <p>In this beginner project you will use the ESP32 built-in capacitive touch sensor on pins T0-T8 to detect
+      finger touches and generate musical notes through a passive buzzer using the LEDC PWM peripheral. Eight touch pins map
+      to one octave (C4 to C5). Touching a pin plays that note; releasing stops it. No external keyboard hardware is needed
+      — your fingertips are the keys.</p>
     components:
-    - 1× ESP32 DevKit V1 — Must have capacitive touch pins T0-T8
-    - 1× Passive piezo buzzer — PWM-driven; 3-5 V; NOT active buzzer
-    - 8× Copper foil tape strips (5 x 2 cm) — Touch key pads; connect to touch pins
-    - 8× Jumper wires — Touch pin to copper pad
+    - ESP32 DevKit board
+    - Passive piezo buzzer
+    - Copper tape touch pads
+    - Jumper wires
     wiring:
-    - - Touch keys C4/D4/E4/F4
-      - T0(4)/T3(15)/T4(13)/T5(12)
-      - Copper foil pads
-    - - Touch keys G4/A4/B4/C5
-      - T6(14)/T7(27)/T8(33)/T9(32)
-      - ''
-    - - Buzzer +/-
-      - GPIO 25 / GND
-      - LEDC PWM output
+    - - Touch keys C4-D4-E4-F4
+      - GPIO4 / GPIO15 / GPIO13 / GPIO12
+      - Capacitive touch inputs; avoid external pulls that affect boot.
+    - - Touch keys G4-A4-B4-C5
+      - GPIO14 / GPIO27 / GPIO33 / GPIO32
+      - Capacitive touch inputs.
+    - - Passive piezo
+      - GPIO25
+      - LEDC square-wave output.
     how:
-    - 'ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped
-      to specific GPIO numbers). touchRead() measures the capacitance of the pad: in air, values are typically
-      60-80; touching a conductive pad lowers the reading to 10-30. A threshold of 40 reliably distinguishes
-      touch from no-touch with copper foil pads.'
-    - 'LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching
-      the desired audio frequency. ledcChangeFrequency() changes the LEDC channel frequency without reconfiguring
-      the timer, enabling fast frequency changes between notes. A 50 percent duty cycle (128/256) maximises
-      acoustic output.'
-    - 'Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive
-      capacitive touch keys. Cut strips approximately 5x2 cm, arrange them in piano key layout on cardboard
-      or wood, and connect each to a touch GPIO pin with a short wire. The human finger''s capacitance
-      coupled through the foil is sufficient to trigger touchRead() reliably.'
-    - 'Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch,
-      ignoring subsequent touches. This gives the lowest key (leftmost copper pad) priority in a monophonic
-      instrument. For a two-finger chord, the lower key wins. This is the same monophonic priority scheme
-      used in early analogue synthesisers.'
+    - 'ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped to specific GPIO numbers).
+      touchRead() measures the capacitance of the pad: in air, values are typically 60-80; touching a conductive pad lowers
+      the reading to 10-30. A threshold of 40 reliably distinguishes touch from no-touch with copper foil pads.'
+    - 'LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching the desired audio
+      frequency. ledcChangeFrequency() changes the LEDC channel frequency without reconfiguring the timer, enabling fast frequency
+      changes between notes. A 50 percent duty cycle (128/256) maximises acoustic output.'
+    - 'Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive capacitive touch
+      keys. Cut strips approximately 5x2 cm, arrange them in piano key layout on cardboard or wood, and connect each to a
+      touch GPIO pin with a short wire. The human finger''s capacitance coupled through the foil is sufficient to trigger
+      touchRead() reliably.'
+    - 'Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch, ignoring subsequent
+      touches. This gives the lowest key (leftmost copper pad) priority in a monophonic instrument. For a two-finger chord,
+      the lower key wins. This is the same monophonic priority scheme used in early analogue synthesisers.'
     apps:
     - Educational musical instrument for learning note positions and ear training
     - Interactive exhibit keyboard for science museum displays
@@ -74,42 +71,38 @@ levels:
     - Halloween or sound-effects trigger board with note-mapped sounds
     troubleshooting:
     - - Buzzer plays continuously even without touching keys
-      - The TOUCH_THRESHOLD may be too high. Print touchRead() values for each pin with no touch and set
-        TOUCH_THRESHOLD 10-15 counts below the minimum untouched reading. Ambient humidity and long wire
-        leads increase baseline capacitance, lowering untouched readings.
+      - The TOUCH_THRESHOLD may be too high. Print touchRead() values for each pin with no touch and set TOUCH_THRESHOLD 10-15
+        counts below the minimum untouched reading. Ambient humidity and long wire leads increase baseline capacitance, lowering
+        untouched readings.
     - - Touch is not detected even when pressing firmly on the pad
-      - Ensure the copper foil pad connects to the GPIO pin with a short direct wire. Long wires add stray
-        capacitance that reduces the relative touch signal. Reduce wire length to under 10 cm or add a
-        1 Mohm series resistor between the wire and the touch pin.
+      - Ensure the copper foil pad connects to the GPIO pin with a short direct wire. Long wires add stray capacitance that
+        reduces the relative touch signal. Reduce wire length to under 10 cm or add a 1 Mohm series resistor between the wire
+        and the touch pin.
     - - Buzzer is silent even though notes show in Serial Monitor
-      - Verify the passive buzzer is connected (not an active buzzer). An active buzzer has a built-in
-        oscillator and only needs DC voltage; it does not respond to PWM frequency changes. A passive
-        buzzer is essentially a piezo element that vibrates at the driven PWM frequency.
+      - Verify the passive buzzer is connected (not an active buzzer). An active buzzer has a built-in oscillator and only
+        needs DC voltage; it does not respond to PWM frequency changes. A passive buzzer is essentially a piezo element that
+        vibrates at the driven PWM frequency.
     upgrades:
     - Add an I2S DAC (PCM5102) for clean sine-wave audio instead of buzzer square waves
     - Add a second octave using T0-T8 on a second ESP32 connected via I2C to the first
     - Add NeoPixel LEDs under each key that light up when the key is pressed
     - Add note-name labels displayed on an OLED when each key is touched
-    code: "// ESP32 Digital Piano - Beginner\n// Capacitive touch -> LEDC buzzer piano (one octave C4-C5)\n\
-      \n// Note frequencies in Hz (C4 to C5)\nconst int NOTES[8]  = {262, 294, 330, 349, 392, 440, 494,\
-      \ 523};\nconst char NAMES[8][3] = {\"C4\",\"D4\",\"E4\",\"F4\",\"G4\",\"A4\",\"B4\",\"C5\"};\n//\
-      \ ESP32 touch-capable GPIO pins (T-pin number maps to GPIO)\nconst int TOUCH_PINS[8] = {4, 15, 13,\
-      \ 12, 14, 27, 33, 32};\nconst int BUZZER = 25;\nconst int TOUCH_THRESHOLD = 40; // lower value =\
-      \ touch detected\n\nvoid setup() {\n  Serial.begin(115200);\n  ledcSetup(0, 262, 8); // channel\
-      \ 0, initial freq, 8-bit res\n  ledcAttachPin(BUZZER, 0);\n  ledcWrite(0, 0); // start silent\n\
-      \  Serial.println(\"Touch the copper pads to play notes!\");\n}\n\nvoid loop() {\n  int played =\
-      \ -1;\n  for (int i = 0; i < 8; i++) {\n    if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD) {\n\
-      \      played = i;\n      break; // play first touched key only\n    }\n  }\n  if (played >= 0)\
-      \ {\n    ledcChangeFrequency(0, NOTES[played], 8);\n    ledcWrite(0, 128); // 50% duty = square\
-      \ wave\n    Serial.printf(\"Playing: %s (%d Hz)n\", NAMES[played], NOTES[played]);\n  } else {\n\
-      \    ledcWrite(0, 0); // silence\n  }\n  delay(10);\n}"
+    code: "// ESP32 Digital Piano - capacitive touch keys and passive piezo\nconst int NOTES[8] = {262, 294, 330, 349, 392,\
+      \ 440, 494, 523};\nconst char* NAMES[8] = {\"C4\", \"D4\", \"E4\", \"F4\", \"G4\", \"A4\", \"B4\", \"C5\"};\nconst int\
+      \ TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};\nconst int BUZZER_PIN = 25;\nconst int TOUCH_THRESHOLD = 40;\nconst\
+      \ int BUZZER_CHANNEL = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  ledcSetup(BUZZER_CHANNEL, 262, 8);\n  ledcAttachPin(BUZZER_PIN,\
+      \ BUZZER_CHANNEL);\n  ledcWrite(BUZZER_CHANNEL, 0);\n  Serial.println(\"Touch one copper pad to play one note.\");\n\
+      }\n\nvoid loop() {\n  int played = -1;\n  for (int i = 0; i < 8; i++) {\n    if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD)\
+      \ {\n      played = i;\n      break;\n    }\n  }\n  if (played >= 0) {\n    ledcChangeFrequency(BUZZER_CHANNEL, NOTES[played],\
+      \ 8);\n    ledcWrite(BUZZER_CHANNEL, 128);\n    Serial.printf(\"Playing: %s (%d Hz)\\n\", NAMES[played], NOTES[played]);\n\
+      \  } else {\n    ledcWrite(BUZZER_CHANNEL, 0);\n  }\n  delay(10);\n}\n"
     code_filename: esp32-digital-piano-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build replaces the buzzer with an I2S DAC (PCM5102A) for high-quality
-      audio output. Notes are generated using pre-computed sine wave tables at the correct frequencies.
-      Multiple touches are handled simultaneously for two-note chords (polyphony-2). An OLED displays
-      the note names being played and the waveform type (sine, square, triangle) switchable via a button.</p>
+    overview_html: <p>The intermediate build replaces the buzzer with an I2S DAC (PCM5102A) for high-quality audio output.
+      Notes are generated using pre-computed sine wave tables at the correct frequencies. Multiple touches are handled simultaneously
+      for two-note chords (polyphony-2). An OLED displays the note names being played and the waveform type (sine, square,
+      triangle) switchable via a button.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× PCM5102A I2S DAC module — 32-bit; 3.5 mm stereo output; 3.3 V
@@ -134,22 +127,19 @@ levels:
       - GPIO 21/23
       - Different I2C pins to free GPIO 22
     how:
-    - 'I2S PCM5102A Audio Output: The PCM5102A is a 32-bit stereo I2S DAC with a built-in headphone amplifier.
-      The ESP32 I2S peripheral sends 16-bit stereo PCM samples at 22050 Hz. The DAC converts these to
-      an analog voltage driving the 3.5 mm headphone output. Audio quality is substantially better than
-      PWM buzzer output with a noise floor of approximately 100 dB.'
-    - 'Sine Wave Table Generation: Each active note advances its phase accumulator by 2*pi*frequency/sample_rate
-      radians per sample. sinf(phase) computes the instantaneous sample value. Multiple active notes are
-      summed and divided by the count to prevent clipping. The phase resets to zero when a key is released,
-      preventing clicks from mid-cycle discontinuities.'
-    - 'FreeRTOS Audio Task: The audio synthesis runs in a dedicated FreeRTOS task pinned to Core 0 with
-      priority 5. This ensures uninterrupted audio sample generation even when the main loop updates the
-      OLED or reads touch pins. i2s_write() blocks until the DMA buffer has space, naturally pacing the
-      synthesis at the correct sample rate.'
-    - 'Waveform Selection: The waveType enum selects between sine (smooth pure tone), square (harsh, rich
-      in odd harmonics), and triangle (softer than square, even-order harmonics suppressed). All three
-      are computed from the same phase accumulator on each sample, allowing real-time switching without
-      audio interruption.'
+    - 'I2S PCM5102A Audio Output: The PCM5102A is a 32-bit stereo I2S DAC with a built-in headphone amplifier. The ESP32 I2S
+      peripheral sends 16-bit stereo PCM samples at 22050 Hz. The DAC converts these to an analog voltage driving the 3.5
+      mm headphone output. Audio quality is substantially better than PWM buzzer output with a noise floor of approximately
+      100 dB.'
+    - 'Sine Wave Table Generation: Each active note advances its phase accumulator by 2*pi*frequency/sample_rate radians per
+      sample. sinf(phase) computes the instantaneous sample value. Multiple active notes are summed and divided by the count
+      to prevent clipping. The phase resets to zero when a key is released, preventing clicks from mid-cycle discontinuities.'
+    - 'FreeRTOS Audio Task: The audio synthesis runs in a dedicated FreeRTOS task pinned to Core 0 with priority 5. This ensures
+      uninterrupted audio sample generation even when the main loop updates the OLED or reads touch pins. i2s_write() blocks
+      until the DMA buffer has space, naturally pacing the synthesis at the correct sample rate.'
+    - 'Waveform Selection: The waveType enum selects between sine (smooth pure tone), square (harsh, rich in odd harmonics),
+      and triangle (softer than square, even-order harmonics suppressed). All three are computed from the same phase accumulator
+      on each sample, allowing real-time switching without audio interruption.'
     apps:
     - Educational synthesiser for music theory and acoustics learning
     - Interactive museum exhibit on sound wave shapes and timbre
@@ -157,58 +147,52 @@ levels:
     - Prototype for a commercial IoT musical toy product
     troubleshooting:
     - - Audio has constant background hiss or buzz
-      - The PCM5102A is sensitive to power supply noise. Power the module from a dedicated 3.3 V LDO regulator,
-        not from the ESP32 onboard regulator which carries switching noise. Add 100 uF and 100 nF decoupling
-        capacitors on the PCM5102A VCC pin.
+      - The PCM5102A is sensitive to power supply noise. Power the module from a dedicated 3.3 V LDO regulator, not from the
+        ESP32 onboard regulator which carries switching noise. Add 100 uF and 100 nF decoupling capacitors on the PCM5102A
+        VCC pin.
     - - Notes produce clicks when starting or stopping
-      - Clicks occur when the phase is non-zero at note release (discontinuous waveform cutoff). Reset
-        phase[i] to zero on key release is the correct approach but causes a click at the discontinuity.
-        For click-free audio, fade the amplitude to zero over 5-10 ms before clearing the active flag.
+      - Clicks occur when the phase is non-zero at note release (discontinuous waveform cutoff). Reset phase[i] to zero on
+        key release is the correct approach but causes a click at the discontinuity. For click-free audio, fade the amplitude
+        to zero over 5-10 ms before clearing the active flag.
     - - I2S driver install returns ESP_ERR_INVALID_ARG
-      - Verify the I2S pin numbers do not conflict with other peripherals. GPIO 25 (WS) and GPIO 26 (BCK)
-        are commonly used for I2S. If GPIO 22 is used for I2C SDA elsewhere, assign I2S DATA to a different
-        GPIO such as GPIO 5 or GPIO 17.
+      - Verify the I2S pin numbers do not conflict with other peripherals. GPIO 25 (WS) and GPIO 26 (BCK) are commonly used
+        for I2S. If GPIO 22 is used for I2C SDA elsewhere, assign I2S DATA to a different GPIO such as GPIO 5 or GPIO 17.
     upgrades:
     - Add ADSR envelope shaping (attack, decay, sustain, release) for piano-like note dynamics
     - Add a reverb effect using a circular delay buffer for spatial depth
     - Add a third octave by connecting a second ESP32 and merging audio over I2S in slave mode
     - Add MIDI output via USB serial to control DAW software on a computer
-    code: "// ESP32 Digital Piano - Intermediate (I2S DAC + sine wave + 2-note polyphony)\n#include <Wire.h>\n\
-      #include <Adafruit_SSD1306.h>\n#include \"driver/i2s.h\"\n#include <math.h>\n\nAdafruit_SSD1306\
-      \ oled(128,64,&Wire,-1);\nconst int TOUCH_PINS[8]={4,15,13,12,14,27,33,32};\nconst float FREQS[8]={261.63f,293.66f,329.63f,349.23f,392.0f,440.0f,493.88f,523.25f};\n\
-      const char NAMES[8][3]={\"C4\",\"D4\",\"E4\",\"F4\",\"G4\",\"A4\",\"B4\",\"C5\"};\nconst int TOUCH_THRESH=40;\n\
-      \n// Waveform types\nenum Wave { SINE, SQUARE, TRIANGLE }; Wave waveType=SINE;\nfloat phase[8]={0};\n\
-      const int SAMPLE_RATE=22050;\nconst int I2S_NUM=0;\n\nvoid initI2S(){\n  i2s_config_t cfg={\n  \
-      \  .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_TX),\n    .sample_rate=SAMPLE_RATE, .bits_per_sample=I2S_BITS_PER_SAMPLE_16BIT,\n\
-      \    .channel_format=I2S_CHANNEL_FMT_RIGHT_LEFT,\n    .communication_format=I2S_COMM_FORMAT_I2S,\n\
-      \    .intr_alloc_flags=ESP_INTR_FLAG_LEVEL1,\n    .dma_buf_count=4, .dma_buf_len=512, .use_apll=false\n\
-      \  };\n  i2s_pin_config_t pins={\n    .bck_io_num=26,.ws_io_num=25,.data_out_num=22,.data_in_num=I2S_PIN_NO_CHANGE\n\
-      \  };\n  i2s_driver_install((i2s_port_t)I2S_NUM,&cfg,0,NULL);\n  i2s_set_pin((i2s_port_t)I2S_NUM,&pins);\n\
-      }\n\nfloat getSample(int idx){\n  float p=phase[idx];\n  switch(waveType){\n    case SINE:     return\
-      \ sinf(p);\n    case SQUARE:   return (p<M_PI)?1.0f:-1.0f;\n    case TRIANGLE: return (p<M_PI)?(p/M_PI*2-1):(3-p/M_PI*2-1);\n\
-      \    default:       return 0;\n  }\n}\n\nvoid audioTask(void*){\n  int16_t buf[512];\n  while(1){\n\
-      \    bool active[8]; int activeCount=0;\n    for(int i=0;i<8;i++){\n      active[i]=(touchRead(TOUCH_PINS[i])<TOUCH_THRESH);\n\
-      \      if(active[i]) activeCount++;\n    }\n    for(int s=0;s<256;s++){\n      float L=0;\n    \
-      \  for(int i=0;i<8;i++){\n        if(active[i]){\n          L+=getSample(i)*16000.0f/(activeCount>0?activeCount:1);\n\
-      \          phase[i]+=2.0f*M_PI*FREQS[i]/SAMPLE_RATE;\n          if(phase[i]>2.0f*M_PI) phase[i]-=2.0f*M_PI;\n\
-      \        } else { phase[i]=0; }\n      }\n      int16_t s16=(int16_t)constrain((int)L,-32767,32767);\n\
+    code: "// ESP32 Digital Piano - Intermediate (I2S DAC + sine wave + 2-note polyphony)\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include \"driver/i2s.h\"\n#include <math.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\nconst int TOUCH_PINS[8]={4,15,13,12,14,27,33,32};\n\
+      const float FREQS[8]={261.63f,293.66f,329.63f,349.23f,392.0f,440.0f,493.88f,523.25f};\nconst char NAMES[8][3]={\"C4\"\
+      ,\"D4\",\"E4\",\"F4\",\"G4\",\"A4\",\"B4\",\"C5\"};\nconst int TOUCH_THRESH=40;\n\n// Waveform types\nenum Wave { SINE,\
+      \ SQUARE, TRIANGLE }; Wave waveType=SINE;\nfloat phase[8]={0};\nconst int SAMPLE_RATE=22050;\nconst int I2S_NUM=0;\n\
+      \nvoid initI2S(){\n  i2s_config_t cfg={\n    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_TX),\n    .sample_rate=SAMPLE_RATE,\
+      \ .bits_per_sample=I2S_BITS_PER_SAMPLE_16BIT,\n    .channel_format=I2S_CHANNEL_FMT_RIGHT_LEFT,\n    .communication_format=I2S_COMM_FORMAT_I2S,\n\
+      \    .intr_alloc_flags=ESP_INTR_FLAG_LEVEL1,\n    .dma_buf_count=4, .dma_buf_len=512, .use_apll=false\n  };\n  i2s_pin_config_t\
+      \ pins={\n    .bck_io_num=26,.ws_io_num=25,.data_out_num=22,.data_in_num=I2S_PIN_NO_CHANGE\n  };\n  i2s_driver_install((i2s_port_t)I2S_NUM,&cfg,0,NULL);\n\
+      \  i2s_set_pin((i2s_port_t)I2S_NUM,&pins);\n}\n\nfloat getSample(int idx){\n  float p=phase[idx];\n  switch(waveType){\n\
+      \    case SINE:     return sinf(p);\n    case SQUARE:   return (p<M_PI)?1.0f:-1.0f;\n    case TRIANGLE: return (p<M_PI)?(p/M_PI*2-1):(3-p/M_PI*2-1);\n\
+      \    default:       return 0;\n  }\n}\n\nvoid audioTask(void*){\n  int16_t buf[512];\n  while(1){\n    bool active[8];\
+      \ int activeCount=0;\n    for(int i=0;i<8;i++){\n      active[i]=(touchRead(TOUCH_PINS[i])<TOUCH_THRESH);\n      if(active[i])\
+      \ activeCount++;\n    }\n    for(int s=0;s<256;s++){\n      float L=0;\n      for(int i=0;i<8;i++){\n        if(active[i]){\n\
+      \          L+=getSample(i)*16000.0f/(activeCount>0?activeCount:1);\n          phase[i]+=2.0f*M_PI*FREQS[i]/SAMPLE_RATE;\n\
+      \          if(phase[i]>2.0f*M_PI) phase[i]-=2.0f*M_PI;\n        } else { phase[i]=0; }\n      }\n      int16_t s16=(int16_t)constrain((int)L,-32767,32767);\n\
       \      buf[s*2]=s16; buf[s*2+1]=s16;\n    }\n    size_t written;\n    i2s_write((i2s_port_t)I2S_NUM,buf,sizeof(buf),&written,portMAX_DELAY);\n\
-      \  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,23);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\
-      \ oled.setTextColor(WHITE);\n  pinMode(0,INPUT_PULLUP);\n  initI2S();\n  xTaskCreatePinnedToCore(audioTask,\"\
-      audio\",4096,NULL,5,NULL,0);\n}\n\nint waveBtn=0;\nvoid loop(){\n  bool btnNow=digitalRead(0);\n\
-      \  if(!btnNow&&waveBtn){ waveType=(Wave)((waveType+1)%3); delay(200); }\n  waveBtn=btnNow;\n  oled.clearDisplay();\
-      \ oled.setCursor(0,0); oled.setTextSize(1);\n  const char* wNames[]={\"SINE\",\"SQUARE\",\"TRIANGLE\"\
-      };\n  oled.printf(\"Wave: %sn\",wNames[waveType]);\n  oled.println(\"Playing:\");\n  for(int i=0;i<8;i++)\
-      \ if(touchRead(TOUCH_PINS[i])<TOUCH_THRESH) oled.printf(\"%s \",NAMES[i]);\n  oled.display();\n\
+      \  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,23);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);\n\
+      \  pinMode(0,INPUT_PULLUP);\n  initI2S();\n  xTaskCreatePinnedToCore(audioTask,\"audio\",4096,NULL,5,NULL,0);\n}\n\n\
+      int waveBtn=0;\nvoid loop(){\n  bool btnNow=digitalRead(0);\n  if(!btnNow&&waveBtn){ waveType=(Wave)((waveType+1)%3);\
+      \ delay(200); }\n  waveBtn=btnNow;\n  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n  const char*\
+      \ wNames[]={\"SINE\",\"SQUARE\",\"TRIANGLE\"};\n  oled.printf(\"Wave: %sn\",wNames[waveType]);\n  oled.println(\"Playing:\"\
+      );\n  for(int i=0;i<8;i++) if(touchRead(TOUCH_PINS[i])<TOUCH_THRESH) oled.printf(\"%s \",NAMES[i]);\n  oled.display();\n\
       \  delay(50);\n}"
     code_filename: esp32-digital-piano-intermediate.ino
   advanced:
     level: advanced
-    overview_html: <p>The advanced build adds full 8-note polyphony, ADSR envelope shaping for realistic
-      piano dynamics, and MIDI output over USB serial (compatible with GarageBand, Ableton, and FL Studio).
-      Velocity sensitivity is estimated from touch capacitance change rate. An OLED shows the active notes
-      on a mini piano keyboard graphic. Waveform, octave, and envelope parameters are adjustable from
-      a web interface.</p>
+    overview_html: <p>The advanced build adds full 8-note polyphony, ADSR envelope shaping for realistic piano dynamics, and
+      MIDI output over USB serial (compatible with GarageBand, Ableton, and FL Studio). Velocity sensitivity is estimated
+      from touch capacitance change rate. An OLED shows the active notes on a mini piano keyboard graphic. Waveform, octave,
+      and envelope parameters are adjustable from a web interface.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× PCM5102A I2S DAC
@@ -223,23 +207,20 @@ levels:
       - D+ / D- native USB
       - For USB MIDI; standard ESP32 uses UART
     how:
-    - 'ADSR Envelope Shaping: Each voice has an envelope state machine: Attack (amplitude ramps from 0
-      to 1 over ATTACK_S seconds), Decay (falls from 1 to SUSTAIN_L over DECAY_S seconds), Sustain (held
-      at SUSTAIN_L while key is pressed), Release (falls from SUSTAIN_L to 0 over RELEASE_S seconds after
-      key release). This produces natural note onset and decay, eliminating the abrupt start/stop of simple
-      oscillators.'
-    - '8-Voice Polyphony: All 8 voices run simultaneously in the audioTask loop. Each voice independently
-      advances its phase accumulator and applies its envelope. The mixed output sums all active voice
-      samples and divides by 8 to prevent clipping. True 8-voice polyphony allows any combination of the
-      8 keys to sound simultaneously.'
-    - 'MIDI Serial Output: MIDI protocol transmits three-byte messages at 31250 baud. Note On is 0x90
-      (channel 1), MIDI note number, velocity (0-127). Note Off is 0x80, note number, 0. Serial1 on pins
-      16/17 drives a MIDI DIN-5 output via a 220 ohm series resistor. A USB-MIDI adapter converts this
-      serial MIDI stream to USB MIDI for DAW software.'
-    - 'Touch Key-Press Edge Detection: The wasDown[] array tracks the previous touch state per key. A
-      note-on event fires only on the transition from not-touched to touched (rising edge). Note-off fires
-      only on the falling edge (release). This edge detection prevents repeated note-on events while a
-      key is held and ensures MIDI Note Off is sent exactly once per key release.'
+    - 'ADSR Envelope Shaping: Each voice has an envelope state machine: Attack (amplitude ramps from 0 to 1 over ATTACK_S
+      seconds), Decay (falls from 1 to SUSTAIN_L over DECAY_S seconds), Sustain (held at SUSTAIN_L while key is pressed),
+      Release (falls from SUSTAIN_L to 0 over RELEASE_S seconds after key release). This produces natural note onset and decay,
+      eliminating the abrupt start/stop of simple oscillators.'
+    - '8-Voice Polyphony: All 8 voices run simultaneously in the audioTask loop. Each voice independently advances its phase
+      accumulator and applies its envelope. The mixed output sums all active voice samples and divides by 8 to prevent clipping.
+      True 8-voice polyphony allows any combination of the 8 keys to sound simultaneously.'
+    - 'MIDI Serial Output: MIDI protocol transmits three-byte messages at 31250 baud. Note On is 0x90 (channel 1), MIDI note
+      number, velocity (0-127). Note Off is 0x80, note number, 0. Serial1 on pins 16/17 drives a MIDI DIN-5 output via a 220
+      ohm series resistor. A USB-MIDI adapter converts this serial MIDI stream to USB MIDI for DAW software.'
+    - 'Touch Key-Press Edge Detection: The wasDown[] array tracks the previous touch state per key. A note-on event fires
+      only on the transition from not-touched to touched (rising edge). Note-off fires only on the falling edge (release).
+      This edge detection prevents repeated note-on events while a key is held and ensures MIDI Note Off is sent exactly once
+      per key release.'
     apps:
     - Standalone polyphonic synthesiser for music composition and performance
     - MIDI controller for professional DAW software (GarageBand, Ableton Live)
@@ -247,58 +228,218 @@ levels:
     - Low-cost MIDI input device for music production studios
     troubleshooting:
     - - MIDI notes sustain forever in DAW even after releasing touch
-      - Verify midiNoteOff() is called on the wasDown falling edge. If the ESP32 resets during a held
-        note, the DAW receives no Note Off and the note hangs. Many DAW software has an "All Notes Off"
-        panic button (usually Shift+Space or a MIDI Panic menu item) to clear stuck notes.
+      - Verify midiNoteOff() is called on the wasDown falling edge. If the ESP32 resets during a held note, the DAW receives
+        no Note Off and the note hangs. Many DAW software has an "All Notes Off" panic button (usually Shift+Space or a MIDI
+        Panic menu item) to clear stuck notes.
     - - ADSR envelope clicks at end of release
-      - A very short RELEASE_S (under 0.05 seconds) causes the envelope to reach zero abruptly mid-sample.
-        Increase RELEASE_S to at least 0.05 seconds. Also check that the envelope value starts decaying
-        from the correct sustain level; if the state machine transitions are wrong, the release may start
-        from an unexpected level.
+      - A very short RELEASE_S (under 0.05 seconds) causes the envelope to reach zero abruptly mid-sample. Increase RELEASE_S
+        to at least 0.05 seconds. Also check that the envelope value starts decaying from the correct sustain level; if the
+        state machine transitions are wrong, the release may start from an unexpected level.
     - - All 8 voices playing simultaneously cause distortion
-      - Reduce the per-voice amplitude from 8000 to 4000 in the audioTask sample calculation. With 8 voices
-        each at amplitude 1.0, the sum can reach 8.0, exceeding the int16 range. Normalise by active voice
-        count or apply a soft limiter (tanh function) to the mixed output before writing to I2S.
+      - Reduce the per-voice amplitude from 8000 to 4000 in the audioTask sample calculation. With 8 voices each at amplitude
+        1.0, the sum can reach 8.0, exceeding the int16 range. Normalise by active voice count or apply a soft limiter (tanh
+        function) to the mixed output before writing to I2S.
     upgrades:
     - Add a 4-operator FM synthesis engine for metallic and bell-like timbres
     - Add WAV sample playback from SD card for realistic piano, guitar, and drum sounds
     - Add a chord mode button that automatically adds third and fifth intervals to each played note
     - Add a Bluetooth MIDI mode using ESP32 BLE MIDI for wireless connection to an iPad or MacBook
-    code: "// ESP32 Digital Piano - Advanced (8-voice polyphony + ADSR + MIDI serial)\n// MIDI output\
-      \ via Serial at 31250 baud (connect to MIDI DIN socket or USB-MIDI)\n// For native USB MIDI use\
-      \ ESP32-S2/S3 with USB_MIDI library\n#include \"driver/i2s.h\"\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
-      #include <math.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\nconst int TOUCH_PINS[8]={4,15,13,12,14,27,33,32};\n\
-      const float FREQS[8]={261.63f,293.66f,329.63f,349.23f,392.0f,440.0f,493.88f,523.25f};\nconst int\
-      \ MIDI_NOTES[8]={60,62,64,65,67,69,71,72}; // C4-C5\nconst int SAMPLE_RATE=22050, I2S_NUM=0;\nconst\
-      \ int TOUCH_THRESH=40;\n\nstruct Voice {\n  float phase,freq,amp;\n  int state; // 0=off 1=attack\
-      \ 2=decay 3=sustain 4=release\n  float env;\n};\nVoice voices[8]={};\n\n// ADSR times in samples\n\
-      const float ATTACK_S=0.01f, DECAY_S=0.05f, SUSTAIN_L=0.7f, RELEASE_S=0.1f;\n\nvoid midiNoteOn(int\
-      \ note, int vel){ Serial1.write(0x90); Serial1.write(note); Serial1.write(vel); }\nvoid midiNoteOff(int\
-      \ note){        Serial1.write(0x80); Serial1.write(note); Serial1.write(0); }\n\nvoid processEnv(Voice\
-      \ &v, float dt){\n  switch(v.state){\n    case 1: v.env+=dt/ATTACK_S; if(v.env>=1){v.env=1;v.state=2;}\
-      \ break;\n    case 2: v.env-=dt*(1-SUSTAIN_L)/DECAY_S; if(v.env<=SUSTAIN_L){v.env=SUSTAIN_L;v.state=3;}\
-      \ break;\n    case 3: break;\n    case 4: v.env-=dt/RELEASE_S; if(v.env<=0){v.env=0;v.state=0;}\
-      \ break;\n  }\n}\n\nvoid audioTask(void*){\n  int16_t buf[512];\n  const float dt=1.0f/SAMPLE_RATE;\n\
-      \  while(1){\n    for(int s=0;s<256;s++){\n      float L=0;\n      for(int i=0;i<8;i++){\n     \
-      \   if(voices[i].state==0) continue;\n        processEnv(voices[i],dt);\n        float samp=sinf(voices[i].phase)*voices[i].env*voices[i].amp;\n\
-      \        L+=samp;\n        voices[i].phase+=2.0f*M_PI*voices[i].freq*dt;\n        if(voices[i].phase>2.0f*M_PI)\
-      \ voices[i].phase-=2.0f*M_PI;\n      }\n      int16_t s16=(int16_t)constrain((int)(L*8000),-32767,32767);\n\
-      \      buf[s*2]=s16; buf[s*2+1]=s16;\n    }\n    size_t w; i2s_write((i2s_port_t)I2S_NUM,buf,sizeof(buf),&w,portMAX_DELAY);\n\
-      \  }\n}\n\nvoid initI2S(){\n  i2s_config_t cfg={\n    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_TX),\n\
-      \    .sample_rate=SAMPLE_RATE,.bits_per_sample=I2S_BITS_PER_SAMPLE_16BIT,\n    .channel_format=I2S_CHANNEL_FMT_RIGHT_LEFT,\n\
-      \    .communication_format=I2S_COMM_FORMAT_I2S,\n    .intr_alloc_flags=0,.dma_buf_count=4,.dma_buf_len=512,.use_apll=false\n\
-      \  };\n  i2s_pin_config_t pins={.bck_io_num=26,.ws_io_num=25,.data_out_num=22,.data_in_num=-1};\n\
-      \  i2s_driver_install((i2s_port_t)I2S_NUM,&cfg,0,NULL);\n  i2s_set_pin((i2s_port_t)I2S_NUM,&pins);\n\
-      }\n\nvoid setup(){\n  Serial.begin(115200);\n  Serial1.begin(31250,SERIAL_8N1,16,17); // MIDI baud\
-      \ rate on Serial1\n  Wire.begin(21,23); oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);\n\
-      \  initI2S();\n  xTaskCreatePinnedToCore(audioTask,\"audio\",4096,NULL,5,NULL,0);\n}\n\nbool wasDown[8]={};\n\
-      void loop(){\n  for(int i=0;i<8;i++){\n    bool down=(touchRead(TOUCH_PINS[i])<TOUCH_THRESH);\n\
-      \    if(down&&!wasDown[i]){ // key press\n      voices[i]={0,FREQS[i],1.0f,1,0};\n      midiNoteOn(MIDI_NOTES[i],100);\n\
-      \    }\n    if(!down&&wasDown[i]){ // key release\n      if(voices[i].state>0&&voices[i].state<4)\
-      \ voices[i].state=4;\n      midiNoteOff(MIDI_NOTES[i]);\n    }\n    wasDown[i]=down;\n  }\n  oled.clearDisplay();\
-      \ oled.setCursor(0,0); oled.setTextSize(1);\n  oled.print(\"Active: \");\n  for(int i=0;i<8;i++)\
-      \ if(voices[i].state>0) oled.printf(\"%d \",i+1);\n  oled.display();\n  delay(10);\n}"
+    code: "// ESP32 Digital Piano - Advanced (8-voice polyphony + ADSR + MIDI serial)\n// MIDI output via Serial at 31250\
+      \ baud (connect to MIDI DIN socket or USB-MIDI)\n// For native USB MIDI use ESP32-S2/S3 with USB_MIDI library\n#include\
+      \ \"driver/i2s.h\"\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <math.h>\n\nAdafruit_SSD1306 oled(128,64,&Wire,-1);\n\
+      \nconst int TOUCH_PINS[8]={4,15,13,12,14,27,33,32};\nconst float FREQS[8]={261.63f,293.66f,329.63f,349.23f,392.0f,440.0f,493.88f,523.25f};\n\
+      const int MIDI_NOTES[8]={60,62,64,65,67,69,71,72}; // C4-C5\nconst int SAMPLE_RATE=22050, I2S_NUM=0;\nconst int TOUCH_THRESH=40;\n\
+      \nstruct Voice {\n  float phase,freq,amp;\n  int state; // 0=off 1=attack 2=decay 3=sustain 4=release\n  float env;\n\
+      };\nVoice voices[8]={};\n\n// ADSR times in samples\nconst float ATTACK_S=0.01f, DECAY_S=0.05f, SUSTAIN_L=0.7f, RELEASE_S=0.1f;\n\
+      \nvoid midiNoteOn(int note, int vel){ Serial1.write(0x90); Serial1.write(note); Serial1.write(vel); }\nvoid midiNoteOff(int\
+      \ note){        Serial1.write(0x80); Serial1.write(note); Serial1.write(0); }\n\nvoid processEnv(Voice &v, float dt){\n\
+      \  switch(v.state){\n    case 1: v.env+=dt/ATTACK_S; if(v.env>=1){v.env=1;v.state=2;} break;\n    case 2: v.env-=dt*(1-SUSTAIN_L)/DECAY_S;\
+      \ if(v.env<=SUSTAIN_L){v.env=SUSTAIN_L;v.state=3;} break;\n    case 3: break;\n    case 4: v.env-=dt/RELEASE_S; if(v.env<=0){v.env=0;v.state=0;}\
+      \ break;\n  }\n}\n\nvoid audioTask(void*){\n  int16_t buf[512];\n  const float dt=1.0f/SAMPLE_RATE;\n  while(1){\n \
+      \   for(int s=0;s<256;s++){\n      float L=0;\n      for(int i=0;i<8;i++){\n        if(voices[i].state==0) continue;\n\
+      \        processEnv(voices[i],dt);\n        float samp=sinf(voices[i].phase)*voices[i].env*voices[i].amp;\n        L+=samp;\n\
+      \        voices[i].phase+=2.0f*M_PI*voices[i].freq*dt;\n        if(voices[i].phase>2.0f*M_PI) voices[i].phase-=2.0f*M_PI;\n\
+      \      }\n      int16_t s16=(int16_t)constrain((int)(L*8000),-32767,32767);\n      buf[s*2]=s16; buf[s*2+1]=s16;\n \
+      \   }\n    size_t w; i2s_write((i2s_port_t)I2S_NUM,buf,sizeof(buf),&w,portMAX_DELAY);\n  }\n}\n\nvoid initI2S(){\n \
+      \ i2s_config_t cfg={\n    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_TX),\n    .sample_rate=SAMPLE_RATE,.bits_per_sample=I2S_BITS_PER_SAMPLE_16BIT,\n\
+      \    .channel_format=I2S_CHANNEL_FMT_RIGHT_LEFT,\n    .communication_format=I2S_COMM_FORMAT_I2S,\n    .intr_alloc_flags=0,.dma_buf_count=4,.dma_buf_len=512,.use_apll=false\n\
+      \  };\n  i2s_pin_config_t pins={.bck_io_num=26,.ws_io_num=25,.data_out_num=22,.data_in_num=-1};\n  i2s_driver_install((i2s_port_t)I2S_NUM,&cfg,0,NULL);\n\
+      \  i2s_set_pin((i2s_port_t)I2S_NUM,&pins);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Serial1.begin(31250,SERIAL_8N1,16,17);\
+      \ // MIDI baud rate on Serial1\n  Wire.begin(21,23); oled.begin(SSD1306_SWITCHCAPVCC,0x3C); oled.setTextColor(WHITE);\n\
+      \  initI2S();\n  xTaskCreatePinnedToCore(audioTask,\"audio\",4096,NULL,5,NULL,0);\n}\n\nbool wasDown[8]={};\nvoid loop(){\n\
+      \  for(int i=0;i<8;i++){\n    bool down=(touchRead(TOUCH_PINS[i])<TOUCH_THRESH);\n    if(down&&!wasDown[i]){ // key\
+      \ press\n      voices[i]={0,FREQS[i],1.0f,1,0};\n      midiNoteOn(MIDI_NOTES[i],100);\n    }\n    if(!down&&wasDown[i]){\
+      \ // key release\n      if(voices[i].state>0&&voices[i].state<4) voices[i].state=4;\n      midiNoteOff(MIDI_NOTES[i]);\n\
+      \    }\n    wasDown[i]=down;\n  }\n  oled.clearDisplay(); oled.setCursor(0,0); oled.setTextSize(1);\n  oled.print(\"\
+      Active: \");\n  for(int i=0;i<8;i++) if(voices[i].state>0) oled.printf(\"%d \",i+1);\n  oled.display();\n  delay(10);\n\
+      }"
     code_filename: esp32-digital-piano-advanced.ino
 related_slugs:
 - esp32-learning-trainer
 - esp32-neopixel-music-visualizer
+format: golden
+project:
+  icon: NOTE
+  mission_title: Build a Touch-Key Digital Piano
+  difficulty: Beginner
+  age: Ages 10+
+  recommended_age: Ages 10+
+  estimated_time: 60-75 min
+  budget: Under 20 USD
+  adult_supervision: Adult help is useful when cutting copper tape and checking touch-pad wires.
+  classroom_use: Good for showing input mapping, frequency, and PWM sound in one short lab.
+  parent_prompt: Ask which code number changes pitch and which wire makes sound.
+  screen_free_activity: Write a one-octave melody on paper using C4 to C5 note names.
+  skills_practiced:
+  - Capacitive touch input
+  - LEDC PWM sound
+  - Array mapping
+  - One-output safety
+  learning_outcomes: &id001
+  - Map eight ESP32 touch pins to notes.
+  - Generate safe square-wave tones on a passive piezo.
+  - Explain why a speaker needs an amplifier or driver.
+  - Change pitch or melody values in code.
+  mini_experiments:
+  - Change one frequency and listen to the pitch shift.
+  - Slow the loop delay and notice touch response.
+  - Reorder the NOTES array to make a new scale.
+  next_challenge: Add a small amplifier module before trying a real speaker.
+  what_you_build: A one-octave touch piano using ESP32 capacitive touch pads and a passive piezo buzzer on GPIO25.
+  story: 'This project turns GPIO behavior into something musical. Touch pads become keys, code maps keys to frequencies,
+    and a passive piezo plays one note at a time. This Golden version keeps the promise narrow: the parts list, code constants,
+    GPIO table, expected output, safety notes, and troubleshooting all describe the same low-voltage educational build.'
+  eli12: 'Each copper pad is a key. When your finger touches it, the ESP32 touch reading drops and the code plays the matching
+    note frequency. The ESP32 is the decision maker: it reads one signal, compares it with simple rules, then changes an output
+    you can see or hear.'
+  parent_safety: Use a passive piezo buzzer or a proper amplifier module. Do not connect a bare speaker directly to an ESP32
+    GPIO. Unplug USB and any external supply before rewiring. Keep the build low-voltage on the bench and do not treat it
+    as certified equipment.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board used as the controller.
+    link: /components/esp32-devkit.html
+  - item: Passive piezo buzzer
+    note: PWM-driven sound output on GPIO25; not a high-current speaker.
+  - item: Copper tape touch pads
+    note: Eight touch pads connected to touch-capable GPIO pins.
+  - item: Jumper wires
+    note: One wire from each pad to the matching touch GPIO.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board used as the controller.
+  - part: Passive piezo buzzer
+    qty: '1'
+    estimated_cost: Varies
+    notes: PWM-driven sound output on GPIO25; not a high-current speaker.
+  - part: Copper tape touch pads
+    qty: '1'
+    estimated_cost: Varies
+    notes: Eight touch pads connected to touch-capable GPIO pins.
+  - part: Jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: One wire from each pad to the matching touch GPIO.
+  wiring:
+    illustration_alt: ESP32 Digital Piano wiring diagram
+    summary: Eight copper pads connect to touch GPIOs 4, 15, 13, 12, 14, 27, 33, and 32. The passive piezo connects to GPIO25
+      and GND.
+    steps:
+    - Unplug USB before moving touch-pad or buzzer wires.
+    - Connect copper pads C4, D4, E4, F4 to GPIO4, GPIO15, GPIO13, and GPIO12.
+    - Connect copper pads G4, A4, B4, C5 to GPIO14, GPIO27, GPIO33, and GPIO32.
+    - Connect passive piezo positive to GPIO25 and negative to GND.
+    - Keep touch pads from touching each other.
+    - Reconnect USB and open Serial Monitor.
+  gpio_map:
+  - signal: Touch keys C4-D4-E4-F4
+    esp32_pin: GPIO4 / GPIO15 / GPIO13 / GPIO12
+    direction: Input
+    notes: Capacitive touch inputs; avoid external pulls that affect boot.
+  - signal: Touch keys G4-A4-B4-C5
+    esp32_pin: GPIO14 / GPIO27 / GPIO33 / GPIO32
+    direction: Input
+    notes: Capacitive touch inputs.
+  - signal: Passive piezo
+    esp32_pin: GPIO25
+    direction: PWM Output
+    notes: LEDC square-wave output.
+  circuit_explanation: The touch pads act as capacitive inputs. GPIO25 outputs a PWM square wave to a passive piezo when a
+    touched key is detected.
+  engineering_explanation: Some touch GPIOs are also boot-sensitive pins, so the pads must not be tied to fixed voltage rails.
+    The code plays the first touched key only.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Uses built-in touchRead and LEDC functions.
+  code:
+    filename: esp32-digital-piano.ino
+    content: "// ESP32 Digital Piano - capacitive touch keys and passive piezo\nconst int NOTES[8] = {262, 294, 330, 349,\
+      \ 392, 440, 494, 523};\nconst char* NAMES[8] = {\"C4\", \"D4\", \"E4\", \"F4\", \"G4\", \"A4\", \"B4\", \"C5\"};\nconst\
+      \ int TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};\nconst int BUZZER_PIN = 25;\nconst int TOUCH_THRESHOLD = 40;\n\
+      const int BUZZER_CHANNEL = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  ledcSetup(BUZZER_CHANNEL, 262, 8);\n  ledcAttachPin(BUZZER_PIN,\
+      \ BUZZER_CHANNEL);\n  ledcWrite(BUZZER_CHANNEL, 0);\n  Serial.println(\"Touch one copper pad to play one note.\");\n\
+      }\n\nvoid loop() {\n  int played = -1;\n  for (int i = 0; i < 8; i++) {\n    if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD)\
+      \ {\n      played = i;\n      break;\n    }\n  }\n  if (played >= 0) {\n    ledcChangeFrequency(BUZZER_CHANNEL, NOTES[played],\
+      \ 8);\n    ledcWrite(BUZZER_CHANNEL, 128);\n    Serial.printf(\"Playing: %s (%d Hz)\\n\", NAMES[played], NOTES[played]);\n\
+      \  } else {\n    ledcWrite(BUZZER_CHANNEL, 0);\n  }\n  delay(10);\n}\n"
+  code_explanation: TOUCH_PINS maps each copper pad to a note in NOTES. When touchRead drops below 40, LEDC changes GPIO25
+    to that note frequency.
+  expected_output: Serial Monitor prints the note name and frequency when a pad is touched. The passive piezo plays one square-wave
+    note and becomes silent when no pad is touched.
+  common_mistakes:
+  - text: Using an active buzzer, which cannot play different pitches well.
+  - text: Connecting a speaker directly to GPIO25.
+  - text: Letting copper pads touch each other.
+  - text: Adding pull resistors to touch pins.
+  troubleshooting:
+  - problem: No note plays
+    fix: Check GPIO25 piezo wiring and confirm Serial Monitor prints a key name.
+  - problem: Wrong note plays
+    fix: Check the copper pad wire order against TOUCH_PINS.
+  - problem: Notes trigger by themselves
+    fix: Increase TOUCH_THRESHOLD only after observing touchRead values.
+  testing_checklist:
+  - Touch each pad one at a time.
+  - Confirm the printed note order C4 through C5.
+  - Change one frequency and upload again.
+  - Power-cycle and verify no key is stuck on.
+  engineer_tips:
+  - Keep pad wires short.
+  - Use a passive piezo for direct GPIO demos.
+  - Move to an amplifier for louder audio.
+  upgrade_ideas:
+  - Add a melody playback button.
+  - Add octave shift values.
+  - Add an I2S DAC and amplifier for better sound.
+  real_world_applications:
+  - Music coding lesson
+  - Touch input demo
+  - PWM frequency experiment
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, Wi-Fi, and safe beginner wiring.
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Learn how ESP32 output timing controls buzzers, LEDs, and other signals.
+  related_projects:
+  - title: ESP32 Learning Trainer Board
+    href: /projects/esp32-learning-trainer.html
+    description: Practice simpler input and output before the piano.
+  faqs:
+  - question: Is this full polyphony?
+    answer: No. The beginner sketch plays one touched key at a time.
+  - question: Can I use a speaker?
+    answer: Use an amplifier or driver, not a speaker directly on a GPIO pin.
+  - question: Why are some touch pins boot-sensitive?
+    answer: Several ESP32 touch pins also affect boot, so do not force them HIGH or LOW with extra hardware.
+  complete:
+    summary: You completed ESP32 Digital Piano as a trustworthy ESP32 learning build with matching wiring, code, testing,
+      and safety boundaries.
+    skills:
+    - Capacitive touch input
+    - LEDC PWM sound
+    - Array mapping

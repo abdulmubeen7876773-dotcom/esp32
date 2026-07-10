@@ -1,361 +1,227 @@
-{
-  "format": "golden",
-  "slug": "esp32-smart-thermostat",
-  "title": "ESP32 Smart Thermostat",
-  "category": "Home Automation",
-  "image": "/assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg",
-  "featured_image": "/assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg",
-  "hero_image": "/assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg",
-  "placeholder_image": "/assets/visuals/projects/placeholders/esp32-smart-thermostat-placeholder.svg",
-  "og_image": "/assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg",
-  "description": "Build a safe low-voltage thermostat prototype that reads room temperature and switches a fan or indicator when a threshold is crossed.",
-  "source_base": "esp32-smart-thermostat",
-  "sensor": "DHT22 or BME280 temperature sensor",
-  "output": "relay module or low-voltage fan driver",
-  "featured": true,
-  "date_published": "2026-06-14",
-  "date_modified": "2026-06-29",
-  "keywords": [
-    "ESP32",
-    "ESP32 Smart Thermostat",
-    "DHT22 or BME280 temperature sensor",
-    "relay module or low-voltage fan driver",
-    "Arduino tutorial"
-  ],
-  "hardware": {
-    "sensor_pin": "GPIO4",
-    "output_pin": "GPIO26",
-    "sensor_name": "DHT22 or BME280 temperature sensor",
-    "output_name": "relay module or low-voltage fan driver",
-    "wiring": [
-      {
-        "component": "DHT22 DATA",
-        "pin": "GPIO4"
-      },
-      {
-        "component": "Relay IN",
-        "pin": "GPIO26"
-      }
-    ]
-  },
-  "project": {
-    "icon": "TEMP",
-    "mission_title": "Build Your Smart Thermostat",
-    "difficulty": "Intermediate",
-    "age": "Ages 12+",
-    "estimated_time": "90-120 min",
-    "budget": "Under $30",
-    "what_you_build": "A working thermostat controller with an ESP32, a real input, a controlled output, Serial Monitor diagnostics, and a wiring map you can expand into a more advanced version.",
-    "components": [
-      {
-        "item": "ESP32 DevKit board",
-        "note": "Thermostat controller",
-        "icon": "PART",
-        "link": "/components/esp32-devkit.html"
-      },
-      {
-        "item": "DHT22 sensor module",
-        "note": "Room temperature input",
-        "icon": "PART",
-        "link": "/components/dht22.html"
-      },
-      {
-        "item": "Relay module",
-        "note": "Low-voltage fan or lamp output",
-        "icon": "PART",
-        "link": "/components/relay-module.html"
-      },
-      {
-        "item": "SSD1306 OLED display",
-        "note": "Optional setpoint display",
-        "icon": "PART",
-        "link": "/components/ssd1306-oled.html"
-      },
-      {
-        "item": "Breadboard and wires",
-        "note": "Prototype wiring",
-        "icon": "PART"
-      }
-    ],
-    "bom": [
-      {
-        "part": "ESP32 DevKit",
-        "qty": "1",
-        "estimated_cost": "$6-$10",
-        "notes": "USB board"
-      },
-      {
-        "part": "DHT22 module",
-        "qty": "1",
-        "estimated_cost": "$3-$6",
-        "notes": "Temperature and humidity"
-      },
-      {
-        "part": "Relay module",
-        "qty": "1",
-        "estimated_cost": "$2-$5",
-        "notes": "Use low-voltage load only"
-      },
-      {
-        "part": "OLED",
-        "qty": "1 optional",
-        "estimated_cost": "$3-$6",
-        "notes": "I2C feedback"
-      }
-    ],
-    "wiring": {
-      "illustration_alt": "ESP32 Smart Thermostat wiring diagram",
-      "summary": "Wire the DHT22 or BME280 temperature sensor first, verify readings, then connect the relay module or low-voltage fan driver.",
-      "steps": [
-        "Unplug USB and keep the relay load disconnected.",
-        "Connect DHT22 VCC to 3.3 V, GND to GND, and DATA to GPIO4.",
-        "Connect relay VCC to 5 V if your relay module requires it, GND to ESP32 GND, and IN to GPIO26.",
-        "Connect only a low-voltage test load to the relay during learning.",
-        "Power the ESP32 and watch Serial Monitor before connecting any moving fan."
-      ]
-    },
-    "gpio_map": [
-      {
-        "signal": "DHT22 DATA",
-        "esp32_pin": "GPIO4",
-        "direction": "Input",
-        "notes": "Digital sensor data"
-      },
-      {
-        "signal": "Relay IN",
-        "esp32_pin": "GPIO26",
-        "direction": "Output",
-        "notes": "Fan command"
-      },
-      {
-        "signal": "OLED SDA",
-        "esp32_pin": "GPIO21",
-        "direction": "I2C data",
-        "notes": "Optional"
-      },
-      {
-        "signal": "OLED SCL",
-        "esp32_pin": "GPIO22",
-        "direction": "I2C clock",
-        "notes": "Optional"
-      }
-    ],
-    "code": {
-      "filename": "smart-thermostat.ino",
-      "content": "#include \"DHT.h\"\n\n#define DHTPIN 4\n#define DHTTYPE DHT22\n#define RELAY_PIN 26\n\nconst float FAN_ON_C = 27.0;\nconst float FAN_OFF_C = 25.5;\nbool fanOn = false;\nDHT dht(DHTPIN, DHTTYPE);\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, LOW);\n  dht.begin();\n  Serial.println(\"Smart thermostat ready\");\n}\n\nvoid loop() {\n  float tempC = dht.readTemperature();\n  if (isnan(tempC)) {\n    Serial.println(\"Temperature read failed\");\n    delay(2000);\n    return;\n  }\n\n  if (!fanOn && tempC >= FAN_ON_C) fanOn = true;\n  if (fanOn && tempC <= FAN_OFF_C) fanOn = false;\n\n  digitalWrite(RELAY_PIN, fanOn ? HIGH : LOW);\n  Serial.print(\"Temp C: \"); Serial.print(tempC, 1);\n  Serial.print(\" | Fan: \"); Serial.println(fanOn ? \"ON\" : \"OFF\");\n  delay(2000);\n}\n"
-    },
-    "expected_output": "Below the lower threshold, Serial Monitor prints Fan: OFF. Warm the sensor above the ON threshold and the relay LED should switch on. Let the sensor cool below the OFF threshold and the relay turns off.",
-    "common_mistakes": [
-      {
-        "text": "Driving a fan motor directly from an ESP32 GPIO."
-      },
-      {
-        "text": "Using mains voltage on a breadboard."
-      },
-      {
-        "text": "Forgetting hysteresis and making the relay chatter."
-      },
-      {
-        "text": "Using a relay module that needs more current than the USB port can provide."
-      }
-    ],
-    "troubleshooting": [
-      {
-        "problem": "Relay LED never turns on",
-        "fix": "Check GPIO26, relay VCC requirement, and active HIGH versus active LOW logic."
-      },
-      {
-        "problem": "Temperature never changes",
-        "fix": "Wait between reads and confirm the DHT22 data pin matches GPIO4."
-      },
-      {
-        "problem": "ESP32 resets when relay switches",
-        "fix": "Use a separate supply for the load and keep relay power wiring short."
-      },
-      {
-        "problem": "Fan logic feels backwards",
-        "fix": "Invert the digitalWrite state if your relay module is active LOW."
-      }
-    ],
-    "upgrade_ideas": [
-      "Add buttons to adjust setpoint.",
-      "Show temperature and fan state on OLED.",
-      "Add Wi-Fi dashboard control.",
-      "Log heating and cooling cycles."
-    ],
-    "related_guides": [
-      {
-        "title": "Read Temperature with DHT22",
-        "href": "/guides/read-temperature-dht22.html",
-        "description": "Learn the sensor-reading workflow used in many ESP32 projects."
-      },
-      {
-        "title": "Connect an OLED Display",
-        "href": "/guides/connect-oled-esp32.html",
-        "description": "Add a local display for values, status, and debugging."
-      }
-    ],
-    "related_projects": [
-      {
-        "title": "ESP32 IoT Weather Station",
-        "href": "/projects/esp32-iot-weather-station.html",
-        "description": "Practice sensor readings and clean Serial output."
-      },
-      {
-        "title": "ESP32 Home Climate Automation",
-        "href": "/projects/esp32-home-climate-automation.html",
-        "description": "Turn measurements into automatic control decisions."
-      }
-    ],
-    "complete": {
-      "summary": "You built a real thermostat controller and learned how to connect sensing, decision logic, and output control in one ESP32 project.",
-      "skills": [
-        "Wire and test DHT22 or BME280 temperature sensor",
-        "Control relay module or low-voltage fan driver from ESP32",
-        "Debug hardware with Serial Monitor",
-        "Improve the project safely"
-      ]
-    },
-    "story": "ESP32 Smart Thermostat turns the ESP32 into a real object that senses something, decides what it means, and reacts in the physical world.\n\nThe important lesson is not only the finished thermostat controller. You learn how to separate input, decision logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.",
-    "eli12": "Think of the ESP32 as the brain. The DHT22 or BME280 temperature sensor is how it notices the world. The relay module or low-voltage fan driver is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.",
-    "parent_safety": "This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming circuit. Do not use mains voltage on a breadboard.",
-    "learning_objectives": [
-      "Wire and test the DHT22 or BME280 temperature sensor before connecting the rest of the circuit.",
-      "Map each signal to a named ESP32 GPIO and keep the code constants readable.",
-      "Control relay module or low-voltage fan driver using a clear threshold or command instead of hidden magic numbers.",
-      "Use Serial Monitor as an engineering tool, not only as a success message.",
-      "Identify power, wiring, and timing faults using a repeatable test checklist."
-    ],
-    "circuit_explanation": "The sensor side is a low-current digital input. The relay side is an isolated switch input controlled by GPIO26. The ESP32 does not power the load directly; it only commands the relay module. Shared ground lets the relay input understand the ESP32 signal.",
-    "engineering_explanation": "A thermostat should avoid rapid on-off switching near the setpoint. This is called hysteresis. Instead of turning the fan on at exactly 27 C and off at 27 C, the code turns it on above 27 C and off below 25.5 C so the relay does not chatter.",
-    "code_explanation": "The code keeps the fan state in a Boolean variable. Two thresholds create hysteresis: one threshold turns the output on, and a lower threshold turns it off. This protects the relay and makes the system feel calm.",
-    "testing_checklist": [
-      "ESP32 appears on the correct port and accepts a basic blink upload.",
-      "Ground is shared between every module that exchanges signals with the ESP32.",
-      "Each GPIO in the code matches the wire connected on the breadboard.",
-      "Serial Monitor prints startup text at 115200 baud.",
-      "The DHT22 or BME280 temperature sensor value changes when you create a real test condition.",
-      "The relay module or low-voltage fan driver changes only when the expected condition is reached.",
-      "The circuit still behaves correctly after power is removed and restored."
-    ],
-    "build_photos": [
-      {
-        "title": "Breadboard overview",
-        "note": "Show the ESP32, module placement, and power rails clearly."
-      },
-      {
-        "title": "Close-up wiring",
-        "note": "Capture each GPIO wire so beginners can compare their build."
-      },
-      {
-        "title": "Working output",
-        "note": "Show the Serial Monitor, display, robot, pump, or lock state after the code runs."
-      }
-    ],
-    "downloads": [
-      {
-        "text": "ESP32 Smart Thermostat Arduino sketch",
-        "note": "Use the code section as the downloadable source until file downloads are published."
-      },
-      {
-        "text": "Wiring checklist",
-        "note": "Match the GPIO table and wiring steps before powering the circuit."
-      },
-      {
-        "text": "Troubleshooting worksheet",
-        "note": "Record symptoms, Serial output, voltage checks, and fixes."
-      }
-    ],
-    "real_world_applications": [
-      "Room fan controller",
-      "Greenhouse vent trigger",
-      "Small incubator demo",
-      "HVAC classroom model",
-      "Thermal control trainer"
-    ],
-    "faqs": [
-      {
-        "question": "Is ESP32 Smart Thermostat good for beginners?",
-        "answer": "Yes. Start with USB power, build the wiring slowly, and test one signal at a time before adding the full thermostat controller behavior."
-      },
-      {
-        "question": "Which ESP32 board should I use for ESP32 Smart Thermostat?",
-        "answer": "A standard ESP32 DevKit is the safest choice because it has USB programming, many GPIO pins, and strong Arduino IDE support."
-      },
-      {
-        "question": "Can I power ESP32 Smart Thermostat from a phone charger?",
-        "answer": "For bench testing, use the USB cable connected to your computer. Use a regulated 5 V supply only after the circuit works and the current requirement is known."
-      },
-      {
-        "question": "Why does my DHT22 or BME280 temperature sensor reading look wrong?",
-        "answer": "Most wrong readings come from reversed power, loose breadboard rows, the wrong GPIO number in code, or reading the sensor before it has settled."
-      },
-      {
-        "question": "Can I change the GPIO pins?",
-        "answer": "Yes, but update the constants at the top of the sketch and avoid ESP32 boot strapping pins unless you understand their startup behavior."
-      },
-      {
-        "question": "Does ESP32 Smart Thermostat need Wi-Fi?",
-        "answer": "The core lesson works locally. Wi-Fi is useful for dashboards, alerts, and remote control, but it should be added after the hardware is stable."
-      },
-      {
-        "question": "Can I use 5 V signals with ESP32 in ESP32 Smart Thermostat?",
-        "answer": "Do not feed 5 V logic into an ESP32 GPIO. ESP32 pins are 3.3 V logic pins and can be damaged by 5 V signals."
-      },
-      {
-        "question": "Why does relay module or low-voltage fan driver not respond?",
-        "answer": "Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the output module uses active HIGH or active LOW logic."
-      },
-      {
-        "question": "What should I test first?",
-        "answer": "Upload a tiny sketch that reads only DHT22 or BME280 temperature sensor. Once that is reliable, add relay module or low-voltage fan driver, then add the full decision logic."
-      },
-      {
-        "question": "How accurate is this project?",
-        "answer": "It is accurate enough for learning and prototypes. For production work you should calibrate sensors, protect wiring, and test across temperature and voltage changes."
-      },
-      {
-        "question": "Can this run on batteries?",
-        "answer": "Yes, but runtime depends on Wi-Fi usage, sensor current, output current, and sleep mode. First measure current with a multimeter."
-      },
-      {
-        "question": "Should I solder the circuit?",
-        "answer": "Use a breadboard while learning. Solder a final version only after every wire and GPIO has been tested for several sessions."
-      },
-      {
-        "question": "Why does the ESP32 reset randomly?",
-        "answer": "Random resets usually mean weak USB power, motor or relay noise, brownout from high current loads, or a loose breadboard power rail."
-      },
-      {
-        "question": "Can I use PlatformIO instead of Arduino IDE?",
-        "answer": "Yes. The same sketch structure works in PlatformIO after adding the required libraries to the project configuration."
-      },
-      {
-        "question": "How do I make ESP32 Smart Thermostat safer?",
-        "answer": "Keep high-current loads isolated, unplug before rewiring, use fused supplies for motors or pumps, and never connect mains voltage on a breadboard."
-      },
-      {
-        "question": "What is the most common mistake?",
-        "answer": "Beginners often trust the breadboard rows without checking continuity. Always trace each signal from ESP32 pin to module pin."
-      },
-      {
-        "question": "Can I add an OLED display?",
-        "answer": "Yes. An I2C OLED can share GPIO21 and GPIO22 with other I2C sensors as long as every device has a unique address."
-      },
-      {
-        "question": "How do I debug the code?",
-        "answer": "Print each important value to Serial Monitor: raw sensor reading, threshold, decision state, and output state."
-      },
-      {
-        "question": "Can this become a real product?",
-        "answer": "The idea can, but a product also needs enclosure design, electrical protection, watchdog recovery, calibration, and long-term testing."
-      },
-      {
-        "question": "What should I build next after ESP32 Smart Thermostat?",
-        "answer": "Add logging, a web dashboard, OTA updates, or a second sensor so the thermostat controller system can make better decisions."
-      }
-    ]
-  },
-  "quality_status": "golden",
-  "status": "complete"
-}
+format: golden
+slug: esp32-smart-thermostat
+title: ESP32 Smart Thermostat
+category: Home Automation
+image: /assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg
+featured_image: /assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg
+hero_image: /assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg
+placeholder_image: /assets/visuals/projects/placeholders/esp32-smart-thermostat-placeholder.svg
+og_image: /assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg
+description: Build a safe low-voltage thermostat prototype that reads room temperature and switches a fan or indicator
+  when a threshold is crossed.
+meta_description: Build a safe low-voltage thermostat prototype that reads room temperature and switches a fan or
+  indicator when a threshold is crossed.
+source_base: esp32-smart-thermostat
+sensor: DHT22 or BME280 temperature sensor
+output: relay module or low-voltage fan driver
+featured: true
+date_published: '2026-06-14'
+date_modified: '2026-06-29'
+keywords:
+- ESP32
+- ESP32 Smart Thermostat
+- DHT22 or BME280 temperature sensor
+- relay module or low-voltage fan driver
+- Arduino tutorial
+hardware:
+  sensor_pin: GPIO4
+  output_pin: GPIO26
+  sensor_name: DHT22 or BME280 temperature sensor
+  output_name: relay module or low-voltage fan driver
+  wiring:
+  - component: DHT22 DATA
+    pin: GPIO4
+  - component: Relay IN
+    pin: GPIO26
+project:
+  icon: TEMP
+  mission_title: Build Your Smart Thermostat
+  difficulty: Intermediate
+  age: Ages 12+
+  estimated_time: 90-120 min
+  budget: Under $30
+  what_you_build: A working thermostat controller with an ESP32, a real input, a controlled output, Serial Monitor
+    diagnostics, and a wiring map you can expand into a more advanced version.
+  components:
+  - item: ESP32 DevKit board
+    note: Thermostat controller
+    icon: PART
+    link: /components/esp32-devkit.html
+  - item: DHT22 sensor module
+    note: Room temperature input
+    icon: PART
+    link: /components/dht22.html
+  - item: Relay module
+    note: Low-voltage fan or lamp output
+    icon: PART
+    link: /components/relay-module.html
+  - item: SSD1306 OLED display
+    note: Optional setpoint display
+    icon: PART
+    link: /components/ssd1306-oled.html
+  - item: Breadboard and wires
+    note: Prototype wiring
+    icon: PART
+  bom:
+  - part: ESP32 DevKit
+    qty: '1'
+    estimated_cost: $6-$10
+    notes: USB board
+  - part: DHT22 module
+    qty: '1'
+    estimated_cost: $3-$6
+    notes: Temperature and humidity
+  - part: Relay module
+    qty: '1'
+    estimated_cost: $2-$5
+    notes: Use low-voltage load only
+  - part: OLED
+    qty: 1 optional
+    estimated_cost: $3-$6
+    notes: I2C feedback
+  wiring:
+    illustration_alt: ESP32 Smart Thermostat wiring diagram
+    summary: Wire the DHT22 or BME280 temperature sensor first, verify readings, then connect the relay module or
+      low-voltage fan driver.
+    steps:
+    - Unplug USB and keep the relay load disconnected.
+    - Connect DHT22 VCC to 3.3 V, GND to GND, and DATA to GPIO4.
+    - Connect relay VCC to 5 V if your relay module requires it, GND to ESP32 GND, and IN to GPIO26.
+    - Connect only a low-voltage test load to the relay during learning.
+    - Power the ESP32 and watch Serial Monitor before connecting any moving fan.
+  gpio_map:
+  - signal: DHT22 DATA
+    esp32_pin: GPIO4
+    direction: Input
+    notes: Digital sensor data
+  - signal: Relay IN
+    esp32_pin: GPIO26
+    direction: Output
+    notes: Fan command
+  - signal: OLED SDA
+    esp32_pin: GPIO21
+    direction: I2C data
+    notes: Optional
+  - signal: OLED SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Optional
+  code:
+    filename: smart-thermostat.ino
+    content: "#include \"DHT.h\"\n\n#define DHTPIN 4\n#define DHTTYPE DHT22\n#define RELAY_PIN 26\n\nconst float\
+      \ FAN_ON_C = 27.0;\nconst float FAN_OFF_C = 25.5;\nbool fanOn = false;\nDHT dht(DHTPIN, DHTTYPE);\n\nvoid\
+      \ setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, LOW);\n  dht.begin();\n\
+      \  Serial.println(\"Smart thermostat ready\");\n}\n\nvoid loop() {\n  float tempC = dht.readTemperature();\n\
+      \  if (isnan(tempC)) {\n    Serial.println(\"Temperature read failed\");\n    delay(2000);\n    return;\n\
+      \  }\n\n  if (!fanOn && tempC >= FAN_ON_C) fanOn = true;\n  if (fanOn && tempC <= FAN_OFF_C) fanOn = false;\n\
+      \n  digitalWrite(RELAY_PIN, fanOn ? HIGH : LOW);\n  Serial.print(\"Temp C: \"); Serial.print(tempC, 1);\n\
+      \  Serial.print(\" | Fan: \"); Serial.println(fanOn ? \"ON\" : \"OFF\");\n  delay(2000);\n}\n"
+  expected_output: 'Below the lower threshold, Serial Monitor prints Fan: OFF. Warm the sensor above the ON threshold
+    and the relay LED should switch on. Let the sensor cool below the OFF threshold and the relay turns off.'
+  common_mistakes:
+  - text: Driving a fan motor directly from an ESP32 GPIO.
+  - text: Using mains voltage on a breadboard.
+  - text: Forgetting hysteresis and making the relay chatter.
+  - text: Using a relay module that needs more current than the USB port can provide.
+  troubleshooting:
+  - problem: Relay LED never turns on
+    fix: Check GPIO26, relay VCC requirement, and active HIGH versus active LOW logic.
+  - problem: Temperature never changes
+    fix: Wait between reads and confirm the DHT22 data pin matches GPIO4.
+  - problem: ESP32 resets when relay switches
+    fix: Use a separate supply for the load and keep relay power wiring short.
+  - problem: Fan logic feels backwards
+    fix: Invert the digitalWrite state if your relay module is active LOW.
+  upgrade_ideas:
+  - Add buttons to adjust setpoint.
+  - Show temperature and fan state on OLED.
+  - Add Wi-Fi dashboard control.
+  - Log heating and cooling cycles.
+  related_guides:
+  - title: Read Temperature with DHT22
+    href: /guides/read-temperature-dht22.html
+    description: Learn the sensor-reading workflow used in many ESP32 projects.
+  - title: Connect an OLED Display
+    href: /guides/connect-oled-esp32.html
+    description: Add a local display for values, status, and debugging.
+  related_projects:
+  - title: ESP32 IoT Weather Station
+    href: /projects/esp32-iot-weather-station.html
+    description: Practice sensor readings and clean Serial output.
+  - title: ESP32 Home Climate Automation
+    href: /projects/esp32-home-climate-automation.html
+    description: Turn measurements into automatic control decisions.
+  complete:
+    summary: You built a real thermostat controller and learned how to connect sensing, decision logic, and output
+      control in one ESP32 project.
+    skills:
+    - Wire and test DHT22 or BME280 temperature sensor
+    - Control relay module or low-voltage fan driver from ESP32
+    - Debug hardware with Serial Monitor
+    - Improve the project safely
+  story: 'ESP32 Smart Thermostat turns the ESP32 into a real object that senses something, decides what it means,
+    and reacts in the physical world.
+
+
+    The important lesson is not only the finished thermostat controller. You learn how to separate input, decision
+    logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.'
+  eli12: Think of the ESP32 as the brain. The DHT22 or BME280 temperature sensor is how it notices the world. The
+    relay module or low-voltage fan driver is how it answers back. The code is the rule book that tells the brain
+    what to do when the numbers change.
+  parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
+    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
+    circuit. Do not use mains voltage on a breadboard.
+  learning_objectives:
+  - Wire and test the DHT22 or BME280 temperature sensor before connecting the rest of the circuit.
+  - Map each signal to a named ESP32 GPIO and keep the code constants readable.
+  - Control relay module or low-voltage fan driver using a clear threshold or command instead of hidden magic numbers.
+  - Use Serial Monitor as an engineering tool, not only as a success message.
+  - Identify power, wiring, and timing faults using a repeatable test checklist.
+  circuit_explanation: The sensor side is a low-current digital input. The relay side is an isolated switch input
+    controlled by GPIO26. The ESP32 does not power the load directly; it only commands the relay module. Shared
+    ground lets the relay input understand the ESP32 signal.
+  engineering_explanation: A thermostat should avoid rapid on-off switching near the setpoint. This is called hysteresis.
+    Instead of turning the fan on at exactly 27 C and off at 27 C, the code turns it on above 27 C and off below
+    25.5 C so the relay does not chatter.
+  code_explanation: 'The code keeps the fan state in a Boolean variable. Two thresholds create hysteresis: one threshold
+    turns the output on, and a lower threshold turns it off. This protects the relay and makes the system feel calm.'
+  testing_checklist:
+  - ESP32 appears on the correct port and accepts a basic blink upload.
+  - Ground is shared between every module that exchanges signals with the ESP32.
+  - Each GPIO in the code matches the wire connected on the breadboard.
+  - Serial Monitor prints startup text at 115200 baud.
+  - The DHT22 or BME280 temperature sensor value changes when you create a real test condition.
+  - The relay module or low-voltage fan driver changes only when the expected condition is reached.
+  - The circuit still behaves correctly after power is removed and restored.
+  build_photos:
+  - title: Breadboard overview
+    note: Show the ESP32, module placement, and power rails clearly.
+  - title: Close-up wiring
+    note: Capture each GPIO wire so beginners can compare their build.
+  - title: Working output
+    note: Show the Serial Monitor, display, robot, pump, or lock state after the code runs.
+  downloads:
+  - text: ESP32 Smart Thermostat Arduino sketch
+    note: Use the code section as the downloadable source until file downloads are published.
+  - text: Wiring checklist
+    note: Match the GPIO table and wiring steps before powering the circuit.
+  - text: Troubleshooting worksheet
+    note: Record symptoms, Serial output, voltage checks, and fixes.
+  real_world_applications:
+  - Room fan controller
+  - Greenhouse vent trigger
+  - Small incubator demo
+  - HVAC classroom model
+  - Thermal control trainer
+  faqs:
+  - question: Why does my DHT22 or BME280 temperature sensor reading look wrong?
+    answer: Check sensor power, ground, DATA on GPIO4, and whether the sensor is near heat from the ESP32, relay,
+      or fan.
+  - question: Why does relay module or low-voltage fan driver not respond?
+    answer: Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the
+      output module uses active HIGH or active LOW logic.
+  - question: Can I connect this to household HVAC wiring?
+    answer: No. This tutorial is for a low-voltage fan or indicator prototype only. Do not connect mains or HVAC
+      wiring to the breadboard circuit.
+quality_status: golden
+status: complete

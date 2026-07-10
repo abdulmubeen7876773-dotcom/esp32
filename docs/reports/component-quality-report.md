@@ -1,6 +1,6 @@
 # Component Quality Report
 
-Generated: 2026-07-10T11:08:26Z
+Generated: 2026-07-10T20:49:49Z
 
 Benchmark: **DHT22** is the golden standard (`content/components/dht22.yaml`).
 
@@ -25,6 +25,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 | DHT22 Temperature & Humidity Sensor | 78/100 | LOW | 4 |
 | HC-SR04 Ultrasonic Distance Sensor | 79/100 | LOW | 4 |
 | ESP32 DevKit Board | 80/100 | LOW | 4 |
+| ESP32-CAM (AI-Thinker) | 90/100 | LOW | 0 |
 
 ## 1-Channel Relay Module (`relay-module`)
 
@@ -285,3 +286,24 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Missing Teacher Tips
 - Missing Challenge
 - Image uses external CDN URL — migrate to /assets/visuals/ when ready
+
+## ESP32-CAM (AI-Thinker) (`esp32-cam`)
+
+**Overall score:** 90/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 80/100
+- Teacher Experience: 100/100
+- Engineering: 95/100
+- SEO: 85/100
+- Accessibility: 80/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with DHT22 depth where applicable.

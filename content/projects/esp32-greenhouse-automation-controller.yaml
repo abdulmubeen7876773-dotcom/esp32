@@ -1,292 +1,290 @@
 slug: esp32-greenhouse-automation-controller
-title: ESP32 Greenhouse Automation Controller
+title: Build a Low-Voltage Greenhouse Vent Controller
 category: Agriculture
-description: Automate a greenhouse or grow tent with the ESP32 by monitoring temperature, humidity, and
-  CO2, then controlling exhaust fans, grow lights, and nutrient pumps on schedule and threshold. Scale
-  from a simple climate relay to a full PID-controlled CO2 enrichment system with MQTT integration.
-meta_description: Build an ESP32 greenhouse automation controller managing temperature, humidity, CO2
-  enrichment, grow lights, and ventilation fans from a unified web dashboard.
+description: Use ESP32, DHT22, OLED, and a relay module to run a low-voltage fan with hysteresis and clear water/electronics
+  safety limits.
+meta_description: Build a safe ESP32 greenhouse ventilation prototype with DHT22 readings, OLED status, relay wiring, hysteresis,
+  and low-voltage limits.
 source_base: esp32-greenhouse-automation-controller-legacy-import
 sensor: DHT22 DATA
-output: Relay IN
+output: OLED SCL
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
 hardware:
-  sensor_pin: GPIO 4
-  output_pin: GPIO 26
+  sensor_pin: GPIO4
+  output_pin: GPIO22
   sensor_name: DHT22 DATA
-  output_name: Relay IN
+  output_name: OLED SCL
   wiring:
   - component: DHT22 DATA
-    pin: GPIO 4
+    pin: GPIO4
   - component: Relay IN
-    pin: GPIO 26
-  - component: OLED SDA/SCL
-    pin: GPIO 21/22
+    pin: GPIO26
+  - component: OLED SDA
+    pin: GPIO21
+  - component: OLED SCL
+    pin: GPIO22
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect a DHT22 temperature and humidity sensor
-      to the ESP32 and control a 12 V exhaust fan via a relay. When temperature rises above a configurable
-      threshold the fan switches on; when humidity exceeds a set limit the fan also activates for air
-      exchange. An OLED displays live readings and relay state. No Wi-Fi is needed.</p>
+    overview_html: <p>A low-voltage greenhouse ventilation prototype using DHT22 air readings, OLED status, and a relay-controlled
+      fan. Use low-voltage loads only. Keep water away from electronics. Do not wire mains-powered fans in this beginner build.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× DHT22 temperature and humidity sensor
-    - 1× 12 V exhaust fan — 100-200 mm; 12 V DC or AC with relay
-    - 1× Relay module (5 V) — Controls fan power
-    - 1× SSD1306 OLED 128x64 I2C
+    - ESP32 DevKit board
+    - DHT22 temperature and humidity sensor
+    - Relay module
+    - SSD1306 OLED display
+    - Low-voltage DC fan and matching supply
+    - Breadboard and jumper wires
     wiring:
     - - DHT22 DATA
-      - GPIO 4
-      - 10 kohm pull-up to 3.3 V
+      - GPIO4
+      - Use pull-up if using a bare sensor.
     - - Relay IN
-      - GPIO 26
-      - Active LOW; fan relay
-    - - OLED SDA/SCL
-      - GPIO 21/22
-      - ''
-    how:
-    - 'DHT22 Dual-Parameter Sensing: The DHT22 uses a capacitive humidity element and a thermistor packaged
-      together. A single-wire serial protocol transmits 40 bits of data: 16 bits each for humidity and
-      temperature plus 8-bit checksum. The DHT library handles protocol timing and checksum validation.
-      Readings update approximately every 2 seconds.'
-    - 'OR Logic Fan Trigger: The fan activates when temperature exceeds 28 C OR humidity exceeds 80 percent.
-      OR logic means either condition independently triggers ventilation. High humidity without high temperature
-      (condensation on cold nights) still triggers the fan to remove moisture-laden air and prevent fungal
-      disease.'
-    - 'Active-LOW Relay Control: The relay module activates when GPIO 26 is pulled LOW (a sink current
-      triggers the optocoupler). On startup the relay is set HIGH (fan off) to prevent accidental startup.
-      The fan relay should control a 12 V solid-state relay if the fan motor draws more than 10 A.'
-    - 'OLED Status Display: The OLED shows current temperature, humidity, fan state, and the active thresholds.
-      This allows a grower to read the current state without a phone or computer when physically inspecting
-      the greenhouse. Thresholds displayed prevent confusion about when the fan will activate.'
-    apps:
-    - Hobby grow tent temperature and humidity ventilation control
-    - Small greenhouse automatic climate management
-    - Seedling propagation chamber humidity control
-    - Drying room humidity-triggered ventilation for herbs and flowers
+      - GPIO26
+      - Assumes common active-LOW module.
+    - - OLED SDA
+      - GPIO21
+      - Optional status display.
+    - - OLED SCL
+      - GPIO22
+      - Optional status display.
+    key_concepts:
+    - The ESP32 reads DHT22 data and drives the relay input. The relay switches external low-voltage fan power while sharing
+      only the required control-side ground.
+    - Hysteresis uses separate on/off thresholds so the relay does not chatter near a boundary. Sensor errors turn the fan
+      off in this educational default.
+    applications: &id003
+    - Grow-tent ventilation lesson
+    - Hysteresis control demo
+    - Low-voltage automation prototype
     troubleshooting:
-    - - DHT22 returns NaN readings
-      - Add a 10 kohm pull-up resistor between the DHT22 DATA pin and 3.3 V. Ensure the DHT22 VCC is 3.3
-        V (the module version) or 5 V (bare sensor). Add at least 2 seconds between readings to allow
-        the sensor measurement cycle to complete.
-    - - Fan runs continuously even when cool
-      - Check DHT22 wiring. A disconnected sensor returns values that may appear as very high temperature.
-        Use Serial output to verify the actual temperature reading before trusting the relay state.
-    - - Fan cycles on and off rapidly near the threshold
-      - 'Add hysteresis: turn the fan on at TEMP_ON and off at TEMP_ON - 2. A static bool fanState tracks
-        the current state; update it only when the temperature crosses the appropriate boundary in the
-        correct direction.'
-    upgrades:
-    - Add a second relay for a heater that activates when temperature drops below a minimum
-    - Add a grow light relay controlled by an RTC for photoperiod scheduling
-    - Add a DHT22 inside and outside the greenhouse to calculate temperature differential
-    - Add Wi-Fi to view sensor readings from a phone browser anywhere on the network
-    code: "// ESP32 Greenhouse Controller - Beginner\n// DHT22 temperature + humidity -> exhaust fan relay\
-      \ threshold control\n\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <DHT.h>\n\nDHT\
-      \ dht(4, DHT22);\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nconst int FAN_RELAY = 26;\nconst\
-      \ float TEMP_ON  = 28.0f; // fan on above 28 C\nconst float HUM_ON   = 80.0f; // fan on above 80\
-      \ % RH\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  dht.begin();\n  oled.begin(SSD1306_SWITCHCAPVCC,\
-      \ 0x3C); oled.setTextColor(WHITE);\n  pinMode(FAN_RELAY, OUTPUT); digitalWrite(FAN_RELAY, HIGH);\
-      \ // fan off\n  Serial.println(\"Greenhouse controller ready.\");\n}\n\nvoid loop() {\n  float temp\
-      \ = dht.readTemperature();\n  float hum  = dht.readHumidity();\n  if (isnan(temp) || isnan(hum))\
-      \ { delay(2000); return; }\n\n  bool fanOn = (temp > TEMP_ON || hum > HUM_ON);\n  digitalWrite(FAN_RELAY,\
-      \ fanOn ? LOW : HIGH);\n\n  Serial.printf(\"Temp: %.1fC  Hum: %.1f%%  Fan: %sn\",\n    temp, hum,\
-      \ fanOn ? \"ON\" : \"off\");\n\n  oled.clearDisplay(); oled.setCursor(0, 0); oled.setTextSize(1);\n\
-      \  oled.printf(\"Temp: %.1f Cn\", temp);\n  oled.printf(\"Hum:  %.1f %%n\", hum);\n  oled.printf(\"\
-      Fan:  %sn\", fanOn ? \"ON\" : \"off\");\n  oled.printf(\"T>%.0fC | H>%.0f%%\", TEMP_ON, HUM_ON);\n\
-      \  oled.display();\n  delay(5000);\n}"
-    code_filename: esp32-greenhouse-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build adds an MH-Z19B CO2 sensor and a second relay for a CO2 enrichment
-      valve (from a compressed CO2 cylinder). CO2 is injected when concentration falls below 800 ppm (plants
-      deplete CO2 during photosynthesis) and stops above 1200 ppm. A grow-light relay follows a configurable
-      photoperiod schedule via NTP. A web dashboard shows live temperature, humidity, CO2 and relay states.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× DHT22 sensor
-    - 1× MH-Z19B NDIR CO2 sensor — UART; 400-5000 ppm
-    - 1× 3-channel relay module — Fan / CO2 valve / grow light
-    - 1× CO2 solenoid valve — 12 V; normally-closed; on CO2 cylinder regulator
-    - 1× Wi-Fi router — NTP + web dashboard
-    wiring:
-    - - DHT22 DATA
-      - GPIO 4
-      - ''
-    - - MH-Z19B TX/RX
-      - GPIO 16/17 (Serial2)
-      - 9600 baud
-    - - Fan relay IN
-      - GPIO 26
-      - Active LOW
-    - - CO2 valve relay IN
-      - GPIO 27
-      - Active LOW
-    - - Grow light relay IN
-      - GPIO 14
-      - Active LOW
-    how:
-    - 'CO2 Enrichment Logic: Plants consume CO2 during photosynthesis; in a sealed greenhouse CO2 can
-      drop to 200 ppm, severely limiting growth. The CO2 valve opens when concentration falls below 800
-      ppm and closes above 1200 ppm. Importantly, the valve stays closed when the fan is running to prevent
-      expensive CO2 gas from being exhausted outdoors immediately.'
-    - 'NTP Photoperiod Control: Most crops require 16-18 hours of light for maximum vegetative growth
-      (long-day plants) or exactly 12 hours for flowering (short-day plants). The NTP clock drives the
-      grow light relay, turning it on at LIGHT_ON and off at LIGHT_OFF. No RTC module is needed as NTP
-      provides accurate time.'
-    - 'Fan and CO2 Interlock: Running the exhaust fan while the CO2 valve is open wastes CO2. The co2On
-      variable evaluates to true only when CO2 is low AND the fan is off. This interlock prevents the
-      CO2 enrichment system from working against the ventilation system.'
-    - 'Web Status Dashboard: The web server serves a simple HTML status page showing all current sensor
-      readings and relay states. Any browser on the local network can view live greenhouse conditions.
-      This is sufficient for monitoring; a mobile app or MQTT integration adds notifications and remote
-      control.'
-    apps:
-    - Commercial hydroponic grow room CO2 enrichment management
-    - Cannabis cultivation climate control (where legally permitted)
-    - Orchid or tropical plant grow tent controller
-    - Propagation cloning chamber with precise humidity and lighting
-    troubleshooting:
-    - - CO2 stays at 400 ppm even with valve open
-      - Verify the CO2 cylinder regulator is open and the solenoid valve clicks when the relay activates.
-        Also confirm the MH-Z19B auto-calibration has not reset the baseline. CO2 concentration in a sealed
-        space should rise measurably within 5 minutes of CO2 injection.
-    - - Grow light turns on at wrong time
-      - Verify the NTP time is synced by printing the tm struct to Serial. Check the UTC offset in configTime().
-        LIGHT_ON and LIGHT_OFF use 24-hour local time after the UTC offset is applied.
-    - - Fan and CO2 valve activate simultaneously
-      - The interlock logic uses the current fanOn boolean. Verify the fan relay is checked before the
-        CO2 valve decision and that the CO2 relay logic includes &&!fanOn in its condition.
-    upgrades:
-    - Add PID control for the fan speed using a PWM-controlled variable fan instead of on/off
-    - Add a nutrient pump relay on a timed dosing schedule for hydroponic feeding
-    - Add a capacitive soil moisture sensor to trigger irrigation alongside climate control
-    - Add MQTT to publish all sensor readings to Home Assistant for mobile monitoring
-    code: "// ESP32 Greenhouse - Intermediate (CO2 enrichment + grow light schedule + web)\n#include <WiFi.h>\n\
-      #include <WebServer.h>\n#include <DHT.h>\n#include <time.h>\n\nDHT dht(4, DHT22);\nWebServer server(80);\n\
-      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\n\nconst int R_FAN=26, R_CO2=27, R_LIGHT=14;\n\
-      const float TEMP_ON=28.0f, HUM_ON=80.0f;\nconst int CO2_LOW=800, CO2_HIGH=1200;\n// Photoperiod:\
-      \ lights on at 06:00, off at 22:00\nconst int LIGHT_ON=6, LIGHT_OFF=22;\n\nint readCO2(){\n  uint8_t\
-      \ cmd[9]={0xFF,0x01,0x86,0,0,0,0,0,0x79};\n  Serial2.write(cmd,9); delay(100);\n  if(Serial2.available()<9)\
-      \ return -1;\n  uint8_t r[9]; Serial2.readBytes(r,9);\n  return (r[0]==0xFF&&r[1]==0x86)?(r[2]<<8)|r[3]:-1;\n\
-      }\n\nfloat curTemp=0,curHum=0; int curCO2=0;\nbool fanOn=false,co2On=false,lightOn=false;\n\nvoid\
-      \ serveStatus(){\n  char html[512];\n  snprintf(html,sizeof(html),\n    \"<html><body><h2>Greenhouse</h2>\"\
-      \n    \"<p>Temp: %.1f C | Hum: %.1f %% | CO2: %d ppm</p>\"\n    \"<p>Fan: %s | CO2 valve: %s | Light:\
-      \ %s</p>\"\n    \"</body></html>\",\n    curTemp,curHum,curCO2,\n    fanOn?\"ON\":\"off\",co2On?\"\
-      ON\":\"off\",lightOn?\"ON\":\"off\");\n  server.send(200,\"text/html\",html);\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200);\n  Serial2.begin(9600,SERIAL_8N1,16,17);\n  dht.begin();\n  pinMode(R_FAN,OUTPUT);\
-      \ digitalWrite(R_FAN,HIGH);\n  pinMode(R_CO2,OUTPUT); digitalWrite(R_CO2,HIGH);\n  pinMode(R_LIGHT,OUTPUT);\
-      \ digitalWrite(R_LIGHT,HIGH);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  configTime(0,0,\"pool.ntp.org\");\n  server.on(\"/\",serveStatus); server.begin();\n  Serial.printf(\"\
-      Greenhouse: http://%s/n\",WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n  server.handleClient();\n\
-      \  curTemp=dht.readTemperature(); curHum=dht.readHumidity();\n  curCO2=readCO2();\n  struct tm ti;\
-      \ getLocalTime(&ti);\n\n  fanOn=(curTemp>TEMP_ON||curHum>HUM_ON);\n  digitalWrite(R_FAN,fanOn?LOW:HIGH);\n\
-      \n  if(curCO2>0){\n    co2On=(curCO2<CO2_LOW&&!fanOn); // no enrichment while fan vents\n    digitalWrite(R_CO2,co2On?LOW:HIGH);\n\
-      \  }\n\n  lightOn=(ti.tm_hour>=LIGHT_ON&&ti.tm_hour<LIGHT_OFF);\n  digitalWrite(R_LIGHT,lightOn?LOW:HIGH);\n\
-      \n  Serial.printf(\"T:%.1fC H:%.1f%% CO2:%d Fan:%d CO2v:%d Light:%dn\",\n    curTemp,curHum,curCO2,fanOn,co2On,lightOn);\n\
-      \  delay(10000);\n}"
-    code_filename: esp32-greenhouse-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build adds a PID controller for CO2 level using a proportional-integral-derivative
-      algorithm that modulates a PWM-controlled CO2 solenoid valve for precise ppm targeting. All sensor
-      data and relay states are published to MQTT every 30 seconds. A Node-RED flow provides a colour-coded
-      greenhouse dashboard, email alerts on sensor faults, and a multi-day temperature and CO2 trend chart.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× DHT22 or SHT31 sensor — SHT31 recommended for higher accuracy
-    - 1× MH-Z19B CO2 sensor
-    - 1× PWM-capable CO2 solenoid valve — 12 V; duty-cycle modulated via MOSFET gate
-    - 1× IRF540N MOSFET + 10 kohm gate resistor — PWM control of valve duty cycle
-    - 1× MQTT broker + Node-RED
-    wiring:
-    - - DHT22 DATA
-      - GPIO 4
-      - ''
-    - - MH-Z19B TX/RX
-      - GPIO 16/17
-      - ''
-    - - MOSFET gate via 10 kohm
-      - GPIO 25 (LEDC PWM)
-      - Source to GND; Drain to valve -
-    - - Fan relay / Light relay
-      - GPIO 26 / 27
-      - Active LOW
-    how:
-    - 'PID CO2 Valve Control: A proportional-integral-derivative controller computes the CO2 valve duty
-      cycle based on the error between the CO2 setpoint (1000 ppm) and current measurement. The proportional
-      term responds immediately to large errors; the integral term eliminates steady-state offset; the
-      derivative term damps oscillation. Kp=0.5, Ki=0.05, Kd=0.1 are starting values for tuning.'
-    - 'PWM MOSFET Valve Modulation: The IRF540N MOSFET converts the ESP32 LEDC PWM signal into a variable
-      duty cycle current through the solenoid valve coil. At 100 percent duty the valve is fully open;
-      at 0 percent it is closed. Intermediate duty cycles create a restricted flow rate proportional to
-      duty, enabling fine-grained CO2 injection control rather than bang-bang on/off.'
-    - 'Integral Wind-Up Protection: When the CO2 error persists for a long time (valve at maximum duty,
-      CO2 still below target), the integral term accumulates without bound — called integral wind-up.
-      Clamping pidIntegral to +/-200 prevents the accumulated integral from causing a large overshoot
-      when the error finally resolves.'
-    - 'MQTT Telemetry for Node-RED: Every 30 seconds a JSON payload containing temperature, humidity,
-      CO2, and valve duty cycle is published to greenhouse/telemetry. Node-RED subscribes and routes each
-      field to a dashboard gauge. Function nodes detect out-of-range values (CO2 over 2000 ppm, temperature
-      under 10 C) and send email alerts via Gmail SMTP.'
-    apps:
-    - Commercial greenhouse CO2 enrichment system with precision ppm control
-    - Medical cannabis cultivation climate management system
-    - Research grow chamber with data logging for plant physiology studies
-    - Automated vertical farm cell with complete environmental parameter control
-    troubleshooting:
-    - - CO2 oscillates above and below setpoint continuously
-      - Reduce Kp (proportional gain) by half and increase Ki slightly. Oscillation indicates the proportional
-        response is too aggressive. Add derivative gain Kd to damp the response. Alternatively use a simpler
-        two-step control with 50 ppm hysteresis around the target if PID tuning proves difficult.
-    - - MOSFET overheats during operation
-      - The IRF540N in linear mode (partial duty cycle) dissipates significant power as heat. Attach a
-        heatsink to the MOSFET and ensure airflow over it. If overheating persists, add a 100 Hz PWM frequency
-        instead of 1 kHz; the solenoid valve coil acts as an inductor and averages the current effectively
-        at lower frequencies.
-    - - MQTT telemetry sends but Node-RED shows no data
-      - Verify the MQTT broker address and port. Confirm the topic name matches exactly in Node-RED MQTT-in
-        node. Use the MQTT Fx client to subscribe to greenhouse/# and verify messages arrive at the broker
-        before debugging the Node-RED flow.
-    upgrades:
-    - Add a VPD (vapour pressure deficit) calculator from temperature and humidity for advanced grow room
-      management
-    - Add a LUX sensor under the grow lights to monitor light intensity and compensate for bulb aging
-    - Add multi-zone control with separate climate targets for seedling, vegetative, and flowering areas
-    - Add OTA updates to push new PID tuning constants without entering the grow room
-    code: "// ESP32 Greenhouse - Advanced (PID CO2 + MQTT telemetry)\n#include <WiFi.h>\n#include <PubSubClient.h>\n\
-      #include <ArduinoJson.h>\n#include <DHT.h>\n#include <time.h>\n\nDHT dht(4,DHT22);\nWiFiClient wc;\
-      \ PubSubClient mqtt(wc);\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"\
-      192.168.1.100\";\n\nconst int CO2_VALVE_PWM=25, R_FAN=26, R_LIGHT=27;\nconst int LIGHT_ON=6, LIGHT_OFF=22;\n\
-      const float CO2_TARGET=1000.0f; // ppm setpoint\n\n// Simple PID for CO2 valve duty cycle\nfloat\
-      \ pidKp=0.5f, pidKi=0.05f, pidKd=0.1f;\nfloat pidIntegral=0, pidPrevErr=0;\n\nfloat computePID(float\
-      \ measured, float dt){\n  float err=CO2_TARGET-measured;\n  if(measured>CO2_TARGET) err=0; // only\
-      \ inject, never extract\n  pidIntegral+=err*dt;\n  pidIntegral=constrain(pidIntegral,-200,200);\n\
-      \  float derivative=(err-pidPrevErr)/dt;\n  pidPrevErr=err;\n  float out=pidKp*err+pidKi*pidIntegral+pidKd*derivative;\n\
-      \  return constrain(out,0,255);\n}\n\nint readCO2(){\n  uint8_t cmd[9]={0xFF,0x01,0x86,0,0,0,0,0,0x79};\n\
-      \  Serial2.write(cmd,9); delay(100);\n  if(Serial2.available()<9) return -1;\n  uint8_t r[9]; Serial2.readBytes(r,9);\n\
-      \  return (r[0]==0xFF&&r[1]==0x86)?(r[2]<<8)|r[3]:-1;\n}\n\nvoid publishTelemetry(float t,float\
-      \ h,int co2,int duty){\n  StaticJsonDocument<192> doc;\n  doc[\"temp\"]=t; doc[\"hum\"]=h; doc[\"\
-      co2\"]=co2; doc[\"co2_duty\"]=duty;\n  char buf[192]; serializeJson(doc,buf);\n  mqtt.publish(\"\
-      greenhouse/telemetry\",buf);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  Serial2.begin(9600,SERIAL_8N1,16,17);\n\
-      \  dht.begin();\n  ledcSetup(0,1000,8); ledcAttachPin(CO2_VALVE_PWM,0);\n  pinMode(R_FAN,OUTPUT);\
-      \ digitalWrite(R_FAN,HIGH);\n  pinMode(R_LIGHT,OUTPUT); digitalWrite(R_LIGHT,HIGH);\n  WiFi.begin(SSID,PASS);\n\
-      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      }\n\nunsigned long lastT=0;\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"Greenhouse\");\n\
-      \  mqtt.loop();\n  unsigned long now=millis();\n  float dt=(now-lastT)/1000.0f; lastT=now;\n\n \
-      \ float temp=dht.readTemperature(), hum=dht.readHumidity();\n  int co2=readCO2();\n  bool fanOn=(temp>28||hum>80);\n\
-      \  digitalWrite(R_FAN,fanOn?LOW:HIGH);\n\n  int co2Duty=0;\n  if(co2>0&&!fanOn) co2Duty=(int)computePID((float)co2,dt);\n\
-      \  ledcWrite(0,co2Duty);\n\n  struct tm ti; getLocalTime(&ti);\n  bool lightOn=(ti.tm_hour>=LIGHT_ON&&ti.tm_hour<LIGHT_OFF);\n\
-      \  digitalWrite(R_LIGHT,lightOn?LOW:HIGH);\n\n  publishTelemetry(temp,hum,co2,co2Duty);\n  Serial.printf(\"\
-      T:%.1f H:%.1f CO2:%d duty:%dn\",temp,hum,co2,co2Duty);\n  delay(30000);\n}"
-    code_filename: esp32-greenhouse-advanced.ino
+    - - DHT22 read failed
+      - Check data pin, pull-up, and power; wait at least two seconds between reads.
+    - - Relay logic is backwards
+      - Confirm whether your module is active LOW or active HIGH and adjust setFan().
+    - - Fan does not run
+      - Check separate fan supply, relay rating, and load wiring.
+    improvements: &id002
+    - Add capacitive soil moisture monitoring.
+    - Add minimum fan runtime.
+    - Log readings to an MQTT dashboard.
+    code: "// ESP32 low-voltage greenhouse controller demo\n// DHT22 air readings control a relay with hysteresis.\n#include\
+      \ <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <DHT.h>\n\nconst int DHT_PIN = 4;\nconst int FAN_RELAY = 26;\nconst\
+      \ float TEMP_ON_C = 30.0;\nconst float TEMP_OFF_C = 28.0;\nconst float HUM_ON_PERCENT = 85.0;\nconst float HUM_OFF_PERCENT\
+      \ = 78.0;\n\nDHT dht(DHT_PIN, DHT22);\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nbool fanOn = false;\nunsigned long\
+      \ lastReadMs = 0;\n\nvoid setFan(bool on) {\n  fanOn = on;\n  digitalWrite(FAN_RELAY, fanOn ? LOW : HIGH); // common\
+      \ active-LOW relay module\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  dht.begin();\n  oled.begin(SSD1306_SWITCHCAPVCC,\
+      \ 0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(FAN_RELAY, OUTPUT);\n  setFan(false);\n  Serial.println(\"Greenhouse\
+      \ controller ready. Low-voltage loads only.\");\n}\n\nvoid loop() {\n  if (millis() - lastReadMs < 2500) return;\n \
+      \ lastReadMs = millis();\n\n  float tempC = dht.readTemperature();\n  float humidity = dht.readHumidity();\n  if (isnan(tempC)\
+      \ || isnan(humidity)) {\n    setFan(false);\n    Serial.println(\"DHT22 read failed. Fan set off until readings recover.\"\
+      );\n    return;\n  }\n\n  if (!fanOn && (tempC >= TEMP_ON_C || humidity >= HUM_ON_PERCENT)) {\n    setFan(true);\n \
+      \ } else if (fanOn && tempC <= TEMP_OFF_C && humidity <= HUM_OFF_PERCENT) {\n    setFan(false);\n  }\n\n  Serial.printf(\"\
+      Temp %.1f C  Hum %.1f %%  Fan %s\\n\", tempC, humidity, fanOn ? \"ON\" : \"off\");\n\n  oled.clearDisplay();\n  oled.setTextSize(1);\n\
+      \  oled.setCursor(0, 0);\n  oled.printf(\"Temp: %.1f C\\n\", tempC);\n  oled.printf(\"Hum:  %.1f %%\\n\", humidity);\n\
+      \  oled.printf(\"Fan:  %s\\n\", fanOn ? \"ON\" : \"off\");\n  oled.println(\"Hysteresis enabled\");\n  oled.display();\n\
+      }\n"
+    code_filename: esp32-greenhouse-automation-controller-beginner.ino
 related_slugs:
 - esp32-soil-moisture-monitor
 - esp32-soil-ph-monitor
+format: golden
+meta_title: ESP32 Low-Voltage Greenhouse Vent Controller
+project:
+  icon: GROW
+  mission_title: Build a Low-Voltage Greenhouse Vent Controller
+  difficulty: Intermediate
+  age: Ages 13+
+  recommended_age: Ages 13+
+  estimated_time: 75-90 min
+  budget: Under 35 USD
+  adult_supervision: Adult supervision required around fans, power supplies, water, and relay wiring.
+  classroom_use: Use a small low-voltage fan or LED load to demonstrate hysteresis without mains wiring.
+  parent_prompt: Ask why the fan has separate power and why the ESP32 pin cannot drive it directly.
+  screen_free_activity: Draw dry electronics, wet plant area, sensor, fan, relay, and shared ground.
+  skills_practiced:
+  - DHT22 readings
+  - Relay control
+  - Hysteresis
+  - Water safety
+  learning_outcomes: &id001
+  - Read DHT22 on GPIO4.
+  - Switch a relay input on GPIO26.
+  - Use hysteresis to avoid rapid cycling.
+  - Explain low-voltage load power and shared ground.
+  mini_experiments:
+  - Change temperature thresholds.
+  - Warm the sensor gently and observe fan state.
+  - Compare relay behavior with and without hysteresis.
+  next_challenge: Add a soil moisture lesson only after waterproofing and sensor calibration are understood.
+  what_you_build: A low-voltage greenhouse ventilation prototype using DHT22 air readings, OLED status, and a relay-controlled
+    fan.
+  story: This is an educational climate-control demo, not a production crop controller. It keeps mains, irrigation dosing,
+    and CO2 equipment out of scope.
+  eli12: The ESP32 reads air temperature and humidity. If the air is too warm or wet, it tells a relay module to turn on a
+    small fan.
+  parent_safety: Use low-voltage loads only. Keep water away from electronics. Do not wire mains-powered fans in this beginner
+    build. Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board for the low-voltage logic side.
+    link: /components/esp32-devkit.html
+  - item: DHT22 temperature and humidity sensor
+    note: Greenhouse air sensor with a data pin on GPIO4.
+    link: /components/dht22.html
+  - item: Relay module
+    note: Low-voltage load switch; use only within its rated voltage and current.
+    link: /components/relay-module.html
+  - item: SSD1306 OLED display
+    note: Optional I2C status display on GPIO21/GPIO22.
+    link: /components/ssd1306-oled.html
+  - item: Low-voltage DC fan and matching supply
+    note: Fan power is separate from ESP32 power; use relay within rating.
+  - item: Breadboard and jumper wires
+    note: For dry bench testing.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board for the low-voltage logic side.
+  - part: DHT22 temperature and humidity sensor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Greenhouse air sensor with a data pin on GPIO4.
+  - part: Relay module
+    qty: '1'
+    estimated_cost: Varies
+    notes: Low-voltage load switch; use only within its rated voltage and current.
+  - part: SSD1306 OLED display
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optional I2C status display on GPIO21/GPIO22.
+  - part: Low-voltage DC fan and matching supply
+    qty: '1'
+    estimated_cost: Varies
+    notes: Fan power is separate from ESP32 power; use relay within rating.
+  - part: Breadboard and jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: For dry bench testing.
+  wiring:
+    illustration_alt: Build a Low-Voltage Greenhouse Vent Controller wiring diagram
+    summary: DHT22 DATA is GPIO4. Relay IN is GPIO26. OLED shares I2C GPIO21/GPIO22. Fan power is switched by the relay, not
+      by ESP32 GPIO.
+    steps:
+    - Unplug USB and fan supply before wiring.
+    - Connect DHT22 VCC to 3.3 V, GND to GND, and DATA to GPIO4 with pull-up if needed.
+    - Connect relay VCC/GND as required by the relay module and relay IN to GPIO26.
+    - Connect OLED SDA to GPIO21 and SCL to GPIO22.
+    - Wire only a low-voltage fan/load through the relay contacts.
+    - Keep the electronics dry and separated from plant trays.
+  gpio_map:
+  - signal: DHT22 DATA
+    esp32_pin: GPIO4
+    direction: Input
+    notes: Use pull-up if using a bare sensor.
+  - signal: Relay IN
+    esp32_pin: GPIO26
+    direction: Output
+    notes: Assumes common active-LOW module.
+  - signal: OLED SDA
+    esp32_pin: GPIO21
+    direction: I2C data
+    notes: Optional status display.
+  - signal: OLED SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Optional status display.
+  circuit_explanation: The ESP32 reads DHT22 data and drives the relay input. The relay switches external low-voltage fan
+    power while sharing only the required control-side ground.
+  engineering_explanation: Hysteresis uses separate on/off thresholds so the relay does not chatter near a boundary. Sensor
+    errors turn the fan off in this educational default.
+  libraries:
+  - name: DHT sensor library
+    note: Install Adafruit DHT library and dependency.
+  - name: Adafruit SSD1306
+    note: For optional OLED status.
+  code:
+    filename: esp32-greenhouse-automation-controller.ino
+    content: "// ESP32 low-voltage greenhouse controller demo\n// DHT22 air readings control a relay with hysteresis.\n#include\
+      \ <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <DHT.h>\n\nconst int DHT_PIN = 4;\nconst int FAN_RELAY = 26;\nconst\
+      \ float TEMP_ON_C = 30.0;\nconst float TEMP_OFF_C = 28.0;\nconst float HUM_ON_PERCENT = 85.0;\nconst float HUM_OFF_PERCENT\
+      \ = 78.0;\n\nDHT dht(DHT_PIN, DHT22);\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nbool fanOn = false;\nunsigned long\
+      \ lastReadMs = 0;\n\nvoid setFan(bool on) {\n  fanOn = on;\n  digitalWrite(FAN_RELAY, fanOn ? LOW : HIGH); // common\
+      \ active-LOW relay module\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  dht.begin();\n  oled.begin(SSD1306_SWITCHCAPVCC,\
+      \ 0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(FAN_RELAY, OUTPUT);\n  setFan(false);\n  Serial.println(\"Greenhouse\
+      \ controller ready. Low-voltage loads only.\");\n}\n\nvoid loop() {\n  if (millis() - lastReadMs < 2500) return;\n \
+      \ lastReadMs = millis();\n\n  float tempC = dht.readTemperature();\n  float humidity = dht.readHumidity();\n  if (isnan(tempC)\
+      \ || isnan(humidity)) {\n    setFan(false);\n    Serial.println(\"DHT22 read failed. Fan set off until readings recover.\"\
+      );\n    return;\n  }\n\n  if (!fanOn && (tempC >= TEMP_ON_C || humidity >= HUM_ON_PERCENT)) {\n    setFan(true);\n \
+      \ } else if (fanOn && tempC <= TEMP_OFF_C && humidity <= HUM_OFF_PERCENT) {\n    setFan(false);\n  }\n\n  Serial.printf(\"\
+      Temp %.1f C  Hum %.1f %%  Fan %s\\n\", tempC, humidity, fanOn ? \"ON\" : \"off\");\n\n  oled.clearDisplay();\n  oled.setTextSize(1);\n\
+      \  oled.setCursor(0, 0);\n  oled.printf(\"Temp: %.1f C\\n\", tempC);\n  oled.printf(\"Hum:  %.1f %%\\n\", humidity);\n\
+      \  oled.printf(\"Fan:  %s\\n\", fanOn ? \"ON\" : \"off\");\n  oled.println(\"Hysteresis enabled\");\n  oled.display();\n\
+      }\n"
+  code_explanation: The loop reads every 2.5 seconds, validates sensor data, applies temperature/humidity hysteresis, and
+    updates GPIO26 and the OLED.
+  expected_output: Serial and OLED show temperature, humidity, and fan state. Warming the sensor above TEMP_ON_C turns the
+    fan on; it turns off only below TEMP_OFF_C with humidity below HUM_OFF_PERCENT.
+  common_mistakes:
+  - text: Driving a fan directly from an ESP32 pin.
+  - text: Using mains loads on a breadboard.
+  - text: Putting electronics where water can drip.
+  - text: Omitting hysteresis and causing rapid relay cycling.
+  troubleshooting:
+  - problem: DHT22 read failed
+    fix: Check data pin, pull-up, and power; wait at least two seconds between reads.
+  - problem: Relay logic is backwards
+    fix: Confirm whether your module is active LOW or active HIGH and adjust setFan().
+  - problem: Fan does not run
+    fix: Check separate fan supply, relay rating, and load wiring.
+  testing_checklist:
+  - Test the relay with an LED load first.
+  - Simulate warm air before connecting a fan.
+  - Confirm the fan remains off when DHT22 data fails.
+  engineer_tips:
+  - Mount sensors away from direct water spray.
+  - Use strain relief for fan wiring.
+  - Label threshold values in code.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: Reading Analog Sensors
+    href: /guides/reading-analog-sensors.html
+    description: Review sensor readings, thresholds, and Serial Monitor checks.
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, and safe wiring basics.
+  related_projects:
+  - title: ESP32 Smart Irrigation System
+    href: /projects/esp32-smart-irrigation-system.html
+    description: Compare ventilation control with Golden water-control safety boundaries.
+  - title: ESP32 Soil Moisture Monitor
+    href: /projects/esp32-soil-moisture-monitor.html
+    description: Learn sensor calibration before adding watering logic.
+  faqs:
+  - question: Can this control a mains fan?
+    answer: No. This beginner build is low-voltage only.
+  - question: Why use hysteresis?
+    answer: It prevents rapid on/off switching near the threshold.
+  - question: Is it crop-safe?
+    answer: No. It is an educational prototype, not a production grow controller.
+  complete:
+    summary: You completed Build a Low-Voltage Greenhouse Vent Controller with matching wiring, code, tests, and limitations.
+    skills:
+    - DHT22 readings
+    - Relay control
+    - Hysteresis
+keywords:
+- ESP32
+- Build a Low-Voltage Greenhouse Vent Controller
+- DHT22 DATA
+- OLED SCL
+- Arduino tutorial

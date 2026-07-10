@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
+from site_counts import render_count_tokens
 from site_layout import (
     SITE_NAME,
     SITE_DOMAIN,
@@ -22,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def normalize_body(body: str) -> str:
+    body = render_count_tokens(body)
     body = (body or "").strip()
     if not body:
         return ""

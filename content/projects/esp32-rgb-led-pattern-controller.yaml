@@ -1,72 +1,269 @@
 slug: esp32-rgb-led-pattern-controller
 title: ESP32 RGB LED Pattern Controller
 category: LED Projects
-description: Control RGB LED strips and patterns with ESP32 — simple color fades, manual modes, then Wi-Fi
-  and app-style control.
+description: Control one common-cathode RGB LED with three ESP32 PWM channels and a debounced button-driven pattern state
+  machine.
 source_base: esp32-rgb-led-pattern-controller-for-low-power-use
-sensor: push button
-output: RGB LED strip
+sensor: RGB red anode
+output: Pattern button
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-18'
 hardware:
-  sensor_pin: GPIO14
-  output_pin: GPIO13
-  sensor_name: Push button
-  output_name: WS2812B DIN
+  sensor_pin: GPIO25
+  output_pin: GPIO14
+  sensor_name: RGB red anode
+  output_name: Pattern button
   wiring:
-  - component: WS2812B DIN
-    pin: GPIO13
-  - component: Push button
+  - component: RGB red anode
+    pin: GPIO25
+  - component: RGB green anode
+    pin: GPIO26
+  - component: RGB blue anode
+    pin: GPIO27
+  - component: Pattern button
     pin: GPIO14
-  - component: VCC
-    pin: 5V external
-  - component: GND
-    pin: GND
-meta_description: Control WS2812B LED patterns with ESP32 GPIO13 data and a push button on GPIO14.
-meta_title: ESP32 Rgb Led Pattern Controller for Stage Light
+meta_description: Learn PWM color mixing with a single common-cathode RGB LED and a button-driven non-blocking pattern state
+  machine on ESP32.
+meta_title: ESP32 RGB LED PWM Pattern Controller Tutorial
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for LED patterns: GPIO13 sends WS2812B data and GPIO14 reads a push button to change modes.</p>\n      <ul class=\"overview-list\">\n\
-      \        <li>WS2812B DIN connects to GPIO13</li><li>Push button connects to GPIO14 and GND</li><li>The LED strip uses an external 5 V supply with common ground</li><li>The code advances color patterns on button press</li>\n      </ul>\n\
-      \      </section>"
+    overview_html: <p>A single common-cathode RGB LED pattern controller using three PWM channels and one button. Use one
+      resistor per color channel. Do not scale this single-LED wiring to strips without redesigning power.</p>
     components:
-    - ESP32 Dev Board
-    - WS2812B LED strip
-    - Push Button
-    - 330 ohm resistor
-    - 1000 uF capacitor
-    - External 5V Power Supply
+    - ESP32 DevKit board
+    - Common-cathode 4-pin RGB LED
+    - Three 220 ohm resistors
+    - Push button
+    - Breadboard and jumper wires
     wiring:
-    - - WS2812B DIN
-      - GPIO13
-      - One-wire LED data output
-    - - Push button
+    - - RGB red anode
+      - GPIO25
+      - Series resistor required.
+    - - RGB green anode
+      - GPIO26
+      - Series resistor required.
+    - - RGB blue anode
+      - GPIO27
+      - Series resistor required.
+    - - Pattern button
       - GPIO14
-      - Digital input using INPUT_PULLUP
-    - - VCC
-      - 5V external
-      - LED strip power
-    - - GND
-      - GND
-      - ''
-    how: []
-    apps:
-    - WS2812B color pattern control
-    troubleshooting: []
-    upgrades:
-    - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 RGB LED Pattern Controller\n#include <Adafruit_NeoPixel.h>\n\nconst int LED_PIN = 13;\nconst int BUTTON_PIN = 14;\nconst int LED_COUNT = 16;\nAdafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);\nint pattern = 0;\nbool lastButton = HIGH;\n\nvoid showPattern() {\n  uint32_t colors[] = {\n    strip.Color(255, 0, 0),\n    strip.Color(0, 255, 0),\n    strip.Color(0, 0, 255),\n    strip.Color(255, 180, 0)\n  };\n  strip.fill(colors[pattern % 4]);\n  strip.show();\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  strip.begin();\n  strip.setBrightness(40);\n  showPattern();\n}\n\nvoid loop() {\n  bool button = digitalRead(BUTTON_PIN);\n  if (lastButton == HIGH && button == LOW) {\n    pattern++;\n    showPattern();\n    Serial.println(pattern % 4);\n    delay(200);\n  }\n  lastButton = button;\n}"
-    code_filename: ''
-  intermediate:
-    overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
-    code: ''
-  advanced:
-    overview_html: '<p>TODO: import advanced content from batch or WordPress</p>'
-    code: ''
-quality_status: legacy_import
+      - INPUT_PULLUP; button to GND.
+    key_concepts:
+    - Each color channel is a separate LED controlled by PWM. The button advances a pattern variable without delay-based blocking.
+    - Common-cathode means higher PWM duty makes the selected color brighter. Common-anode LEDs need inverted PWM and are
+      not used here.
+    applications: &id003
+    - Additive color lesson
+    - PWM demonstration
+    - Button state-machine exercise
+    troubleshooting:
+    - - Colors are inverted
+      - You may have a common-anode LED; use common-cathode or invert PWM.
+    - - One color is missing
+      - Check that channel's resistor and LED pin.
+    - - Button double-triggers
+      - Increase debounce time or check wiring.
+    improvements: &id002
+    - Add adjustable fade speed.
+    - Add a potentiometer color mixer.
+    - Save last pattern in preferences.
+    code: "// ESP32 common-cathode RGB LED pattern controller\n// Single low-power RGB LED, not an addressable strip.\nconst\
+      \ int RED_PIN = 25;\nconst int GREEN_PIN = 26;\nconst int BLUE_PIN = 27;\nconst int BUTTON_PIN = 14;\n\nconst int RED_CH\
+      \ = 0;\nconst int GREEN_CH = 1;\nconst int BLUE_CH = 2;\nconst int PWM_FREQ = 5000;\nconst int PWM_RES = 8;\n\nint pattern\
+      \ = 0;\nbool lastButton = HIGH;\nunsigned long lastDebounceMs = 0;\nunsigned long frameMs = 0;\n\nvoid writeRgb(uint8_t\
+      \ r, uint8_t g, uint8_t b) {\n  ledcWrite(RED_CH, r);\n  ledcWrite(GREEN_CH, g);\n  ledcWrite(BLUE_CH, b);\n}\n\nvoid\
+      \ setupPwm() {\n  ledcSetup(RED_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(GREEN_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(BLUE_CH,\
+      \ PWM_FREQ, PWM_RES);\n  ledcAttachPin(RED_PIN, RED_CH);\n  ledcAttachPin(GREEN_PIN, GREEN_CH);\n  ledcAttachPin(BLUE_PIN,\
+      \ BLUE_CH);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupPwm();\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  writeRgb(255,\
+      \ 0, 0);\n}\n\nvoid loop() {\n  bool button = digitalRead(BUTTON_PIN);\n  if (button != lastButton && millis() - lastDebounceMs\
+      \ > 40) {\n    lastDebounceMs = millis();\n    lastButton = button;\n    if (button == LOW) {\n      pattern = (pattern\
+      \ + 1) % 3;\n      Serial.printf(\"Pattern %d\\n\", pattern);\n    }\n  }\n\n  unsigned long now = millis();\n  if (now\
+      \ - frameMs < 20) return;\n  frameMs = now;\n\n  uint8_t phase = (now / 8) & 0xFF;\n  if (pattern == 0) {\n    writeRgb(255,\
+      \ 0, 0);\n  } else if (pattern == 1) {\n    writeRgb(phase, 255 - phase, 128);\n  } else {\n    int step = (now / 500)\
+      \ % 6;\n    const uint8_t colors[6][3] = {{255,0,0},{255,80,0},{0,255,0},{0,255,255},{0,0,255},{160,0,255}};\n    writeRgb(colors[step][0],\
+      \ colors[step][1], colors[step][2]);\n  }\n}\n"
+    code_filename: esp32-rgb-led-pattern-controller-beginner.ino
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
 import_source: esp32-rgb-led-pattern-controller-for-low-power-use-project-001.html
+format: golden
+project:
+  icon: RGB
+  mission_title: Build a Single RGB LED Pattern Controller
+  difficulty: Beginner
+  age: Ages 10+
+  recommended_age: Ages 10+
+  estimated_time: 45-60 min
+  budget: Under 15 USD
+  adult_supervision: Low supervision; verify each LED channel has a resistor.
+  classroom_use: Use it for additive color and debouncing lessons.
+  parent_prompt: Ask what color appears when red and green PWM are both high.
+  screen_free_activity: Predict colors for R/G/B duty-cycle combinations before testing.
+  skills_practiced:
+  - PWM
+  - Button debouncing
+  - State machines
+  - Additive color
+  learning_outcomes: &id001
+  - Wire a common-cathode RGB LED.
+  - Use LEDC PWM on GPIO25/GPIO26/GPIO27.
+  - Debounce a button on GPIO14.
+  - Differentiate a single RGB LED from addressable NeoPixels.
+  mini_experiments:
+  - Change PWM frequency.
+  - Create a fourth custom pattern.
+  - Swap the button for a potentiometer in a future build.
+  next_challenge: Add a second button for adjustable fade speed.
+  what_you_build: A single common-cathode RGB LED pattern controller using three PWM channels and one button.
+  story: This project is intentionally a small PWM lesson, not a strip controller. The LED type, wiring polarity, and code
+    all match common-cathode behavior.
+  eli12: The RGB LED has red, green, and blue lights inside it. The ESP32 dims each one very quickly to mix colors.
+  parent_safety: Use one resistor per color channel. Do not scale this single-LED wiring to strips without redesigning power.
+    Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: Main 3.3 V logic controller.
+    link: /components/esp32-devkit.html
+  - item: Common-cathode 4-pin RGB LED
+    note: Shared cathode goes to GND.
+  - item: Three 220 ohm resistors
+    note: One per red, green, and blue channel.
+  - item: Push button
+    note: Pattern select input to GND using INPUT_PULLUP.
+  - item: Breadboard and jumper wires
+    note: For low-voltage prototyping.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Main 3.3 V logic controller.
+  - part: Common-cathode 4-pin RGB LED
+    qty: '1'
+    estimated_cost: Varies
+    notes: Shared cathode goes to GND.
+  - part: Three 220 ohm resistors
+    qty: '1'
+    estimated_cost: Varies
+    notes: One per red, green, and blue channel.
+  - part: Push button
+    qty: '1'
+    estimated_cost: Varies
+    notes: Pattern select input to GND using INPUT_PULLUP.
+  - part: Breadboard and jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: For low-voltage prototyping.
+  wiring:
+    illustration_alt: ESP32 RGB LED Pattern Controller wiring diagram
+    summary: Common cathode goes to GND. Red, green, and blue anodes go through resistors to GPIO25, GPIO26, and GPIO27. Button
+      connects GPIO14 to GND.
+    steps:
+    - Unplug USB before wiring.
+    - Connect the common cathode pin to GND.
+    - Connect red through 220 ohm resistor to GPIO25.
+    - Connect green through 220 ohm resistor to GPIO26.
+    - Connect blue through 220 ohm resistor to GPIO27.
+    - Connect one side of the button to GPIO14 and the other to GND.
+  gpio_map:
+  - signal: RGB red anode
+    esp32_pin: GPIO25
+    direction: PWM output
+    notes: Series resistor required.
+  - signal: RGB green anode
+    esp32_pin: GPIO26
+    direction: PWM output
+    notes: Series resistor required.
+  - signal: RGB blue anode
+    esp32_pin: GPIO27
+    direction: PWM output
+    notes: Series resistor required.
+  - signal: Pattern button
+    esp32_pin: GPIO14
+    direction: Input
+    notes: INPUT_PULLUP; button to GND.
+  circuit_explanation: Each color channel is a separate LED controlled by PWM. The button advances a pattern variable without
+    delay-based blocking.
+  engineering_explanation: Common-cathode means higher PWM duty makes the selected color brighter. Common-anode LEDs need
+    inverted PWM and are not used here.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Uses built-in LEDC PWM functions only.
+  code:
+    filename: esp32-rgb-led-pattern-controller.ino
+    content: "// ESP32 common-cathode RGB LED pattern controller\n// Single low-power RGB LED, not an addressable strip.\n\
+      const int RED_PIN = 25;\nconst int GREEN_PIN = 26;\nconst int BLUE_PIN = 27;\nconst int BUTTON_PIN = 14;\n\nconst int\
+      \ RED_CH = 0;\nconst int GREEN_CH = 1;\nconst int BLUE_CH = 2;\nconst int PWM_FREQ = 5000;\nconst int PWM_RES = 8;\n\
+      \nint pattern = 0;\nbool lastButton = HIGH;\nunsigned long lastDebounceMs = 0;\nunsigned long frameMs = 0;\n\nvoid writeRgb(uint8_t\
+      \ r, uint8_t g, uint8_t b) {\n  ledcWrite(RED_CH, r);\n  ledcWrite(GREEN_CH, g);\n  ledcWrite(BLUE_CH, b);\n}\n\nvoid\
+      \ setupPwm() {\n  ledcSetup(RED_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(GREEN_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(BLUE_CH,\
+      \ PWM_FREQ, PWM_RES);\n  ledcAttachPin(RED_PIN, RED_CH);\n  ledcAttachPin(GREEN_PIN, GREEN_CH);\n  ledcAttachPin(BLUE_PIN,\
+      \ BLUE_CH);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupPwm();\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  writeRgb(255,\
+      \ 0, 0);\n}\n\nvoid loop() {\n  bool button = digitalRead(BUTTON_PIN);\n  if (button != lastButton && millis() - lastDebounceMs\
+      \ > 40) {\n    lastDebounceMs = millis();\n    lastButton = button;\n    if (button == LOW) {\n      pattern = (pattern\
+      \ + 1) % 3;\n      Serial.printf(\"Pattern %d\\n\", pattern);\n    }\n  }\n\n  unsigned long now = millis();\n  if (now\
+      \ - frameMs < 20) return;\n  frameMs = now;\n\n  uint8_t phase = (now / 8) & 0xFF;\n  if (pattern == 0) {\n    writeRgb(255,\
+      \ 0, 0);\n  } else if (pattern == 1) {\n    writeRgb(phase, 255 - phase, 128);\n  } else {\n    int step = (now / 500)\
+      \ % 6;\n    const uint8_t colors[6][3] = {{255,0,0},{255,80,0},{0,255,0},{0,255,255},{0,0,255},{160,0,255}};\n    writeRgb(colors[step][0],\
+      \ colors[step][1], colors[step][2]);\n  }\n}\n"
+  code_explanation: Three LEDC channels drive RGB pins. The button is debounced with millis() and advances a non-blocking
+    pattern state.
+  expected_output: The RGB LED changes pattern on each button press without long pauses or double-triggering.
+  common_mistakes:
+  - text: Using a common-anode LED without changing logic.
+  - text: Skipping resistors.
+  - text: Expecting this to control a NeoPixel strip.
+  - text: Using delay() for debounce.
+  troubleshooting:
+  - problem: Colors are inverted
+    fix: You may have a common-anode LED; use common-cathode or invert PWM.
+  - problem: One color is missing
+    fix: Check that channel's resistor and LED pin.
+  - problem: Button double-triggers
+    fix: Increase debounce time or check wiring.
+  testing_checklist:
+  - Test each color channel individually.
+  - Press button ten times and watch for missed or double steps.
+  - Confirm fades continue while button is idle.
+  engineer_tips:
+  - Identify the longest LED leg before wiring.
+  - Use one resistor per channel.
+  - Keep the button wiring short.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Review duty cycle, LED dimming, and output timing.
+  - title: Button LED Control
+    href: /guides/button-led-control.html
+    description: Practice button-controlled outputs.
+  related_projects:
+  - title: ESP32 NeoPixel Music Visualizer
+    href: /projects/esp32-neopixel-music-visualizer.html
+    description: Contrast single-LED PWM with addressable LED strips.
+  - title: ESP32 LED Matrix Display
+    href: /projects/esp32-led-matrix-display.html
+    description: Move from one RGB LED to a larger display output.
+  faqs:
+  - question: Is this for NeoPixels?
+    answer: No. It is one common-cathode RGB LED.
+  - question: Why three resistors?
+    answer: Each color channel needs its own current limit.
+  - question: What if my LED is common-anode?
+    answer: Use a common-cathode LED for this tutorial or invert the PWM logic.
+  complete:
+    summary: You completed ESP32 RGB LED Pattern Controller with matching wiring, code, tests, and limitations.
+    skills:
+    - PWM
+    - Button debouncing
+    - State machines
+keywords:
+- ESP32
+- ESP32 RGB LED Pattern Controller
+- RGB red anode
+- Pattern button
+- Arduino tutorial

@@ -1,18 +1,18 @@
 slug: esp32-rfid-inventory-tracker
 title: ESP32 RFID Inventory Tracker
 category: Industrial Automation
-description: Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log
-  check-in and check-out events, maintain a stock count database on an SD card, and view real-time inventory
-  status on a web dashboard — no cloud subscription required.
-meta_description: Build an ESP32 RFID inventory tracker using the RC522 module. Scan asset tags, log check-in
-  and check-out events to SD card, and monitor stock levels from a live web dashboard.
+description: Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out
+  events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud
+  subscription required.
+meta_description: Build an ESP32 RFID inventory tracker using the RC522 module. Scan asset tags, log check-in and check-out
+  events to SD card, and monitor stock levels from a live web dashboard.
 source_base: esp32-rfid-inventory-tracker-legacy-import
 sensor: 'TODO: sensor'
 output: RC522 RST
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
@@ -37,10 +37,10 @@ hardware:
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect an RC522 RFID module to the ESP32 via
-      SPI and read MIFARE 13.56 MHz tag UIDs. When a tag is scanned, the UID and a timestamp are printed
-      to Serial and stored as a line in a CSV file on an SD card. An LED flashes green for a known tag
-      and red for an unknown tag. This demonstrates SPI RFID reading and SD card logging fundamentals.</p>
+    overview_html: <p>In this beginner project you will connect an RC522 RFID module to the ESP32 via SPI and read MIFARE
+      13.56 MHz tag UIDs. When a tag is scanned, the UID and a timestamp are printed to Serial and stored as a line in a CSV
+      file on an SD card. An LED flashes green for a known tag and red for an unknown tag. This demonstrates SPI RFID reading
+      and SD card logging fundamentals.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× RC522 RFID reader module — 13.56 MHz MIFARE; SPI; 3.3 V
@@ -67,21 +67,18 @@ levels:
       - GPIO 27
       - 220 ohm series
     how:
-    - 'RC522 SPI Communication: The RC522 uses SPI with a dedicated chip-select (SS) pin. The MFRC522
-      library manages the ISO 14443A protocol: it sends RF commands to detect tags (PICC_IsNewCardPresent),
-      authenticate (for MIFARE Classic encrypted blocks), and read/write data. The 13.56 MHz field powers
-      the passive tag and enables two-way communication.'
-    - 'UID as Asset Identifier: Each MIFARE tag has a factory-programmed UID (4-7 bytes) that is globally
-      unique. The beginner project uses these UIDs directly as asset identifiers by comparing scanned
-      UIDs against a hardcoded array. The uidToHex() function converts the raw byte array to an uppercase
-      hex string for easy comparison.'
-    - 'Shared SPI Bus: The RC522 and SD card module share the SPI bus (SCK, MOSI, MISO) but each has its
-      own chip-select pin (GPIO 5 for RC522, GPIO 4 for SD). Only one device is active at a time: when
-      RC522_SS is LOW the SD_CS is HIGH and vice versa. The SPI library manages this automatically when
-      different CS pins are used.'
-    - 'CSV Audit Log: Each scan appends a line to /inventory.csv: millis timestamp, UID, and asset name.
-      The millis() timestamp can be replaced with an NTP timestamp in Wi-Fi enabled builds. The CSV format
-      is directly importable into Excel or Google Sheets for reporting.'
+    - 'RC522 SPI Communication: The RC522 uses SPI with a dedicated chip-select (SS) pin. The MFRC522 library manages the
+      ISO 14443A protocol: it sends RF commands to detect tags (PICC_IsNewCardPresent), authenticate (for MIFARE Classic encrypted
+      blocks), and read/write data. The 13.56 MHz field powers the passive tag and enables two-way communication.'
+    - 'UID as Asset Identifier: Each MIFARE tag has a factory-programmed UID (4-7 bytes) that is globally unique. The beginner
+      project uses these UIDs directly as asset identifiers by comparing scanned UIDs against a hardcoded array. The uidToHex()
+      function converts the raw byte array to an uppercase hex string for easy comparison.'
+    - 'Shared SPI Bus: The RC522 and SD card module share the SPI bus (SCK, MOSI, MISO) but each has its own chip-select pin
+      (GPIO 5 for RC522, GPIO 4 for SD). Only one device is active at a time: when RC522_SS is LOW the SD_CS is HIGH and vice
+      versa. The SPI library manages this automatically when different CS pins are used.'
+    - 'CSV Audit Log: Each scan appends a line to /inventory.csv: millis timestamp, UID, and asset name. The millis() timestamp
+      can be replaced with an NTP timestamp in Wi-Fi enabled builds. The CSV format is directly importable into Excel or Google
+      Sheets for reporting.'
     apps:
     - Tool crib check-out logging in a workshop or factory
     - Library book scan-in/scan-out system
@@ -89,47 +86,44 @@ levels:
     - School lab equipment loan tracking
     troubleshooting:
     - - PICC_IsNewCardPresent always returns false
-      - Verify the RC522 is powered at exactly 3.3 V — it is not 5 V tolerant. Check all four SPI pins.
-        Confirm RC522_SS and RC522_RST are correctly defined. Call rfid.PCD_DumpVersionToSerial() in setup()
-        to verify the library can communicate with the RC522 chip.
+      - Verify the RC522 is powered at exactly 3.3 V — it is not 5 V tolerant. Check all four SPI pins. Confirm RC522_SS and
+        RC522_RST are correctly defined. Call rfid.PCD_DumpVersionToSerial() in setup() to verify the library can communicate
+        with the RC522 chip.
     - - SD card fails to initialise on the same SPI bus
-      - The RC522 must be initialised first with SPI.begin() already called. Ensure SD.begin(SD_CS) uses
-        a different CS pin from RC522_SS. Some SD modules require the CS pin to be explicitly pulled HIGH
-        before SPI.begin() to prevent bus contention during initialisation.
+      - The RC522 must be initialised first with SPI.begin() already called. Ensure SD.begin(SD_CS) uses a different CS pin
+        from RC522_SS. Some SD modules require the CS pin to be explicitly pulled HIGH before SPI.begin() to prevent bus contention
+        during initialisation.
     - - Same tag triggers multiple scans in rapid succession
-      - The 1000 ms delay at the end of loop() prevents rapid rescanning. Increase to 2000 ms if double-scanning
-        still occurs. rfid.PICC_HaltA() puts the tag in HALT state; rfid.PCD_StopCrypto1() resets the
-        crypto layer. Both must be called to properly terminate each card transaction.
+      - The 1000 ms delay at the end of loop() prevents rapid rescanning. Increase to 2000 ms if double-scanning still occurs.
+        rfid.PICC_HaltA() puts the tag in HALT state; rfid.PCD_StopCrypto1() resets the crypto layer. Both must be called
+        to properly terminate each card transaction.
     upgrades:
     - Add Wi-Fi and NTP timestamps to replace millis() in the CSV log
     - Add a buzzer that plays different tones for known versus unknown tags
     - Add a 16x2 LCD to display the scanned asset name without a computer
     - Add MIFARE data block writing to store asset name directly on the tag
-    code: "// ESP32 RFID Inventory Tracker - Beginner\n// RC522 tag scan -> SD card CSV log with known/unknown\
-      \ LED feedback\n// Libraries: MFRC522 by GithubCommunity, SD by Arduino\n\n#include <SPI.h>\n#include\
-      \ <MFRC522.h>\n#include <SD.h>\n\n#define RC522_SS  5\n#define RC522_RST 22\n#define SD_CS     4\n\
-      #define LED_GREEN 26\n#define LED_RED   27\n\nMFRC522 rfid(RC522_SS, RC522_RST);\n\n// Known tag\
-      \ UIDs (hex strings) mapped to asset names\nconst char* KNOWN_UIDS[] = {\"A1B2C3D4\", \"11223344\"\
-      , \"DEADBEEF\"};\nconst char* ASSET_NAMES[] = {\"Laptop-01\", \"Camera-01\", \"Toolbox-01\"};\n\
-      const int NUM_ASSETS = 3;\n\nString uidToHex(MFRC522::Uid *uid){\n  String s=\"\";\n  for(byte i=0;i<uid->size;i++){\n\
-      \    if(uid->uidByte[i]<0x10) s+=\"0\";\n    s+=String(uid->uidByte[i],HEX);\n  }\n  s.toUpperCase();\n\
-      \  return s;\n}\n\nvoid flashLED(int pin){ digitalWrite(pin,HIGH); delay(300); digitalWrite(pin,LOW);\
-      \ }\n\nvoid logScan(const String &uid, const char* name){\n  File f=SD.open(\"/inventory.csv\",FILE_APPEND);\n\
-      \  if(!f) return;\n  f.printf(\"%lu,%s,%sn\",millis(),uid.c_str(),name);\n  f.close();\n}\n\nvoid\
-      \ setup(){\n  Serial.begin(115200);\n  SPI.begin();\n  rfid.PCD_Init();\n  SD.begin(SD_CS);\n  pinMode(LED_GREEN,OUTPUT);\
-      \ pinMode(LED_RED,OUTPUT);\n  Serial.println(\"RFID Inventory Tracker ready. Scan a tag...\");\n\
-      }\n\nvoid loop(){\n  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial()) return;\n  String\
-      \ uid=uidToHex(&rfid.uid);\n  const char* name=\"UNKNOWN\";\n  bool known=false;\n  for(int i=0;i<NUM_ASSETS;i++){\n\
-      \    if(uid==String(KNOWN_UIDS[i])){ name=ASSET_NAMES[i]; known=true; break; }\n  }\n  Serial.printf(\"\
-      UID: %s  Asset: %sn\",uid.c_str(),name);\n  logScan(uid,name);\n  flashLED(known?LED_GREEN:LED_RED);\n\
-      \  rfid.PICC_HaltA();\n  rfid.PCD_StopCrypto1();\n  delay(1000);\n}"
+    code: "// ESP32 RFID Inventory Tracker - Beginner\n// RC522 tag scan -> SD card CSV log with known/unknown LED feedback\n\
+      // Libraries: MFRC522 by GithubCommunity, SD by Arduino\n\n#include <SPI.h>\n#include <MFRC522.h>\n#include <SD.h>\n\
+      \n#define RC522_SS  5\n#define RC522_RST 22\n#define SD_CS     4\n#define LED_GREEN 26\n#define LED_RED   27\n\nMFRC522\
+      \ rfid(RC522_SS, RC522_RST);\n\n// Known tag UIDs (hex strings) mapped to asset names\nconst char* KNOWN_UIDS[] = {\"\
+      A1B2C3D4\", \"11223344\", \"DEADBEEF\"};\nconst char* ASSET_NAMES[] = {\"Laptop-01\", \"Camera-01\", \"Toolbox-01\"\
+      };\nconst int NUM_ASSETS = 3;\n\nString uidToHex(MFRC522::Uid *uid){\n  String s=\"\";\n  for(byte i=0;i<uid->size;i++){\n\
+      \    if(uid->uidByte[i]<0x10) s+=\"0\";\n    s+=String(uid->uidByte[i],HEX);\n  }\n  s.toUpperCase();\n  return s;\n\
+      }\n\nvoid flashLED(int pin){ digitalWrite(pin,HIGH); delay(300); digitalWrite(pin,LOW); }\n\nvoid logScan(const String\
+      \ &uid, const char* name){\n  File f=SD.open(\"/inventory.csv\",FILE_APPEND);\n  if(!f) return;\n  f.printf(\"%lu,%s,%sn\"\
+      ,millis(),uid.c_str(),name);\n  f.close();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  SPI.begin();\n  rfid.PCD_Init();\n\
+      \  SD.begin(SD_CS);\n  pinMode(LED_GREEN,OUTPUT); pinMode(LED_RED,OUTPUT);\n  Serial.println(\"RFID Inventory Tracker\
+      \ ready. Scan a tag...\");\n}\n\nvoid loop(){\n  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial()) return;\n\
+      \  String uid=uidToHex(&rfid.uid);\n  const char* name=\"UNKNOWN\";\n  bool known=false;\n  for(int i=0;i<NUM_ASSETS;i++){\n\
+      \    if(uid==String(KNOWN_UIDS[i])){ name=ASSET_NAMES[i]; known=true; break; }\n  }\n  Serial.printf(\"UID: %s  Asset:\
+      \ %sn\",uid.c_str(),name);\n  logScan(uid,name);\n  flashLED(known?LED_GREEN:LED_RED);\n  rfid.PICC_HaltA();\n  rfid.PCD_StopCrypto1();\n\
+      \  delay(1000);\n}"
     code_filename: esp32-rfid-inventory-beginner.ino
   intermediate:
     level: intermediate
-    overview_html: <p>The intermediate build maintains a live inventory database in memory and on SD card.
-      Each tag scan toggles the asset between checked-in and checked-out state. A web interface lists
-      all assets with their current state, last-seen timestamp, and check-out count. Stock levels below
-      a configurable minimum trigger a Telegram low-stock alert.</p>
+    overview_html: <p>The intermediate build maintains a live inventory database in memory and on SD card. Each tag scan toggles
+      the asset between checked-in and checked-out state. A web interface lists all assets with their current state, last-seen
+      timestamp, and check-out count. Stock levels below a configurable minimum trigger a Telegram low-stock alert.</p>
     components:
     - 1× ESP32 DevKit V1
     - 1× RC522 RFID reader
@@ -141,22 +135,18 @@ levels:
       - Same as beginner
       - ''
     how:
-    - 'Toggle Check-In/Check-Out State: Each tag scan flips the checkedIn boolean for that asset. The
-      first scan of a previously checked-in asset marks it as checked out; scanning again marks it as
-      checked in. This toggle model works well for simple tool crib scenarios where assets leave and return
-      through one checkpoint.'
-    - 'Asset Database from SD Card: The /assets.csv file contains UID,AssetName pairs, one per line. loadAssets()
-      reads this file at startup to populate the in-memory assets[] array. Adding a new asset requires
-      editing the CSV on a computer and restarting the ESP32. The in-memory database is fast; the SD card
-      provides persistence.'
-    - 'Real-Time Stock Count Alert: After each scan, the code counts how many assets are currently checked
-      in. If this count falls below MIN_STOCK, a Telegram alert is sent. The alert fires on every scan
-      that keeps stock below the threshold, so consider adding an alerted flag to prevent repeat messages
-      until stock recovers.'
-    - 'Audit Log with Timestamps: Each check-in/out event appends a timestamped line to /log.csv with
-      Unix timestamp, UID, asset name, and direction (IN/OUT). This log is the audit trail for compliance
-      reporting. The NTP timestamp ensures log entries are correlated with real-world events even after
-      ESP32 restarts.'
+    - 'Toggle Check-In/Check-Out State: Each tag scan flips the checkedIn boolean for that asset. The first scan of a previously
+      checked-in asset marks it as checked out; scanning again marks it as checked in. This toggle model works well for simple
+      tool crib scenarios where assets leave and return through one checkpoint.'
+    - 'Asset Database from SD Card: The /assets.csv file contains UID,AssetName pairs, one per line. loadAssets() reads this
+      file at startup to populate the in-memory assets[] array. Adding a new asset requires editing the CSV on a computer
+      and restarting the ESP32. The in-memory database is fast; the SD card provides persistence.'
+    - 'Real-Time Stock Count Alert: After each scan, the code counts how many assets are currently checked in. If this count
+      falls below MIN_STOCK, a Telegram alert is sent. The alert fires on every scan that keeps stock below the threshold,
+      so consider adding an alerted flag to prevent repeat messages until stock recovers.'
+    - 'Audit Log with Timestamps: Each check-in/out event appends a timestamped line to /log.csv with Unix timestamp, UID,
+      asset name, and direction (IN/OUT). This log is the audit trail for compliance reporting. The NTP timestamp ensures
+      log entries are correlated with real-world events even after ESP32 restarts.'
     apps:
     - Tool crib management with check-out accountability
     - Medical equipment tracking in a hospital ward
@@ -164,40 +154,35 @@ levels:
     - Warehouse sample and prototype tracking system
     troubleshooting:
     - - Asset state is lost after power cycle
-      - The current implementation holds state in RAM. On restart loadAssets() reloads names and UIDs
-        but not current check-in/out state. Add a /state.csv file that saves the checkedIn boolean and
-        outCount for each asset and reads it on startup alongside assets.csv.
+      - The current implementation holds state in RAM. On restart loadAssets() reloads names and UIDs but not current check-in/out
+        state. Add a /state.csv file that saves the checkedIn boolean and outCount for each asset and reads it on startup
+        alongside assets.csv.
     - - Unknown tags trigger no response
-      - The current code silently ignores unregistered tags. Add an else branch after the for-loop to
-        log unknown UIDs to a separate /unknown.csv file and flash a red LED. This helps identify unregistered
-        tags that need to be added to assets.csv.
+      - The current code silently ignores unregistered tags. Add an else branch after the for-loop to log unknown UIDs to
+        a separate /unknown.csv file and flash a red LED. This helps identify unregistered tags that need to be added to assets.csv.
     - - Web dashboard shows outdated data after multiple scans
-      - 'The web server is synchronous; it serves the current in-memory state on each request. If the
-        browser caches the response, add a Cache-Control: no-cache header: server.sendHeader("Cache-Control","no-cache")
-        before server.send().'
+      - 'The web server is synchronous; it serves the current in-memory state on each request. If the browser caches the response,
+        add a Cache-Control: no-cache header: server.sendHeader("Cache-Control","no-cache") before server.send().'
     upgrades:
     - Add a barcode scanner as an alternative to RFID for items without tags
     - 'Add user authentication: scan a personal ID card first, then the asset, to track who took what'
     - Add SD card export endpoint to download the audit log as a CSV file from the browser
     - Add MQTT publishing so Home Assistant tracks stock levels as sensors
-    code: "// ESP32 RFID Inventory Tracker - Intermediate (check-in/out + web dashboard + alerts)\n#include\
-      \ <SPI.h>\n#include <MFRC522.h>\n#include <SD.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include\
-      \ <WiFiClientSecure.h>\n#include <time.h>\n\n#define RC522_SS 5\n#define RC522_RST 22\n#define SD_CS\
-      \ 4\n\nMFRC522 rfid(RC522_SS,RC522_RST);\nWebServer server(80);\nconst char* SSID=\"YourSSID\",\
-      \ *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\";\nconst char* CHAT_ID=\"YOUR_CHAT_ID\"\
-      ;\nconst int MIN_STOCK=2; // alert when fewer than 2 assets checked in\n\nstruct Asset { String\
-      \ uid,name; bool checkedIn; time_t lastSeen; int outCount; };\nconst int MAX_ASSETS=20;\nAsset assets[MAX_ASSETS];\
-      \ int assetCount=0;\n\nvoid loadAssets(){\n  File f=SD.open(\"/assets.csv\");\n  if(!f) return;\n\
-      \  while(f.available()){\n    String line=f.readStringUntil((char)10); line.trim();\n    if(!line.length())\
-      \ continue;\n    int c=line.indexOf("
+    code: "// ESP32 RFID Inventory Tracker - Intermediate (check-in/out + web dashboard + alerts)\n#include <SPI.h>\n#include\
+      \ <MFRC522.h>\n#include <SD.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include <WiFiClientSecure.h>\n#include <time.h>\n\
+      \n#define RC522_SS 5\n#define RC522_RST 22\n#define SD_CS 4\n\nMFRC522 rfid(RC522_SS,RC522_RST);\nWebServer server(80);\n\
+      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\";\nconst char* CHAT_ID=\"\
+      YOUR_CHAT_ID\";\nconst int MIN_STOCK=2; // alert when fewer than 2 assets checked in\n\nstruct Asset { String uid,name;\
+      \ bool checkedIn; time_t lastSeen; int outCount; };\nconst int MAX_ASSETS=20;\nAsset assets[MAX_ASSETS]; int assetCount=0;\n\
+      \nvoid loadAssets(){\n  File f=SD.open(\"/assets.csv\");\n  if(!f) return;\n  while(f.available()){\n    String line=f.readStringUntil((char)10);\
+      \ line.trim();\n    if(!line.length()) continue;\n    int c=line.indexOf("
     code_filename: esp32-rfid-inventory-intermediate.ino
   advanced:
     level: advanced
-    overview_html: '<p>The advanced build stores the inventory database in an SQLite-equivalent structure
-      using LittleFS and exposes a full REST API: GET /api/assets returns JSON, POST /api/scan processes
-      a tag event, PUT /api/asset/:id updates an asset record. A React single-page dashboard served from
-      LittleFS shows real-time stock, scan history charts, and an asset search field. MQTT events broadcast
-      each scan to Home Assistant.</p>'
+    overview_html: '<p>The advanced build stores the inventory database in an SQLite-equivalent structure using LittleFS and
+      exposes a full REST API: GET /api/assets returns JSON, POST /api/scan processes a tag event, PUT /api/asset/:id updates
+      an asset record. A React single-page dashboard served from LittleFS shows real-time stock, scan history charts, and
+      an asset search field. MQTT events broadcast each scan to Home Assistant.</p>'
     components:
     - 1× ESP32 DevKit V1 — 4 MB flash for LittleFS
     - 1× RC522 RFID reader
@@ -207,22 +192,18 @@ levels:
       - GPIO 5/18/23/19 + RST GPIO 22
       - ''
     how:
-    - 'LittleFS JSON Database: All asset records are stored as a JSON array in /db.json on LittleFS (the
-      ESP32 internal flash filesystem). On each scan event, saveDB() rewrites the entire file. For 50
-      assets, the JSON is approximately 3 KB and write time is under 50 ms. LittleFS wear levelling distributes
-      writes across flash blocks.'
-    - 'AsyncWebServer REST API: ESPAsyncWebServer handles concurrent HTTP requests without blocking the
-      RFID scan loop. The /api/assets endpoint returns a JSON array of all assets. The /api/add endpoint
-      adds a new asset by POST parameters. The React SPA makes fetch() calls to these endpoints and updates
-      the UI without full page reloads.'
-    - 'Static SPA from LittleFS: A React single-page application minified to index.html, app.js, and app.css
-      is uploaded to the /www/ directory on LittleFS using the Arduino LittleFS upload plugin. serveStatic()
-      maps HTTP requests to these files. The SPA polls /api/assets every 5 seconds and renders a table
-      with stock status and scan count charts.'
-    - 'MQTT Home Assistant Integration: Each scan publishes a JSON event to inventory/scan with uid, name,
-      checked-in state, and timestamp. A Home Assistant MQTT sensor entity tracks each asset''s state.
-      Home Assistant automations can trigger notifications, update dashboard badges, or control room access
-      based on specific asset check-out events.'
+    - 'LittleFS JSON Database: All asset records are stored as a JSON array in /db.json on LittleFS (the ESP32 internal flash
+      filesystem). On each scan event, saveDB() rewrites the entire file. For 50 assets, the JSON is approximately 3 KB and
+      write time is under 50 ms. LittleFS wear levelling distributes writes across flash blocks.'
+    - 'AsyncWebServer REST API: ESPAsyncWebServer handles concurrent HTTP requests without blocking the RFID scan loop. The
+      /api/assets endpoint returns a JSON array of all assets. The /api/add endpoint adds a new asset by POST parameters.
+      The React SPA makes fetch() calls to these endpoints and updates the UI without full page reloads.'
+    - 'Static SPA from LittleFS: A React single-page application minified to index.html, app.js, and app.css is uploaded to
+      the /www/ directory on LittleFS using the Arduino LittleFS upload plugin. serveStatic() maps HTTP requests to these
+      files. The SPA polls /api/assets every 5 seconds and renders a table with stock status and scan count charts.'
+    - 'MQTT Home Assistant Integration: Each scan publishes a JSON event to inventory/scan with uid, name, checked-in state,
+      and timestamp. A Home Assistant MQTT sensor entity tracks each asset''s state. Home Assistant automations can trigger
+      notifications, update dashboard badges, or control room access based on specific asset check-out events.'
     apps:
     - Enterprise asset management for IT equipment lifecycle tracking
     - Hospital medical device location and availability monitoring
@@ -230,62 +211,225 @@ levels:
     - Construction site equipment check-out with automated loss alerts
     troubleshooting:
     - - LittleFS fails to mount with begin(true)
-      - The true parameter in LittleFS.begin(true) formats LittleFS on first run if not already formatted.
-        On subsequent boots it mounts normally. If mounting fails repeatedly, check the flash partition
-        scheme includes a LittleFS partition (use "Default 4MB with spiffs" or "Minimal SPIFFS" board
-        configuration).
+      - The true parameter in LittleFS.begin(true) formats LittleFS on first run if not already formatted. On subsequent boots
+        it mounts normally. If mounting fails repeatedly, check the flash partition scheme includes a LittleFS partition (use
+        "Default 4MB with spiffs" or "Minimal SPIFFS" board configuration).
     - - API returns stale data after adding a new asset
-      - 'The /api/assets handler reads from the in-memory assets[] array which is always current. If the
-        browser shows stale data, the issue is browser caching. Add response headers: res->addHeader("Cache-Control","no-store")
-        to all API responses.'
+      - 'The /api/assets handler reads from the in-memory assets[] array which is always current. If the browser shows stale
+        data, the issue is browser caching. Add response headers: res->addHeader("Cache-Control","no-store") to all API responses.'
     - - ESP32 crashes after many scan events
-      - Repeated JSON serialisation with DynamicJsonDocument allocates heap memory. Monitor free heap
-        with Serial.println(ESP.getFreeHeap()). If heap decreases over time, use a StaticJsonDocument
-        with a fixed size or pre-allocate the document once globally rather than inside saveDB().
+      - Repeated JSON serialisation with DynamicJsonDocument allocates heap memory. Monitor free heap with Serial.println(ESP.getFreeHeap()).
+        If heap decreases over time, use a StaticJsonDocument with a fixed size or pre-allocate the document once globally
+        rather than inside saveDB().
     upgrades:
     - Add HTTPS with a self-signed certificate for secure API access over the network
     - Add a barcode scanner USB HID input as a fallback for items without RFID tags
     - Add a Node-RED dashboard with a Sankey chart showing asset movement patterns over time
     - 'Add role-based access: different tag types grant different permissions (admin vs read-only)'
-    code: "// ESP32 RFID Inventory - Advanced (REST API + LittleFS JSON DB + MQTT)\n#include <SPI.h>\n\
-      #include <MFRC522.h>\n#include <WiFi.h>\n#include <ESPAsyncWebServer.h>\n#include <AsyncTCP.h>\n\
-      #include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <LittleFS.h>\n#include <time.h>\n\n\
-      MFRC522 rfid(5,22);\nAsyncWebServer server(80);\nWiFiClient wc; PubSubClient mqtt(wc);\nconst char*\
-      \ SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\n\nstruct Asset\
-      \ { String uid,name; bool in; time_t last; int outCount; };\nconst int MAX_A=50; Asset assets[MAX_A];\
-      \ int aCount=0;\n\nvoid saveDB(){\n  DynamicJsonDocument doc(8192);\n  JsonArray arr=doc.createNestedArray(\"\
-      assets\");\n  for(int i=0;i<aCount;i++){\n    JsonObject o=arr.createNestedObject();\n    o[\"uid\"\
-      ]=assets[i].uid; o[\"name\"]=assets[i].name;\n    o[\"in\"]=assets[i].in; o[\"last\"]=(long)assets[i].last;\n\
-      \    o[\"out\"]=assets[i].outCount;\n  }\n  File f=LittleFS.open(\"/db.json\",\"w\");\n  serializeJson(doc,f);\
-      \ f.close();\n}\n\nvoid loadDB(){\n  if(!LittleFS.exists(\"/db.json\")) return;\n  File f=LittleFS.open(\"\
-      /db.json\",\"r\");\n  DynamicJsonDocument doc(8192);\n  deserializeJson(doc,f); f.close();\n  JsonArray\
-      \ arr=doc[\"assets\"];\n  for(JsonObject o:arr){\n    if(aCount>=MAX_A) break;\n    assets[aCount]={o[\"\
-      uid\"].as<String>(),o[\"name\"].as<String>(),\n      o[\"in\"]|true,(time_t)(o[\"last\"]|0),(int)(o[\"\
-      out\"]|0)};\n    aCount++;\n  }\n}\n\nString uidStr(MFRC522::Uid *u){\n  String s=\"\";\n  for(byte\
-      \ i=0;i<u->size;i++){if(u->uidByte[i]<0x10)s+=\"0\";s+=String(u->uidByte[i],HEX);}\n  s.toUpperCase();\
-      \ return s;\n}\n\nvoid mqttEvent(const String &uid, const String &name, bool in){\n  StaticJsonDocument<128>\
-      \ doc;\n  doc[\"uid\"]=uid; doc[\"name\"]=name; doc[\"in\"]=in; doc[\"ts\"]=(long)time(nullptr);\n\
-      \  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"inventory/scan\",buf);\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200); SPI.begin(); rfid.PCD_Init();\n  LittleFS.begin(true);\n  loadDB();\n \
-      \ WiFi.begin(SSID,PASS); while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\"\
-      );\n  mqtt.setServer(MQTT_HOST,1883);\n\n  // Serve React SPA from LittleFS /www/index.html\n  server.serveStatic(\"\
-      /\",LittleFS,\"/www/\").setDefaultFile(\"index.html\");\n\n  server.on(\"/api/assets\",HTTP_GET,[](AsyncWebServerRequest\
-      \ *r){\n    DynamicJsonDocument doc(4096); JsonArray arr=doc.createNestedArray(\"assets\");\n  \
-      \  for(int i=0;i<aCount;i++){\n      JsonObject o=arr.createNestedObject();\n      o[\"uid\"]=assets[i].uid;\
-      \ o[\"name\"]=assets[i].name;\n      o[\"in\"]=assets[i].in; o[\"out\"]=assets[i].outCount;\n  \
-      \  }\n    String out; serializeJson(doc,out);\n    r->send(200,\"application/json\",out);\n  });\n\
-      \n  server.on(\"/api/add\",HTTP_POST,[](AsyncWebServerRequest *r){\n    if(!r->hasParam(\"uid\"\
-      ,true)||!r->hasParam(\"name\",true)){r->send(400); return;}\n    String uid=r->getParam(\"uid\"\
-      ,true)->value();\n    String name=r->getParam(\"name\",true)->value();\n    if(aCount<MAX_A){ assets[aCount++]={uid,name,true,time(nullptr),0};\
-      \ saveDB(); }\n    r->send(200,\"text/plain\",\"OK\");\n  });\n\n  server.begin();\n  Serial.printf(\"\
-      Inventory API: http://%s/n\",WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n  if(!mqtt.connected())\
-      \ mqtt.connect(\"RFID\");\n  mqtt.loop();\n  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial())\
-      \ return;\n  String uid=uidStr(&rfid.uid);\n  for(int i=0;i<aCount;i++){\n    if(assets[i].uid==uid){\n\
-      \      assets[i].in=!assets[i].in;\n      assets[i].last=time(nullptr);\n      if(!assets[i].in)\
-      \ assets[i].outCount++;\n      saveDB();\n      mqttEvent(uid,assets[i].name,assets[i].in);\n  \
-      \    Serial.printf(\"%s -> %sn\",assets[i].name.c_str(),assets[i].in?\"IN\":\"OUT\");\n      break;\n\
-      \    }\n  }\n  rfid.PICC_HaltA(); rfid.PCD_StopCrypto1();\n  delay(1000);\n}"
+    code: "// ESP32 RFID Inventory - Advanced (REST API + LittleFS JSON DB + MQTT)\n#include <SPI.h>\n#include <MFRC522.h>\n\
+      #include <WiFi.h>\n#include <ESPAsyncWebServer.h>\n#include <AsyncTCP.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n\
+      #include <LittleFS.h>\n#include <time.h>\n\nMFRC522 rfid(5,22);\nAsyncWebServer server(80);\nWiFiClient wc; PubSubClient\
+      \ mqtt(wc);\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\n\nstruct\
+      \ Asset { String uid,name; bool in; time_t last; int outCount; };\nconst int MAX_A=50; Asset assets[MAX_A]; int aCount=0;\n\
+      \nvoid saveDB(){\n  DynamicJsonDocument doc(8192);\n  JsonArray arr=doc.createNestedArray(\"assets\");\n  for(int i=0;i<aCount;i++){\n\
+      \    JsonObject o=arr.createNestedObject();\n    o[\"uid\"]=assets[i].uid; o[\"name\"]=assets[i].name;\n    o[\"in\"\
+      ]=assets[i].in; o[\"last\"]=(long)assets[i].last;\n    o[\"out\"]=assets[i].outCount;\n  }\n  File f=LittleFS.open(\"\
+      /db.json\",\"w\");\n  serializeJson(doc,f); f.close();\n}\n\nvoid loadDB(){\n  if(!LittleFS.exists(\"/db.json\")) return;\n\
+      \  File f=LittleFS.open(\"/db.json\",\"r\");\n  DynamicJsonDocument doc(8192);\n  deserializeJson(doc,f); f.close();\n\
+      \  JsonArray arr=doc[\"assets\"];\n  for(JsonObject o:arr){\n    if(aCount>=MAX_A) break;\n    assets[aCount]={o[\"\
+      uid\"].as<String>(),o[\"name\"].as<String>(),\n      o[\"in\"]|true,(time_t)(o[\"last\"]|0),(int)(o[\"out\"]|0)};\n\
+      \    aCount++;\n  }\n}\n\nString uidStr(MFRC522::Uid *u){\n  String s=\"\";\n  for(byte i=0;i<u->size;i++){if(u->uidByte[i]<0x10)s+=\"\
+      0\";s+=String(u->uidByte[i],HEX);}\n  s.toUpperCase(); return s;\n}\n\nvoid mqttEvent(const String &uid, const String\
+      \ &name, bool in){\n  StaticJsonDocument<128> doc;\n  doc[\"uid\"]=uid; doc[\"name\"]=name; doc[\"in\"]=in; doc[\"ts\"\
+      ]=(long)time(nullptr);\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"inventory/scan\",buf);\n}\n\nvoid\
+      \ setup(){\n  Serial.begin(115200); SPI.begin(); rfid.PCD_Init();\n  LittleFS.begin(true);\n  loadDB();\n  WiFi.begin(SSID,PASS);\
+      \ while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
+      \n  // Serve React SPA from LittleFS /www/index.html\n  server.serveStatic(\"/\",LittleFS,\"/www/\").setDefaultFile(\"\
+      index.html\");\n\n  server.on(\"/api/assets\",HTTP_GET,[](AsyncWebServerRequest *r){\n    DynamicJsonDocument doc(4096);\
+      \ JsonArray arr=doc.createNestedArray(\"assets\");\n    for(int i=0;i<aCount;i++){\n      JsonObject o=arr.createNestedObject();\n\
+      \      o[\"uid\"]=assets[i].uid; o[\"name\"]=assets[i].name;\n      o[\"in\"]=assets[i].in; o[\"out\"]=assets[i].outCount;\n\
+      \    }\n    String out; serializeJson(doc,out);\n    r->send(200,\"application/json\",out);\n  });\n\n  server.on(\"\
+      /api/add\",HTTP_POST,[](AsyncWebServerRequest *r){\n    if(!r->hasParam(\"uid\",true)||!r->hasParam(\"name\",true)){r->send(400);\
+      \ return;}\n    String uid=r->getParam(\"uid\",true)->value();\n    String name=r->getParam(\"name\",true)->value();\n\
+      \    if(aCount<MAX_A){ assets[aCount++]={uid,name,true,time(nullptr),0}; saveDB(); }\n    r->send(200,\"text/plain\"\
+      ,\"OK\");\n  });\n\n  server.begin();\n  Serial.printf(\"Inventory API: http://%s/n\",WiFi.localIP().toString().c_str());\n\
+      }\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"RFID\");\n  mqtt.loop();\n  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial())\
+      \ return;\n  String uid=uidStr(&rfid.uid);\n  for(int i=0;i<aCount;i++){\n    if(assets[i].uid==uid){\n      assets[i].in=!assets[i].in;\n\
+      \      assets[i].last=time(nullptr);\n      if(!assets[i].in) assets[i].outCount++;\n      saveDB();\n      mqttEvent(uid,assets[i].name,assets[i].in);\n\
+      \      Serial.printf(\"%s -> %sn\",assets[i].name.c_str(),assets[i].in?\"IN\":\"OUT\");\n      break;\n    }\n  }\n\
+      \  rfid.PICC_HaltA(); rfid.PCD_StopCrypto1();\n  delay(1000);\n}"
     code_filename: esp32-rfid-inventory-advanced.ino
 related_slugs:
 - esp32-rfid-access-control
 - esp32-machine-monitoring-node
+format: golden
+project:
+  icon: PROJ
+  mission_title: Build an RFID Inventory Tracker
+  difficulty: Intermediate
+  age: Ages 13+
+  estimated_time: 90-120 min
+  budget: Under 30 USD
+  what_you_build: An RFID tracker that scans RC522 tags over SPI, logs events to a microSD card, and uses red and green LEDs
+    for known or unknown tags.
+  story: Inventory systems work because every scan becomes a reliable event. RC522 and SD share the SPI bus, while GPIO5 and
+    GPIO4 keep separate chip-select signals so the ESP32 can talk to one module at a time. The component list, wiring table,
+    GPIO map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build so a learner can
+    verify each step instead of guessing.
+  eli12: An RFID tag has a small ID number. The reader asks for that number, the ESP32 checks the known list, writes a line
+    to the memory card, and flashes the matching LED. Prove the local wiring and code first, then add displays, logging, or
+    Wi-Fi after the simple version behaves exactly as expected.
+  parent_safety: Power the RC522 from 3.3 V as shown and do not connect unknown 5 V signals to the ESP32 SPI pins. Unplug
+    USB and any external supply before rewiring, keep the build low-voltage on the bench, and stop immediately if a module
+    becomes hot or behaves unexpectedly.
+  learning_objectives:
+  - Wire the exact GPIO pins used by the sketch.
+  - Run the starter code and compare output with the wiring table.
+  - Explain the main sensor or input signal in plain language.
+  - Troubleshoot one wiring mistake using Serial Monitor evidence.
+  components:
+  - item: ESP32 DevKit board
+    note: Controls SPI, LEDs, and logging.
+    link: /components/esp32-devkit.html
+  - item: RC522 RFID reader module
+    note: 13.56 MHz RFID reader powered from 3.3 V.
+  - item: MIFARE-compatible RFID cards or tags
+    note: Use test tags for the known UID list.
+  - item: MicroSD card module
+    note: SPI storage with CS on GPIO4.
+  - item: Green and red LEDs with series resistors
+    note: Known and unknown feedback on GPIO26 and GPIO27.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Controls SPI, LEDs, and logging.
+  - part: RC522 RFID reader module
+    qty: '1'
+    estimated_cost: Varies
+    notes: 13.56 MHz RFID reader powered from 3.3 V.
+  - part: MIFARE-compatible RFID cards or tags
+    qty: '1'
+    estimated_cost: Varies
+    notes: Use test tags for the known UID list.
+  - part: MicroSD card module
+    qty: '1'
+    estimated_cost: Varies
+    notes: SPI storage with CS on GPIO4.
+  - part: Green and red LEDs with series resistors
+    qty: '1'
+    estimated_cost: Varies
+    notes: Known and unknown feedback on GPIO26 and GPIO27.
+  wiring:
+    illustration_alt: ESP32 RFID Inventory Tracker wiring diagram
+    summary: An RFID tracker that scans RC522 tags over SPI, logs events to a microSD card, and uses red and green LEDs for
+      known or unknown tags.
+    steps:
+    - Unplug USB before changing SPI, LED, or SD wiring.
+    - Connect RC522 SDA/SS to GPIO5, SCK to GPIO18, MOSI to GPIO23, MISO to GPIO19, and RST to GPIO22.
+    - Connect RC522 3.3 V and GND to the ESP32 3.3 V and GND rails.
+    - Connect SD CS to GPIO4 while sharing SCK, MOSI, and MISO with SPI.
+    - Connect green LED through its resistor to GPIO26 and red LED through its resistor to GPIO27.
+    - Reconnect USB and test one RFID tag before relying on the SD log.
+  gpio_map:
+  - signal: RC522 SDA/SS
+    esp32_pin: GPIO5
+    direction: Output
+    notes: RC522 chip select.
+  - signal: SPI SCK/MOSI/MISO
+    esp32_pin: GPIO18 / GPIO23 / GPIO19
+    direction: I/O
+    notes: Shared SPI bus.
+  - signal: RC522 RST
+    esp32_pin: GPIO22
+    direction: Output
+    notes: RFID reset.
+  - signal: SD CS
+    esp32_pin: GPIO4
+    direction: Output
+    notes: Separate SD chip select.
+  - signal: Green LED / Red LED
+    esp32_pin: GPIO26 / GPIO27
+    direction: Output
+    notes: Scan feedback.
+  circuit_explanation: RC522 and SD share SCK, MOSI, and MISO. Separate chip-select pins prevent both modules from answering
+    at once.
+  engineering_explanation: SPI sharing works only when chip-select wiring and code agree. The RC522 is powered from 3.3 V
+    in this tutorial.
+  libraries:
+  - name: Arduino ESP32 core
+    note: Install ESP32 board support in Arduino IDE.
+  code:
+    filename: esp32-rfid-inventory-tracker.ino
+    content: "// ESP32 RFID Inventory Tracker - Beginner\n// RC522 tag scan -> SD card CSV log with known/unknown LED feedback\n\
+      // Libraries: MFRC522 by GithubCommunity, SD by Arduino\n\n#include <SPI.h>\n#include <MFRC522.h>\n#include <SD.h>\n\
+      \n#define RC522_SS  5\n#define RC522_RST 22\n#define SD_CS     4\n#define LED_GREEN 26\n#define LED_RED   27\n\nMFRC522\
+      \ rfid(RC522_SS, RC522_RST);\n\n// Known tag UIDs (hex strings) mapped to asset names\nconst char* KNOWN_UIDS[] = {\"\
+      A1B2C3D4\", \"11223344\", \"DEADBEEF\"};\nconst char* ASSET_NAMES[] = {\"Laptop-01\", \"Camera-01\", \"Toolbox-01\"\
+      };\nconst int NUM_ASSETS = 3;\n\nString uidToHex(MFRC522::Uid *uid){\n  String s=\"\";\n  for(byte i=0;i<uid->size;i++){\n\
+      \    if(uid->uidByte[i]<0x10) s+=\"0\";\n    s+=String(uid->uidByte[i],HEX);\n  }\n  s.toUpperCase();\n  return s;\n\
+      }\n\nvoid flashLED(int pin){ digitalWrite(pin,HIGH); delay(300); digitalWrite(pin,LOW); }\n\nvoid logScan(const String\
+      \ &uid, const char* name){\n  File f=SD.open(\"/inventory.csv\",FILE_APPEND);\n  if(!f) return;\n  f.printf(\"%lu,%s,%sn\"\
+      ,millis(),uid.c_str(),name);\n  f.close();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  SPI.begin();\n  rfid.PCD_Init();\n\
+      \  SD.begin(SD_CS);\n  pinMode(LED_GREEN,OUTPUT); pinMode(LED_RED,OUTPUT);\n  Serial.println(\"RFID Inventory Tracker\
+      \ ready. Scan a tag...\");\n}\n\nvoid loop(){\n  if(!rfid.PICC_IsNewCardPresent()||!rfid.PICC_ReadCardSerial()) return;\n\
+      \  String uid=uidToHex(&rfid.uid);\n  const char* name=\"UNKNOWN\";\n  bool known=false;\n  for(int i=0;i<NUM_ASSETS;i++){\n\
+      \    if(uid==String(KNOWN_UIDS[i])){ name=ASSET_NAMES[i]; known=true; break; }\n  }\n  Serial.printf(\"UID: %s  Asset:\
+      \ %sn\",uid.c_str(),name);\n  logScan(uid,name);\n  flashLED(known?LED_GREEN:LED_RED);\n  rfid.PICC_HaltA();\n  rfid.PCD_StopCrypto1();\n\
+      \  delay(1000);\n}"
+  code_explanation: The sketch defines RC522_SS on GPIO5, RC522_RST on GPIO22, SD_CS on GPIO4, and LEDs on GPIO26/GPIO27.
+  expected_output: Serial Monitor reports scans and SD logging status. Known UIDs flash green, unknown UIDs flash red, and
+    the SD card receives CSV rows.
+  common_mistakes:
+  - text: Powering RC522 from 5 V.
+  - text: Using the same chip-select pin for RC522 and SD.
+  - text: Mixing up MOSI and MISO.
+  troubleshooting:
+  - problem: RFID tags are not detected
+    fix: Check RC522 3.3 V power, SPI wiring, GPIO5 CS, and GPIO22 reset.
+  - problem: SD logging fails
+    fix: Check SD format, GPIO4 CS, and shared SPI wiring.
+  - problem: Known tag shows unknown
+    fix: Copy the UID from Serial Monitor into KNOWN_UIDS.
+  testing_checklist:
+  - Upload the sketch with only the documented circuit attached.
+  - Open Serial Monitor and confirm the expected messages.
+  - Move or trigger the input and watch the output change.
+  - Power-cycle the project and confirm it starts safely.
+  engineer_tips:
+  - Change one variable at a time.
+  - Keep wires short and labeled while testing.
+  - Record any calibrated threshold before installing the project.
+  upgrade_ideas:
+  - Add Wi-Fi and NTP timestamps.
+  - Show asset names on an OLED display.
+  - Add a small web page for latest scans.
+  real_world_applications:
+  - Classroom lab build
+  - Bench prototype
+  - Local ESP32 learning project
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, power, Wi-Fi, and the beginner wiring rules used by this build.
+  - title: Mission 01 - Blink LED
+    href: /guides/blink-led-esp32.html
+    description: Confirm uploads and simple GPIO behavior before adding sensors, storage, or displays.
+  related_projects:
+  - title: ESP32 RFID Access Control System
+    href: /projects/esp32-rfid-access-control-system.html
+    description: Use related RFID ideas for a controlled access build.
+  faqs:
+  - question: Why do RC522 and SD share SPI?
+    answer: SPI supports multiple devices when each has its own chip-select pin.
+  - question: Can I use my own tag IDs?
+    answer: Yes. Read the UID from Serial Monitor and replace the starter values.
+  - question: Should RC522 use 5 V?
+    answer: No for this tutorial. Wire RC522 power to 3.3 V.
+  complete:
+    summary: You completed ESP32 RFID Inventory Tracker as a real ESP32 engineering build with matching wiring, code, testing,
+      and troubleshooting.
+    skills:
+    - Read the GPIO map
+    - Verify code against hardware
+    - Troubleshoot with Serial Monitor

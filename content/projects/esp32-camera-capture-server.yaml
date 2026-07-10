@@ -1,8 +1,8 @@
 slug: esp32-camera-capture-server
 title: ESP32 Camera Capture Server
 category: ESP32-CAM
-description: Capture and stream images with ESP32-CAM — start with a local snapshot sketch, then add OTA updates and a web
-  dashboard.
+description: Capture and stream images with ESP32-CAM — start with a local snapshot sketch, then add OTA updates
+  and a web dashboard.
 source_base: esp32-camera-capture-server-with-ota-update
 sensor: camera module
 output: web snapshot
@@ -25,14 +25,18 @@ hardware:
     pin: 5V
   - component: GND
     pin: GND
-meta_description: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for inspection,
-  timelapse, or simple monitoring. Includes wiring
+meta_description: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for
+  inspection, timelapse, or simple monitoring. Includes wiring
 meta_title: ESP32 Camera Capture Server Tutorial with ESP32
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
-      \ for local image capture: the AI-Thinker ESP32-CAM initializes its built-in OV2640 camera, joins Wi-Fi, and serves a JPEG snapshot from /capture.</p>\n      <ul class=\"overview-list\">\n        <li>The OV2640 camera uses the fixed AI-Thinker parallel pin map</li><li>FTDI TX/RX wires are used only for programming</li><li>IO0 connects to GND only while flashing</li><li>Stable 5 V power prevents camera brownouts</li>\n      </ul>\n      </section>"
+    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n     \
+      \ <p>Designed for local image capture: the AI-Thinker ESP32-CAM initializes its built-in OV2640 camera, joins\
+      \ Wi-Fi, and serves a JPEG snapshot from /capture.</p>\n      <ul class=\"overview-list\">\n        <li>The\
+      \ OV2640 camera uses the fixed AI-Thinker parallel pin map</li><li>FTDI TX/RX wires are used only for programming</li><li>IO0\
+      \ connects to GND only while flashing</li><li>Stable 5 V power prevents camera brownouts</li>\n      </ul>\n\
+      \      </section>"
     components:
     - ESP32-CAM AI-Thinker board with OV2640
     - FTDI USB-to-serial adapter
@@ -61,7 +65,25 @@ levels:
     upgrades: &id001
     - Publish readings to an MQTT broker or Home Assistant
     - Add timed image capture for timelapse.
-    code: "#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* WIFI_SSID = \"YOUR_SSID\";\nconst char* WIFI_PASS = \"YOUR_PASSWORD\";\nWebServer server(80);\n\n#define PWDN_GPIO_NUM 32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nvoid handleCapture() {\n  camera_fb_t* fb = esp_camera_fb_get();\n  if (!fb) {\n    server.send(500, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200, \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = 1;\n  if (esp_camera_init(&config) != ESP_OK) {\n    Serial.println(\"Camera init failed\");\n    while (true) delay(1000);\n  }\n  WiFi.begin(WIFI_SSID, WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n  server.begin();\n  Serial.println(WiFi.localIP());\n}\n\nvoid loop() {\n  server.handleClient();\n}"
+    code: "#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* WIFI_SSID = \"YOUR_SSID\"\
+      ;\nconst char* WIFI_PASS = \"YOUR_PASSWORD\";\nWebServer server(80);\n\n#define PWDN_GPIO_NUM 32\n#define\
+      \ RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define\
+      \ Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM\
+      \ 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define\
+      \ HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nvoid handleCapture() {\n  camera_fb_t* fb = esp_camera_fb_get();\n\
+      \  if (!fb) {\n    server.send(500, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200,\
+      \ \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n\
+      \  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3\
+      \ = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n\
+      \  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n\
+      \  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n\
+      \  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n\
+      \  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n\
+      \  config.jpeg_quality = 12;\n  config.fb_count = 1;\n  if (esp_camera_init(&config) != ESP_OK) {\n    Serial.println(\"\
+      Camera init failed\");\n    while (true) delay(1000);\n  }\n  WiFi.begin(WIFI_SSID, WIFI_PASS);\n  while (WiFi.status()\
+      \ != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n  server.begin();\n \
+      \ Serial.println(WiFi.localIP());\n}\n\nvoid loop() {\n  server.handleClient();\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
@@ -88,19 +110,20 @@ project:
   age: Ages 12+
   estimated_time: 90-120 min
   budget: Under 20 USD
-  what_you_build: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for inspection,
-    timelapse, or simple monitoring.
-  story: 'ESP32 Camera Capture Server solves a real beginner problem: turning an ESP32 reading into a useful physical or networked
-    result. Build this when you are ready to combine camera hardware, Wi-Fi, memory limits, and power stability in one project.
+  what_you_build: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for
+    inspection, timelapse, or simple monitoring.
+  story: 'ESP32 Camera Capture Server solves a real beginner problem: turning an ESP32 reading into a useful physical
+    or networked result. Build this when you are ready to combine camera hardware, Wi-Fi, memory limits, and power
+    stability in one project.
 
 
-    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code, then test
-    the output under real conditions.'
-  eli12: The ESP32-CAM is a tiny digital camera with a web window. The camera captures a frame, the ESP32 compresses or buffers
-    it, and the browser asks for the latest picture.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug power before
-    rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32 unless a proper driver,
-    enclosure, and adult supervision are used.
+    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
+    then test the output under real conditions.'
+  eli12: The ESP32-CAM is a tiny digital camera with a web window. The camera captures a frame, the ESP32 compresses
+    or buffers it, and the browser asks for the latest picture.
+  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
+    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
+    unless a proper driver, enclosure, and adult supervision are used.
   learning_objectives:
   - Program an ESP32-CAM safely with an FTDI adapter.
   - Understand boot mode using IO0.
@@ -109,8 +132,10 @@ project:
   - Tune resolution and JPEG quality for reliability.
   components:
   - item: ESP32-CAM AI-Thinker board with OV2640
-    note: Camera and ESP32 are already wired together on the module
+    note: ESP32-family camera board; review ESP32 power, boot, GPIO, and Wi-Fi basics while using the fixed AI-Thinker
+      camera pin map here
     icon: PART
+    link: /components/esp32-cam.html
   - item: FTDI USB-to-serial adapter
     note: Use 3.3 V logic; power the ESP32-CAM from a stable 5 V source
     icon: PART
@@ -142,8 +167,8 @@ project:
     notes: Programming connections
   wiring:
     illustration_alt: ESP32 Camera Capture Server wiring diagram
-    summary: The ESP32-CAM board already connects the OV2640 camera to the ESP32 internally. The builder only wires the FTDI
-      programmer, 5 V power, common ground, and the IO0-to-GND jumper used for flashing.
+    summary: The ESP32-CAM board already connects the OV2640 camera to the ESP32 internally. The builder only wires
+      the FTDI programmer, 5 V power, common ground, and the IO0-to-GND jumper used for flashing.
     steps:
     - Unplug USB before changing wires.
     - Connect FTDI TX to ESP32-CAM U0R / GPIO3.
@@ -201,24 +226,44 @@ project:
     esp32_pin: GND
     direction: Ground
     notes: Common ground for FTDI and 5 V supply.
-  circuit_explanation: The ESP32-CAM board already connects the OV2640 camera to the ESP32 internally. Programming usually
-    uses an FTDI adapter. Stable 5 V power is important because camera capture and Wi-Fi transmit peaks can reset weak supplies.
-    IO0 is grounded only for flashing and released for normal boot.
-  engineering_explanation: Camera projects are memory and power sensitive. Resolution, JPEG quality, PSRAM availability, Wi-Fi
-    signal, and SD card writes all affect reliability. Start with low resolution, confirm capture works, then increase quality
-    one step at a time.
+  circuit_explanation: The ESP32-CAM board already connects the OV2640 camera to the ESP32 internally. Programming
+    usually uses an FTDI adapter. Stable 5 V power is important because camera capture and Wi-Fi transmit peaks
+    can reset weak supplies. IO0 is grounded only for flashing and released for normal boot.
+  engineering_explanation: Camera projects are memory and power sensitive. Resolution, JPEG quality, PSRAM availability,
+    Wi-Fi signal, and SD card writes all affect reliability. Start with low resolution, confirm capture works, then
+    increase quality one step at a time.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
   code:
     filename: esp32-camera-capture-server.ino
-    content: "#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* WIFI_SSID = \"YOUR_SSID\";\nconst char* WIFI_PASS = \"YOUR_PASSWORD\";\nWebServer server(80);\n\n#define PWDN_GPIO_NUM 32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nvoid handleCapture() {\n  camera_fb_t* fb = esp_camera_fb_get();\n  if (!fb) {\n    server.send(500, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200, \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setupCamera() {\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = 1;\n\n  esp_err_t err = esp_camera_init(&config);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x\\n\", err);\n    while (true) delay(1000);\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupCamera();\n  WiFi.begin(WIFI_SSID, WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n  server.begin();\n  Serial.print(\"Open http://\");\n  Serial.print(WiFi.localIP());\n  Serial.println(\"/capture\");\n}\n\nvoid loop() {\n  server.handleClient();\n}"
-  code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
-    setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct ESP32-CAM pin map,
-    initializes the OV2640, then captures frames. Keep the first test simple: prove the camera initializes before adding storage,
-    scanning, or network actions.'
-  expected_output: Serial Monitor should print the ESP32-CAM IP address. Opening /capture in a browser on the same network
-    should return a JPEG snapshot from the OV2640 camera.
+    content: "#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* WIFI_SSID = \"\
+      YOUR_SSID\";\nconst char* WIFI_PASS = \"YOUR_PASSWORD\";\nWebServer server(80);\n\n#define PWDN_GPIO_NUM 32\n\
+      #define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define\
+      \ Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM\
+      \ 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define\
+      \ HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nvoid handleCapture() {\n  camera_fb_t* fb = esp_camera_fb_get();\n\
+      \  if (!fb) {\n    server.send(500, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200,\
+      \ \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setupCamera() {\n\
+      \  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n\
+      \  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3\
+      \ = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n\
+      \  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n\
+      \  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n\
+      \  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n\
+      \  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n\
+      \  config.jpeg_quality = 12;\n  config.fb_count = 1;\n\n  esp_err_t err = esp_camera_init(&config);\n  if\
+      \ (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x\\n\", err);\n    while (true) delay(1000);\n\
+      \  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupCamera();\n  WiFi.begin(WIFI_SSID, WIFI_PASS);\n\
+      \  while (WiFi.status() != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n\
+      \  server.begin();\n  Serial.print(\"Open http://\");\n  Serial.print(WiFi.localIP());\n  Serial.println(\"\
+      /capture\");\n}\n\nvoid loop() {\n  server.handleClient();\n}"
+  code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output
+    pins in setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct
+    ESP32-CAM pin map, initializes the OV2640, then captures frames. Keep the first test simple: prove the camera
+    initializes before adding storage, scanning, or network actions.'
+  expected_output: Serial Monitor should print the ESP32-CAM IP address. Opening /capture in a browser on the same
+    network should return a JPEG snapshot from the OV2640 camera.
   common_mistakes:
   - text: Leaving IO0 connected to GND after upload.
   - text: Powering ESP32-CAM from a weak USB serial adapter.
@@ -281,43 +326,23 @@ project:
     href: /projects/esp32-cam-face-detection.html
     description: Continue with a related ESP32 build that uses the same engineering idea.
   faqs:
-  - question: Is ESP32 Camera Capture Server good for beginners?
-    answer: Yes, if you build the beginner version first and test one part at a time. Build this when you are ready to combine
-      camera hardware, Wi-Fi, memory limits, and power stability in one project.
-  - question: Which ESP32 board should I use?
-    answer: Use a common ESP32 DevKit V1 or similar USB-programmable board. For ESP32-CAM projects, use an AI-Thinker compatible
-      ESP32-CAM module and a reliable FTDI adapter.
-  - question: Can I power this from a phone charger?
-    answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
-      and LED matrices may need a separate regulated supply.
-  - question: Why should I print values to Serial Monitor first?
-    answer: Serial output proves the camera initialized and shows the local IP address before you test the browser endpoint.
-  - question: Can I change the GPIO pins?
-    answer: The OV2640 pins are fixed on an AI-Thinker ESP32-CAM. Do not remap them unless you are using a different camera
-      board and its matching pin map.
-  - question: What should I test before installing it permanently?
-    answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
-      that should trigger the project.
-  - question: Can I add Wi-Fi or a dashboard?
-    answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
-      after Wi-Fi is added.
-  - question: What is the most common failure?
-    answer: Most failures are weak 5 V power, IO0 left connected to GND after upload, the wrong camera model selected, or
-      a loose OV2640 ribbon cable.
-  - question: How do I make it more reliable?
-    answer: Use stable 5 V power, short programming wires, low resolution for first boot, and the exact AI-Thinker pin map
-      before increasing image size or adding storage.
-  - question: Where should I learn next?
-    answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
-      part of this project you want to improve.
+  - question: Why does the ESP32-CAM show a brownout reset?
+    answer: Camera capture plus Wi-Fi can exceed what a weak USB serial adapter can supply. Power the board from a
+      stable 5 V source and keep the power wires short.
+  - question: Can I expose the camera server to the public internet?
+    answer: Keep this tutorial on a trusted local network. Do not publish the camera URL publicly unless you add proper
+      authentication, network isolation, and consent from anyone who may be recorded.
+  - question: Why does upload work but the camera sketch will not run?
+    answer: IO0 must be connected to GND only during flashing. Remove the IO0 jumper after upload and press reset so
+      the ESP32-CAM boots the sketch.
   references:
   - title: Espressif ESP32-CAM Camera Driver
     href: https://github.com/espressif/esp32-camera
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32 Camera Capture Server as a real ESP32 engineering build, not just a wiring demo. You now
-      know how to test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed ESP32 Camera Capture Server as a real ESP32 engineering build, not just a wiring demo.
+      You now know how to test the input, protect the circuit, explain the code, and improve the project safely.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins

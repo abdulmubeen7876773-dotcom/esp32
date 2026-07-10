@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from guide_mission import code_panel, illustration_placeholder
+from parent_registry import PARENT_BY_SLUG
+from project_text import card_description, project_meta_description, project_slug_from_href, project_title
 from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
 
 
@@ -85,6 +87,42 @@ def parent_safety_section(p: dict) -> str:
     </div>
     <div class="project-safety-body">{_paragraphs(text)}</div>
   </aside>
+</section>"""
+
+def education_support_section(p: dict) -> str:
+    proj = p.get("project") or {}
+    fields = [
+        ("recommended_age", "Recommended age"),
+        ("adult_supervision", "Adult supervision"),
+        ("classroom_use", "Classroom use"),
+        ("parent_prompt", "Parent prompt"),
+        ("screen_free_activity", "Screen-free activity"),
+        ("next_challenge", "Next challenge"),
+    ]
+    cards = []
+    for key, label in fields:
+        value = proj.get(key)
+        if value:
+            cards.append(
+                f'<li class="project-education-card"><strong>{esc(label)}</strong><span>{esc(value)}</span></li>'
+            )
+    list_fields = [
+        ("skills_practiced", "Skills practiced"),
+        ("learning_outcomes", "Learning outcomes"),
+        ("mini_experiments", "Mini experiments"),
+    ]
+    for key, label in list_fields:
+        items = proj.get(key) or []
+        if isinstance(items, list) and items:
+            item_html = "".join(f"<li>{esc(item)}</li>" for item in items)
+            cards.append(
+                f'<li class="project-education-card"><strong>{esc(label)}</strong><ul>{item_html}</ul></li>'
+            )
+    if not cards:
+        return ""
+    return f"""<section class="project-section project-education-support" id="learning-support" aria-labelledby="learning-support-heading">
+  {project_section_heading("learning-support", "LEARN", "Learning Support")}
+  <ul class="project-education-grid">{"".join(cards)}</ul>
 </section>"""
 
 
@@ -411,6 +449,13 @@ def related_links_section(section_id: str, icon: str, title: str, items: list) -
             href = f"/projects/{href}" if section_id == "projects" else href
         label = item.get("title", "")
         desc = item.get("description", "")
+        if section_id == "projects":
+            slug = project_slug_from_href(href) or item.get("slug", "")
+            if slug in PARENT_BY_SLUG:
+                project = PARENT_BY_SLUG[slug]
+                href = f"/projects/{slug}.html"
+                label = project_title(project)
+                desc = card_description(project)
         desc_html = f'<p>{esc(desc)}</p>' if desc else ""
         cards.append(
             f"""<a class="project-related-card" href="{esc(href)}">
@@ -450,6 +495,7 @@ def render_project_body(p: dict) -> str:
 {story_section(p)}
 {eli12_section(p)}
 {parent_safety_section(p)}
+{education_support_section(p)}
 {project_safety_standards_section(p)}
 <section class="project-section" id="build" aria-labelledby="build-heading">
   {project_section_heading("build", "BUILD", "What You Will Build")}
@@ -489,8 +535,8 @@ def render_project_body(p: dict) -> str:
 def project_hero_html(p: dict, category: str) -> str:
     proj = p.get("project") or {}
     icon = proj.get("icon", "🚀")
-    title = p.get("title", "")
-    desc = p.get("description", "")
+    title = project_title(p)
+    desc = project_meta_description(p)
     hero_image = p.get("hero_image") or p.get("featured_image") or ""
     category_slug = p.get("category_slug") or category.lower().replace("&", "and").replace(" ", "-")
     hero_art = ""

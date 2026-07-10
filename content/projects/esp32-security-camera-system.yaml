@@ -1,298 +1,234 @@
 slug: esp32-security-camera-system
-title: ESP32 Security Camera System
-category: Security Projects
-description: Transform the ESP32-CAM into a fully featured security camera that detects motion using a
-  PIR sensor, records JPEG snapshots to an SD card, streams live MJPEG video to a browser, and sends instant
-  Telegram photo alerts when intrusion is detected.
-meta_description: Build an ESP32-CAM security camera with PIR motion detection, SD card recording, live
-  MJPEG streaming, and Telegram photo alerts when movement is detected.
-source_base: esp32-security-camera-system-legacy-import
-sensor: PIR OUT
-output: SD card
+title: ESP32-CAM Local Network Camera Demo
+category: ESP32-CAM
+description: Build a local-network ESP32-CAM snapshot demo using the real AI-Thinker pin map, stable 5 V power,
+  and clear privacy limits.
+meta_title: ESP32-CAM Local Network Camera Demo
+meta_description: Build a local ESP32-CAM camera page with AI-Thinker pin mapping, stable 5 V power, placeholder
+  Wi-Fi credentials, and privacy-first limits.
+source_base: esp32-security-camera-system-golden-batch-6
+sensor: OV2640 camera
+output: Local browser snapshot
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
-quality_status: legacy_import
+date_modified: '2026-07-10'
+quality_status: golden_tutorial
 status: needs_polish
-import_tier: 4
-import_source: batch-php
+import_tier: 1
+import_source: golden-batch-6
+format: golden
 hardware:
-  sensor_pin: GPIO 13
-  output_pin: Onboard (SPI GPIO 2/14/15)
-  sensor_name: PIR OUT
-  output_name: SD card
+  sensor_pin: AI-Thinker OV2640 fixed pins
+  output_pin: Wi-Fi local web server
+  sensor_name: OV2640 camera
+  output_name: Local browser snapshot
   wiring:
-  - component: PIR OUT
-    pin: GPIO 13
-  - component: PIR VCC
-    pin: 3.3 V or 5 V
-  - component: PIR GND
+  - component: ESP32-CAM 5V
+    pin: Stable 5V
+  - component: ESP32-CAM GND
     pin: GND
-  - component: SD card
-    pin: Onboard (SPI GPIO 2/14/15)
-  - component: Onboard LED
-    pin: GPIO 33 (inverted)
-levels:
-  beginner:
-    level: beginner
-    overview_html: <p>In this beginner project you will connect a PIR motion sensor to the ESP32-CAM and
-      take a JPEG snapshot when motion is detected. The snapshot is saved to the onboard SD card with
-      a sequential filename. An LED flashes when a photo is captured. The Serial Monitor reports each
-      capture event with the filename. This teaches ESP32-CAM initialisation, PIR interrupt handling,
-      and SD card JPEG file writing.</p>
-    components:
-    - 1× ESP32-CAM module (AI Thinker)
-    - 1× HC-SR501 PIR motion sensor — 3.3 V or 5 V; adjustable sensitivity and delay
-    - 1× MicroSD card (FAT32, under 32 GB) — Onboard SD slot on AI Thinker module
-    - 1× FTDI USB-to-Serial programmer — For upload and Serial Monitor
-    - 1× Jumper wires
-    wiring:
-    - - PIR OUT
-      - GPIO 13
-      - Goes HIGH on motion; 3.3 V logic
-    - - PIR VCC
-      - 3.3 V or 5 V
-      - HC-SR501 accepts 3.3-12 V
-    - - PIR GND
-      - GND
-      - ''
-    - - SD card
-      - Onboard (SPI GPIO 2/14/15)
-      - Built into AI Thinker module
-    - - Onboard LED
-      - GPIO 33 (inverted)
-      - LOW = LED on for AI Thinker
-    how:
-    - 'PIR Motion Detection: The HC-SR501 PIR sensor detects infrared radiation changes caused by a warm
-      moving body. Its output goes HIGH for an adjustable duration (0.5-200 seconds via onboard potentiometer)
-      when motion is detected. The ESP32-CAM polls this pin every 100 ms to detect the rising edge.'
-    - 'SD_MMC vs SD Library: The AI Thinker ESP32-CAM connects its SD card via the MMC interface (not
-      SPI), which uses GPIO 2, 14, and 15. The SD_MMC library must be used; the standard SPI-based SD
-      library will not work. SD_MMC.begin() without arguments uses the built-in pin assignments.'
-    - 'JPEG Frame Capture: esp_camera_fb_get() returns a pointer to a frame buffer containing a complete
-      JPEG-encoded image. The JPEG data (fb->buf, fb->len bytes) is written directly to the SD card file.
-      esp_camera_fb_return() releases the buffer back to the camera DMA pool.'
-    - '5-Second Cooldown: After each capture a 5-second delay prevents filling the SD card with hundreds
-      of nearly identical frames during a single motion event. The PIR sensor also has its own retrigger
-      timer; set the potentiometer to minimum delay for fastest response.'
-    apps:
-    - Driveway intruder detection with timestamped photo evidence
-    - Wildlife camera trap for animal activity logging
-    - Shop entrance customer counter with photo log
-    - Package delivery porch camera with motion-triggered capture
-    troubleshooting:
-    - - SD_MMC.begin() returns false
-      - Format the SD card as FAT32 on a computer. Cards over 32 GB formatted as exFAT are not supported.
-        Remove and reinsert the card. Also check that GPIO 4 (SD card data 1) is not used for another
-        purpose; it is part of the SD_MMC interface on AI Thinker.
-    - - PIR triggers immediately on power-up
-      - The HC-SR501 has a 60-second initialisation period after power-on during which it may produce
-        false triggers. Add a 60-second startup delay before arming the detection logic.
-    - - Photos are very dark
-      - The OV2640 automatic exposure needs a few frames to adjust. Call esp_camera_fb_get() twice and
-        discard the first frame before saving the second. Also add a delay of 300 ms after camera init
-        to allow auto-exposure to settle.
-    upgrades:
-    - Add Wi-Fi and send the captured photo via Telegram immediately after saving to SD
-    - Add NTP timestamps to filenames for chronological organisation
-    - Add a second PIR sensor for wider coverage area
-    - Add a live MJPEG web stream for remote viewing between motion events
-    code: "// ESP32-CAM Security Camera - Beginner\n// PIR motion trigger -> JPEG snapshot to SD card\n\
-      \n#include \"esp_camera.h\"\n#include \"FS.h\"\n#include \"SD_MMC.h\"\n\nconst int PIR_PIN = 13;\n\
-      const int LED_PIN = 33; // Active LOW on AI Thinker\nint photoCount = 0;\n\nvoid initCamera(){\n\
-      \  camera_config_t c={};\n  c.ledc_channel=LEDC_CHANNEL_0; c.ledc_timer=LEDC_TIMER_0;\n  c.pin_d0=5;c.pin_d1=18;c.pin_d2=19;c.pin_d3=21;\n\
-      \  c.pin_d4=36;c.pin_d5=39;c.pin_d6=34;c.pin_d7=35;\n  c.pin_xclk=0;c.pin_pclk=22;c.pin_vsync=25;c.pin_href=23;\n\
-      \  c.pin_sscb_sda=26;c.pin_sscb_scl=27;c.pin_reset=-1;c.pin_pwdn=32;\n  c.xclk_freq_hz=20000000;\n\
-      \  c.pixel_format=PIXFORMAT_JPEG;\n  c.frame_size=FRAMESIZE_VGA;\n  c.jpeg_quality=10;\n  c.fb_count=1;\n\
-      \  if(esp_camera_init(&c)!=ESP_OK)\n    Serial.println(\"Camera init failed\");\n}\n\nvoid capturePhoto(){\n\
-      \  camera_fb_t *fb = esp_camera_fb_get();\n  if(!fb){ Serial.println(\"Frame capture failed\");\
-      \ return; }\n\n  String path = \"/photo\" + String(photoCount++) + \".jpg\";\n  File f = SD_MMC.open(path,\
-      \ FILE_WRITE);\n  if(f){\n    f.write(fb->buf, fb->len);\n    f.close();\n    Serial.printf(\"Saved:\
-      \ %s (%u bytes)n\", path.c_str(), fb->len);\n  }\n  esp_camera_fb_return(fb);\n\n  // Flash LED\
-      \ briefly\n  digitalWrite(LED_PIN, LOW); delay(200); digitalWrite(LED_PIN, HIGH);\n}\n\nvoid setup(){\n\
-      \  Serial.begin(115200);\n  pinMode(PIR_PIN, INPUT);\n  pinMode(LED_PIN, OUTPUT); digitalWrite(LED_PIN,\
-      \ HIGH);\n  if(!SD_MMC.begin()) Serial.println(\"SD card mount failed\");\n  initCamera();\n  Serial.println(\"\
-      Security camera armed. Waiting for motion...\");\n}\n\nvoid loop(){\n  if(digitalRead(PIR_PIN) ==\
-      \ HIGH){\n    Serial.println(\"Motion detected!\");\n    capturePhoto();\n    delay(5000); // cooldown\
-      \ between captures\n  }\n  delay(100);\n}"
-    code_filename: esp32-security-cam-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build adds a live MJPEG video stream accessible from any browser
-      on the local network. When the PIR detects motion, the ESP32-CAM captures a JPEG frame and sends
-      it as a Telegram photo alert with the detection timestamp. Recordings are simultaneously saved to
-      the SD card. A simple web interface at the ESP32 IP address shows the live stream and a list of
-      the last five captured filenames.</p>
-    components:
-    - 1× ESP32-CAM module
-    - 1× HC-SR501 PIR sensor
-    - 1× MicroSD card (FAT32)
-    - 1× Wi-Fi router — Live stream and Telegram alerts
-    - 1× Telegram bot token and chat ID
-    wiring:
-    - - PIR OUT
-      - GPIO 13
-      - ''
-    - - SD card
-      - Onboard MMC interface
-      - ''
-    how:
-    - 'MJPEG Stream Handler: The /stream endpoint serves a multipart/x-mixed-replace HTTP response. Each
-      part is a complete JPEG image followed by a boundary delimiter. The browser receives an endless
-      stream of JPEG frames and renders them as a continuous video at approximately 5-15 FPS depending
-      on network speed and frame size.'
-    - 'Dual Frame Buffer: Setting fb_count=2 enables double-buffering: the camera DMA fills one buffer
-      while the firmware reads the other. This prevents frame tearing in the MJPEG stream and reduces
-      the latency between capture and display compared to single-buffer operation.'
-    - 'NTP Timestamp in Filename: configTime() syncs the ESP32 clock. Each capture file is named with
-      the Unix timestamp (e.g. /cam_1750000000.jpg). This provides chronological ordering of captures
-      on the SD card and makes it easy to correlate captures with known events.'
-    - 'Recent Captures List: A circular array of 5 strings tracks the last five capture filenames. The
-      root web page renders these as an HTML list so the user can see the most recent activity at a glance
-      without accessing the SD card directly.'
-    apps:
-    - Home security camera with live monitoring and motion alerts
-    - Remote property monitoring with instant notification
-    - Office or shop CCTV with SD card evidence storage
-    - Baby monitor with motion-triggered photo alert to parents
-    troubleshooting:
-    - - MJPEG stream freezes after a few seconds
-      - The stream and PIR capture tasks share the camera framebuffer. When captureAndAlert() calls esp_camera_fb_get()
-        while the stream is also waiting for a frame, a deadlock can occur. Add a mutex or use a flag
-        to pause the stream during capture.
-    - - Telegram photo is always blurry or overexposed
-      - Add a 300 ms warm-up delay between camera init and the first capture. Also skip the first frame
-        from esp_camera_fb_get() (call once and return, then capture the second frame) to allow auto-exposure
-        to stabilise.
-    - - Web stream works in Chrome but not Safari
-      - 'Safari requires the Content-Length header in each MJPEG part. Add client.printf("Content-Length:
-        %u\r\n", fb->len) before printing the blank line separator in the stream handler.'
-    upgrades:
-    - Add night vision by controlling the onboard white LED flash (GPIO 4) on motion
-    - Add a second camera for a two-angle view with a stream selector web page
-    - Add basic motion detection by comparing consecutive frames pixel-by-pixel without a PIR
-    - Add password protection to the web interface using HTTP Digest Authentication
-    code: "// ESP32-CAM Security Camera - Intermediate (MJPEG stream + PIR + Telegram alert)\n#include\
-      \ \"esp_camera.h\"\n#include \"FS.h\"\n#include \"SD_MMC.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\
-      #include <WiFiClientSecure.h>\n#include <time.h>\n\nWebServer server(80);\nconst char* SSID=\"YourSSID\"\
-      , *PASS=\"YourPass\";\nconst char* BOT_TOKEN=\"YOUR_BOT_TOKEN\";\nconst char* CHAT_ID=\"YOUR_CHAT_ID\"\
-      ;\nconst int PIR=13;\nint photoCount=0;\nString lastFiles[5];\n\nvoid initCamera(){\n  camera_config_t\
-      \ c={};\n  c.ledc_channel=LEDC_CHANNEL_0; c.ledc_timer=LEDC_TIMER_0;\n  c.pin_d0=5;c.pin_d1=18;c.pin_d2=19;c.pin_d3=21;\n\
-      \  c.pin_d4=36;c.pin_d5=39;c.pin_d6=34;c.pin_d7=35;\n  c.pin_xclk=0;c.pin_pclk=22;c.pin_vsync=25;c.pin_href=23;\n\
-      \  c.pin_sscb_sda=26;c.pin_sscb_scl=27;c.pin_reset=-1;c.pin_pwdn=32;\n  c.xclk_freq_hz=20000000;\n\
-      \  c.pixel_format=PIXFORMAT_JPEG;\n  c.frame_size=FRAMESIZE_VGA;\n  c.jpeg_quality=10; c.fb_count=2;\n\
-      \  esp_camera_init(&c);\n}\n\nvoid sendTelegramPhoto(camera_fb_t *fb){\n  WiFiClientSecure cl; cl.setInsecure();\n\
-      \  if(!cl.connect(\"api.telegram.org\",443)) return;\n  String boundary=\"ESP32Boundary\";\n  String\
-      \ head=\"--\"+boundary+\"rnContent-Disposition: form-data; name=\"chat_id\"rnrn\"\n    +String(CHAT_ID)+\"\
-      rn--\"+boundary+\"rnContent-Disposition: form-data; \"\n    \"name=\"caption\"rnrnMotion Detected!rn--\"\
-      +boundary+\"rn\"\n    \"Content-Disposition: form-data; name=\"photo\"; filename=\"cam.jpg\"rn\"\
-      \n    \"Content-Type: image/jpegrnrn\";\n  String tail=\"rn--\"+boundary+\"--rn\";\n  int len=head.length()+fb->len+tail.length();\n\
-      \  cl.printf(\"POST /bot%s/sendPhoto HTTP/1.1rnHost: api.telegram.orgrn\"\n    \"Content-Type: multipart/form-data;\
-      \ boundary=%srnContent-Length: %drnrn\",\n    BOT_TOKEN,boundary.c_str(),len);\n  cl.print(head);\
-      \ cl.write(fb->buf,fb->len); cl.print(tail);\n  delay(2000); cl.stop();\n}\n\nvoid handleStream(){\n\
-      \  WiFiClient client=server.client();\n  client.println(\"HTTP/1.1 200 OK\");\n  client.println(\"\
-      Content-Type: multipart/x-mixed-replace; boundary=frame\");\n  client.println();\n  while(client.connected()){\n\
-      \    camera_fb_t *fb=esp_camera_fb_get();\n    if(!fb) break;\n    client.printf(\"--framernContent-Type:\
-      \ image/jpegrnContent-Length: %urnrn\",fb->len);\n    client.write(fb->buf,fb->len);\n    client.println();\n\
-      \    esp_camera_fb_return(fb);\n    delay(50);\n  }\n}\n\nvoid handleRoot(){\n  String html=\"<html><body><h2>ESP32\
-      \ Security Camera</h2>\"\n    \"<img src=\"/stream\" width=\"640\"><br><h3>Recent captures:</h3><ul>\"\
-      ;\n  for(int i=0;i<5;i++) if(lastFiles[i].length()) html+=\"<li>\"+lastFiles[i]+\"</li>\";\n  html+=\"\
-      </ul></body></html>\";\n  server.send(200,\"text/html\",html);\n}\n\nvoid captureAndAlert(){\n \
-      \ camera_fb_t *fb=esp_camera_fb_get();\n  if(!fb) return;\n  time_t now=time(nullptr);\n  String\
-      \ path=\"/cam_\"+String(now)+\".jpg\";\n  File f=SD_MMC.open(path,FILE_WRITE);\n  if(f){ f.write(fb->buf,fb->len);\
-      \ f.close(); }\n  for(int i=4;i>0;i--) lastFiles[i]=lastFiles[i-1];\n  lastFiles[0]=path;\n  sendTelegramPhoto(fb);\n\
-      \  esp_camera_fb_return(fb);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  pinMode(PIR,INPUT);\n\
-      \  SD_MMC.begin(); initCamera();\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  server.on(\"/\",handleRoot);\n  server.on(\"\
-      /stream\",handleStream);\n  server.begin();\n  Serial.printf(\"Camera: http://%s/n\",WiFi.localIP().toString().c_str());\n\
-      }\n\nvoid loop(){\n  server.handleClient();\n  static unsigned long lastMotion=0;\n  if(digitalRead(PIR)==HIGH&&millis()-lastMotion>10000){\n\
-      \    lastMotion=millis();\n    captureAndAlert();\n  }\n}"
-    code_filename: esp32-security-cam-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build integrates face detection from the ESP-FACE library into the
-      motion-triggered pipeline. When a face is detected, the bounding box is drawn on the JPEG before
-      transmission. All events (motion, face detected, face recognised) are published to MQTT with JSON
-      metadata. A Node-RED dashboard shows a live event timeline, the last captured annotated frame, and
-      alert statistics. SD recordings are automatically organised into hourly folders.</p>
-    components:
-    - 1× ESP32-CAM module
-    - 1× PIR sensor
-    - 1× MicroSD card
-    - 1× MQTT broker
-    - 1× Node-RED with dashboard
-    wiring:
-    - - Same as intermediate
-      - PIR on GPIO 13
-      - ''
-    how:
-    - 'Organised SD Card Folder Structure: Captures are organised into folders by date and hour: /YYYYMMDD/HHh/.
-      The mkdir() call creates the directory tree if it does not exist. This structure makes it easy to
-      locate footage from a specific time period without scrolling through thousands of files in a single
-      flat directory.'
-    - 'ESP-FACE Two-Stage Detection: The esp-who face detection pipeline uses two neural network stages:
-      MSR01 (fast, approximate) filters the full frame for face candidates; MNP01 (accurate, slow) refines
-      each candidate. Running both stages on a VGA frame takes 150-300 ms on the ESP32-CAM, yielding 3-6
-      detections per second.'
-    - 'Event-Driven MQTT Publishing: Each motion or face detection event publishes a JSON object with
-      event type, face count, and captured file path. Node-RED subscribes to cam/event and maintains a
-      live event log. Different event types trigger different automations: motion events log to a timeline;
-      face events trigger Telegram alerts.'
-    - 'Node-RED Alert Timeline: A Node-RED function node maintains an array of the last 50 events with
-      timestamps, event types, and face counts. A UI text widget renders this as a scrollable event log.
-      A UI chart widget plots event frequency per hour, highlighting unusual activity periods.'
-    apps:
-    - AI-enhanced home security with face detection alerts
-    - Access control audit trail with face detection logs
-    - Retail customer flow analysis with people counting
-    - School entrance monitoring with anonymous presence detection
-    troubleshooting:
-    - - Face detection not available in Arduino IDE
-      - esp-who requires the ESP-IDF build system. Use ESP-IDF with the esp-who component for the advanced
-        build. The Arduino IDE sketch above shows the integration pattern but the face detection calls
-        must be replaced with the actual ESP-IDF C++ API.
-    - - SD card organisation creates too many directories
-      - FAT32 supports a maximum of 65,535 files and directories per directory. With 24 hourly folders
-        per day this will not be a practical limit. If scanning directories manually becomes slow, use
-        a flat naming scheme with timestamp prefixes instead.
-    - - MQTT event bursts when motion is continuous
-      - The 10-second cooldown (millis()-last>10000) prevents event floods. For busy scenes, increase
-        the cooldown to 30 seconds. Add a minimum face confidence threshold to avoid publishing events
-        for low-confidence detections.
-    upgrades:
-    - Add face recognition to identify known individuals and only alert on unknown faces
-    - Add two-way audio using the ESP32-S3 I2S microphone and speaker for a video doorbell
-    - 'Add cloud backup: upload footage to an S3-compatible storage bucket via HTTP PUT'
-    - Add a Grafana dashboard for long-term motion frequency heatmap visualisation
-    code: "// ESP32-CAM Security Camera - Advanced (face detection + MQTT + organised SD)\n// Face detection\
-      \ uses esp_face_detect from esp-who component\n// Install: add esp-who component via ESP-IDF component\
-      \ manager\n#include \"esp_camera.h\"\n#include \"FS.h\"\n#include \"SD_MMC.h\"\n#include <WiFi.h>\n\
-      #include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <time.h>\n\n// face detection (esp-who\
-      \ library):\n// #include \"human_face_detect_msr01.hpp\"\n// #include \"human_face_detect_mnp01.hpp\"\
-      \n\nWiFiClient wifiClient; PubSubClient mqtt(wifiClient);\nconst char* SSID=\"YourSSID\", *PASS=\"\
-      YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst int PIR=13;\n\nvoid initCamera(){\n\
-      \  camera_config_t c={};\n  c.ledc_channel=LEDC_CHANNEL_0; c.ledc_timer=LEDC_TIMER_0;\n  c.pin_d0=5;c.pin_d1=18;c.pin_d2=19;c.pin_d3=21;\n\
-      \  c.pin_d4=36;c.pin_d5=39;c.pin_d6=34;c.pin_d7=35;\n  c.pin_xclk=0;c.pin_pclk=22;c.pin_vsync=25;c.pin_href=23;\n\
-      \  c.pin_sscb_sda=26;c.pin_sscb_scl=27;c.pin_reset=-1;c.pin_pwdn=32;\n  c.xclk_freq_hz=20000000;\n\
-      \  c.pixel_format=PIXFORMAT_JPEG;\n  c.frame_size=FRAMESIZE_VGA;\n  c.jpeg_quality=10; c.fb_count=2;\n\
-      \  esp_camera_init(&c);\n}\n\nString sdPath(const char* prefix){\n  struct tm ti; getLocalTime(&ti);\n\
-      \  char dir[32]; sprintf(dir,\"/%04d%02d%02d/%02dh\",\n    ti.tm_year+1900,ti.tm_mon+1,ti.tm_mday,ti.tm_hour);\n\
-      \  SD_MMC.mkdir(dir);\n  char path[64]; sprintf(path,\"%s/%s_%02d%02d%02d.jpg\",\n    dir,prefix,ti.tm_hour,ti.tm_min,ti.tm_sec);\n\
-      \  return String(path);\n}\n\nvoid publishEvent(const char* type, int faces, const String &path){\n\
-      \  StaticJsonDocument<128> doc;\n  doc[\"event\"]=type; doc[\"faces\"]=faces; doc[\"file\"]=path;\n\
-      \  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(\"cam/event\",buf);\n}\n\nvoid handleMotion(){\n\
-      \  camera_fb_t *fb=esp_camera_fb_get();\n  if(!fb) return;\n  // In esp-who IDF project:\n  // HumanFaceDetectMSR01\
-      \ detector(0.3f, 0.3f, 10, 0.3f);\n  // auto results = detector.infer(fb);\n  // int faceCount =\
-      \ results.size();\n  int faceCount=0; // replace with actual detection result\n  const char* eventType=(faceCount>0)?\"\
-      face_detected\":\"motion\";\n  String path=sdPath(eventType);\n  File f=SD_MMC.open(path,FILE_WRITE);\n\
-      \  if(f){ f.write(fb->buf,fb->len); f.close(); }\n  esp_camera_fb_return(fb);\n  publishEvent(eventType,faceCount,path);\n\
-      \  Serial.printf(\"Event: %s faces: %d file: %sn\",eventType,faceCount,path.c_str());\n}\n\nvoid\
-      \ setup(){\n  Serial.begin(115200);\n  pinMode(PIR,INPUT);\n  SD_MMC.begin(); initCamera();\n  WiFi.begin(SSID,PASS);\n\
-      \  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  configTime(0,0,\"pool.ntp.org\");\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      }\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"SecurityCam\");\n  mqtt.loop();\n  static\
-      \ unsigned long last=0;\n  if(digitalRead(PIR)==HIGH&&millis()-last>10000){\n    last=millis();\n\
-      \    handleMotion();\n  }\n}"
-    code_filename: esp32-security-cam-advanced.ino
-related_slugs:
-- esp32-cam-face-detection
-- esp32-smart-door-lock
+  - component: OV2640 camera bus
+    pin: AI-Thinker fixed GPIO map
+project:
+  icon: CAM
+  mission_title: ESP32-CAM Local Network Camera Demo
+  difficulty: Intermediate
+  age: Ages 13+
+  recommended_age: Ages 13+
+  estimated_time: 60-75 min
+  budget: Under 25 USD
+  adult_supervision: Recommended for wiring the programming adapter and discussing privacy boundaries.
+  classroom_use: Use only with consent and keep the demo on a local classroom network.
+  parent_prompt: Ask why a local camera demo should not be exposed to the internet.
+  screen_free_activity: Draw the path from camera module to ESP32-CAM to local browser.
+  skills_practiced:
+  - ESP32-CAM pin mapping
+  - Local web server
+  - Wi-Fi setup
+  - Privacy boundaries
+  learning_outcomes:
+  - Identify the AI-Thinker ESP32-CAM camera pins used in code.
+  - Power the board from stable 5 V.
+  - View a local snapshot from a browser on the same Wi-Fi network.
+  - Explain why this is not a professional security system.
+  mini_experiments:
+  - Change frame size after the base QVGA snapshot works.
+  - Move lighting and compare exposure.
+  - Restart Wi-Fi and confirm reconnection.
+  next_challenge: Add local-only authentication before using the demo outside a supervised lab.
+  what_you_build: A local ESP32-CAM snapshot page that serves a live captured JPEG to a browser on the same Wi-Fi
+    network.
+  story: The ESP32-CAM is a tiny board that can capture real images, but the Golden version avoids pretending it
+    is a professional security product. You build a compact local-network camera demo with the real AI-Thinker pin
+    map, stable 5 V power, and clear privacy limits.
+  eli12: The camera takes a picture, the ESP32-CAM turns it into JPEG data, and a local web page shows that picture
+    in your browser. It only works on your own Wi-Fi network in this lesson, so you can learn the camera path without
+    sending images to a cloud service.
+  parent_safety: Use a stable 5 V low-voltage supply and unplug power before rewiring or changing the programming
+    jumper. Use the camera only with consent, never in private spaces, and do not expose the web server to the public
+    internet.
+  components:
+  - item: AI-Thinker ESP32-CAM module
+    note: OV2640 camera module with fixed board camera pin map.
+    link: /components/esp32-cam.html
+  - item: FTDI USB-to-serial adapter
+    note: Needed for programming the ESP32-CAM.
+  - item: Stable 5 V supply
+    note: Use a supply that can handle camera and Wi-Fi current peaks.
+  - item: Jumper wires
+    note: For programming and 5 V/GND connections.
+  - item: Local Wi-Fi network
+    note: Browser must be on the same local network.
+  bom:
+  - part: AI-Thinker ESP32-CAM module
+    qty: '1'
+    estimated_cost: Varies
+    notes: OV2640 camera module with fixed board camera pin map.
+  - part: FTDI USB-to-serial adapter
+    qty: '1'
+    estimated_cost: Varies
+    notes: Needed for programming the ESP32-CAM.
+  - part: Stable 5 V supply
+    qty: '1'
+    estimated_cost: Varies
+    notes: Use a supply that can handle camera and Wi-Fi current peaks.
+  - part: Jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: For programming and 5 V/GND connections.
+  - part: Local Wi-Fi network
+    qty: '1'
+    estimated_cost: Varies
+    notes: Browser must be on the same local network.
+  wiring:
+    illustration_alt: AI-Thinker ESP32-CAM powered from stable 5 V and GND, programmed through an FTDI adapter,
+      using its onboard OV2640 camera pins.
+    summary: The camera pins are fixed by the AI-Thinker ESP32-CAM board. The external wiring is stable 5 V, GND,
+      and the FTDI adapter used for upload.
+    steps:
+    - Unplug 5 V power and the FTDI adapter before changing wiring.
+    - Connect FTDI GND to ESP32-CAM GND.
+    - Connect FTDI 5 V or a separate stable 5 V supply to ESP32-CAM 5V.
+    - Connect FTDI TX to ESP32-CAM U0R and FTDI RX to U0T for programming.
+    - Pull GPIO0 to GND only while uploading, then remove it and reset the board.
+    - Open the printed local IP address from a browser on the same Wi-Fi network.
+  gpio_map:
+  - signal: PWDN
+    esp32_pin: GPIO32
+    direction: Camera control
+    notes: AI-Thinker power-down pin.
+  - signal: XCLK
+    esp32_pin: GPIO0
+    direction: Camera clock
+    notes: Also a boot strap pin; do not add extra loads.
+  - signal: SIOD/SIOC
+    esp32_pin: GPIO26/GPIO27
+    direction: Camera I2C
+    notes: OV2640 control bus.
+  - signal: D0-D7
+    esp32_pin: GPIO5/18/19/21/36/39/34/35
+    direction: Camera data
+    notes: Fixed AI-Thinker parallel camera bus.
+  - signal: VSYNC/HREF/PCLK
+    esp32_pin: GPIO25/GPIO23/GPIO22
+    direction: Camera sync
+    notes: Fixed AI-Thinker sync pins.
+  circuit_explanation: The OV2640 camera is already wired to fixed ESP32 pins on the AI-Thinker module; the sketch
+    must match that map exactly.
+  engineering_explanation: Camera and Wi-Fi peaks can brown out weak supplies, so the demo uses QVGA, one frame
+    buffer, and a stable 5 V source. It serves snapshots locally and does not implement motion capture, alerts,
+    facial identification, or evidence storage.
+  libraries:
+  - name: Arduino ESP32 camera support
+    note: Provides esp_camera.h for ESP32-CAM boards.
+  code:
+    filename: esp32-cam-local-network-demo.ino
+    content: "// ESP32-CAM Local Network Camera Demo\n// Local classroom demo only. Do not expose this server to\
+      \ the public internet.\n#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\n#define PWDN_GPIO_NUM\
+      \     32\n#define RESET_GPIO_NUM    -1\n#define XCLK_GPIO_NUM      0\n#define SIOD_GPIO_NUM     26\n#define\
+      \ SIOC_GPIO_NUM     27\n#define Y9_GPIO_NUM       35\n#define Y8_GPIO_NUM       34\n#define Y7_GPIO_NUM  \
+      \     39\n#define Y6_GPIO_NUM       36\n#define Y5_GPIO_NUM       21\n#define Y4_GPIO_NUM       19\n#define\
+      \ Y3_GPIO_NUM       18\n#define Y2_GPIO_NUM        5\n#define VSYNC_GPIO_NUM    25\n#define HREF_GPIO_NUM\
+      \     23\n#define PCLK_GPIO_NUM     22\n\nconst char* WIFI_SSID = \"YOUR_WIFI_NAME\";\nconst char* WIFI_PASSWORD\
+      \ = \"YOUR_WIFI_PASSWORD\";\n\nWebServer server(80);\n\nvoid startCamera() {\n  camera_config_t config = {};\n\
+      \  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n\
+      \  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4\
+      \ = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n\
+      \  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\n\
+      \  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl = SIOC_GPIO_NUM;\n\
+      \  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n\
+      \  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n\
+      \  config.fb_count = 1;\n\n  if (esp_camera_init(&config) != ESP_OK) {\n    Serial.println(\"Camera init failed.\
+      \ Check AI-Thinker ESP32-CAM pin mapping and 5 V supply.\");\n    while (true) delay(100);\n  }\n}\n\nvoid\
+      \ connectWiFi() {\n  WiFi.mode(WIFI_STA);\n  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);\n  while (WiFi.status()\
+      \ != WL_CONNECTED) {\n    delay(500);\n    Serial.print(\".\");\n  }\n  Serial.println();\n  Serial.print(\"\
+      Open this local URL from the same Wi-Fi network: http://\");\n  Serial.println(WiFi.localIP());\n}\n\nvoid\
+      \ handleRoot() {\n  server.send(200, \"text/html\",\n    \"<!doctype html><html><body>\"\n    \"<h1>ESP32-CAM\
+      \ Local Network Camera Demo</h1>\"\n    \"<p>Local educational snapshot only. Use with consent.</p>\"\n  \
+      \  \"<img src='/capture' style='max-width:100%;height:auto'>\"\n    \"<p><a href='/capture'>Refresh snapshot</a></p>\"\
+      \n    \"</body></html>\");\n}\n\nvoid handleCapture() {\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb)\
+      \ {\n    server.send(503, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200,\
+      \ \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  startCamera();\n  connectWiFi();\n  server.on(\"/\", handleRoot);\n  server.on(\"/capture\", handleCapture);\n\
+      \  server.begin();\n}\n\nvoid loop() {\n  if (WiFi.status() != WL_CONNECTED) connectWiFi();\n  server.handleClient();\n\
+      }\n"
+  code_explanation: The sketch initializes the AI-Thinker pin map, connects to Wi-Fi with placeholder credentials,
+    serves a small local HTML page, and captures a JPEG when /capture is requested.
+  expected_output: Serial Monitor prints a local URL such as http://192.168.x.x. Opening that address from the same
+    Wi-Fi network shows a compact page with a refreshed camera snapshot.
+  common_mistakes:
+  - text: Using the wrong ESP32-CAM pin map.
+  - text: Powering the camera from a weak 3.3 V source.
+  - text: Leaving GPIO0 tied to GND after upload.
+  - text: Port-forwarding the camera to the public internet.
+  troubleshooting:
+  - problem: Camera init failed
+    fix: Check that the board is AI-Thinker ESP32-CAM and that the code uses the matching pin map.
+  - problem: Board resets when Wi-Fi starts
+    fix: Use a stronger stable 5 V supply and short power wires.
+  - problem: Browser cannot open the page
+    fix: Confirm the phone or computer is on the same local network as the ESP32-CAM.
+  testing_checklist:
+  - Verify 5 V stability.
+  - Upload with GPIO0 grounded, then remove it.
+  - Confirm local URL only.
+  - Get consent before pointing the camera at people.
+  engineer_tips:
+  - Start with QVGA.
+  - Keep the antenna clear.
+  - Treat privacy as part of the circuit design.
+  upgrade_ideas:
+  - Add local password protection.
+  - Add a physical privacy cover.
+  - Add an on-device LED indicator when the page is being viewed.
+  real_world_applications:
+  - Camera bus lesson
+  - Local IoT web server demo
+  - Privacy-by-design classroom exercise
+  related_guides:
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review power, pins, and board setup before using ESP32-CAM.
+  - title: Digital Inputs and Floating Pins
+    href: /guides/digital-inputs-floating-pins.html
+    description: Review boot-pin behavior and why GPIO0 matters during upload.
+  related_projects:
+  - title: Build a Camera Capture Server
+    href: /projects/esp32-camera-capture-server.html
+    description: A related local camera project with the same ESP32-CAM safety boundaries.
+  - title: Build a Local Face Detection Demo
+    href: /projects/esp32-cam-face-detection.html
+    description: Compare a local-only computer vision demo without cloud surveillance claims.
+  faqs:
+  - question: Is this a security system?
+    answer: No. It is a local educational camera demo, not professional surveillance or evidence capture.
+  - question: Can I open it from outside my home?
+    answer: Do not port-forward this demo. Keep it local unless you add proper security controls.
+  complete:
+    summary: You built a local ESP32-CAM snapshot server with the real AI-Thinker pin map, stable power expectations,
+      and privacy limits. The page, code, wiring, and troubleshooting all describe the same local-network demo.
+    skills:
+    - ESP32-CAM board mapping
+    - Local HTTP route handling
+    - Camera frame capture
+    - Privacy-aware testing

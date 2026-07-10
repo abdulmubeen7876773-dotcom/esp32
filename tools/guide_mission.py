@@ -3,6 +3,8 @@ from pathlib import Path
 
 from site_layout import badge_class, esc, site_href
 from guide_images import guide_image_alt, guide_image_path
+from parent_registry import PARENT_BY_SLUG
+from project_text import card_description, project_slug_from_href, project_title
 
 _ROOT = Path(__file__).resolve().parent.parent
 
@@ -59,9 +61,19 @@ def illustration_block(
 
 
 def mission_number_label(guide: dict) -> str:
+    guide_type = str(guide.get("guide_type") or "").strip().lower()
+    if guide_type == "quick_build":
+        return "Quick Build"
+    if guide_type == "classroom_lesson":
+        return "Classroom Lesson"
+    if guide_type == "troubleshooting":
+        return "Troubleshooting"
+    if guide_type == "reference":
+        return "Reference Guide"
+    track_order = guide.get("track_order")
+    if track_order is not None:
+        return f"Mission {int(track_order):02d}"
     academy = guide.get("academy") or {}
-    if academy.get("mission_id"):
-        return str(academy["mission_id"])
     n = guide.get("mission_number")
     if n is not None:
         return f"Mission {int(n):02d}"
@@ -113,6 +125,13 @@ def academy_link_list(items: list, fallback_prefix: str = "guides") -> str:
             desc = item.get("description", "")
             if not href and slug:
                 href = site_href(f"{fallback_prefix}/{slug}.html")
+        if fallback_prefix == "projects":
+            slug = project_slug_from_href(href) or (item if isinstance(item, str) else item.get("slug", ""))
+            if slug in PARENT_BY_SLUG:
+                project = PARENT_BY_SLUG[slug]
+                title = project_title(project)
+                desc = card_description(project)
+                href = site_href(f"projects/{slug}.html")
         desc_html = f'<span class="meta">{esc(desc)}</span>' if desc else ""
         if href:
             rows.append(f'<li><a href="{esc(href)}"><strong>{esc(title)}</strong></a> {desc_html}</li>')

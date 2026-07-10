@@ -1,315 +1,324 @@
 slug: esp32-robot-arm-controller
-title: ESP32 Robot Arm Controller
+title: ESP32 Educational Servo Arm Controller (3-DOF)
 category: Robotics
-description: Control a multi-servo robot arm with the ESP32 using analog joysticks, record and replay
-  motion sequences in NVS, and compute inverse kinematics to move the end-effector to web-commanded XYZ
-  coordinates.
-meta_description: Build an ESP32 robot arm controller using servo motors. From joystick-controlled 3-DOF
-  movement to recorded motion playback and inverse kinematics via a web interface.
+description: Control a small 3-servo SG90 educational arm with joystick inputs, safe angle constraints, incremental motion,
+  and separate servo power.
+meta_description: Build a small joystick-controlled 3-DOF servo arm on ESP32 with safe angle limits, incremental motion, and
+  separate servo power.
 source_base: esp32-robot-arm-controller-legacy-import
-sensor: 'TODO: sensor'
-output: Servo base SIGNAL
+sensor: Base servo signal
+output: Servo power
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 13
-  sensor_name: 'TODO: sensor'
-  output_name: Servo base SIGNAL
+  sensor_pin: GPIO13
+  output_pin: External 5-6 V / GND
+  sensor_name: Base servo signal
+  output_name: Servo power
   wiring:
-  - component: Servo base SIGNAL
-    pin: GPIO 13
-  - component: Servo shoulder SIGNAL
-    pin: GPIO 12
-  - component: Servo elbow SIGNAL
-    pin: GPIO 14
-  - component: All servo VCC/GND
-    pin: 5 V supply / GND
-  - component: Joystick 1 VRx/VRy
-    pin: GPIO 34 / 35
-  - component: Joystick 2 VRx/VRy
-    pin: GPIO 36 / 39
-  - component: OLED SDA/SCL
-    pin: GPIO 21/22
+  - component: Base servo signal
+    pin: GPIO13
+  - component: Shoulder servo signal
+    pin: GPIO16
+  - component: Elbow servo signal
+    pin: GPIO17
+  - component: Joystick base axis
+    pin: GPIO34
+  - component: Joystick shoulder axis
+    pin: GPIO35
+  - component: Joystick elbow axis
+    pin: GPIO36
+  - component: Servo power
+    pin: External 5-6 V / GND
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect three SG90 servo motors (base rotation,
-      shoulder, elbow) to the ESP32 and control them with two analog joysticks. Moving the joysticks changes
-      servo angles in real time. Angle values are displayed on an SSD1306 OLED. This teaches PWM servo
-      control, multi-axis joystick reading, and the basics of robotic joint mapping.</p>
+    overview_html: <p>A small 3-DOF joystick-controlled servo arm with base, shoulder, and elbow joints. Servos can pinch
+      and draw surge current. Use a separate regulated 5-6 V servo supply, common ground, and a bulk capacitor.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 3× SG90 micro servo motor — Base, shoulder, elbow joints
-    - 2× Analog joystick module (KY-023) — X and Y axes; 3.3 V compatible
-    - 1× SSD1306 OLED 128x64 I2C
-    - 1× 5 V 2 A external power supply — Servos draw peak 300 mA each; do not power from ESP32 3.3 V pin
+    - ESP32 DevKit board
+    - Three SG90-class micro servos
+    - Separate regulated 5-6 V servo supply
+    - 470 uF or larger electrolytic capacitor
+    - Two analog joystick modules
+    - SSD1306 OLED display
     wiring:
-    - - Servo base SIGNAL
-      - GPIO 13
-      - LEDC PWM; 50 Hz
-    - - Servo shoulder SIGNAL
-      - GPIO 12
-      - ''
-    - - Servo elbow SIGNAL
-      - GPIO 14
-      - ''
-    - - All servo VCC/GND
-      - 5 V supply / GND
-      - Common GND with ESP32
-    - - Joystick 1 VRx/VRy
-      - GPIO 34 / 35
-      - 3.3 V supply
-    - - Joystick 2 VRx/VRy
-      - GPIO 36 / 39
-      - 3.3 V supply
-    - - OLED SDA/SCL
-      - GPIO 21/22
-      - ''
-    how:
-    - 'LEDC Servo PWM: Standard RC servos require a 50 Hz PWM signal with pulse width between 0.5 ms (0
-      degrees) and 2.5 ms (180 degrees). The ESP32 LEDC peripheral generates this with 16-bit resolution
-      (65535 steps). The angleToDuty() function maps angle to the duty cycle count corresponding to the
-      correct pulse width fraction of the 20 ms period.'
-    - 'Joystick Dead Zone: Analog joysticks have mechanical centre tolerances; the resting position is
-      rarely exactly 2048 (mid-range for 12-bit ADC). A +/-100 count dead zone around 2048 prevents servo
-      drift when the joystick is untouched. Outside the dead zone, a +1 or -1 degree increment is applied
-      per 20 ms loop iteration.'
-    - 'Three-Axis Mapping: Joystick 1 X-axis controls base rotation (horizontal plane). Joystick 1 Y-axis
-      controls shoulder (upper arm up/down). Joystick 2 X-axis controls elbow (forearm up/down). Each
-      axis drives one servo independently, giving full manual control of the arm configuration.'
-    - 'Angle Clamping: constrain(angle, 0, 180) prevents servo commands outside the physical range. Sending
-      out-of-range PWM pulses can damage servo gears or cause the motor to stall against the mechanical
-      end-stop. Hard limits per joint based on the arm geometry prevent self-collision.'
-    apps:
-    - Educational robot arm demonstrating servo and joint kinematics
-    - Pick-and-place demonstration for STEM exhibitions
-    - Camera pan-tilt-zoom head with joystick control
-    - Animatronic puppet arm controlled in real time
+    - - Base servo signal
+      - GPIO13
+      - Safe output pin for servo signal.
+    - - Shoulder servo signal
+      - GPIO16
+      - Avoids boot strap pins.
+    - - Elbow servo signal
+      - GPIO17
+      - Avoids boot strap pins.
+    - - Joystick base axis
+      - GPIO34
+      - Input-only ADC pin.
+    - - Joystick shoulder axis
+      - GPIO35
+      - Input-only ADC pin.
+    - - Joystick elbow axis
+      - GPIO36
+      - Input-only ADC pin.
+    - - Servo power
+      - External 5-6 V / GND
+      - Common ground with ESP32.
+    key_concepts:
+    - The ESP32 sends servo control pulses while joystick axes are read on ADC1. Servos draw power from a separate supply.
+    - Every angle update passes through explicit constrain functions. Movement is incremental to reduce sudden jumps.
+    applications: &id003
+    - Servo control lesson
+    - Joystick mapping demo
+    - Mechanical constraint exercise
     troubleshooting:
-    - - Servos jitter continuously even when joystick is centred
-      - Increase the dead zone from 100 to 200 ADC counts. Servo jitter can also be caused by power supply
-        noise; add a 100 uF electrolytic capacitor across the 5 V servo supply rail. Ensure common GND
-        between the external supply and the ESP32.
-    - - ESP32 resets when all three servos move simultaneously
-      - Three SG90 servos can draw over 900 mA at peak. The ESP32 USB supply cannot provide this. Use
-        a dedicated 5 V 2 A supply for the servos. Confirm the ESP32 GND and servo supply GND are connected
-        together.
-    - - Servo only moves in one direction
-      - Verify the LEDC duty calculation gives a range that spans the correct pulse width. Print angleToDuty(0)
-        and angleToDuty(180) to Serial and verify they are approximately 1638 (0.5 ms) and 8192 (2.5 ms)
-        for a 16-bit 50 Hz setup.
-    upgrades:
-    - Add a fourth servo for a gripper (open/close) controlled by joystick button
-    - Add angle limits per joint to prevent self-collision based on arm geometry
-    - Add a button that resets all joints to the home position (90/90/90 degrees)
-    - Add a potentiometer for wrist rotation as a fifth axis
-    code: "// ESP32 Robot Arm Controller - Beginner\n// Dual joystick -> 3-axis servo control with OLED\
-      \ angle display\n// Uses ESP32 LEDC for 50 Hz servo PWM\n\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
-      \nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n\n// LEDC channels for three servos\nconst int SERVO_PINS[3]\
-      \  = {13, 12, 14};\nconst int LEDC_CHANNELS[3] = {0, 1, 2};\nconst int LEDC_FREQ = 50;   // Hz\n\
-      const int LEDC_RES  = 16;   // bits\n\n// Joystick ADC pins: J1X=base, J1Y=shoulder, J2X=elbow\n\
-      const int JOY[3] = {34, 35, 36};\n\n// Servo angle state (degrees 0-180)\nint angles[3] = {90, 90,\
-      \ 90};\n\n// Convert angle to LEDC duty (16-bit, 50 Hz)\n// Pulse width: 0 deg = 0.5 ms, 180 deg\
-      \ = 2.5 ms\nuint32_t angleToDuty(int angle) {\n  float ms = 0.5f + (angle / 180.0f) * 2.0f;\n  return\
-      \ (uint32_t)((ms / 20.0f) * 65535);\n}\n\nvoid setServo(int idx, int angle) {\n  angles[idx] = constrain(angle,\
-      \ 0, 180);\n  ledcWrite(LEDC_CHANNELS[idx], angleToDuty(angles[idx]));\n}\n\nint joyToAngleDelta(int\
-      \ raw) {\n  // Center ~2048; dead zone +/-100\n  int delta = raw - 2048;\n  if (abs(delta) < 100)\
-      \ return 0;\n  return (delta > 0) ? 1 : -1;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21,\
-      \ 22);\n  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); oled.setTextColor(WHITE);\n  analogReadResolution(12);\n\
-      \  for (int i = 0; i < 3; i++) {\n    ledcSetup(LEDC_CHANNELS[i], LEDC_FREQ, LEDC_RES);\n    ledcAttachPin(SERVO_PINS[i],\
-      \ LEDC_CHANNELS[i]);\n    setServo(i, 90);\n  }\n  Serial.println(\"Robot arm ready.\");\n}\n\n\
-      void loop() {\n  for (int i = 0; i < 3; i++) {\n    int raw = analogRead(JOY[i]);\n    int delta\
-      \ = joyToAngleDelta(raw);\n    if (delta != 0) setServo(i, angles[i] + delta);\n  }\n  oled.clearDisplay();\
-      \ oled.setCursor(0, 0); oled.setTextSize(1);\n  oled.printf(\"Base:     %3d degn\", angles[0]);\n\
-      \  oled.printf(\"Shoulder: %3d degn\", angles[1]);\n  oled.printf(\"Elbow:    %3d degn\", angles[2]);\n\
-      \  oled.display();\n  delay(20); // 50 Hz update rate\n}"
-    code_filename: esp32-robot-arm-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build records a sequence of up to 50 arm poses by pressing a button,
-      stores them in NVS, and replays the sequence smoothly using linear interpolation between poses.
-      A web interface shows the current joint angles, a replay status indicator, and buttons to start/stop
-      recording and replay. This demonstrates motion programming and smooth trajectory execution.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 3× MG996R or SG90 servo
-    - 2× Analog joystick module
-    - 2× Tactile push button — Record pose / Replay
-    - 1× 5 V 3 A supply — MG996R servos draw up to 2.5 A peak
-    wiring:
-    - - Servo signals
-      - GPIO 13/12/14
-      - ''
-    - - Joystick axes
-      - GPIO 34/35/36
-      - ''
-    - - Record button
-      - GPIO 4 (INPUT_PULLUP)
-      - ''
-    - - Replay button
-      - GPIO 5 (INPUT_PULLUP)
-      - ''
-    how:
-    - 'Pose Recording: Each button press captures the current three joint angles as a pose entry in the
-      poses[][] array. Up to 50 poses can be stored. After each capture the entire pose array is written
-      to NVS so sequences survive power loss. poseCount tracks how many valid poses are stored.'
-    - 'Linear Interpolation Replay: The replaySmooth() function iterates through consecutive pose pairs
-      and interpolates each joint angle at 21 steps (t from 0.0 to 1.0). At each step all three servos
-      move simultaneously to the interpolated angle. 30 ms per step gives a 600 ms transition between
-      poses, producing smooth continuous motion.'
-    - 'NVS Pose Persistence: Poses are keyed as strings like "p3j1" (pose 3, joint 1). The count is stored
-      separately. On startup loadPoses() retrieves all recorded poses. This means a power cycle does not
-      erase a recorded sequence; the arm can resume replaying the same programme immediately on the next
-      boot.'
-    - 'Web Play Trigger: The /play endpoint calls replaySmooth() synchronously and then redirects back
-      to the root status page. This allows triggering replay from a smartphone browser without physical
-      button access. The status page shows how many poses are recorded and the current joint angles.'
-    apps:
-    - Educational robot arm demonstrating motion programming concepts
-    - Repetitive pick-and-place task automation for light assembly
-    - Art installation with programmable choreographed motion
-    - Physical therapy device demonstrating range-of-motion exercises
-    troubleshooting:
-    - - Replay motion is jerky between poses
-      - Increase the number of interpolation steps from 20 to 40 or 60 and reduce the per-step delay proportionally.
-        Jerkiness between specific poses suggests a large angle difference; add more intermediate poses
-        recorded at positions between the jerky transitions.
-    - - NVS save fails silently after many recordings
-      - NVS has a storage limit based on partition size. With 50 poses and 3 joints, 150 integer keys
-        plus the count key are stored. For larger sequences, use JSON serialisation to a single NVS string
-        key or write to an SD card.
-    - - Button press records multiple poses unintentionally
-      - 'Add a 200 ms debounce delay after detecting the falling edge: add delay(200) inside the recording
-        block. The current rising-edge filter (recPrev && !recNow) is a single-sample edge detector that
-        can retrigger if the button bounces.'
-    upgrades:
-    - Add a gripper servo as the fourth axis with grip force feedback via a force-sensing resistor
-    - Add a replay speed multiplier controllable from the web interface
-    - Add multiple saved programmes switchable by name from the web interface
-    - Add a visual pose timeline editor on the web page showing each recorded pose as a block
-    code: "// ESP32 Robot Arm - Intermediate (pose recording + smooth replay + web UI)\n#include <WiFi.h>\n\
-      #include <WebServer.h>\n#include <Preferences.h>\n\nWebServer server(80);\nPreferences prefs;\n\
-      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\n\nconst int SERVO_PINS[3]={13,12,14};\nconst\
-      \ int JOY[3]={34,35,36};\nconst int BTN_REC=4, BTN_PLAY=5;\nconst int MAX_POSES=50;\n\nconst int\
-      \ LEDC_FREQ=50, LEDC_RES=16;\nint angles[3]={90,90,90};\nint poses[MAX_POSES][3]; int poseCount=0;\n\
-      bool replaying=false;\n\nuint32_t angleToDuty(int a){\n  float ms=0.5f+(a/180.0f)*2.0f;\n  return\
-      \ (uint32_t)((ms/20.0f)*65535);\n}\nvoid setServo(int i,int a){\n  angles[i]=constrain(a,0,180);\n\
-      \  ledcWrite(i,angleToDuty(angles[i]));\n}\n\nvoid savePoses(){\n  prefs.begin(\"arm\",false);\n\
-      \  prefs.putInt(\"cnt\",poseCount);\n  for(int p=0;p<poseCount;p++)\n    for(int j=0;j<3;j++)\n\
-      \      prefs.putInt((\"p\"+String(p)+\"j\"+String(j)).c_str(),poses[p][j]);\n  prefs.end();\n}\n\
-      \nvoid loadPoses(){\n  prefs.begin(\"arm\",true);\n  poseCount=prefs.getInt(\"cnt\",0);\n  for(int\
-      \ p=0;p<poseCount;p++)\n    for(int j=0;j<3;j++)\n      poses[p][j]=prefs.getInt((\"p\"+String(p)+\"\
-      j\"+String(j)).c_str(),90);\n  prefs.end();\n}\n\nvoid serveUI(){\n  String html=\"<html><body><h2>Robot\
-      \ Arm</h2>\"\n    \"<p>Base:\"+String(angles[0])+\" Shoulder:\"+String(angles[1])+\" Elbow:\"+String(angles[2])+\"\
-      </p>\"\n    \"<p>Poses recorded: \"+String(poseCount)+\"</p>\"\n    \"<p><a href=/play>Play</a>\
-      \ | <a href=/clear>Clear</a></p>\"\n    \"</body></html>\";\n  server.send(200,\"text/html\",html);\n\
-      }\n\nvoid replaySmooth(){\n  if(poseCount<2) return;\n  for(int p=0;p<poseCount-1;p++){\n    for(int\
-      \ step=0;step<=20;step++){\n      float t=step/20.0f;\n      for(int j=0;j<3;j++)\n        setServo(j,(int)(poses[p][j]*(1-t)+poses[p+1][j]*t));\n\
-      \      delay(30);\n    }\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
-      \  for(int i=0;i<3;i++){\n    ledcSetup(i,LEDC_FREQ,LEDC_RES);\n    ledcAttachPin(SERVO_PINS[i],i);\n\
-      \    setServo(i,90);\n  }\n  pinMode(BTN_REC,INPUT_PULLUP); pinMode(BTN_PLAY,INPUT_PULLUP);\n  loadPoses();\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  server.on(\"/\",serveUI);\n\
-      \  server.on(\"/play\",[](){ replaySmooth(); server.sendHeader(\"Location\",\"/\"); server.send(302,\"\
-      \",\"\"); });\n  server.on(\"/clear\",[](){ poseCount=0; savePoses(); server.sendHeader(\"Location\"\
-      ,\"/\"); server.send(302,\"\",\"\"); });\n  server.begin();\n}\n\nvoid loop(){\n  server.handleClient();\n\
-      \  // Joystick control\n  int deltas[3]={0,0,0};\n  for(int i=0;i<3;i++){\n    int d=analogRead(JOY[i])-2048;\n\
-      \    if(abs(d)>100) deltas[i]=(d>0)?1:-1;\n  }\n  for(int i=0;i<3;i++) if(deltas[i]) setServo(i,angles[i]+deltas[i]);\n\
-      \n  // Record button (falling edge)\n  static bool recPrev=true;\n  bool recNow=digitalRead(BTN_REC);\n\
-      \  if(recPrev&&!recNow&&poseCount<MAX_POSES){\n    for(int j=0;j<3;j++) poses[poseCount][j]=angles[j];\n\
-      \    poseCount++; savePoses();\n    Serial.printf(\"Recorded pose %dn\",poseCount);\n  }\n  recPrev=recNow;\n\
-      \n  // Play button\n  static bool playPrev=true;\n  bool playNow=digitalRead(BTN_PLAY);\n  if(playPrev&&!playNow)\
-      \ replaySmooth();\n  playPrev=playNow;\n  delay(20);\n}"
-    code_filename: esp32-robot-arm-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build implements a two-link planar inverse kinematics solver. A web
-      interface accepts a target X/Y coordinate for the arm end-effector; the ESP32 computes the required
-      shoulder and elbow angles using the geometric IK solution and moves the servos to those angles.
-      The base rotates independently. All commands and current poses are published to MQTT.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 3× MG996R servo — Higher torque for IK-driven motion
-    - 1× MQTT broker
-    wiring:
-    - - Servo signals
-      - GPIO 13/12/14
-      - Base / shoulder / elbow
-    how:
-    - 'Two-Link Planar Inverse Kinematics: Given a target (x, y) relative to the shoulder joint, the IK
-      solver uses the law of cosines to find the elbow angle: cos(elbow) = (d2 - L12 - L22) / (2*L1*L2).
-      The shoulder angle follows from atan2 decomposition. The elbow-up solution is chosen; the elbow-down
-      solution would require negating elbowRad.'
-    - 'Reachability Check: The target is reachable only when the distance d is between |L1-L2| (arm fully
-      folded) and L1+L2 (arm fully extended). Outside this range, cosE falls outside [-1, 1] and acos
-      returns NaN. The constrain() clamp prevents NaN propagation but the false return signals the caller
-      to reject the target.'
-    - 'Base Independent Rotation: The base servo rotates the entire arm in the horizontal plane. The IK
-      calculation is done in the 2D plane of the arm; the base angle is independently set by the user.
-      In a 3D implementation the target X/Y/Z would include polar decomposition to extract base angle
-      before solving the 2D IK.'
-    - 'MQTT Pose Publishing: After each successful IK move, the target X/Y and computed shoulder/elbow
-      angles are published to arm/pose. This allows a Node-RED flow to log the arm trajectory, detect
-      repeated poses, or trigger other automation when the arm reaches specific positions.'
-    apps:
-    - Pick-and-place automation with coordinate-driven target specification
-    - Drawing robot that traces SVG path coordinates via IK
-    - Surgical training arm demonstrating workspace analysis
-    - STEM robotics lab demonstrating inverse kinematics mathematics
-    troubleshooting:
-    - - Arm moves to wrong position for given X/Y
-      - Verify L1 and L2 match the actual arm segment lengths in centimetres. Measure from the shoulder
-        servo axis to the elbow servo axis (L1) and from elbow axis to end-effector (L2). Offset angles
-        from servo mechanical zero must also be accounted for by adding a calibration offset to the computed
-        angles.
-    - - Some X/Y targets cause the arm to jerk to a wrong pose
-      - Add smooth interpolation between the current angles and the IK solution using the same linear
-        interpolation approach from the intermediate build. Sudden large angle commands cause mechanical
-        stress and inaccurate positioning.
-    - - IK returns unreachable for targets that appear within range
-      - The IK workspace is a donut shape; targets very close to the shoulder (under |L1-L2| cm) are also
-        unreachable. Verify the target coordinates are measured from the shoulder joint axis, not from
-        the base rotation axis. Add the base height offset if targeting 3D coordinates.
-    upgrades:
-    - Extend IK to 3D by adding base rotation angle calculation from target Z coordinate
-    - Add a camera on the end-effector and use OpenCV colour detection to auto-aim at a target
-    - Add a G-code parser to execute a series of IK moves from a file for drawing or milling
-    - Add joint angle feedback using potentiometers for closed-loop position control
-    code: "// ESP32 Robot Arm - Advanced (Inverse Kinematics + web XY target + MQTT)\n#include <WiFi.h>\n\
-      #include <WebServer.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <math.h>\n\
-      \nWiFiClient wc; PubSubClient mqtt(wc);\nWebServer server(80);\nconst char* SSID=\"YourSSID\", *PASS=\"\
-      YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\n\nconst int SERVO_PINS[3]={13,12,14};\nconst\
-      \ float L1=15.0f, L2=12.0f; // upper arm and forearm length in cm\nint angles[3]={90,90,90};\n\n\
-      uint32_t angleToDuty(int a){\n  float ms=0.5f+(a/180.0f)*2.0f;\n  return (uint32_t)((ms/20.0f)*65535);\n\
-      }\nvoid setServo(int i,int a){\n  angles[i]=constrain(a,0,180);\n  ledcWrite(i,angleToDuty(angles[i]));\n\
-      }\n\n// Two-link planar IK: solve shoulder and elbow for target (x,y)\n// Returns false if target\
-      \ is unreachable\nbool solveIK(float x, float y, int &shoulder, int &elbow){\n  float dist=sqrt(x*x+y*y);\n\
-      \  if(dist>L1+L2||dist<fabs(L1-L2)) return false;\n  float cosE=(dist*dist-L1*L1-L2*L2)/(2*L1*L2);\n\
-      \  cosE=constrain(cosE,-1.0f,1.0f);\n  float elbowRad=acos(cosE); // elbow-up solution\n  float\
-      \ k1=L1+L2*cos(elbowRad);\n  float k2=L2*sin(elbowRad);\n  float shoulderRad=atan2(y,x)-atan2(k2,k1);\n\
-      \  shoulder=(int)(degrees(shoulderRad));\n  elbow=180-(int)(degrees(elbowRad));\n  shoulder=constrain(shoulder,0,180);\n\
-      \  elbow=constrain(elbow,0,180);\n  return true;\n}\n\nvoid serveUI(){\n  server.send(200,\"text/html\"\
-      ,\n    \"<html><body><h2>IK Robot Arm</h2>\"\n    \"<form method=POST action=/move>\"\n    \"X (cm):\
-      \ <input name=x value=\"10\"><br>\"\n    \"Y (cm): <input name=y value=\"10\"><br>\"\n    \"Base\
-      \ (deg): <input name=base value=\"90\"><br>\"\n    \"<button>Move</button></form>\"\n    \"<p>Shoulder:\"\
-      +String(angles[1])+\" Elbow:\"+String(angles[2])+\"</p>\"\n    \"</body></html>\");\n}\n\nvoid handleMove(){\n\
-      \  float x=server.arg(\"x\").toFloat();\n  float y=server.arg(\"y\").toFloat();\n  int base=constrain(server.arg(\"\
-      base\").toInt(),0,180);\n  int sh,el;\n  if(solveIK(x,y,sh,el)){\n    setServo(0,base); setServo(1,sh);\
-      \ setServo(2,el);\n    StaticJsonDocument<96> doc;\n    doc[\"x\"]=x; doc[\"y\"]=y; doc[\"sh\"]=sh;\
-      \ doc[\"el\"]=el;\n    char buf[96]; serializeJson(doc,buf);\n    mqtt.publish(\"arm/pose\",buf);\n\
-      \    server.sendHeader(\"Location\",\"/\"); server.send(302,\"\",\"\");\n  } else {\n    server.send(200,\"\
-      text/plain\",\"Target unreachable\");\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  for(int\
-      \ i=0;i<3;i++){\n    ledcSetup(i,50,16); ledcAttachPin(SERVO_PINS[i],i); setServo(i,90);\n  }\n\
-      \  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n  mqtt.setServer(MQTT_HOST,1883);\n\
-      \  server.on(\"/\",serveUI);\n  server.on(\"/move\",HTTP_POST,handleMove);\n  server.begin();\n\
-      \  Serial.printf(\"IK Arm: http://%s/n\",WiFi.localIP().toString().c_str());\n}\n\nvoid loop(){\n\
-      \  if(!mqtt.connected()) mqtt.connect(\"RobotArm\");\n  mqtt.loop(); server.handleClient();\n}"
-    code_filename: esp32-robot-arm-advanced.ino
+    - - Servo jitter
+      - Check separate supply, common ground, and bulk capacitor.
+    - - Arm moves unexpectedly
+      - Increase dead zone and recalibrate joystick center.
+    - - One joint binds
+      - Tighten that joint's min/max constraints before testing again.
+    improvements: &id002
+    - Add save-position button.
+    - Add gripper only after power budget is checked.
+    - Add OLED angle display.
+    code: "// ESP32 educational 3-DOF servo arm controller\n// Uses separate 5-6 V servo supply, common ground, and constrained\
+      \ incremental motion.\n#include <ESP32Servo.h>\n\nconst int SERVO_BASE_PIN = 13;\nconst int SERVO_SHOULDER_PIN = 16;\n\
+      const int SERVO_ELBOW_PIN = 17;\nconst int JOY_BASE_PIN = 34;\nconst int JOY_SHOULDER_PIN = 35;\nconst int JOY_ELBOW_PIN\
+      \ = 36;\n\nServo baseServo;\nServo shoulderServo;\nServo elbowServo;\n\nint baseAngle = 90;\nint shoulderAngle = 90;\n\
+      int elbowAngle = 90;\nint baseCenter = 2048;\nint shoulderCenter = 2048;\nint elbowCenter = 2048;\n\nconst int BASE_MIN\
+      \ = 20;\nconst int BASE_MAX = 160;\nconst int SHOULDER_MIN = 35;\nconst int SHOULDER_MAX = 145;\nconst int ELBOW_MIN\
+      \ = 25;\nconst int ELBOW_MAX = 155;\nconst int DEAD_ZONE = 220;\n\nint constrainBase(int a) { return constrain(a, BASE_MIN,\
+      \ BASE_MAX); }\nint constrainShoulder(int a) { return constrain(a, SHOULDER_MIN, SHOULDER_MAX); }\nint constrainElbow(int\
+      \ a) { return constrain(a, ELBOW_MIN, ELBOW_MAX); }\n\nvoid writeServos() {\n  baseAngle = constrainBase(baseAngle);\n\
+      \  shoulderAngle = constrainShoulder(shoulderAngle);\n  elbowAngle = constrainElbow(elbowAngle);\n  baseServo.write(baseAngle);\n\
+      \  shoulderServo.write(shoulderAngle);\n  elbowServo.write(elbowAngle);\n}\n\nint axisStep(int raw, int center) {\n\
+      \  if (raw < 20 || raw > 4075) return 0; // hold last safe position if disconnected or stuck\n  int delta = raw - center;\n\
+      \  if (abs(delta) < DEAD_ZONE) return 0;\n  return delta > 0 ? 1 : -1;\n}\n\nint readAverage(int pin) {\n  long sum\
+      \ = 0;\n  for (int i = 0; i < 16; i++) sum += analogRead(pin);\n  return sum / 16;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  analogReadResolution(12);\n  baseServo.attach(SERVO_BASE_PIN, 500, 2500);\n  shoulderServo.attach(SERVO_SHOULDER_PIN,\
+      \ 500, 2500);\n  elbowServo.attach(SERVO_ELBOW_PIN, 500, 2500);\n\n  baseCenter = readAverage(JOY_BASE_PIN);\n  shoulderCenter\
+      \ = readAverage(JOY_SHOULDER_PIN);\n  elbowCenter = readAverage(JOY_ELBOW_PIN);\n\n  for (int a = 60; a <= 90; a++)\
+      \ {\n    baseAngle = constrainBase(a);\n    shoulderAngle = constrainShoulder(a);\n    elbowAngle = constrainElbow(a);\n\
+      \    writeServos();\n    delay(20);\n  }\n  Serial.println(\"Servo arm ready. Keep fingers clear of pinch points.\"\
+      );\n}\n\nvoid loop() {\n  baseAngle = constrainBase(baseAngle + axisStep(analogRead(JOY_BASE_PIN), baseCenter));\n \
+      \ shoulderAngle = constrainShoulder(shoulderAngle + axisStep(analogRead(JOY_SHOULDER_PIN), shoulderCenter));\n  elbowAngle\
+      \ = constrainElbow(elbowAngle + axisStep(analogRead(JOY_ELBOW_PIN), elbowCenter));\n  writeServos();\n  Serial.printf(\"\
+      Base %d Shoulder %d Elbow %d\\n\", baseAngle, shoulderAngle, elbowAngle);\n  delay(20);\n}\n"
+    code_filename: esp32-robot-arm-controller-beginner.ino
 related_slugs:
 - esp32-wifi-robot-controller
 - esp32-line-following-robot
+format: golden
+meta_title: ESP32 Joystick-Controlled Educational Servo Arm Tutorial
+project:
+  icon: ARM
+  mission_title: Build a 3-DOF Educational Servo Arm
+  difficulty: Intermediate
+  age: Ages 13+
+  recommended_age: Ages 13+
+  estimated_time: 90-120 min
+  budget: Under 40 USD
+  adult_supervision: Adult supervision recommended for servo power wiring and first motion tests.
+  classroom_use: Use it to discuss control loops and real robot safety standards without claiming certification.
+  parent_prompt: Ask why angle limits and separate servo power protect both electronics and fingers.
+  screen_free_activity: Map each joint's safe angle range on paper before editing code limits.
+  skills_practiced:
+  - Servo PWM
+  - Joystick ADC
+  - Angle constraints
+  - Separate power domains
+  learning_outcomes: &id001
+  - Control three SG90-class servos.
+  - Use ADC1 joystick pins.
+  - Constrain every servo write path.
+  - Explain pinch hazards and external servo supply.
+  mini_experiments:
+  - Change incremental step size.
+  - Test different dead-zone widths.
+  - Record and replay a fixed sequence in a future extension.
+  next_challenge: Add a save-position button for a three-step playback sequence.
+  what_you_build: A small 3-DOF joystick-controlled servo arm with base, shoulder, and elbow joints.
+  story: The existing repository evidence describes three SG90-class servos, so this Golden page keeps the scope to 3 DOF
+    and avoids industrial robot claims.
+  eli12: Each joystick tells the ESP32 which way to move one joint. The ESP32 moves each servo a tiny step and keeps it inside
+    safe angles.
+  parent_safety: Servos can pinch and draw surge current. Use a separate regulated 5-6 V servo supply, common ground, and
+    a bulk capacitor. Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: Main 3.3 V logic controller.
+    link: /components/esp32-devkit.html
+  - item: Three SG90-class micro servos
+    note: Base, shoulder, and elbow.
+  - item: Separate regulated 5-6 V servo supply
+    note: Do not power servos from ESP32 regulator.
+  - item: 470 uF or larger electrolytic capacitor
+    note: Across servo supply near servos.
+  - item: Two analog joystick modules
+    note: Use three axes for base/shoulder/elbow.
+  - item: SSD1306 OLED display
+    note: Optional I2C display on GPIO21/GPIO22.
+    link: /components/ssd1306-oled.html
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: Main 3.3 V logic controller.
+  - part: Three SG90-class micro servos
+    qty: '1'
+    estimated_cost: Varies
+    notes: Base, shoulder, and elbow.
+  - part: Separate regulated 5-6 V servo supply
+    qty: '1'
+    estimated_cost: Varies
+    notes: Do not power servos from ESP32 regulator.
+  - part: 470 uF or larger electrolytic capacitor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Across servo supply near servos.
+  - part: Two analog joystick modules
+    qty: '1'
+    estimated_cost: Varies
+    notes: Use three axes for base/shoulder/elbow.
+  - part: SSD1306 OLED display
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optional I2C display on GPIO21/GPIO22.
+  wiring:
+    illustration_alt: ESP32 Educational Servo Arm Controller (3-DOF) wiring diagram
+    summary: Servo signals use GPIO13, GPIO16, and GPIO17 to avoid boot-sensitive pins. Joystick axes use ADC1 GPIO34/GPIO35/GPIO36.
+      Servo power is separate with common ground.
+    steps:
+    - Unplug USB and servo supply before wiring.
+    - Connect servo signal wires to GPIO13, GPIO16, and GPIO17.
+    - Connect servo red/brown power leads to the separate 5-6 V supply, not the ESP32 regulator.
+    - Connect servo supply ground to ESP32 GND.
+    - Place a 470 uF or larger capacitor across the servo supply rail.
+    - Connect joystick axes to GPIO34, GPIO35, and GPIO36 with joystick VCC at 3.3 V.
+  gpio_map:
+  - signal: Base servo signal
+    esp32_pin: GPIO13
+    direction: PWM output
+    notes: Safe output pin for servo signal.
+  - signal: Shoulder servo signal
+    esp32_pin: GPIO16
+    direction: PWM output
+    notes: Avoids boot strap pins.
+  - signal: Elbow servo signal
+    esp32_pin: GPIO17
+    direction: PWM output
+    notes: Avoids boot strap pins.
+  - signal: Joystick base axis
+    esp32_pin: GPIO34
+    direction: ADC1 input
+    notes: Input-only ADC pin.
+  - signal: Joystick shoulder axis
+    esp32_pin: GPIO35
+    direction: ADC1 input
+    notes: Input-only ADC pin.
+  - signal: Joystick elbow axis
+    esp32_pin: GPIO36
+    direction: ADC1 input
+    notes: Input-only ADC pin.
+  - signal: Servo power
+    esp32_pin: External 5-6 V / GND
+    direction: Power
+    notes: Common ground with ESP32.
+  circuit_explanation: The ESP32 sends servo control pulses while joystick axes are read on ADC1. Servos draw power from a
+    separate supply.
+  engineering_explanation: Every angle update passes through explicit constrain functions. Movement is incremental to reduce
+    sudden jumps.
+  libraries:
+  - name: ESP32Servo
+    note: Install ESP32Servo; standard Servo library is not the right ESP32 choice.
+  code:
+    filename: esp32-robot-arm-controller.ino
+    content: "// ESP32 educational 3-DOF servo arm controller\n// Uses separate 5-6 V servo supply, common ground, and constrained\
+      \ incremental motion.\n#include <ESP32Servo.h>\n\nconst int SERVO_BASE_PIN = 13;\nconst int SERVO_SHOULDER_PIN = 16;\n\
+      const int SERVO_ELBOW_PIN = 17;\nconst int JOY_BASE_PIN = 34;\nconst int JOY_SHOULDER_PIN = 35;\nconst int JOY_ELBOW_PIN\
+      \ = 36;\n\nServo baseServo;\nServo shoulderServo;\nServo elbowServo;\n\nint baseAngle = 90;\nint shoulderAngle = 90;\n\
+      int elbowAngle = 90;\nint baseCenter = 2048;\nint shoulderCenter = 2048;\nint elbowCenter = 2048;\n\nconst int BASE_MIN\
+      \ = 20;\nconst int BASE_MAX = 160;\nconst int SHOULDER_MIN = 35;\nconst int SHOULDER_MAX = 145;\nconst int ELBOW_MIN\
+      \ = 25;\nconst int ELBOW_MAX = 155;\nconst int DEAD_ZONE = 220;\n\nint constrainBase(int a) { return constrain(a, BASE_MIN,\
+      \ BASE_MAX); }\nint constrainShoulder(int a) { return constrain(a, SHOULDER_MIN, SHOULDER_MAX); }\nint constrainElbow(int\
+      \ a) { return constrain(a, ELBOW_MIN, ELBOW_MAX); }\n\nvoid writeServos() {\n  baseAngle = constrainBase(baseAngle);\n\
+      \  shoulderAngle = constrainShoulder(shoulderAngle);\n  elbowAngle = constrainElbow(elbowAngle);\n  baseServo.write(baseAngle);\n\
+      \  shoulderServo.write(shoulderAngle);\n  elbowServo.write(elbowAngle);\n}\n\nint axisStep(int raw, int center) {\n\
+      \  if (raw < 20 || raw > 4075) return 0; // hold last safe position if disconnected or stuck\n  int delta = raw - center;\n\
+      \  if (abs(delta) < DEAD_ZONE) return 0;\n  return delta > 0 ? 1 : -1;\n}\n\nint readAverage(int pin) {\n  long sum\
+      \ = 0;\n  for (int i = 0; i < 16; i++) sum += analogRead(pin);\n  return sum / 16;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  analogReadResolution(12);\n  baseServo.attach(SERVO_BASE_PIN, 500, 2500);\n  shoulderServo.attach(SERVO_SHOULDER_PIN,\
+      \ 500, 2500);\n  elbowServo.attach(SERVO_ELBOW_PIN, 500, 2500);\n\n  baseCenter = readAverage(JOY_BASE_PIN);\n  shoulderCenter\
+      \ = readAverage(JOY_SHOULDER_PIN);\n  elbowCenter = readAverage(JOY_ELBOW_PIN);\n\n  for (int a = 60; a <= 90; a++)\
+      \ {\n    baseAngle = constrainBase(a);\n    shoulderAngle = constrainShoulder(a);\n    elbowAngle = constrainElbow(a);\n\
+      \    writeServos();\n    delay(20);\n  }\n  Serial.println(\"Servo arm ready. Keep fingers clear of pinch points.\"\
+      );\n}\n\nvoid loop() {\n  baseAngle = constrainBase(baseAngle + axisStep(analogRead(JOY_BASE_PIN), baseCenter));\n \
+      \ shoulderAngle = constrainShoulder(shoulderAngle + axisStep(analogRead(JOY_SHOULDER_PIN), shoulderCenter));\n  elbowAngle\
+      \ = constrainElbow(elbowAngle + axisStep(analogRead(JOY_ELBOW_PIN), elbowCenter));\n  writeServos();\n  Serial.printf(\"\
+      Base %d Shoulder %d Elbow %d\\n\", baseAngle, shoulderAngle, elbowAngle);\n  delay(20);\n}\n"
+  code_explanation: The code calibrates joystick centers, checks implausible ADC extremes, constrains each joint, and writes
+    incremental servo angles.
+  expected_output: Moving each joystick axis changes one joint smoothly inside its limits. Reset returns the arm gradually
+    toward home.
+  common_mistakes:
+  - text: Powering servos from ESP32 5 V/3.3 V pins.
+  - text: Using boot-sensitive pins for servo outputs.
+  - text: Writing unconstrained angles.
+  - text: Calling this an industrial robot or certified emergency stop system.
+  troubleshooting:
+  - problem: Servo jitter
+    fix: Check separate supply, common ground, and bulk capacitor.
+  - problem: Arm moves unexpectedly
+    fix: Increase dead zone and recalibrate joystick center.
+  - problem: One joint binds
+    fix: Tighten that joint's min/max constraints before testing again.
+  testing_checklist:
+  - Test each servo alone.
+  - Verify no joint binds at min/max limits.
+  - Keep fingers clear during first powered motion.
+  engineer_tips:
+  - Start with horns disconnected.
+  - Label each servo cable.
+  - Use conservative angle ranges first.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Review duty cycle, LED dimming, and output timing.
+  - title: Button LED Control
+    href: /guides/button-led-control.html
+    description: Practice button-controlled outputs.
+  related_projects:
+  - title: ESP32 WiFi Robot Controller
+    href: /projects/esp32-wifi-robot-controller.html
+    description: Compare wired joystick control with web-controlled robot motion.
+  - title: ESP32 CNC Controller
+    href: /projects/esp32-cnc-controller.html
+    description: Review another bounded motion-control project with safety limits.
+  faqs:
+  - question: How many DOF?
+    answer: 'This implementation uses three servos: base, shoulder, and elbow.'
+  - question: Why separate servo power?
+    answer: Servo surge current can reset or damage the ESP32 supply path.
+  - question: Is this an emergency stop?
+    answer: No. It has cautious startup and limits, not certified safety hardware.
+  complete:
+    summary: You completed ESP32 Educational Servo Arm Controller (3-DOF) with matching wiring, code, tests, and limitations.
+    skills:
+    - Servo PWM
+    - Joystick ADC
+    - Angle constraints
+keywords:
+- ESP32
+- ESP32 Educational Servo Arm Controller (3-DOF)
+- Base servo signal
+- Servo power
+- Arduino tutorial

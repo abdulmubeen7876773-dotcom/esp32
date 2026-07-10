@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S2MHJBW77S"></script>
+<script>
+  function esp32CanonicalPath(path) {
+    path = (path || '/').replace(/\/+/g, '/');
+    path = path.replace(/^\/esp32(?=\/|$)/i, '');
+    if (!path || path === '/index.html') return '/';
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, '');
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, '.html');
+    }
+    return path;
+  }
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S2MHJBW77S', {
+    page_path: esp32CanonicalPath(location.pathname),
+    page_location: 'https://esp32engine.com' + esp32CanonicalPath(location.pathname) + (location.search || ''),
+    page_title: document.title
+  });
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32-CAM (AI-Thinker) — Component Guide | ESP32 Engine</title>
+<meta name="description" content="AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring, 5 V power guidance, and privacy-first local camera use.">
+<meta name="theme-color" content="#2563EB">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/components/esp32-cam.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32-CAM (AI-Thinker) — Component Guide | ESP32 Engine">
+<meta property="og:description" content="AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring, 5 V power guidance, and privacy-first local camera use.">
+<meta property="og:url" content="https://esp32engine.com/components/esp32-cam.html">
+<meta property="og:image" content="https://esp32engine.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine â€” ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32-CAM (AI-Thinker) — Component Guide | ESP32 Engine">
+<meta name="twitter:description" content="AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring, 5 V power guidance, and privacy-first local camera use.">
+<meta name="twitter:image" content="https://esp32engine.com/og-image.jpg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+<script>window.SITE_GA4="G-S2MHJBW77S";</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=swap"></noscript>
+<link rel="preload" href="/style.css?v=20260704-production-qa" as="style">
+<link rel="stylesheet" href="/style.css?v=20260704-production-qa">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/og-image.jpg","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@ESP32Engine"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"ESP32-CAM (AI-Thinker) — Component Guide | ESP32 Engine","description":"AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring, 5 V power guidance, and privacy-first local camera use.","url":"https://esp32engine.com/components/esp32-cam.html","isPartOf":{"@type":"WebSite","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://esp32engine.com/components.html"},{"@type":"ListItem","position":3,"name":"ESP32-CAM (AI-Thinker)","item":"https://esp32engine.com/components/esp32-cam.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32-CAM (AI-Thinker)","description":"AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring, 5 V power guidance, and privacy-first local camera use.","dateModified":"2026-07-10","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/components/esp32-cam.html"},"proficiencyLevel":"Intermediate"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the ESP32-CAM AI-Thinker board?","acceptedAnswer":{"@type":"Answer","text":"It is an ESP32 board with an OV2640 camera connected through a fixed AI-Thinker pin map."}},{"@type":"Question","name":"How do I connect IO0 when flashing?","acceptedAnswer":{"@type":"Answer","text":"Connect IO0 to GND only during upload, then disconnect it from GND before resetting the board to run the sketch."}},{"@type":"Question","name":"Why does my ESP32-CAM reset randomly?","acceptedAnswer":{"@type":"Answer","text":"The most common cause is weak 5 V power during Wi-Fi or camera capture current spikes."}},{"@type":"Question","name":"Why does upload fail even though power is connected?","acceptedAnswer":{"@type":"Answer","text":"Check IO0-to-GND for upload mode and cross the serial lines: adapter TX to board U0R, adapter RX to board U0T."}},{"@type":"Question","name":"Is ESP32-CAM a professional security camera?","acceptedAnswer":{"@type":"Answer","text":"No. Treat it as an educational local camera board; do not expose example projects to the public internet."}},{"@type":"Question","name":"Glossary - What is IO0?","acceptedAnswer":{"@type":"Answer","text":"IO0 is a boot strap pin. Grounded at reset means programming mode; disconnected or high at reset means normal sketch execution."}},{"@type":"Question","name":"Glossary - What is PSRAM?","acceptedAnswer":{"@type":"Answer","text":"PSRAM is extra memory on many ESP32-CAM boards. It helps larger camera frames fit in memory."}},{"@type":"Question","name":"Parent tips - What is the main safety issue?","acceptedAnswer":{"@type":"Answer","text":"The board is low voltage; the main concern is privacy and consent. Keep the camera visible and use it only with awareness of people nearby."}},{"@type":"Question","name":"Parent tips - What should I check before a child uses it?","acceptedAnswer":{"@type":"Answer","text":"Check stable 5 V power, remove IO0 from GND after flashing, and confirm the camera is not aimed at private spaces."}},{"@type":"Question","name":"Teacher tips - How can this fit into class?","acceptedAnswer":{"@type":"Answer","text":"Use it to teach boot modes, pin maps, local web servers, and privacy-by-design in one contained lab."}},{"@type":"Question","name":"Teacher tips - What should students document?","acceptedAnswer":{"@type":"Answer","text":"Have students record upload wiring, normal-run wiring, selected frame size, and how they handled consent."}},{"@type":"Question","name":"Challenge yourself - How can I prove the pin map works?","acceptedAnswer":{"@type":"Answer","text":"Run the init-check sketch, then capture one local frame before adding any larger project logic."}},{"@type":"Question","name":"Challenge yourself - How can I improve privacy?","acceptedAnswer":{"@type":"Answer","text":"Add a visible status LED or physical lens cover and keep all access on the local network."}},{"@type":"Question","name":"Mini quiz - What changes between upload and run mode?","acceptedAnswer":{"@type":"Answer","text":"Only IO0 changes: grounded for upload, disconnected from GND for normal run."}},{"@type":"Question","name":"Mini quiz - Why cross TX and RX?","acceptedAnswer":{"@type":"Answer","text":"The adapter transmits into the board receiver, and the board transmits back into the adapter receiver."}},{"@type":"Question","name":"Glossary - What does ESP32-CAM (AI-Thinker) mean in an ESP32 project?","acceptedAnswer":{"@type":"Answer","text":"ESP32-CAM (AI-Thinker) is a boards part used with the ESP32. Learn its job first, then connect power, ground, and signal pins exactly as the wiring table shows."}},{"@type":"Question","name":"Glossary - What is a signal pin?","acceptedAnswer":{"@type":"Answer","text":"A signal pin is the wire that carries information between the ESP32 and the component. It may be digital, analog, I2C, SPI, PWM, or another protocol depending on the part."}},{"@type":"Question","name":"Parent tips - Is ESP32-CAM (AI-Thinker) safe for a beginner?","acceptedAnswer":{"@type":"Answer","text":"For a intermediate ESP32 lesson, this component is suitable when an adult checks the wiring, keeps the project at low voltage, and unplugs USB before moving jumper wires."}},{"@type":"Question","name":"Parent tips - What should I watch during the build?","acceptedAnswer":{"@type":"Answer","text":"Watch for reversed power pins, loose jumper wires, and children touching the circuit while it is powered. Most beginner ESP32 mistakes are wiring mistakes, not broken parts."}},{"@type":"Question","name":"Teacher tips - How can ESP32-CAM (AI-Thinker) fit into a classroom lesson?","acceptedAnswer":{"@type":"Answer","text":"Use ESP32-CAM (AI-Thinker) to connect one visible hardware behavior to one software concept. Ask students to predict the reading or output first, then test it on real hardware."}},{"@type":"Question","name":"Teacher tips - How should students be assessed?","acceptedAnswer":{"@type":"Answer","text":"Assess whether students can explain the wiring, identify the ESP32 pins used, run the example, describe the expected output, and troubleshoot one intentional mistake."}},{"@type":"Question","name":"Challenge yourself - What is a useful next step after ESP32-CAM (AI-Thinker) works?","acceptedAnswer":{"@type":"Answer","text":"Change one variable at a time: move to another valid GPIO, adjust the timing, display the value on an OLED, or combine the component with a related project."}},{"@type":"Question","name":"Challenge yourself - How can I prove I understand it?","acceptedAnswer":{"@type":"Answer","text":"Disconnect one wire, predict the failure, observe the output, then explain why the failure happened before reconnecting the circuit."}},{"@type":"Question","name":"Mini quiz - What should you check before changing wires?","acceptedAnswer":{"@type":"Answer","text":"Unplug USB power first. Then check the pin labels, voltage level, and ground connection before powering the ESP32 again."}},{"@type":"Question","name":"Mini quiz - Why is common ground important?","acceptedAnswer":{"@type":"Answer","text":"Common ground gives the ESP32 and the component the same voltage reference. Without it, signal readings can be wrong or unstable."}}]}</script>
+</head>
+<body class="component-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/learning.html">Learning</a><a href="/guides.html">Guides</a><a href="/components.html" class="active">Components</a><a href="/projects.html">Projects</a><a href="/parents.html">Parents</a><a href="/teachers.html">Teachers</a><a href="/tools.html">Tools</a><a href="/about.html">About</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guidesâ€¦" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">Ã—</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="component-hero-band">
+  <section class="wrap component-hero">
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/components.html">Components</a></li><li aria-current="page">ESP32-CAM (AI-Thinker)</li></ol></nav>
+    <div class="component-hero-grid">
+      <div class="component-hero-copy">
+        <p class="hero-eyebrow component-hero-eyebrow">Component Guide</p>
+        <div class="component-hero-badges">
+          <span class="badge badge-cat">Boards</span>
+          <span class="badge badge-intermediate">Intermediate</span>
+        </div>
+        <h1 class="component-hero-title">ESP32-CAM (AI-Thinker)</h1>
+        <p class="component-hero-summary">AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring, 5 V power guidance, and privacy-first local camera use.</p>
+        <div class="component-meta-strip" aria-label="Guide metadata">
+  <span><strong>Intermediate</strong><small>Difficulty</small></span>
+  <span><strong>14 min</strong><small>Reading time</small></span>
+  <span><strong>20-35 min</strong><small>Bench time</small></span>
+  <span><strong>ESP32</strong><small>Compatible</small></span>
+</div>
+        <div class="component-share" aria-label="Share this component guide">
+  <a class="component-share-btn" href="https://twitter.com/intent/tweet?url=https://esp32engine.com/components/esp32-cam.html&text=ESP32-CAM (AI-Thinker)" rel="noopener" target="_blank">Share</a>
+  <button class="component-share-btn" type="button" data-copy-url="https://esp32engine.com/components/esp32-cam.html">Copy link</button>
+</div>
+      </div>
+      <div class="component-hero-media"><div class="component-hero-photo"><span class="component-hero-fallback" aria-hidden="true">CAM</span></div><div class="component-hero-illustration" aria-hidden="true"><svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="ESP32-CAM (AI-Thinker) illustration">
+  <defs>
+    <linearGradient id="ca-board" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/><stop offset="1" stop-color="#00B894"/>
+    </linearGradient>
+    <radialGradient id="ca-glow" cx="50%" cy="50%" r="60%">
+      <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ca-shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#0F172A" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
+  <circle cx="260" cy="178" r="168" fill="url(#ca-glow)"/>
+  <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+  <g filter="url(#ca-shadow)">
+    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#ca-board)"/>
+    <rect x="174" y="124" width="116" height="78" rx="14" fill="#0F172A" opacity=".88"/>
+    <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
+    <circle cx="327" cy="183" r="19" fill="#FBBF24"/>
+    <text x="232" y="174" text-anchor="middle" fill="#E0F2FE" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800">E(</text>
+    <text x="260" y="282" text-anchor="middle" fill="#475569" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700">Boards</text>
+    <g stroke="#DBEAFE" stroke-width="5" stroke-linecap="round" opacity=".95">
+      <path d="M138 120h-28M138 154h-28M138 188h-28M382 120h28M382 154h28M382 188h28"/>
+    </g>
+  </g>
+</svg></div></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap component-guide-shell">
+<aside class="component-toc" aria-label="Component page contents"><strong>On this page</strong><a href="#eli12">Overview</a><a href="#applications">Applications</a><a href="#quick-facts">Quick facts</a><a href="#how-it-works">How it works</a><a href="#specs">Specs</a><a href="#pinout">Pinout</a><a href="#wiring">Wiring</a><a href="#code">Code</a><a href="#troubleshooting">Troubleshooting</a><a href="#faq">FAQ</a></aside>
+<article class="component-journey">
+<section class="component-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box component-eli12">
+    <h2 id="eli12-heading"><span class="component-section-icon" aria-hidden="true">00</span><span class="component-section-title">Plain-English Overview</span></h2>
+    <div class="eli12-content"><p>The ESP32-CAM is an ESP32 board with a tiny camera already connected to it. Instead of wiring every camera signal yourself, you use the board&#x27;s fixed AI-Thinker pin map and write code with the built-in esp_camera driver.</p><p>It is different from a normal ESP32 DevKit because it usually does not have a USB port. You program it with an FTDI or CP2102 USB-to-serial adapter, ground IO0 only while uploading, then disconnect IO0 so the sketch can run.</p><p>The board is a low-voltage learning module, but cameras create privacy responsibilities. Use it only with consent, keep examples local by default, and do not present it as a professional security system.</p></div>
+  </div>
+</section>
+<section class="component-section component-applications" id="applications" aria-labelledby="applications-heading">
+  <h2 id="applications-heading"><span class="component-section-icon" aria-hidden="true">A</span><span class="component-section-title">Where You Use It</span></h2>
+  <ul class="component-callout-list"><li>Local image capture demos</li><li>ESP32-CAM snapshot servers</li><li>Classroom camera pinout lessons</li><li>Local QR scanning projects</li><li>Bounded computer-vision experiments</li><li>Privacy and consent discussions</li></ul>
+</section>
+<section class="component-section" id="quick-facts" aria-labelledby="quick-facts-heading">
+  <h2 id="quick-facts-heading"><span class="component-section-icon" aria-hidden="true">01</span><span class="component-section-title">Quick Facts</span></h2>
+  <ul class="component-facts-grid"><li class="component-fact-item">
+  <span class="component-fact-label">Board profile</span>
+  <span class="component-fact-value">AI-Thinker ESP32-CAM</span>
+</li><li class="component-fact-item">
+  <span class="component-fact-label">Camera</span>
+  <span class="component-fact-value">OV2640</span>
+</li><li class="component-fact-item">
+  <span class="component-fact-label">Programming</span>
+  <span class="component-fact-value">FTDI serial adapter</span>
+</li><li class="component-fact-item">
+  <span class="component-fact-label">Boot mode</span>
+  <span class="component-fact-value">IO0 to GND for upload only</span>
+</li><li class="component-fact-item">
+  <span class="component-fact-label">Power</span>
+  <span class="component-fact-value">Stable 5 V supply</span>
+</li><li class="component-fact-item">
+  <span class="component-fact-label">Library</span>
+  <span class="component-fact-value">esp_camera.h</span>
+</li></ul>
+</section>
+<section class="component-section" id="how-it-works" aria-labelledby="how-it-works-heading">
+  <h2 id="how-it-works-heading"><span class="component-section-icon" aria-hidden="true">H</span><span class="component-section-title">How It Works</span></h2>
+  <div class="component-section-prose"><p>The AI-Thinker ESP32-CAM routes the OV2640 camera signals to fixed ESP32 GPIOs on the board. Firmware fills a camera_config_t structure with that pin map, selects a conservative frame size and JPEG quality, and calls esp_camera_init(). A project can then request a frame with esp_camera_fb_get(), use or serve the image, and return the frame buffer with esp_camera_fb_return().</p><p>Programming uses the ESP32 UART bootloader. IO0 grounded at reset selects upload mode. IO0 disconnected or high at reset lets the uploaded sketch run. That one jumper explains many upload and &#x27;sketch will not start&#x27; problems.</p><p>Camera capture and Wi-Fi both raise current demand. If the 5 V source or wiring is weak, the board may reset or report camera initialization errors even when the code and pin map are correct.</p></div>
+</section>
+<section class="component-section" id="specs" aria-labelledby="specs-heading">
+  <h2 id="specs-heading"><span class="component-section-icon" aria-hidden="true">02</span><span class="component-section-title">Technical Specifications</span></h2>
+  <p class="component-section-lead">Arduino library: <strong>Arduino ESP32 core esp_camera.h camera driver</strong></p>
+  <div class="wiring-table-wrap">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Board variant</th>
+  <td>AI-Thinker ESP32-CAM</td>
+  <td>The pinout below is for the AI-Thinker profile used by the repository camera projects.</td>
+</tr><tr>
+  <th scope="row">Camera sensor</th>
+  <td>OV2640</td>
+  <td>The camera is already connected to the ESP32 on the module.</td>
+</tr><tr>
+  <th scope="row">Logic level</th>
+  <td>3.3 V GPIO</td>
+  <td>Do not drive ESP32 signal pins with 5 V logic.</td>
+</tr><tr>
+  <th scope="row">Power input</th>
+  <td>5 V board input</td>
+  <td>Use a stable 5 V source; weak FTDI adapters often brown out.</td>
+</tr><tr>
+  <th scope="row">Recommended current headroom</th>
+  <td>500 mA minimum, 1 A practical bench supply</td>
+  <td>Wi-Fi and frame capture create current spikes.</td>
+</tr><tr>
+  <th scope="row">Programming mode</th>
+  <td>IO0 grounded at reset</td>
+  <td>Selects UART bootloader mode for flashing.</td>
+</tr><tr>
+  <th scope="row">Normal run mode</th>
+  <td>IO0 disconnected from GND</td>
+  <td>Allows the uploaded sketch to boot normally.</td>
+</tr><tr>
+  <th scope="row">PSRAM</th>
+  <td>Common on AI-Thinker boards; verify at runtime</td>
+  <td>Larger frame sizes require PSRAM and fail if allocation is unavailable.</td>
+</tr><tr>
+  <th scope="row">Arduino board profile</th>
+  <td>AI Thinker ESP32-CAM</td>
+  <td>Use the matching board profile in Arduino-ESP32.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section" id="pinout" aria-labelledby="pinout-heading">
+  <h2 id="pinout-heading"><span class="component-section-icon" aria-hidden="true">03</span><span class="component-section-title">Pinout</span></h2>
+  <ul class="component-pinout-list"><li class="component-pin-row">
+  <span class="component-pin-name">5V</span>
+  <span class="component-pin-role">Power input</span>
+  <span class="component-pin-connects">Stable 5 V supply</span>
+  <span class="component-pin-note">Use enough current headroom for Wi-Fi and camera capture.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">GND</span>
+  <span class="component-pin-role">Ground</span>
+  <span class="component-pin-connects">FTDI GND and supply GND</span>
+  <span class="component-pin-note">All power and serial connections share ground.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">U0R / RX0</span>
+  <span class="component-pin-role">UART receive</span>
+  <span class="component-pin-connects">FTDI TX</span>
+  <span class="component-pin-note">Cross TX from the adapter to RX on the board.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">U0T / TX0</span>
+  <span class="component-pin-role">UART transmit</span>
+  <span class="component-pin-connects">FTDI RX</span>
+  <span class="component-pin-note">Cross RX from the adapter to TX on the board.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">IO0</span>
+  <span class="component-pin-role">Boot strap</span>
+  <span class="component-pin-connects">GND only during upload</span>
+  <span class="component-pin-note">Disconnect from GND after flashing so the sketch runs.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">PWDN</span>
+  <span class="component-pin-role">Camera power-down</span>
+  <span class="component-pin-connects">GPIO32</span>
+  <span class="component-pin-note">AI-Thinker camera control pin.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">RESET</span>
+  <span class="component-pin-role">Camera reset</span>
+  <span class="component-pin-connects">-1 / not connected</span>
+  <span class="component-pin-note">The AI-Thinker profile leaves camera reset unconnected.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">XCLK</span>
+  <span class="component-pin-role">Camera clock</span>
+  <span class="component-pin-connects">GPIO0</span>
+  <span class="component-pin-note">Part of the fixed camera map; avoid extra loads.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">SIOD</span>
+  <span class="component-pin-role">Camera I2C data</span>
+  <span class="component-pin-connects">GPIO26</span>
+  <span class="component-pin-note">OV2640 control bus SDA.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">SIOC</span>
+  <span class="component-pin-role">Camera I2C clock</span>
+  <span class="component-pin-connects">GPIO27</span>
+  <span class="component-pin-note">OV2640 control bus SCL.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">VSYNC</span>
+  <span class="component-pin-role">Camera sync</span>
+  <span class="component-pin-connects">GPIO25</span>
+  <span class="component-pin-note">Fixed AI-Thinker sync pin.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">HREF</span>
+  <span class="component-pin-role">Camera sync</span>
+  <span class="component-pin-connects">GPIO23</span>
+  <span class="component-pin-note">Fixed AI-Thinker sync pin.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">PCLK</span>
+  <span class="component-pin-role">Camera pixel clock</span>
+  <span class="component-pin-connects">GPIO22</span>
+  <span class="component-pin-note">Fixed AI-Thinker pixel clock.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y9</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO35</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y8</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO34</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y7</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO39</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y6</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO36</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y5</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO21</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y4</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO19</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y3</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO18</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Y2</span>
+  <span class="component-pin-role">Camera data</span>
+  <span class="component-pin-connects">GPIO5</span>
+  <span class="component-pin-note">Fixed OV2640 data line.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Flash LED</span>
+  <span class="component-pin-role">Illumination/status</span>
+  <span class="component-pin-connects">GPIO4 on common AI-Thinker boards</span>
+  <span class="component-pin-note">Confirm clone-board wiring before relying on this LED.</span>
+</li></ul>
+</section>
+<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading"><span class="component-section-icon" aria-hidden="true">04</span><span class="component-section-title">Wiring Diagram</span></h2>
+  <p>Programming mode and normal run mode use the same 5 V, GND, and crossed TX/RX wiring. The only difference is IO0: connect IO0 to GND while uploading, then disconnect IO0 from GND and reset the board to run the sketch.</p>
+  <div class="component-wiring-art"><figure class="mission-illustration" aria-label="ESP32-CAM connected to an FTDI programmer: 5V to 5V, GND to GND, FTDI TX to U0R, FTDI RX to U0T, and IO0 to GND only for programming mode; IO0 is disconnected for normal run mode.">
+  <div class="mission-illustration-frame">
+    <span class="mission-illustration-icon" aria-hidden="true">Wire</span>
+    <span class="mission-illustration-label">Wiring Diagram</span>
+    <span class="mission-illustration-alt">ESP32-CAM connected to an FTDI programmer: 5V to 5V, GND to GND, FTDI TX to U0R, FTDI RX to U0T, and IO0 to GND only for programming mode; IO0 is disconnected for normal run mode.</span>
+  </div>
+</figure></div>
+  <ol class="component-steps-list"><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">1</span>
+    <p class="component-step-text">Unplug the 5 V supply and USB-to-serial adapter before rewiring.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">2</span>
+    <p class="component-step-text">Connect adapter GND to ESP32-CAM GND.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">3</span>
+    <p class="component-step-text">Connect a stable 5 V supply to ESP32-CAM 5V.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">4</span>
+    <p class="component-step-text">Connect adapter TX to ESP32-CAM U0R/RX0.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">5</span>
+    <p class="component-step-text">Connect adapter RX to ESP32-CAM U0T/TX0.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">6</span>
+    <p class="component-step-text">For upload only, connect IO0 to GND and reset the board.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">7</span>
+    <p class="component-step-text">After upload, remove the IO0-to-GND jumper and reset the board for normal sketch execution.</p>
+  </div>
+</li></ol>
+</section>
+<section class="component-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading"><span class="component-section-icon" aria-hidden="true">05</span><span class="component-section-title">Code Examples</span></h2>
+  <p class="component-section-lead">Use the same wiring with Arduino IDE, PlatformIO, or ESP-IDF. Start with Arduino, then graduate when you need a larger project structure.</p>
+  <div class="component-code-tabs" role="tablist" aria-label="Code framework options"><button class="component-code-tab is-active" type="button" data-code-tab="arduino" aria-selected="true">Arduino</button><button class="component-code-tab" type="button" data-code-tab="platformio" aria-selected="false">PlatformIO</button><button class="component-code-tab" type="button" data-code-tab="espidf" aria-selected="false">ESP-IDF</button></div>
+  <div class="component-code-panel is-active" data-code-panel="arduino"><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">esp32_cam_ai_thinker_init_check.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-pre">#include &quot;esp_camera.h&quot;</span>
+
+<span class="tok-pre">#define PWDN_GPIO_NUM     32</span>
+<span class="tok-pre">#define RESET_GPIO_NUM    -1</span>
+<span class="tok-pre">#define XCLK_GPIO_NUM      0</span>
+<span class="tok-pre">#define SIOD_GPIO_NUM     26</span>
+<span class="tok-pre">#define SIOC_GPIO_NUM     27</span>
+<span class="tok-pre">#define Y9_GPIO_NUM       35</span>
+<span class="tok-pre">#define Y8_GPIO_NUM       34</span>
+<span class="tok-pre">#define Y7_GPIO_NUM       39</span>
+<span class="tok-pre">#define Y6_GPIO_NUM       36</span>
+<span class="tok-pre">#define Y5_GPIO_NUM       21</span>
+<span class="tok-pre">#define Y4_GPIO_NUM       19</span>
+<span class="tok-pre">#define Y3_GPIO_NUM       18</span>
+<span class="tok-pre">#define Y2_GPIO_NUM        5</span>
+<span class="tok-pre">#define VSYNC_GPIO_NUM    25</span>
+<span class="tok-pre">#define HREF_GPIO_NUM     23</span>
+<span class="tok-pre">#define PCLK_GPIO_NUM     22</span>
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+
+  camera_config_t config = {};
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = <span class="tok-num">20000000</span>;
+  config.pixel_format = PIXFORMAT_JPEG;
+  config.frame_size = psramFound() ? FRAMESIZE_VGA : FRAMESIZE_QVGA;
+  config.jpeg_quality = <span class="tok-num">12</span>;
+  config.fb_count = psramFound() ? <span class="tok-num">2</span> : <span class="tok-num">1</span>;
+
+  esp_err_t err = esp_camera_init(&amp;config);
+  <span class="tok-kw">if</span> (err != ESP_OK) {
+    <span class="tok-fn">Serial</span>.printf(&quot;Camera init failed: 0x%x\n&quot;, err);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Check AI-Thinker board profile, <span class="tok-num">5</span> V power, ribbon cable, and PSRAM/frame settings.&quot;);
+    <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+  }
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;ESP32-CAM initialized with AI-Thinker pin map.&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+}</code></pre>
+</div></div><div class="component-code-panel" data-code-panel="platformio" hidden><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">src/main.cpp</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+<span class="tok-pre">#include &quot;esp_camera.h&quot;</span>
+
+<span class="tok-pre">#define PWDN_GPIO_NUM     32</span>
+<span class="tok-pre">#define RESET_GPIO_NUM    -1</span>
+<span class="tok-pre">#define XCLK_GPIO_NUM      0</span>
+<span class="tok-pre">#define SIOD_GPIO_NUM     26</span>
+<span class="tok-pre">#define SIOC_GPIO_NUM     27</span>
+<span class="tok-pre">#define Y9_GPIO_NUM       35</span>
+<span class="tok-pre">#define Y8_GPIO_NUM       34</span>
+<span class="tok-pre">#define Y7_GPIO_NUM       39</span>
+<span class="tok-pre">#define Y6_GPIO_NUM       36</span>
+<span class="tok-pre">#define Y5_GPIO_NUM       21</span>
+<span class="tok-pre">#define Y4_GPIO_NUM       19</span>
+<span class="tok-pre">#define Y3_GPIO_NUM       18</span>
+<span class="tok-pre">#define Y2_GPIO_NUM        5</span>
+<span class="tok-pre">#define VSYNC_GPIO_NUM    25</span>
+<span class="tok-pre">#define HREF_GPIO_NUM     23</span>
+<span class="tok-pre">#define PCLK_GPIO_NUM     22</span>
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+
+  camera_config_t config = {};
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = <span class="tok-num">20000000</span>;
+  config.pixel_format = PIXFORMAT_JPEG;
+  config.frame_size = psramFound() ? FRAMESIZE_VGA : FRAMESIZE_QVGA;
+  config.jpeg_quality = <span class="tok-num">12</span>;
+  config.fb_count = psramFound() ? <span class="tok-num">2</span> : <span class="tok-num">1</span>;
+
+  esp_err_t err = esp_camera_init(&amp;config);
+  <span class="tok-kw">if</span> (err != ESP_OK) {
+    <span class="tok-fn">Serial</span>.printf(&quot;Camera init failed: 0x%x\n&quot;, err);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Check AI-Thinker board profile, <span class="tok-num">5</span> V power, ribbon cable, and PSRAM/frame settings.&quot;);
+    <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+  }
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;ESP32-CAM initialized with AI-Thinker pin map.&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+}</code></pre>
+</div></div><div class="component-code-panel" data-code-panel="espidf" hidden><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">main/main.c</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-com">// ESP-IDF starter structure for this component.</span>
+<span class="tok-com">// Keep the wiring from the pinout section, then move the read/write logic into app_main().</span>
+
+<span class="tok-pre">#include &lt;stdio.h&gt;</span>
+<span class="tok-pre">#include &quot;freertos/FreeRTOS.h&quot;</span>
+<span class="tok-pre">#include &quot;freertos/task.h&quot;</span>
+
+<span class="tok-kw">void</span> app_main(<span class="tok-kw">void</span>) {
+  printf(&quot;ESP32-CAM (AI-Thinker) ready\n&quot;);
+  <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) {
+    <span class="tok-com">// Add component read/write code here.</span>
+    vTaskDelay(pdMS_TO_TICKS(<span class="tok-num">1000</span>));
+  }
+}</code></pre>
+</div></div>
+  <div class="component-section-prose"><p>This minimal sketch checks that the AI-Thinker pin map, board profile, camera ribbon, PSRAM/frame setting, and 5 V power are suitable before adding a web server or project-specific logic.</p></div>
+</section>
+<section class="component-section component-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading"><span class="component-section-icon" aria-hidden="true">OK</span><span class="component-section-title">Expected Output</span></h2>
+  <div class="component-output-body"><p>Serial Monitor at 115200 baud prints &#x27;ESP32-CAM initialized with AI-Thinker pin map&#x27; when the board profile, power, ribbon cable, and frame-buffer settings are correct. If initialization fails, the sketch prints a clear error.</p></div>
+</section>
+<section class="component-section component-mistakes" id="mistakes" aria-labelledby="mistakes-heading">
+  <h2 id="mistakes-heading"><span class="component-section-icon" aria-hidden="true">!</span><span class="component-section-title">Common Mistakes</span></h2>
+  <ul class="component-callout-list"><li>Leaving IO0 grounded after flashing, which keeps the board in bootloader mode.</li><li>Connecting FTDI TX-to-TX and RX-to-RX instead of crossing TX/RX.</li><li>Powering the camera from a weak FTDI adapter or unstable USB port.</li><li>Choosing a frame size that needs PSRAM when PSRAM is not available.</li><li>Treating a local classroom demo as a professional security camera.</li><li>Pointing the camera at people or private spaces without consent.</li></ul>
+</section>
+<section class="component-section component-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading"><span class="component-section-icon" aria-hidden="true">06</span><span class="component-section-title">Troubleshooting</span></h2>
+  <div class="wiring-table-wrap">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Problem</th><th scope="col">Possible cause</th><th scope="col">Solution</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Upload does not start</th>
+  <td>IO0 is not grounded during reset or TX/RX are not crossed.</td>
+  <td>Ground IO0, reset, confirm adapter TX goes to U0R and adapter RX goes to U0T, then upload again.</td>
+</tr><tr>
+  <th scope="row">Upload succeeds but sketch will not run</th>
+  <td>IO0 is still tied to GND after flashing.</td>
+  <td>Remove the IO0-to-GND jumper and reset the board.</td>
+</tr><tr>
+  <th scope="row">Camera init failed</th>
+  <td>Wrong board profile, loose ribbon cable, unsupported frame size, or weak power.</td>
+  <td>Select AI Thinker ESP32-CAM, reseat the camera ribbon gently, start with QVGA/VGA, and use stable 5 V power.</td>
+</tr><tr>
+  <th scope="row">Random resets or brownout messages</th>
+  <td>Wi-Fi or camera capture current spikes exceed the supply or wiring capability.</td>
+  <td>Use a dedicated 5 V supply with more current headroom and short power wires; add a bulk capacitor only as practical filtering, not as a universal fix.</td>
+</tr><tr>
+  <th scope="row">Large frames fail</th>
+  <td>PSRAM is missing, disabled, or not detected.</td>
+  <td>Check psramFound(), use the AI Thinker profile, and reduce frame size when PSRAM is unavailable.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section component-guides" id="guides" aria-labelledby="guides-heading">
+  <h2 id="guides-heading"><span class="component-section-icon" aria-hidden="true">G</span><span class="component-section-title">Related Guides</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/guides/installing-arduino-ide-esp32.html">
+  <h3>Installing Arduino IDE for ESP32</h3>
+  <p>Set up the Arduino ESP32 board package before uploading ESP32-CAM sketches.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/guides/what-is-esp32.html">
+  <h3>What is ESP32?</h3>
+  <p>Review ESP32 power, boot, GPIO, and Wi-Fi basics before using the camera board.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-projects" id="projects" aria-labelledby="projects-heading">
+  <h2 id="projects-heading"><span class="component-section-icon" aria-hidden="true">P</span><span class="component-section-title">Related Projects</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/projects/esp32-camera-capture-server.html">
+  <h3>Build a Camera Capture Server</h3>
+  <p>Start with a local snapshot server that uses the same AI-Thinker pin map.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/projects/esp32-security-camera-system.html">
+  <h3>ESP32-CAM Local Network Camera Demo</h3>
+  <p>Use the board as a privacy-bounded local camera demo, not a professional security system.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/projects/esp32-cam-face-detection.html">
+  <h3>Build a Local Face Detection Demo</h3>
+  <p>Compare another local ESP32-CAM project with consent and privacy limits.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/projects/esp32-cam-qr-scanner.html">
+  <h3>Build an ESP32-CAM QR Scanner</h3>
+  <p>Use the same board for local QR scanning experiments.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/projects/esp32-ai-object-detector.html">
+  <h3>Build a Color Object Presence Demo</h3>
+  <p>Study a bounded computer-vision project that avoids unsupported AI claims.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-related-components" id="related-components" aria-labelledby="related-components-heading">
+  <h2 id="related-components-heading"><span class="component-section-icon" aria-hidden="true">C</span><span class="component-section-title">Related Components</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/components/esp32-devkit.html">
+  <h3>ESP32 DevKit Board</h3>
+  <p>Compare this camera board with a plain USB-programmable ESP32 DevKit.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">What is the ESP32-CAM AI-Thinker board?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>It is an ESP32 board with an OV2640 camera connected through a fixed AI-Thinker pin map.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">How do I connect IO0 when flashing?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Connect IO0 to GND only during upload, then disconnect it from GND before resetting the board to run the sketch.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Why does my ESP32-CAM reset randomly?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>The most common cause is weak 5 V power during Wi-Fi or camera capture current spikes.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Why does upload fail even though power is connected?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Check IO0-to-GND for upload mode and cross the serial lines: adapter TX to board U0R, adapter RX to board U0T.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Is ESP32-CAM a professional security camera?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Treat it as an educational local camera board; do not expose example projects to the public internet.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Glossary - What is IO0?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>IO0 is a boot strap pin. Grounded at reset means programming mode; disconnected or high at reset means normal sketch execution.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Glossary - What is PSRAM?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>PSRAM is extra memory on many ESP32-CAM boards. It helps larger camera frames fit in memory.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Parent tips - What is the main safety issue?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>The board is low voltage; the main concern is privacy and consent. Keep the camera visible and use it only with awareness of people nearby.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Parent tips - What should I check before a child uses it?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Check stable 5 V power, remove IO0 from GND after flashing, and confirm the camera is not aimed at private spaces.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Teacher tips - How can this fit into class?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Use it to teach boot modes, pin maps, local web servers, and privacy-by-design in one contained lab.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Teacher tips - What should students document?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Have students record upload wiring, normal-run wiring, selected frame size, and how they handled consent.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Challenge yourself - How can I prove the pin map works?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Run the init-check sketch, then capture one local frame before adding any larger project logic.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Challenge yourself - How can I improve privacy?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Add a visible status LED or physical lens cover and keep all access on the local network.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Mini quiz - What changes between upload and run mode?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Only IO0 changes: grounded for upload, disconnected from GND for normal run.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Mini quiz - Why cross TX and RX?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>The adapter transmits into the board receiver, and the board transmits back into the adapter receiver.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Glossary - What does ESP32-CAM (AI-Thinker) mean in an ESP32 project?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>ESP32-CAM (AI-Thinker) is a boards part used with the ESP32. Learn its job first, then connect power, ground, and signal pins exactly as the wiring table shows.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Glossary - What is a signal pin?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>A signal pin is the wire that carries information between the ESP32 and the component. It may be digital, analog, I2C, SPI, PWM, or another protocol depending on the part.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Parent tips - Is ESP32-CAM (AI-Thinker) safe for a beginner?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>For a intermediate ESP32 lesson, this component is suitable when an adult checks the wiring, keeps the project at low voltage, and unplugs USB before moving jumper wires.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Parent tips - What should I watch during the build?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Watch for reversed power pins, loose jumper wires, and children touching the circuit while it is powered. Most beginner ESP32 mistakes are wiring mistakes, not broken parts.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Teacher tips - How can ESP32-CAM (AI-Thinker) fit into a classroom lesson?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Use ESP32-CAM (AI-Thinker) to connect one visible hardware behavior to one software concept. Ask students to predict the reading or output first, then test it on real hardware.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Teacher tips - How should students be assessed?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Assess whether students can explain the wiring, identify the ESP32 pins used, run the example, describe the expected output, and troubleshoot one intentional mistake.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Challenge yourself - What is a useful next step after ESP32-CAM (AI-Thinker) works?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Change one variable at a time: move to another valid GPIO, adjust the timing, display the value on an OLED, or combine the component with a related project.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Challenge yourself - How can I prove I understand it?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Disconnect one wire, predict the failure, observe the output, then explain why the failure happened before reconnecting the circuit.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Mini quiz - What should you check before changing wires?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Unplug USB power first. Then check the pin labels, voltage level, and ground connection before powering the ESP32 again.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Mini quiz - Why is common ground important?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Common ground gives the ESP32 and the component the same voltage reference. Without it, signal readings can be wrong or unstable.</p></div></div></div>
+</section>
+<section class="component-section component-references" id="references" aria-labelledby="references-heading">
+  <h2 id="references-heading"><span class="component-section-icon" aria-hidden="true">REF</span><span class="component-section-title">Review, Testing, and References</span></h2>
+  <div class="component-section-prose">
+    <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-07-10. <strong>Reviewed:</strong> wiring, code, beginner safety, and ESP32 compatibility. <strong>Educational level:</strong> Intermediate.</p>
+    <p>Use this component page as an educational starting point. Check official documentation before using the part in production, high-current, outdoor, battery, or safety-critical hardware.</p>
+  </div>
+  <ul class="component-callout-list"><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li><li><a href="https://github.com/espressif/esp32-camera" target="_blank" rel="noopener noreferrer">Component datasheet or manufacturer reference</a></li></ul>
+</section>
+<section class="component-section component-downloads" id="downloads" aria-labelledby="downloads-heading">
+  <h2 id="downloads-heading"><span class="component-section-icon" aria-hidden="true">08</span><span class="component-section-title">Downloads</span></h2>
+  <div class="component-download-panel">
+    <p class="component-section-lead">Espressif camera driver reference used by Arduino ESP32 camera examples.</p>
+    <a class="btn btn-secondary component-download-btn" href="https://github.com/espressif/esp32-camera" rel="noopener noreferrer" target="_blank">Download Datasheet (PDF)</a>
+  </div>
+</section>
+</article>
+<nav class="component-prevnext" aria-label="Previous and next component"><a class="component-prevnext-card" href="/components/dht22.html"><span>Previous</span><strong>DHT22 Temperature &amp; Humidity Sensor</strong></a><a class="component-prevnext-card is-next" href="/components/esp32-devkit.html"><span>Next</span><strong>ESP32 DevKit Board</strong></a></nav>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform â€” built for kids, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>Â© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.open").forEach(function(el) {
+      el.classList.remove("open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true;
+    });
+    item.classList.toggle("open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

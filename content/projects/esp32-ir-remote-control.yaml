@@ -1,284 +1,260 @@
 slug: esp32-ir-remote-control
-title: ESP32 IR Remote Control
+title: Build an ESP32 IR Learning Remote Demo
 category: Home Automation
-description: Use the ESP32 with IRremote library to decode infrared signals from any remote control, store
-  the codes, and replay them to control TVs, air conditioners, and other IR-controlled devices — all from
-  a web-based universal remote dashboard.
-meta_description: Build an ESP32 IR remote control system using a TSOP38238 IR receiver and IR LED transmitter.
-  Decode any remote, clone button codes, and build a web-based universal remote.
+description: Use a TSOP38238 receiver and transistor-driven IR LED to learn safe consumer remote codes and replay NEC commands.
+meta_description: Build an ESP32 IR remote demo with TSOP38238 receive wiring, transistor-driven IR LED output, IRremote library
+  code, and compatibility limits.
 source_base: esp32-ir-remote-control-legacy-import
-sensor: 'TODO: sensor'
-output: TSOP38238 OUT
+sensor: TSOP38238 OUT
+output: IR LED driver
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-27'
-quality_status: legacy_import
+quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 15
-  sensor_name: 'TODO: sensor'
-  output_name: TSOP38238 OUT
+  sensor_pin: GPIO15
+  output_pin: GPIO4
+  sensor_name: TSOP38238 OUT
+  output_name: IR LED driver
   wiring:
   - component: TSOP38238 OUT
-    pin: GPIO 15
-  - component: TSOP38238 VCC
-    pin: 3.3 V
-  - component: TSOP38238 GND
-    pin: GND
-  - component: IR LED anode
-    pin: GPIO 4
+    pin: GPIO15
+  - component: IR LED driver
+    pin: GPIO4
 levels:
   beginner:
     level: beginner
-    overview_html: <p>In this beginner project you will connect a TSOP38238 IR receiver to the ESP32 and
-      use the IRremote library to decode infrared signals from any remote control. Pointing a TV remote
-      at the receiver and pressing buttons prints the protocol name, address, and command code to the
-      Serial Monitor. You will identify and record the codes for your specific remote model.</p>
+    overview_html: <p>A safe receive-and-send IR learning demo for consumer-device education. Use IR for safe consumer devices
+      only. Do not use it to bypass access-control systems. Drive stronger IR LEDs through a transistor, not directly from
+      GPIO.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× TSOP38238 IR receiver module — 38 kHz carrier; 3-pin (OUT, GND, VCC)
-    - 1× IR LED (940 nm) — For transmitting IR codes
-    - 1× 100 ohm resistor — IR LED current limiting (5 V drive)
-    - 1× Breadboard and jumper wires
+    - ESP32 DevKit board
+    - TSOP38238 IR receiver
+    - 940 nm IR LED
+    - 2N2222 NPN transistor
+    - Resistors
+    - Breadboard and jumper wires
     wiring:
     - - TSOP38238 OUT
-      - GPIO 15
-      - IR receiver data output
-    - - TSOP38238 VCC
-      - 3.3 V
-      - ''
-    - - TSOP38238 GND
-      - GND
-      - ''
-    - - IR LED anode
-      - GPIO 4
-      - 100 ohm resistor in series; cathode to GND
-    how:
-    - 'IR Modulation and Demodulation: Infrared remotes transmit data by modulating an IR LED at 38 kHz.
-      The TSOP38238 receiver contains a bandpass filter tuned to 38 kHz and a demodulator that strips
-      the carrier, outputting a clean digital pulse pattern. The ESP32 measures pulse widths to decode
-      the data.'
-    - 'IR Protocol Library: The IRremote library decodes over 40 IR protocols including NEC (most TVs),
-      Samsung, Sony SIRC, Philips RC5/RC6, and DAIKIN (air conditioners). IrReceiver.decode() returns
-      true when a complete frame is received and fills the decodedIRData structure with protocol, address,
-      and command.'
-    - 'Protocol, Address, Command Structure: Most IR protocols encode a device address (identifies the
-      specific appliance model) and a command byte (identifies the button pressed). The NEC protocol uses
-      8-bit address and 8-bit command with inverted bytes for error checking. Recording these three values
-      is sufficient to replay any button.'
-    - 'IrReceiver.resume(): After decoding a signal, the receiver is paused to prevent re-decoding the
-      same transmission. resume() must be called to re-arm the receiver for the next signal. Forgetting
-      this call causes the receiver to appear non-functional after the first press.'
-    apps:
-    - Record unknown remote codes for documentation
-    - Identify which IR protocol your TV uses before building a transmitter
-    - Audit all button codes on an air conditioner remote for full control
-    - Reverse-engineer IR codes for devices without publicly available documentation
+      - GPIO15
+      - IR receive data; boot strap pin, avoid external pull conflicts.
+    - - IR LED driver
+      - GPIO4
+      - Controls transistor base through resistor.
+    key_concepts:
+    - The TSOP receiver demodulates 38 kHz IR into digital pulses. The transmitter uses GPIO4 to switch a transistor that
+      pulses the IR LED.
+    - IR protocols vary. This sketch stores and retransmits NEC commands only; unsupported protocols can still be logged for
+      study.
+    applications: &id003
+    - Consumer remote protocol lesson
+    - IR receiver test fixture
+    - Line-of-sight communication demo
     troubleshooting:
-    - - No IR signal received even when pressing remote buttons
-      - Aim the remote directly at the TSOP38238 within 30 cm for initial testing. Check the receiver
-        pinout; many TSOP modules have OUT on the left, GND in the middle, and VCC on the right when the
-        flat face is toward you.
-    - - Protocol shows UNKNOWN
-      - Some devices use non-standard or proprietary protocols. Print the raw pulse timing using IrReceiver.printIRResultRawFormatted()
-        to see the raw on/off durations and manually decode the protocol structure.
-    - - Same button decodes differently each press
-      - Some protocols (NEC, RC5) use toggle bits that alternate between presses to distinguish held keys
-        from repeated presses. Mask the toggle bit when comparing codes; use only address and command
-        fields.
-    upgrades:
-    - Add an IR LED and replay a recorded code using IrSender.sendNEC(address, command, repeats)
-    - Store 10 codes in NVS keyed by button number and replay with a number pad
-    - Add an OLED showing the last decoded protocol and command
-    - Add a web page listing all stored codes as clickable buttons
-    code: "// ESP32 IR Remote Control - Beginner\n// Decode any IR remote and print protocol, address,\
-      \ command\n\n#include <IRremote.hpp>\n\nconst int IR_RECV_PIN = 15;\nconst int IR_SEND_PIN = 4;\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);\n\
-      \  Serial.println(\"IR Receiver ready. Point remote and press any button.\");\n}\n\nvoid loop()\
-      \ {\n  if (IrReceiver.decode()) {\n    Serial.println(\"===== IR SIGNAL RECEIVED =====\");\n   \
-      \ Serial.printf(\"Protocol : %sn\",\n      getProtocolString(IrReceiver.decodedIRData.protocol));\n\
-      \    Serial.printf(\"Address  : 0x%04Xn\",\n      IrReceiver.decodedIRData.address);\n    Serial.printf(\"\
-      Command  : 0x%02Xn\",\n      IrReceiver.decodedIRData.command);\n    Serial.printf(\"Raw data :\
-      \ 0x%08lXn\",\n      IrReceiver.decodedIRData.decodedRawData);\n    IrReceiver.printIRResultShort(&Serial);\n\
-      \    Serial.println();\n    IrReceiver.resume(); // ready for next signal\n  }\n}"
-    code_filename: esp32-ir-remote-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build creates a universal remote cloner. First, a learning mode
-      captures up to 10 button codes from any existing remote and stores them in NVS. Then a web interface
-      served by the ESP32 displays 10 buttons labelled with device names (TV Power, Vol Up, HDMI 1, etc.).
-      Pressing a button on the web page transmits the stored IR code via the IR LED. A physical reset
-      button erases NVS and enters learning mode again.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× TSOP38238 IR receiver
-    - 1× IR LED 940 nm
-    - 1× 2N2222 NPN transistor — IR LED current driver
-    - 1× 100 ohm resistor (base)
-    - 1× 10 ohm resistor (collector) — IR LED limits to ~150 mA peak
-    - 1× Tactile button — Reset / learn mode trigger
-    - 1× Wi-Fi router — Web dashboard access
-    wiring:
-    - - TSOP38238 OUT
-      - GPIO 15
-      - ''
-    - - IR LED via 2N2222
-      - GPIO 4 (base via 100R)
-      - Collector to IR LED anode; emitter to GND
-    - - Reset button
-      - GPIO 0 to GND
-      - Pull-up; hold 3 s to enter learn mode
-    how:
-    - 'Learning Mode Code Capture: Holding the physical button for 3 seconds enters learning mode. The
-      ESP32 waits for IR signals and records each decoded protocol, address, and command into the codes[]
-      array. After 10 presses the array is full and codes are saved to NVS. Labels default to "Button
-      N" and can be renamed in NVS.'
-    - 'NVS Code Storage: Each stored code occupies three NVS keys: protocol (1 byte), address (2 bytes),
-      command (1 byte), plus a string label. 10 codes use approximately 400 bytes of NVS space, well within
-      the 8 KB available in the default NVS partition.'
-    - 'Transistor-Driven IR LED: The 2N2222 NPN transistor amplifies the 10-20 mA GPIO output to 150 mA
-      through the IR LED, tripling the transmission power compared to direct GPIO drive. The base resistor
-      (100 ohm) limits base current and the collector resistor (10 ohm) sets the LED peak current.'
-    - 'Web-Based Button Panel: The web page renders one HTML form per stored code. Each form POST to /send
-      includes the code index. The server handler calls IrSender.sendNEC() with the stored address and
-      command. With repeats=2, the signal is sent twice to handle receivers that require repeated frames.'
-    apps:
-    - Universal remote for home entertainment system control
-    - IR blaster for home automation hub controlling legacy devices
-    - Shared TV remote backup accessible from any smartphone
-    - Automated IR command sender for testing IR receiver devices
-    troubleshooting:
-    - - Learned code does not control the device
-      - Some protocols (Samsung, LG) require the exact repeat count and timing of the original remote.
-        Try increasing the repeats parameter in sendNEC() from 2 to 5. Also verify the protocol matches;
-        Samsung uses a different protocol than NEC even though the timings look similar.
-    - - Web page shows no buttons
-      - No codes have been learned yet. Enter learn mode, capture 10 button presses, then refresh the
-        page. If codes were previously saved, check that loadCodes() reads the correct NVS namespace.
-    - - Learn mode captures phantom presses
-      - Ambient IR from sunlight, fluorescent lights, or other IR remotes in the room can trigger false
-        captures. Learn codes in a dark room away from direct sunlight and other remotes. Alternatively
-        add a 10 us IrReceiver.isIdle() check before treating a signal as valid.
-    upgrades:
-    - Add a /label endpoint to rename button labels via a web form without re-learning codes
-    - 'Add support for multi-protocol: learn Samsung, Sony, and NEC codes on the same remote'
-    - 'Add a schedule: automatically send a code at a specific time (e.g. TV on at 19:00)'
-    - Add MQTT publishing so each button press is also logged to a home automation hub
-    code: "// ESP32 Universal IR Remote Cloner - Intermediate\n#include <IRremote.hpp>\n#include <WiFi.h>\n\
-      #include <WebServer.h>\n#include <Preferences.h>\n\nWebServer server(80);\nPreferences prefs;\n\n\
-      const char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst int IR_RECV=15, IR_SEND=4, BTN=0;\nconst\
-      \ int MAX_CODES=10;\n\nstruct IRCode { uint8_t protocol; uint16_t address; uint8_t command; };\n\
-      IRCode codes[MAX_CODES];\nString labels[MAX_CODES];\nint numCodes=0;\nbool learnMode=false;\nint\
-      \ learnIndex=0;\n\nvoid loadCodes(){\n  prefs.begin(\"ir\",true);\n  numCodes=prefs.getInt(\"n\"\
-      ,0);\n  for(int i=0;i<numCodes;i++){\n    String k=String(i);\n    codes[i].protocol=prefs.getUChar((\"\
-      p\"+k).c_str(),0);\n    codes[i].address=prefs.getUShort((\"a\"+k).c_str(),0);\n    codes[i].command=prefs.getUChar((\"\
-      c\"+k).c_str(),0);\n    labels[i]=prefs.getString((\"l\"+k).c_str(),\"Button \"+k);\n  }\n  prefs.end();\n\
-      }\n\nvoid saveCodes(){\n  prefs.begin(\"ir\",false);\n  prefs.putInt(\"n\",numCodes);\n  for(int\
-      \ i=0;i<numCodes;i++){\n    String k=String(i);\n    prefs.putUChar((\"p\"+k).c_str(),codes[i].protocol);\n\
-      \    prefs.putUShort((\"a\"+k).c_str(),codes[i].address);\n    prefs.putUChar((\"c\"+k).c_str(),codes[i].command);\n\
-      \    prefs.putString((\"l\"+k).c_str(),labels[i]);\n  }\n  prefs.end();\n}\n\nvoid serveRemote(){\n\
-      \  String html=\"<html><body><h2>IR Remote</h2>\";\n  if(learnMode) html+=\"<p style=\"color:red\"\
-      >LEARN MODE: point remote at sensor</p>\";\n  for(int i=0;i<numCodes;i++){\n    html+=\"<form method=POST\
-      \ action=/send>\"\n          \"<input type=hidden name=i value=\"+String(i)+\">\"\n          \"\
-      <button type=submit>\"+labels[i]+\"</button></form><br>\";\n  }\n  html+=\"</body></html>\";\n \
-      \ server.send(200,\"text/html\",html);\n}\n\nvoid handleSend(){\n  int idx=server.arg(\"i\").toInt();\n\
-      \  if(idx<0||idx>=numCodes){ server.send(400,\"text/plain\",\"invalid\"); return; }\n  IrSender.sendNEC(codes[idx].address,codes[idx].command,2);\n\
-      \  server.send(200,\"text/plain\",\"Sent: \"+labels[idx]);\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  loadCodes();\n  IrReceiver.begin(IR_RECV,DISABLE_LED_FEEDBACK);\n  IrSender.begin(IR_SEND);\n\
-      \  pinMode(BTN,INPUT_PULLUP);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  server.on(\"/\",serveRemote);\n  server.on(\"/send\",HTTP_POST,handleSend);\n  server.begin();\n\
-      \  Serial.printf(\"Remote dashboard: http://%s/n\",WiFi.localIP().toString().c_str());\n}\n\nvoid\
-      \ loop(){\n  server.handleClient();\n  // Hold button for 3 s to enter learn mode\n  if(digitalRead(BTN)==LOW){\n\
-      \    delay(3000);\n    if(digitalRead(BTN)==LOW){\n      learnMode=true; learnIndex=0; numCodes=0;\n\
-      \      Serial.println(\"Learn mode: press button 1 on your remote\");\n    }\n  }\n  if(learnMode\
-      \ && IrReceiver.decode()){\n    codes[learnIndex]={\n      (uint8_t)IrReceiver.decodedIRData.protocol,\n\
-      \      IrReceiver.decodedIRData.address,\n      (uint8_t)IrReceiver.decodedIRData.command\n    };\n\
-      \    labels[learnIndex]=\"Button \"+String(learnIndex+1);\n    Serial.printf(\"Learned #%d: proto=%d\
-      \ addr=0x%04X cmd=0x%02Xn\",\n      learnIndex+1,codes[learnIndex].protocol,\n      codes[learnIndex].address,codes[learnIndex].command);\n\
-      \    learnIndex++;\n    numCodes=learnIndex;\n    IrReceiver.resume();\n    if(learnIndex>=MAX_CODES){\
-      \ learnMode=false; saveCodes();\n      Serial.println(\"Learning complete. Saved.\"); }\n    else\
-      \ Serial.printf(\"Press button %dn\",learnIndex+1);\n  }\n}"
-    code_filename: esp32-ir-remote-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build is a Wi-Fi IR blaster controlled via MQTT. An MQTT message to
-      ir/send with a JSON payload specifying protocol, address, and command triggers an IR transmission.
-      Home Assistant and Node-RED can send IR commands to control any IR device as part of automated scenes
-      and routines. A raw-code endpoint allows replaying pulse-duration arrays for non-standard protocols
-      captured with a logic analyser.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× IR LED + 2N2222 driver
-    - 1× TSOP38238 IR receiver — For learning mode
-    - 1× MQTT broker (Mosquitto)
-    - 1× Home Assistant or Node-RED
-    wiring:
-    - - IR LED via 2N2222
-      - GPIO 4
-      - ''
-    - - TSOP38238 OUT
-      - GPIO 15
-      - ''
-    how:
-    - 'MQTT Command Dispatch: The ESP32 subscribes to ir/send on startup. When a JSON payload arrives,
-      the callback deserialises the protocol, address, and command fields and calls the appropriate IRremote
-      send function. Results are published to ir/result for Home Assistant state tracking.'
-    - 'Multi-Protocol Support: The callback dispatches to different IrSender functions based on the protocol
-      field. NEC covers most Asian brands; Samsung uses a Samsung-specific 32-bit format; Sony uses 12,
-      15, or 20-bit SIRC. Adding more protocols requires only an additional else-if branch.'
-    - 'MQTT Learn Mode: Publishing "start" to ir/learn activates the IR receiver for one code capture.
-      The decoded result is published to ir/learned as a JSON object with protocol, address, and command.
-      Home Assistant can then save this as a script that publishes back to ir/send to replay the code.'
-    - 'Home Assistant Integration: An HA MQTT integration entity subscribes to ir/result for state feedback.
-      HA scripts send the JSON payload to ir/send. Scenes combine multiple IR commands (TV on, HDMI input
-      1, volume 20) into a single scene activation.'
-    apps:
-    - Home Assistant IR blaster for complete home theatre control
-    - Node-RED automation triggering IR commands on schedules
-    - IR command library server for multi-room control
-    - Legacy appliance integration into modern smart home systems
-    troubleshooting:
-    - - MQTT payload causes deserialization error
-      - 'Ensure the JSON payload uses double quotes and correct field names: {\"protocol\":\"NEC\",\"address\":32,\"command\":2}.
-        Use the ArduinoJson assistant to validate the document capacity matches the payload size.'
-    - - Home Assistant cannot send commands to the blaster
-      - 'Verify the MQTT topic spelling matches exactly: ir/send (case-sensitive). In HA, use the MQTT
-        developer tools to publish a test message and confirm the ESP32 receives and processes it.'
-    - - Samsung TV does not respond to sendSamsung()
-      - Some Samsung models require sendSamsung48() for 48-bit codes. Try decoding the original Samsung
-        remote with the beginner sketch to identify the exact protocol variant and bit depth.
-    upgrades:
-    - Add a web UI listing all known codes with one-click send buttons
-    - Add a code database stored in SPIFFS JSON for persistent multi-device management
-    - 'Add raw pulse replay for exotic protocols: publish an array of pulse durations to ir/raw'
-    - Add an IR receiver auto-discover mode that scans and publishes all received codes from any nearby
-      remote
-    code: "// ESP32 IR Blaster - Advanced (MQTT controlled)\n// MQTT topic: ir/send  Payload: {\"protocol\"\
-      :\"NEC\",\"address\":32,\"command\":2}\n// MQTT topic: ir/learn Payload: \"start\" to enter learn\
-      \ mode\n#include <WiFi.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n#include <IRremote.hpp>\n\
-      \nWiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\nconst char* SSID=\"YourSSID\", *PASS=\"\
-      YourPass\";\nconst char* MQTT_HOST=\"192.168.1.100\";\nconst int IR_RECV=15, IR_SEND=4;\nbool learnMode=false;\n\
-      \nvoid mqttCallback(char* topic, byte* payload, unsigned int len){\n  String t(topic), msg((char*)payload,len);\n\
-      \  if(t==\"ir/learn\" && msg==\"start\"){\n    learnMode=true;\n    IrReceiver.start();\n    mqtt.publish(\"\
-      ir/status\",\"learn_mode\");\n    return;\n  }\n  if(t==\"ir/send\"){\n    StaticJsonDocument<128>\
-      \ doc;\n    if(deserializeJson(doc,msg)) return;\n    uint16_t addr=doc[\"address\"]|0;\n    uint8_t\
-      \  cmd =doc[\"command\"]|0;\n    String   proto=doc[\"protocol\"]|\"NEC\";\n    if(proto==\"NEC\"\
-      )     IrSender.sendNEC(addr,cmd,2);\n    else if(proto==\"SAMSUNG\") IrSender.sendSamsung(addr,cmd,2);\n\
-      \    else if(proto==\"SONY\")    IrSender.sendSony(addr,cmd,2,SIRCS_12_PROTOCOL);\n    char buf[64];\n\
-      \    snprintf(buf,64,\"{\"sent\":\"%s\",\"addr\":%u,\"cmd\":%u}\",\n      proto.c_str(),addr,cmd);\n\
-      \    mqtt.publish(\"ir/result\",buf);\n  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  IrReceiver.begin(IR_RECV,DISABLE_LED_FEEDBACK);\n\
-      \  IrSender.begin(IR_SEND);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  mqtt.setServer(MQTT_HOST,1883);\n  mqtt.setCallback(mqttCallback);\n}\n\nvoid loop(){\n  if(!mqtt.connected()){\n\
-      \    mqtt.connect(\"IRBlaster\");\n    mqtt.subscribe(\"ir/send\");\n    mqtt.subscribe(\"ir/learn\"\
-      );\n  }\n  mqtt.loop();\n  if(learnMode && IrReceiver.decode()){\n    StaticJsonDocument<128> doc;\n\
-      \    doc[\"protocol\"]=getProtocolString(IrReceiver.decodedIRData.protocol);\n    doc[\"address\"\
-      ]=IrReceiver.decodedIRData.address;\n    doc[\"command\"]=IrReceiver.decodedIRData.command;\n  \
-      \  char buf[128]; serializeJson(doc,buf);\n    mqtt.publish(\"ir/learned\",buf);\n    IrReceiver.resume();\n\
-      \    learnMode=false;\n    mqtt.publish(\"ir/status\",\"ready\");\n  }\n}"
-    code_filename: esp32-ir-remote-advanced.ino
+    - - No receive data
+      - Check receiver pinout and aim the remote close to the sensor.
+    - - Protocol UNKNOWN
+      - The remote may use an unsupported or complex protocol; inspect raw output.
+    - - Transmit does not work
+      - Check IR LED polarity, transistor wiring, and whether the appliance uses NEC.
+    improvements: &id002
+    - Store learned NEC codes in Preferences.
+    - Add OLED display for the last decoded command.
+    - Add a web page after local transmit works.
+    code: "// ESP32 IR receive-and-send learning demo\n// Learn codes from your own remote before transmitting.\n#include\
+      \ <IRremote.hpp>\n\nconst int IR_RECV_PIN = 15;\nconst int IR_SEND_PIN = 4;\n\nuint16_t learnedAddress = 0;\nuint16_t\
+      \ learnedCommand = 0;\ndecode_type_t learnedProtocol = UNKNOWN;\nbool hasLearnedCode = false;\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);\n  IrSender.begin(IR_SEND_PIN);\n  Serial.println(\"IR demo ready.\
+      \ Point a safe consumer remote at the receiver.\");\n}\n\nvoid loop() {\n  if (!IrReceiver.decode()) return;\n\n  Serial.println(\"\
+      IR signal received\");\n  Serial.print(\"Protocol: \");\n  Serial.println(getProtocolString(IrReceiver.decodedIRData.protocol));\n\
+      \  Serial.print(\"Address: 0x\");\n  Serial.println(IrReceiver.decodedIRData.address, HEX);\n  Serial.print(\"Command:\
+      \ 0x\");\n  Serial.println(IrReceiver.decodedIRData.command, HEX);\n\n  if (IrReceiver.decodedIRData.protocol == NEC)\
+      \ {\n    learnedProtocol = NEC;\n    learnedAddress = IrReceiver.decodedIRData.address;\n    learnedCommand = IrReceiver.decodedIRData.command;\n\
+      \    hasLearnedCode = true;\n    Serial.println(\"Stored NEC code. Send it back by opening Serial Monitor and typing\
+      \ s.\");\n  } else {\n    Serial.println(\"This sketch retransmits NEC only. Use raw examples for other protocols.\"\
+      );\n  }\n\n  IrReceiver.resume();\n\n  if (Serial.available()) {\n    char c = Serial.read();\n    if ((c == 's' ||\
+      \ c == 'S') && hasLearnedCode && learnedProtocol == NEC) {\n      IrSender.sendNEC(learnedAddress, learnedCommand, 2);\n\
+      \      Serial.println(\"Sent learned NEC command.\");\n    }\n  }\n}\n"
+    code_filename: esp32-ir-remote-control-beginner.ino
 related_slugs:
 - esp32-voice-controlled-relay
 - esp32-smart-power-strip
+format: golden
+meta_title: ESP32 IR Learning Remote Demo
+project:
+  icon: IR
+  mission_title: Build an ESP32 IR Learning Remote Demo
+  difficulty: Intermediate
+  age: Ages 12+
+  recommended_age: Ages 12+
+  estimated_time: 60-75 min
+  budget: Under 20 USD
+  adult_supervision: Adult help recommended when checking transistor and IR LED polarity.
+  classroom_use: Use a classroom TV remote or spare consumer remote and discuss protocols without promising universal compatibility.
+  parent_prompt: Ask why a transmitter needs line of sight and why high-current LEDs need a driver.
+  screen_free_activity: Draw carrier pulses, receiver output pulses, and a transistor-driven IR LED.
+  skills_practiced:
+  - IR receiving
+  - Protocol decoding
+  - Transistor driver
+  - Line-of-sight limits
+  learning_outcomes: &id001
+  - Decode IR signals on GPIO15.
+  - Transmit learned NEC commands from GPIO4.
+  - Explain 38 kHz carrier modulation.
+  - State protocol and appliance compatibility limits.
+  mini_experiments:
+  - Test remote angle and distance.
+  - Compare two remote protocols.
+  - Block line of sight and observe failure.
+  next_challenge: Store learned codes only after basic receive/send behavior is reliable.
+  what_you_build: A safe receive-and-send IR learning demo for consumer-device education.
+  story: This project receives real IR codes and can replay learned NEC commands. It is not a universal compatibility promise
+    or access-control bypass tool.
+  eli12: A remote blinks invisible light in patterns. The receiver turns those patterns into numbers, and the ESP32 can blink
+    an IR LED with the same pattern.
+  parent_safety: Use IR for safe consumer devices only. Do not use it to bypass access-control systems. Drive stronger IR
+    LEDs through a transistor, not directly from GPIO. Unplug USB and external power before rewiring.
+  learning_objectives: *id001
+  components:
+  - item: ESP32 DevKit board
+    note: USB-programmable ESP32 board for the low-voltage logic side.
+    link: /components/esp32-devkit.html
+  - item: TSOP38238 IR receiver
+    note: 38 kHz demodulating receiver, OUT to GPIO15.
+  - item: 940 nm IR LED
+    note: Transmitter LED; use correct polarity.
+  - item: 2N2222 NPN transistor
+    note: Drives IR LED current from GPIO4 control signal.
+  - item: Resistors
+    note: Base and LED current limiting resistors.
+  - item: Breadboard and jumper wires
+    note: For low-voltage prototyping.
+  bom:
+  - part: ESP32 DevKit board
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-programmable ESP32 board for the low-voltage logic side.
+  - part: TSOP38238 IR receiver
+    qty: '1'
+    estimated_cost: Varies
+    notes: 38 kHz demodulating receiver, OUT to GPIO15.
+  - part: 940 nm IR LED
+    qty: '1'
+    estimated_cost: Varies
+    notes: Transmitter LED; use correct polarity.
+  - part: 2N2222 NPN transistor
+    qty: '1'
+    estimated_cost: Varies
+    notes: Drives IR LED current from GPIO4 control signal.
+  - part: Resistors
+    qty: '1'
+    estimated_cost: Varies
+    notes: Base and LED current limiting resistors.
+  - part: Breadboard and jumper wires
+    qty: '1'
+    estimated_cost: Varies
+    notes: For low-voltage prototyping.
+  wiring:
+    illustration_alt: Build an ESP32 IR Learning Remote Demo wiring diagram
+    summary: TSOP38238 OUT goes to GPIO15. GPIO4 drives a transistor stage for the IR LED transmitter.
+    steps:
+    - Unplug USB before wiring.
+    - Connect TSOP38238 VCC to 3.3 V, GND to GND, and OUT to GPIO15.
+    - Connect GPIO4 through a base resistor to the 2N2222 base.
+    - Wire the IR LED and current-limiting resistor through the transistor driver.
+    - Keep receiver and transmitter aimed at safe consumer devices.
+    - Upload the sketch and open Serial Monitor.
+  gpio_map:
+  - signal: TSOP38238 OUT
+    esp32_pin: GPIO15
+    direction: Input
+    notes: IR receive data; boot strap pin, avoid external pull conflicts.
+  - signal: IR LED driver
+    esp32_pin: GPIO4
+    direction: Output
+    notes: Controls transistor base through resistor.
+  circuit_explanation: The TSOP receiver demodulates 38 kHz IR into digital pulses. The transmitter uses GPIO4 to switch a
+    transistor that pulses the IR LED.
+  engineering_explanation: IR protocols vary. This sketch stores and retransmits NEC commands only; unsupported protocols
+    can still be logged for study.
+  libraries:
+  - name: IRremote
+    note: Install Arduino-IRremote library.
+  code:
+    filename: esp32-ir-remote-control.ino
+    content: "// ESP32 IR receive-and-send learning demo\n// Learn codes from your own remote before transmitting.\n#include\
+      \ <IRremote.hpp>\n\nconst int IR_RECV_PIN = 15;\nconst int IR_SEND_PIN = 4;\n\nuint16_t learnedAddress = 0;\nuint16_t\
+      \ learnedCommand = 0;\ndecode_type_t learnedProtocol = UNKNOWN;\nbool hasLearnedCode = false;\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);\n  IrSender.begin(IR_SEND_PIN);\n  Serial.println(\"IR demo ready.\
+      \ Point a safe consumer remote at the receiver.\");\n}\n\nvoid loop() {\n  if (!IrReceiver.decode()) return;\n\n  Serial.println(\"\
+      IR signal received\");\n  Serial.print(\"Protocol: \");\n  Serial.println(getProtocolString(IrReceiver.decodedIRData.protocol));\n\
+      \  Serial.print(\"Address: 0x\");\n  Serial.println(IrReceiver.decodedIRData.address, HEX);\n  Serial.print(\"Command:\
+      \ 0x\");\n  Serial.println(IrReceiver.decodedIRData.command, HEX);\n\n  if (IrReceiver.decodedIRData.protocol == NEC)\
+      \ {\n    learnedProtocol = NEC;\n    learnedAddress = IrReceiver.decodedIRData.address;\n    learnedCommand = IrReceiver.decodedIRData.command;\n\
+      \    hasLearnedCode = true;\n    Serial.println(\"Stored NEC code. Send it back by opening Serial Monitor and typing\
+      \ s.\");\n  } else {\n    Serial.println(\"This sketch retransmits NEC only. Use raw examples for other protocols.\"\
+      );\n  }\n\n  IrReceiver.resume();\n\n  if (Serial.available()) {\n    char c = Serial.read();\n    if ((c == 's' ||\
+      \ c == 'S') && hasLearnedCode && learnedProtocol == NEC) {\n      IrSender.sendNEC(learnedAddress, learnedCommand, 2);\n\
+      \      Serial.println(\"Sent learned NEC command.\");\n    }\n  }\n}\n"
+  code_explanation: The sketch decodes any received IR signal, stores NEC address/command values, and sends the learned NEC
+    command when the user types s.
+  expected_output: Serial Monitor shows protocol, address, and command. NEC codes can be retransmitted after learning.
+  common_mistakes:
+  - text: Expecting universal compatibility.
+  - text: Driving a high-current IR LED directly from GPIO.
+  - text: Using IR to bypass access systems.
+  - text: Forgetting line-of-sight limits.
+  troubleshooting:
+  - problem: No receive data
+    fix: Check receiver pinout and aim the remote close to the sensor.
+  - problem: Protocol UNKNOWN
+    fix: The remote may use an unsupported or complex protocol; inspect raw output.
+  - problem: Transmit does not work
+    fix: Check IR LED polarity, transistor wiring, and whether the appliance uses NEC.
+  testing_checklist:
+  - Decode a known consumer remote.
+  - Learn one NEC command.
+  - Send only toward the same safe device.
+  engineer_tips:
+  - Test in moderate lighting.
+  - Keep examples to owned consumer devices.
+  - Label learned codes by device and button.
+  upgrade_ideas: *id002
+  real_world_applications: *id003
+  related_guides:
+  - title: Digital Inputs and Floating Pins
+    href: /guides/digital-inputs-floating-pins.html
+    description: Learn why clean digital inputs and pull-ups matter.
+  - title: What is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review ESP32 pins, boot behavior, and power basics.
+  related_projects:
+  - title: ESP32 Voice Controlled Relay
+    href: /projects/esp32-voice-controlled-relay.html
+    description: Compare local command inputs with relay safety limits.
+  - title: ESP32 Smart Door Lock
+    href: /projects/esp32-smart-door-lock.html
+    description: Review why access-control projects need stronger safety boundaries.
+  faqs:
+  - question: Will it control every appliance?
+    answer: No. Protocols and timings vary.
+  - question: Can I copy any remote?
+    answer: Only learn and replay codes for devices you own and are allowed to control.
+  - question: Why use a transistor?
+    answer: IR LEDs often need more pulse current than an ESP32 pin should provide directly.
+  complete:
+    summary: You completed Build an ESP32 IR Learning Remote Demo with matching wiring, code, tests, and limitations.
+    skills:
+    - IR receiving
+    - Protocol decoding
+    - Transistor driver
+keywords:
+- ESP32
+- Build an ESP32 IR Learning Remote Demo
+- TSOP38238 OUT
+- IR LED driver
+- Arduino tutorial

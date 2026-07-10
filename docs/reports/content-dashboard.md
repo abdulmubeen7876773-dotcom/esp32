@@ -1,10 +1,10 @@
 # Content Dashboard
 
-Generated: 2026-07-10T11:07:40Z
+Generated: 2026-07-10T20:49:21Z
 
 ## Components
 
-- Complete: 7
+- Complete: 8
 - Planned: 210
 
 ## Guides
@@ -48,12 +48,13 @@ Missing items:
 ## Photos
 
 - Complete: 0
-- Missing: 7
+- Missing: 8
 
 Missing items:
 
 - components/bme280: photo
 - components/dht22: photo
+- components/esp32-cam: photo
 - components/esp32-devkit: photo
 - components/hc-sr04: photo
 - components/pir-sensor: photo
@@ -62,13 +63,13 @@ Missing items:
 
 ## Pinouts
 
-- Complete: 7
+- Complete: 8
 - Missing: 0
 
 ## Wiring
 
 - Complete: 1
-- Missing: 22
+- Missing: 23
 
 Missing items:
 
@@ -89,6 +90,7 @@ Missing items:
 - guides/smart-environment-monitor-capstone: wiring diagram
 - components/bme280: wiring diagram
 - components/dht22: wiring diagram
+- components/esp32-cam: wiring diagram
 - components/esp32-devkit: wiring diagram
 - components/hc-sr04: wiring diagram
 - components/pir-sensor: wiring diagram
