@@ -42,6 +42,11 @@ python tools\validate_visual_assets.py
 if errorlevel 1 goto :fail
 
 echo.
+echo === validate_seo.py ===
+python tools\validate_seo.py
+if errorlevel 1 goto :fail
+
+echo.
 echo === release_validation.py ===
 python -c "import sys; sys.path.insert(0, 'tools'); import release_validation; report = release_validation.generate_release_report({'status': 'VALIDATION'}); raise SystemExit(1 if report.get('status') == 'FAIL' else 0)"
 if errorlevel 1 goto :fail

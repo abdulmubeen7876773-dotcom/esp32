@@ -13,51 +13,36 @@ hardware:
   sensor_pin: GPIO12
   output_pin: GPIO14
   sensor_name: Push Button Module signal
-  output_name: Oled Display control
+  output_name: Status LED control
   wiring:
   - component: Push Button Module signal
     pin: GPIO12
-  - component: Oled Display control
+  - component: Status LED control
     pin: GPIO14
-  - component: Rgb Led SDA
-    pin: GPIO21
-  - component: SCL
-    pin: GPIO22
   - component: VCC
     pin: 3.3V/5V
   - component: GND
     pin: GND
-meta_description: Production-ready walkthrough — Push Button Module signal on GPIO12 drives Oled Display
-  control with a tuned threshold sketch you can deploy today.
+meta_description: Classroom ESP32 trainer with a push button on GPIO12 and status LED on GPIO14.
 meta_title: ESP32 Learning Trainer for Workshop Kit
 levels:
   beginner:
     level: beginner
     overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for Learning Board: ESP32 watches Push Button Module signal and activates Oled\
-      \ Display control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n\
-      \        <li>Push Button Module signal connects to GPIO12 (ADC input)</li><li>Threshold is set to\
-      \ 1606 in firmware (adjust after calibration)</li><li>Oled Display control is driven on GPIO14 when\
-      \ the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
+      \      <p>Designed for a classroom trainer: GPIO12 reads a push button and GPIO14 drives the status LED.</p>\n      <ul class=\"overview-list\">\n\
+      \        <li>Push button signal connects to GPIO12 as a digital input</li><li>The sketch uses INPUT_PULLUP</li><li>Status LED control is driven on GPIO14 when the button is pressed</li><li>The loop prints button state changes for debugging</li>\n      </ul>\n\
       \      </section>"
     components:
     - ESP32 Dev Board
     - Push Button Module
-    - OLED Display
-    - Rgb Led
+    - Status LED
     - 5V Power Supply
     wiring:
     - - Push Button Module signal
       - GPIO12
       - ''
-    - - Oled Display control
+    - - Status LED control
       - GPIO14
-      - ''
-    - - Rgb Led SDA
-      - GPIO21
-      - ''
-    - - SCL
-      - GPIO22
       - ''
     - - VCC
       - 3.3V/5V
@@ -71,13 +56,7 @@ levels:
     troubleshooting: []
     upgrades:
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Learning Trainer for Workshop Kit\nconst int SENSOR_PIN = 12;\nconst int OUTPUT_PIN\
-      \ = 14;\nconst int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: learning\
-      \ trainer for workshop kit\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n\
-      }\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Push Button Module\
-      \ signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
-      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code: "// ESP32 Learning Trainer - button and status LED\nconst int BUTTON_PIN = 12;\nconst int LED_PIN = 14;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  pinMode(LED_PIN, OUTPUT);\n}\n\nvoid loop() {\n  bool pressed = digitalRead(BUTTON_PIN) == LOW;\n  digitalWrite(LED_PIN, pressed ? HIGH : LOW);\n  Serial.println(pressed ? \"pressed\" : \"released\");\n  delay(50);\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'

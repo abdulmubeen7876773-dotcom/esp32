@@ -108,6 +108,24 @@ def related_section_html(related: list[dict]) -> str:
   <ul class="guide-related-list">{"".join(links)}</ul>"""
 
 
+def beginner_next_steps_html(guide: dict) -> str:
+    if guide.get("slug") != "what-is-esp32":
+        return ""
+    links = [
+        ("Install Arduino IDE for ESP32", "/guides/installing-arduino-ide-esp32.html", "Set up the software before your first upload."),
+        ("Blink an LED with ESP32", "/guides/blink-led-esp32.html", "Build the first hardware test with one LED."),
+        ("ESP32 DevKit component guide", "/components/esp32-devkit.html", "Learn board pins, power notes, and beginner-safe wiring habits."),
+        ("ESP32 project library", "/projects.html", "Choose a complete project once the basics make sense."),
+    ]
+    items = "".join(
+        f'<li><a href="{esc(href)}"><strong>{esc(label)}</strong></a> <span class="meta">{esc(desc)}</span></li>'
+        for label, href, desc in links
+    )
+    return f"""  <h2 id="next-steps">Next steps</h2>
+  <p>After you understand what the ESP32 is, move from reading to a small verified build.</p>
+  <ul class="guide-related-list">{items}</ul>"""
+
+
 def guide_schema(guide: dict, faqs: list[dict]) -> str:
     slug = guide["slug"]
     path = f"guides/{slug}.html"
@@ -238,6 +256,7 @@ def render_legacy_guide(guide: dict) -> str:
 {body}
   </div>
 {faq_section_html(faqs)}
+{beginner_next_steps_html(guide)}
   <h2 id="conclusion">Conclusion</h2>
   <p>{esc(guide.get("conclusion", ""))}</p>
 {related_section_html(related)}
@@ -345,6 +364,7 @@ def render_guides_index(guides: list[dict]) -> str:
   <h1>ESP32 Learning Guides</h1>
   <p class="article-lead">Start with Mission Journeys — fun step-by-step builds for kids and beginners. Reference Guides are here when you want extra background.</p>
   <p class="guide-count-summary meta">{len(missions)} mission journeys · {len(legacy)} reference guides</p>
+  <p class="meta">New to ESP32? Read <a href="{site_href('guides/what-is-esp32.html')}">What Is ESP32?</a>, set up the <a href="{site_href('guides/installing-arduino-ide-esp32.html')}">Arduino IDE</a>, then build <a href="{site_href('guides/blink-led-esp32.html')}">Blink an LED</a>.</p>
     </div>
     <div class="premium-page-visual"><img src="/assets/images/heroes/guides-hero.webp" alt="ESP32 guide workspace with development board, laptop, and printed wiring notes" width="1024" height="576" loading="eager" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;"></div>
   </section>

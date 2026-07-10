@@ -1,6 +1,6 @@
 import html
 import sys
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from email.utils import format_datetime
 from pathlib import Path
 
@@ -34,6 +34,7 @@ STATIC_PAGES = [
     ("learning.html", "weekly", "0.95"),
     ("components.html", "weekly", "0.95"),
     ("guides.html", "weekly", "0.92"),
+    ("category/", "weekly", "0.88"),
     ("parents.html", "monthly", "0.7"),
     ("teachers.html", "monthly", "0.7"),
     ("downloads.html", "monthly", "0.6"),
@@ -51,11 +52,32 @@ STATIC_PAGES = [
     ("sitemap.html", "monthly", "0.3"),
 ]
 
-TODAY = date.today().isoformat()
-
-
 def page_loc(page: str) -> str:
     return canonical_url(page)
+
+
+def source_for_page(page: str) -> Path:
+    page = page.strip("/")
+    if not page:
+        return ROOT / "content" / "home.yaml"
+    if page.startswith("guides/") and page.endswith(".html"):
+        return ROOT / "content" / "guides" / (Path(page).stem + ".yaml")
+    if page.startswith("components/") and page.endswith(".html"):
+        return ROOT / "content" / "components" / (Path(page).stem + ".yaml")
+    if page.startswith("projects/") and page.endswith(".html"):
+        return ROOT / "content" / "projects" / (Path(page).stem + ".yaml")
+    if page.startswith("category/") and page.endswith(".html"):
+        return ROOT / "content" / "categories.yaml"
+    if page.endswith(".html"):
+        return ROOT / "content" / "pages" / (Path(page).stem + ".yaml")
+    return ROOT / "content" / "site.yaml"
+
+
+def lastmod_for(page: str) -> str:
+    source = source_for_page(page)
+    if not source.exists():
+        source = ROOT / "content" / "site.yaml"
+    return datetime.fromtimestamp(source.stat().st_mtime, timezone.utc).date().isoformat()
 
 
 def category_pages() -> list[tuple[str, str, str]]:
@@ -108,7 +130,7 @@ def write_sitemap_xml(project_files: list[Path]) -> int:
         seen.add(page)
         loc = page_loc(page)
         lines.append(
-            f"<url><loc>{html.escape(loc)}</loc><lastmod>{TODAY}</lastmod>"
+            f"<url><loc>{html.escape(loc)}</loc><lastmod>{lastmod_for(page)}</lastmod>"
             f"<changefreq>{freq}</changefreq><priority>{priority}</priority></url>"
         )
     for path in project_files:
@@ -118,8 +140,9 @@ def write_sitemap_xml(project_files: list[Path]) -> int:
         if loc in seen:
             continue
         seen.add(loc)
+        rel_page = f"projects/{path.name}"
         lines.append(
-            f"<url><loc>{html.escape(loc)}</loc><lastmod>{TODAY}</lastmod>"
+            f"<url><loc>{html.escape(loc)}</loc><lastmod>{lastmod_for(rel_page)}</lastmod>"
             f"<changefreq>weekly</changefreq><priority>0.8</priority></url>"
         )
     lines.append("</urlset>")
@@ -129,8 +152,15 @@ def write_sitemap_xml(project_files: list[Path]) -> int:
 
 def write_sitemap_html(project_files: list[Path]) -> None:
     valid = [p for p in project_files if "_archive" not in p.parts and "-project-" not in p.name]
+    def static_label(path: str) -> str:
+        if not path:
+            return "Home"
+        if path == "category/":
+            return "Category Directory"
+        return path.replace(".html", "").replace("-", " ").strip("/").title()
+
     static_links = "".join(
-        f'<li><a href="{esc(site_href(p))}">{esc(("Home" if not p else p.replace(".html", "").replace("-", " ").title()))}</a></li>'
+        f'<li><a href="{esc(site_href(p))}">{esc(static_label(p))}</a></li>'
         for p, _, _ in STATIC_PAGES
         if p != "sitemap.html"
     )

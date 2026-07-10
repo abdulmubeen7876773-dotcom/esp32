@@ -4,80 +4,61 @@ category: LED Projects
 description: Control RGB LED strips and patterns with ESP32 — simple color fades, manual modes, then Wi-Fi
   and app-style control.
 source_base: esp32-rgb-led-pattern-controller-for-low-power-use
-sensor: potentiometer
+sensor: push button
 output: RGB LED strip
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-18'
 hardware:
-  sensor_pin: GPIO13
-  output_pin: GPIO14
-  sensor_name: Ws2812B Led Strip signal
-  output_name: Push Button control
+  sensor_pin: GPIO14
+  output_pin: GPIO13
+  sensor_name: Push button
+  output_name: WS2812B DIN
   wiring:
-  - component: Ws2812B Led Strip signal
+  - component: WS2812B DIN
     pin: GPIO13
-  - component: Push Button control
+  - component: Push button
     pin: GPIO14
-  - component: Potentiometer SDA
-    pin: GPIO21
-  - component: SCL
-    pin: GPIO22
   - component: VCC
-    pin: 3.3V/5V
+    pin: 5V external
   - component: GND
     pin: GND
-meta_description: Production-ready walkthrough — Ws2812B Led Strip signal on GPIO13 drives Push Button
-  control with a tuned threshold sketch you can deploy today.
+meta_description: Control WS2812B LED patterns with ESP32 GPIO13 data and a push button on GPIO14.
 meta_title: ESP32 Rgb Led Pattern Controller for Stage Light
 levels:
   beginner:
     level: beginner
     overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for Matrix Display: ESP32 watches Ws2812B Led Strip signal and activates Push\
-      \ Button control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n\
-      \        <li>Ws2812B Led Strip signal connects to GPIO13 (ADC input)</li><li>Threshold is set to\
-      \ 1605 in firmware (adjust after calibration)</li><li>Push Button control is driven on GPIO14 when\
-      \ the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
+      \      <p>Designed for LED patterns: GPIO13 sends WS2812B data and GPIO14 reads a push button to change modes.</p>\n      <ul class=\"overview-list\">\n\
+      \        <li>WS2812B DIN connects to GPIO13</li><li>Push button connects to GPIO14 and GND</li><li>The LED strip uses an external 5 V supply with common ground</li><li>The code advances color patterns on button press</li>\n      </ul>\n\
       \      </section>"
     components:
     - ESP32 Dev Board
-    - Ws2812B Led Strip
+    - WS2812B LED strip
     - Push Button
-    - Potentiometer
-    - 5V Power Supply
+    - 330 ohm resistor
+    - 1000 uF capacitor
+    - External 5V Power Supply
     wiring:
-    - - Ws2812B Led Strip signal
+    - - WS2812B DIN
       - GPIO13
-      - ''
-    - - Push Button control
+      - One-wire LED data output
+    - - Push button
       - GPIO14
-      - ''
-    - - Potentiometer SDA
-      - GPIO21
-      - ''
-    - - SCL
-      - GPIO22
-      - ''
+      - Digital input using INPUT_PULLUP
     - - VCC
-      - 3.3V/5V
-      - ''
+      - 5V external
+      - LED strip power
     - - GND
       - GND
       - ''
     how: []
     apps:
-    - Matrix Display monitoring with Ws2812B Led Strip signal
+    - WS2812B color pattern control
     troubleshooting: []
     upgrades:
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Rgb Led Pattern Controller for Stage Light\nconst int SENSOR_PIN = 13;\nconst int\
-      \ OUTPUT_PIN = 14;\nconst int THRESHOLD = 1812;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"\
-      Starting: rgb led pattern controller for stage light\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n\
-      }\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Ws2812B Led Strip\
-      \ signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
-      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code: "// ESP32 RGB LED Pattern Controller\n#include <Adafruit_NeoPixel.h>\n\nconst int LED_PIN = 13;\nconst int BUTTON_PIN = 14;\nconst int LED_COUNT = 16;\nAdafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);\nint pattern = 0;\nbool lastButton = HIGH;\n\nvoid showPattern() {\n  uint32_t colors[] = {\n    strip.Color(255, 0, 0),\n    strip.Color(0, 255, 0),\n    strip.Color(0, 0, 255),\n    strip.Color(255, 180, 0)\n  };\n  strip.fill(colors[pattern % 4]);\n  strip.show();\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  strip.begin();\n  strip.setBrightness(40);\n  showPattern();\n}\n\nvoid loop() {\n  bool button = digitalRead(BUTTON_PIN);\n  if (lastButton == HIGH && button == LOW) {\n    pattern++;\n    showPattern();\n    Serial.println(pattern % 4);\n    delay(200);\n  }\n  lastButton = button;\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'

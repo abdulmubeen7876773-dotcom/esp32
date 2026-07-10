@@ -4,80 +4,66 @@ category: Sensor Projects
 description: Measure distance with ultrasonic or ToF sensors on ESP32 — beginner breadboard builds through
   OLED feedback and tuned alerts.
 source_base: esp32-distance-monitoring-system-for-beginners
-sensor: ultrasonic sensor
+sensor: HC-SR04 ultrasonic sensor
 output: buzzer alert
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-06-18'
 hardware:
   sensor_pin: GPIO5
-  output_pin: GPIO18
-  sensor_name: Ultrasonic Sensor signal
-  output_name: Oled Display control
+  output_pin: GPIO25
+  sensor_name: HC-SR04 TRIG
+  output_name: Buzzer alert
   wiring:
-  - component: Ultrasonic Sensor signal
+  - component: HC-SR04 TRIG
     pin: GPIO5
-  - component: Oled Display control
+  - component: HC-SR04 ECHO through 10 kOhm / 20 kOhm divider
     pin: GPIO18
-  - component: Buzzer SDA
-    pin: GPIO21
-  - component: SCL
-    pin: GPIO22
+  - component: Buzzer +
+    pin: GPIO25
   - component: VCC
-    pin: 3.3V/5V
+    pin: 5V
   - component: GND
     pin: GND
-meta_description: Production-ready walkthrough — Ultrasonic Sensor signal on GPIO5 drives Oled Display
-  control with a tuned threshold sketch you can deploy today.
+meta_description: Measure distance with an HC-SR04 on ESP32 using TRIG, ECHO through a voltage divider, and a buzzer alert.
 meta_title: ESP32 Distance Monitoring System for Signal Logger
 levels:
   beginner:
     level: beginner
     overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for Analog Read: ESP32 watches Ultrasonic Sensor signal and activates Oled Display\
-      \ control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n      \
-      \  <li>Ultrasonic Sensor signal connects to GPIO5 (ADC input)</li><li>Threshold is set to 1606 in\
-      \ firmware (adjust after calibration)</li><li>Oled Display control is driven on GPIO18 when the\
-      \ condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
+      \      <p>Designed for distance sensing: GPIO5 sends the HC-SR04 trigger pulse, GPIO18 reads ECHO through a voltage divider, and GPIO25 drives the buzzer alert.</p>\n      <ul class=\"overview-list\">\n      \
+      \  <li>HC-SR04 TRIG connects to GPIO5 as a digital output</li><li>HC-SR04 ECHO connects to GPIO18 through a 10 kOhm / 20 kOhm divider</li><li>Buzzer + connects to GPIO25</li><li>The sketch measures pulse width and converts it to centimeters</li>\n      </ul>\n\
       \      </section>"
     components:
     - ESP32 Dev Board
-    - Ultrasonic Sensor
-    - OLED Display
+    - HC-SR04 ultrasonic sensor
+    - 10 kOhm resistor
+    - 20 kOhm resistor
     - Buzzer
     - 5V Power Supply
     wiring:
-    - - Ultrasonic Sensor signal
+    - - HC-SR04 TRIG
       - GPIO5
-      - ''
-    - - Oled Display control
+      - Digital trigger output
+    - - HC-SR04 ECHO
       - GPIO18
-      - ''
-    - - Buzzer SDA
-      - GPIO21
-      - ''
-    - - SCL
-      - GPIO22
-      - ''
+      - Digital echo input via 10 kOhm / 20 kOhm divider
+    - - Buzzer +
+      - GPIO25
+      - Alert output
     - - VCC
-      - 3.3V/5V
-      - ''
+      - 5V
+      - HC-SR04 power
     - - GND
       - GND
-      - ''
+      - Common ground
     how: []
     apps:
-    - Analog Read monitoring with Ultrasonic Sensor signal
+    - Distance monitoring with an HC-SR04 ultrasonic sensor
     troubleshooting: []
     upgrades:
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Distance Monitoring System for Signal Logger\nconst int SENSOR_PIN = 5;\nconst int\
-      \ OUTPUT_PIN = 18;\nconst int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"\
-      Starting: distance monitoring system for signal logger\");\n  Serial.print(\"Threshold: \");\n \
-      \ Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"\
-      Ultrasonic Sensor signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n\
-      \  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code: "// ESP32 Distance Monitoring System - HC-SR04\nconst int TRIG_PIN = 5;\nconst int ECHO_PIN = 18;\nconst int BUZZER_PIN = 25;\nconst int DISTANCE_LIMIT_CM = 20;\n\nlong readDistanceCm() {\n  digitalWrite(TRIG_PIN, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG_PIN, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n  long duration = pulseIn(ECHO_PIN, HIGH, 30000);\n  if (duration == 0) return -1;\n  return duration / 58;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  pinMode(BUZZER_PIN, OUTPUT);\n}\n\nvoid loop() {\n  long distanceCm = readDistanceCm();\n  Serial.print(\"Distance cm: \");\n  Serial.println(distanceCm);\n  digitalWrite(BUZZER_PIN, distanceCm > 0 && distanceCm < DISTANCE_LIMIT_CM ? HIGH : LOW);\n  delay(250);\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'

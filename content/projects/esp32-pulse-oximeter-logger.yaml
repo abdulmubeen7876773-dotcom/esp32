@@ -12,72 +12,50 @@ date_modified: '2026-06-18'
 hardware:
   sensor_pin: GPIO21
   output_pin: GPIO22
-  sensor_name: Max30102 Sensor signal
-  output_name: Oled Display control
+  sensor_name: MAX30102 SDA
+  output_name: MAX30102 SCL
   wiring:
-  - component: Max30102 Sensor signal
+  - component: MAX30102 SDA
     pin: GPIO21
-  - component: Oled Display control
-    pin: GPIO22
-  - component: Buzzer SDA
-    pin: GPIO21
-  - component: SCL
+  - component: MAX30102 SCL
     pin: GPIO22
   - component: VCC
-    pin: 3.3V/5V
+    pin: 3.3V
   - component: GND
     pin: GND
-meta_description: Production-ready walkthrough — Max30102 Sensor signal on GPIO21 drives Oled Display
-  control with a tuned threshold sketch you can deploy today.
+meta_description: Educational MAX30102 pulse oximeter logging on ESP32 using I2C GPIO21/GPIO22. Not for medical use.
 meta_title: ESP32 Pulse Oximeter Logger for Bedside Monitor
 levels:
   beginner:
     level: beginner
     overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n\
-      \      <p>Designed for SpO2 Tracker: ESP32 watches Max30102 Sensor signal and activates Oled Display\
-      \ control when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n      \
-      \  <li>Max30102 Sensor signal connects to GPIO21 (ADC input)</li><li>Threshold is set to 1606 in\
-      \ firmware (adjust after calibration)</li><li>Oled Display control is driven on GPIO22 when the\
-      \ condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n\
+      \      <p>Designed for educational raw pulse logging: the MAX30102 uses I2C on GPIO21/GPIO22 and prints red/IR samples to Serial Monitor.</p>\n      <ul class=\"overview-list\">\n      \
+      \  <li>MAX30102 SDA connects to GPIO21</li><li>MAX30102 SCL connects to GPIO22</li><li>Power the module from 3.3 V unless your breakout explicitly supports 5 V logic</li><li>This project is for learning only, not medical monitoring</li>\n      </ul>\n\
       \      </section>"
     components:
     - ESP32 Dev Board
-    - Max30102 Sensor
-    - OLED Display
-    - Buzzer
-    - 5V Power Supply
+    - MAX30102 pulse oximeter module
+    - 3.3V Power
     wiring:
-    - - Max30102 Sensor signal
+    - - MAX30102 SDA
       - GPIO21
-      - ''
-    - - Oled Display control
+      - I2C data
+    - - MAX30102 SCL
       - GPIO22
-      - ''
-    - - Buzzer SDA
-      - GPIO21
-      - ''
-    - - SCL
-      - GPIO22
-      - ''
+      - I2C clock
     - - VCC
-      - 3.3V/5V
-      - ''
+      - 3.3V
+      - Sensor power
     - - GND
       - GND
       - ''
     how: []
     apps:
-    - SpO2 Tracker monitoring with Max30102 Sensor signal
+    - Educational raw red/IR pulse sensor logging
     troubleshooting: []
     upgrades:
     - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Pulse Oximeter Logger for Bedside Monitor\nconst int SENSOR_PIN = 21;\nconst int OUTPUT_PIN\
-      \ = 22;\nconst int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: pulse\
-      \ oximeter logger for bedside monitor\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n\
-      }\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Max30102 Sensor signal:\
-      \ \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
-      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code: "// ESP32 Pulse Oximeter Logger - educational raw samples only\n#include <Wire.h>\n#include \"MAX30105.h\"\n\nMAX30105 sensor;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  if (!sensor.begin(Wire, I2C_SPEED_STANDARD)) {\n    Serial.println(\"MAX30102 not found. Check SDA/SCL wiring.\");\n    while (true) delay(1000);\n  }\n  sensor.setup();\n  Serial.println(\"Educational raw red/IR logging only - not medical data.\");\n}\n\nvoid loop() {\n  Serial.print(\"Red: \");\n  Serial.print(sensor.getRed());\n  Serial.print(\" IR: \");\n  Serial.println(sensor.getIR());\n  delay(250);\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'

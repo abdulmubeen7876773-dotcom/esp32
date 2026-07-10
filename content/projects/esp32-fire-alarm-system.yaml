@@ -1,4 +1,4 @@
-slug: esp32-fire-alarm-system
+﻿slug: esp32-fire-alarm-system
 title: ESP32 Fire Alarm System
 category: Smart City
 description: Combine an MQ-2 smoke sensor and DHT22 temperature sensor with the ESP32 to build a fire
@@ -44,13 +44,14 @@ levels:
       a red LED turns on. A green LED shows the normal status. The Serial Monitor prints the raw sensor
       value every second so you can calibrate the threshold for your environment. No Wi-Fi is required.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× MQ-2 smoke and gas sensor module — Analog + digital output; 5 V heater
-    - 1× Active buzzer 5 V
-    - 1× Red LED 5 mm — Alarm indicator
-    - 1× Green LED 5 mm — Normal status indicator
-    - 2× 220 ohm resistor — LED current limiting
-    - 1× Breadboard and jumper wires
+    - 1Ã— ESP32 DevKit V1
+    - 1Ã— MQ-2 smoke and gas sensor module â€” Analog + digital output; 5 V heater
+    - 1Ã— Active buzzer 5 V
+    - 1Ã— Red LED 5 mm â€” Alarm indicator
+    - 1Ã— Green LED 5 mm â€” Normal status indicator
+    - 2Ã— 220 ohm resistor â€” LED current limiting
+    - 1x 10k/20k resistor pair - Voltage divider for MQ-2 AOUT
+    - 1Ã— Breadboard and jumper wires
     wiring:
     - - MQ-2 AOUT
       - GPIO 34
@@ -76,7 +77,7 @@ levels:
     how:
     - 'MQ-2 Electrochemical Sensing: The MQ-2 contains a tin-dioxide (SnO2) sensing element heated to
       300 C by an internal coil. Smoke, LPG, CO, and H2 molecules reduce surface resistance. The lower
-      the resistance, the higher the AOUT voltage — so a rising analog reading indicates gas or smoke.'
+      the resistance, the higher the AOUT voltage â€” so a rising analog reading indicates gas or smoke.'
     - 'Dual-Output Detection: The module provides both an analog output (continuous 0-5 V proportional
       to concentration) and a digital output (LOW when concentration exceeds the onboard potentiometer
       threshold). Both are read to give redundant detection.'
@@ -133,13 +134,13 @@ levels:
       for timestamps, and each alarm event is logged to NVS with time, sensor values, and trigger reason
       for later review.</p>'
     components:
-    - 1× ESP32 DevKit V1
-    - 1× MQ-2 smoke sensor module
-    - 1× DHT22 temperature and humidity sensor — More accurate than DHT11
-    - 1× SSD1306 OLED 128x64 I2C
-    - 1× Active buzzer
-    - 1× Red and green LED
-    - 1× Wi-Fi router — NTP timestamp for event log
+    - 1Ã— ESP32 DevKit V1
+    - 1Ã— MQ-2 smoke sensor module
+    - 1Ã— DHT22 temperature and humidity sensor â€” More accurate than DHT11
+    - 1Ã— SSD1306 OLED 128x64 I2C
+    - 1Ã— Active buzzer
+    - 1Ã— Red and green LED
+    - 1Ã— Wi-Fi router â€” NTP timestamp for event log
     wiring:
     - - MQ-2 AOUT/DOUT/VCC/GND
       - Same as beginner
@@ -226,15 +227,15 @@ levels:
     overview_html: <p>The advanced build publishes all sensor readings and alarm events to an MQTT broker
       in JSON format so Home Assistant or Node-RED can trigger sirens, notifications, and automated responses
       across the whole smart home. Multiple ESP32 fire alarm nodes in different rooms subscribe to a central
-      MQTT topic to coordinate — if one room detects fire, all buzzers activate simultaneously. A web
+      MQTT topic to coordinate â€” if one room detects fire, all buzzers activate simultaneously. A web
       admin page shows a live floor plan with per-room status indicators.</p>
     components:
-    - 1× ESP32 DevKit V1 per room — Minimum 2 for multi-room demo
-    - 1× MQ-2 smoke sensor — Per unit
-    - 1× DHT22 sensor — Per unit
-    - 1× MQTT broker (Mosquitto) — Central coordinator
-    - 1× Active buzzer per unit
-    - 1× Home Assistant or Node-RED — For dashboard and automation
+    - 1Ã— ESP32 DevKit V1 per room â€” Minimum 2 for multi-room demo
+    - 1Ã— MQ-2 smoke sensor â€” Per unit
+    - 1Ã— DHT22 sensor â€” Per unit
+    - 1Ã— MQTT broker (Mosquitto) â€” Central coordinator
+    - 1Ã— Active buzzer per unit
+    - 1Ã— Home Assistant or Node-RED â€” For dashboard and automation
     wiring:
     - - All sensors and outputs
       - Same as intermediate
@@ -282,7 +283,7 @@ levels:
       const char* TOPIC_CMD    =\"fire/command\";\n\nconst int MQ2=34, DOUT=35, LED_R=25, BUZ=27;\nconst\
       \ int SMOKE_THRESH=1800;\nconst float TEMP_THRESH=60.0f;\n\nbool localAlarm=false, globalAlarm=false;\n\
       \nvoid mqttCallback(char* topic, byte* payload, unsigned int len){\n  String msg((char*)payload,len);\n\
-      \  // Another room triggered alarm — activate buzzer here too\n  if(msg!=\"CLEAR\") globalAlarm=true;\n\
+      \  // Another room triggered alarm â€” activate buzzer here too\n  if(msg!=\"CLEAR\") globalAlarm=true;\n\
       \  else globalAlarm=false;\n}\n\nvoid publishStatus(int smoke, float temp, bool alarm){\n  StaticJsonDocument<128>\
       \ doc;\n  doc[\"room\"]  = ROOM_ID;\n  doc[\"smoke\"] = smoke;\n  doc[\"temp\"]  = temp;\n  doc[\"\
       alarm\"] = alarm;\n  char buf[128]; serializeJson(doc,buf);\n  mqtt.publish(TOPIC_STATUS,buf);\n\

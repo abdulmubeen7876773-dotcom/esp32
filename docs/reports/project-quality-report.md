@@ -1,6 +1,6 @@
 # Project Quality Report
 
-Generated: 2026-07-05T00:44:14Z
+Generated: 2026-07-10T11:08:28Z
 
 Benchmark: **ESP32 Mini Weather Station** is the golden standard (`content/projects/esp32-iot-weather-station.yaml`).
 
@@ -58,7 +58,7 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | Build Your Smart Door Lock | golden | 98/100 | LOW | 0 |
 | Build Your Smart Thermostat | golden | 98/100 | LOW | 0 |
 | Build an Indoor Air Quality Monitor | golden | 99/100 | LOW | 0 |
-| Build a Camera Capture Server | golden | 99/100 | LOW | 0 |
+| Build a Camera Capture Server | golden | 99/100 | LOW | 1 |
 | Build an MQTT Sensor Dashboard | golden | 99/100 | LOW | 0 |
 | Build a Soil Moisture Monitor | golden | 99/100 | LOW | 0 |
 | Build Your Home Climate Automation | golden | 100/100 | LOW | 0 |
@@ -1034,11 +1034,15 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 ### Missing sections
 
-- None
+- Related Components
 
 ### Recommendations
 
-- Minor polish only — align with Mini Weather Station depth where applicable.
+- Link components in project.components to /components/ pages.
+
+### Warnings
+
+- Missing Related Components
 
 ## Build an MQTT Sensor Dashboard (`esp32-mqtt-sensor-dashboard`)
 

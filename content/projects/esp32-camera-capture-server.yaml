@@ -5,26 +5,24 @@ description: Capture and stream images with ESP32-CAM — start with a local sna
   dashboard.
 source_base: esp32-camera-capture-server-with-ota-update
 sensor: camera module
-output: microSD storage
+output: web snapshot
 featured: false
 date_published: '2026-06-14'
 date_modified: '2026-07-05'
 hardware:
-  sensor_pin: GPIO4
-  output_pin: GPIO2
-  sensor_name: Camera Module signal
-  output_name: Microsd Card control
+  sensor_pin: Built-in OV2640
+  output_pin: Built-in Wi-Fi
+  sensor_name: OV2640 camera
+  output_name: HTTP snapshot server
   wiring:
-  - component: Camera Module signal
-    pin: GPIO4
-  - component: Microsd Card control
-    pin: GPIO2
-  - component: Flash Led SDA
-    pin: GPIO21
-  - component: SCL
-    pin: GPIO22
-  - component: VCC
-    pin: 3.3V/5V
+  - component: FTDI TX
+    pin: GPIO3 / U0R
+  - component: FTDI RX
+    pin: GPIO1 / U0T
+  - component: IO0 upload jumper
+    pin: GPIO0 to GND during flashing only
+  - component: 5V supply
+    pin: 5V
   - component: GND
     pin: GND
 meta_description: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for inspection,
@@ -34,48 +32,36 @@ levels:
   beginner:
     level: beginner
     overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
-      \ for Motion Capture: ESP32 watches Camera Module signal and activates Microsd Card control when conditions cross your\
-      \ threshold.</p>\n      <ul class=\"overview-list\">\n        <li>Camera Module signal connects to GPIO4 (ADC input)</li><li>Threshold\
-      \ is set to 1606 in firmware (adjust after calibration)</li><li>Microsd Card control is driven on GPIO2 when the condition\
-      \ is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n      </section>"
+      \ for local image capture: the AI-Thinker ESP32-CAM initializes its built-in OV2640 camera, joins Wi-Fi, and serves a JPEG snapshot from /capture.</p>\n      <ul class=\"overview-list\">\n        <li>The OV2640 camera uses the fixed AI-Thinker parallel pin map</li><li>FTDI TX/RX wires are used only for programming</li><li>IO0 connects to GND only while flashing</li><li>Stable 5 V power prevents camera brownouts</li>\n      </ul>\n      </section>"
     components:
-    - ESP32 Dev Board
-    - Camera Module
-    - Microsd Card
-    - Flash Led
-    - 5V Power Supply
+    - ESP32-CAM AI-Thinker board with OV2640
+    - FTDI USB-to-serial adapter
+    - Stable 5 V supply rated for at least 500 mA
+    - Jumper wires
     wiring:
-    - - Camera Module signal
-      - GPIO4
-      - ''
-    - - Microsd Card control
-      - GPIO2
-      - ''
-    - - Flash Led SDA
-      - GPIO21
-      - ''
-    - - SCL
-      - GPIO22
-      - ''
-    - - VCC
-      - 3.3V/5V
-      - ''
+    - - FTDI TX
+      - GPIO3 / U0R
+      - Programming UART receive
+    - - FTDI RX
+      - GPIO1 / U0T
+      - Programming UART transmit
+    - - IO0 upload jumper
+      - GPIO0 to GND during flashing only
+      - Remove after upload
+    - - 5 V supply
+      - 5V
+      - Camera and Wi-Fi power
     - - GND
       - GND
-      - ''
+      - Common ground
     how: []
     apps:
-    - Motion Capture monitoring with Camera Module signal
+    - Local snapshot server for an ESP32-CAM
     troubleshooting: []
     upgrades: &id001
     - Publish readings to an MQTT broker or Home Assistant
     - Add timed image capture for timelapse.
-    code: "// ESP32 Camera Capture for Timelapse Cam\nconst int SENSOR_PIN = 4;\nconst int OUTPUT_PIN = 2;\nconst int THRESHOLD\
-      \ = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n\
-      \  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: camera capture for timelapse cam\");\n  Serial.print(\"\
-      Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"\
-      Camera Module signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
-      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    code: "#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* WIFI_SSID = \"YOUR_SSID\";\nconst char* WIFI_PASS = \"YOUR_PASSWORD\";\nWebServer server(80);\n\n#define PWDN_GPIO_NUM 32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nvoid handleCapture() {\n  camera_fb_t* fb = esp_camera_fb_get();\n  if (!fb) {\n    server.send(500, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200, \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = 1;\n  if (esp_camera_init(&config) != ESP_OK) {\n    Serial.println(\"Camera init failed\");\n    while (true) delay(1000);\n  }\n  WiFi.begin(WIFI_SSID, WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n  server.begin();\n  Serial.println(WiFi.localIP());\n}\n\nvoid loop() {\n  server.handleClient();\n}"
     code_filename: ''
   intermediate:
     overview_html: '<p>TODO: import intermediate content from batch or WordPress</p>'
@@ -122,91 +108,99 @@ project:
   - Recognize power-related camera failures.
   - Tune resolution and JPEG quality for reliability.
   components:
-  - item: ESP32 Dev Board
-    note: Required for this build
+  - item: ESP32-CAM AI-Thinker board with OV2640
+    note: Camera and ESP32 are already wired together on the module
     icon: PART
-    link: /components/esp32-devkit.html
-  - item: Camera Module
-    note: Required for this build
+  - item: FTDI USB-to-serial adapter
+    note: Use 3.3 V logic; power the ESP32-CAM from a stable 5 V source
     icon: PART
-  - item: Microsd Card
-    note: Required for this build
+  - item: Stable 5 V supply rated for at least 500 mA
+    note: Camera capture plus Wi-Fi can brown out weak supplies
     icon: PART
-  - item: Flash Led
-    note: Required for this build
-    icon: PART
-  - item: 5V Power Supply
-    note: Required for this build
-    icon: PART
-  - item: Breadboard and jumper wires
-    note: For safe low-voltage prototyping
+  - item: Jumper wires
+    note: Programming connections and IO0 upload jumper
     icon: PART
   - item: USB data cable
-    note: Programming and bench power
+    note: Connects the FTDI adapter to your computer
     icon: PART
   bom:
-  - part: ESP32 Dev Board
+  - part: ESP32-CAM AI-Thinker board with OV2640
     qty: '1'
     estimated_cost: Varies
-    notes: Required for this build
-  - part: Camera Module
+    notes: Required camera board
+  - part: FTDI USB-to-serial adapter
     qty: '1'
     estimated_cost: Varies
-    notes: Required for this build
-  - part: Microsd Card
+    notes: 3.3 V logic for programming
+  - part: Stable 5 V supply
     qty: '1'
     estimated_cost: Varies
-    notes: Required for this build
-  - part: Flash Led
-    qty: '1'
-    estimated_cost: Varies
-    notes: Required for this build
-  - part: 5V Power Supply
-    qty: '1'
-    estimated_cost: Varies
-    notes: Required for this build
-  - part: Breadboard and jumper wires
+    notes: At least 500 mA; more headroom is better
+  - part: Jumper wires
     qty: 1 set
     estimated_cost: Varies
-    notes: For safe low-voltage prototyping
+    notes: Programming connections
   wiring:
     illustration_alt: ESP32 Camera Capture Server wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware. The ESP32-CAM
-      board already connects the OV2640 camera to the ESP32 internally.
+    summary: The ESP32-CAM board already connects the OV2640 camera to the ESP32 internally. The builder only wires the FTDI
+      programmer, 5 V power, common ground, and the IO0-to-GND jumper used for flashing.
     steps:
     - Unplug USB before changing wires.
-    - Connect Camera Module signal to GPIO4.
-    - Connect Microsd Card control to GPIO2.
-    - Connect Flash Led SDA to GPIO21.
-    - Connect SCL to GPIO22.
-    - Connect VCC to 3.3V/5V.
-    - Connect GND to GND.
-    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+    - Connect FTDI TX to ESP32-CAM U0R / GPIO3.
+    - Connect FTDI RX to ESP32-CAM U0T / GPIO1.
+    - Connect FTDI GND to ESP32-CAM GND.
+    - Connect a stable 5 V supply to ESP32-CAM 5V and GND.
+    - For upload only, connect IO0 / GPIO0 to GND.
+    - Upload the sketch, then remove the IO0-to-GND jumper and press reset for normal boot.
   gpio_map:
-  - signal: Camera Module signal
-    esp32_pin: GPIO4
-    direction: Signal
-    notes: Match this wire to the code constant.
-  - signal: Microsd Card control
-    esp32_pin: GPIO2
-    direction: Signal
-    notes: Match this wire to the code constant.
-  - signal: Flash Led SDA
-    esp32_pin: GPIO21
+  - signal: PWDN
+    esp32_pin: GPIO32
     direction: Output
-    notes: Match this wire to the code constant.
-  - signal: SCL
+    notes: AI-Thinker camera power-down pin.
+  - signal: RESET
+    esp32_pin: -1
+    direction: Not connected
+    notes: Not connected on the AI-Thinker module.
+  - signal: XCLK
+    esp32_pin: GPIO0
+    direction: Output
+    notes: Camera clock; also the upload-mode boot strap pin.
+  - signal: SIOD / SDA
+    esp32_pin: GPIO26
+    direction: I/O
+    notes: Camera configuration bus.
+  - signal: SIOC / SCL
+    esp32_pin: GPIO27
+    direction: Output
+    notes: Camera configuration bus.
+  - signal: VSYNC
+    esp32_pin: GPIO25
+    direction: Input
+    notes: Frame sync.
+  - signal: HREF
+    esp32_pin: GPIO23
+    direction: Input
+    notes: Line sync.
+  - signal: PCLK
     esp32_pin: GPIO22
-    direction: Signal
-    notes: Match this wire to the code constant.
-  - signal: VCC
-    esp32_pin: 3.3V/5V
+    direction: Input
+    notes: Pixel clock.
+  - signal: Y9-Y2
+    esp32_pin: GPIO35, GPIO34, GPIO39, GPIO36, GPIO21, GPIO19, GPIO18, GPIO5
+    direction: Input
+    notes: Parallel pixel data bus.
+  - signal: FTDI UART
+    esp32_pin: GPIO3 / GPIO1
+    direction: I/O
+    notes: Programming serial connection.
+  - signal: 5 V
+    esp32_pin: 5V
     direction: Power
-    notes: Match this wire to the code constant.
+    notes: Use a stable supply with camera and Wi-Fi current headroom.
   - signal: GND
     esp32_pin: GND
     direction: Ground
-    notes: Match this wire to the code constant.
+    notes: Common ground for FTDI and 5 V supply.
   circuit_explanation: The ESP32-CAM board already connects the OV2640 camera to the ESP32 internally. Programming usually
     uses an FTDI adapter. Stable 5 V power is important because camera capture and Wi-Fi transmit peaks can reset weak supplies.
     IO0 is grounded only for flashing and released for normal boot.
@@ -218,18 +212,13 @@ project:
     note: Install ESP32 board support in Arduino IDE.
   code:
     filename: esp32-camera-capture-server.ino
-    content: "// ESP32 Camera Capture for Timelapse Cam\nconst int SENSOR_PIN = 4;\nconst int OUTPUT_PIN = 2;\nconst int THRESHOLD\
-      \ = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n\
-      \  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: camera capture for timelapse cam\");\n  Serial.print(\"\
-      Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"\
-      Camera Module signal: \");\n  Serial.println(reading);\n  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN,\
-      \ active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n}"
+    content: "#include \"esp_camera.h\"\n#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* WIFI_SSID = \"YOUR_SSID\";\nconst char* WIFI_PASS = \"YOUR_PASSWORD\";\nWebServer server(80);\n\n#define PWDN_GPIO_NUM 32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nvoid handleCapture() {\n  camera_fb_t* fb = esp_camera_fb_get();\n  if (!fb) {\n    server.send(500, \"text/plain\", \"Camera capture failed\");\n    return;\n  }\n  server.send_P(200, \"image/jpeg\", (const char*)fb->buf, fb->len);\n  esp_camera_fb_return(fb);\n}\n\nvoid setupCamera() {\n  camera_config_t config;\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = 1;\n\n  esp_err_t err = esp_camera_init(&config);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x\\n\", err);\n    while (true) delay(1000);\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupCamera();\n  WiFi.begin(WIFI_SSID, WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n  server.begin();\n  Serial.print(\"Open http://\");\n  Serial.print(WiFi.localIP());\n  Serial.println(\"/capture\");\n}\n\nvoid loop() {\n  server.handleClient();\n}"
   code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output pins in
     setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct ESP32-CAM pin map,
     initializes the OV2640, then captures frames. Keep the first test simple: prove the camera initializes before adding storage,
     scanning, or network actions.'
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when the tested
-    condition for esp32 camera capture server is reached.
+  expected_output: Serial Monitor should print the ESP32-CAM IP address. Opening /capture in a browser on the same network
+    should return a JPEG snapshot from the OV2640 camera.
   common_mistakes:
   - text: Leaving IO0 connected to GND after upload.
   - text: Powering ESP32-CAM from a weak USB serial adapter.
@@ -248,9 +237,9 @@ project:
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
   - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
+  - Upload with IO0 connected to GND, then remove the jumper for normal boot.
+  - Confirm Serial Monitor prints the local IP address.
+  - Open the /capture URL and verify a JPEG image appears.
   - Power-cycle the project and confirm it starts in a safe state.
   engineer_tips:
   - Start with the official CameraWebServer example.
@@ -302,11 +291,10 @@ project:
     answer: For bench testing, USB power is usually fine for the ESP32 and small sensors. Motors, relays, pumps, lamps, cameras,
       and LED matrices may need a separate regulated supply.
   - question: Why should I print values to Serial Monitor first?
-    answer: Serial output proves what the ESP32 is reading before you trust the output logic. It separates sensor problems
-      from LED, relay, display, or network problems.
+    answer: Serial output proves the camera initialized and shows the local IP address before you test the browser endpoint.
   - question: Can I change the GPIO pins?
-    answer: Yes, but update the code constants and avoid pins with special boot behavior unless you understand the board.
-      Analog-only pins such as GPIO34 cannot drive outputs.
+    answer: The OV2640 pins are fixed on an AI-Thinker ESP32-CAM. Do not remap them unless you are using a different camera
+      board and its matching pin map.
   - question: What should I test before installing it permanently?
     answer: Test power-up behavior, unplug/replug behavior, bad sensor readings, loose wires, and the exact real-world condition
       that should trigger the project.
@@ -314,11 +302,11 @@ project:
     answer: Yes. Add networking only after the local circuit is reliable. A project that fails locally will be harder to debug
       after Wi-Fi is added.
   - question: What is the most common failure?
-    answer: Most failures are wiring, power, wrong GPIO constants, or threshold values copied from another build. Check the
-      raw reading and wiring table first.
+    answer: Most failures are weak 5 V power, IO0 left connected to GND after upload, the wrong camera model selected, or
+      a loose OV2640 ribbon cable.
   - question: How do I make it more reliable?
-    answer: Use stable power, short wires, proper resistors or level shifting, repeated readings, and clear thresholds with
-      hysteresis where the output might chatter.
+    answer: Use stable 5 V power, short programming wires, low resolution for first boot, and the exact AI-Thinker pin map
+      before increasing image size or adding storage.
   - question: Where should I learn next?
     answer: Follow the related guides on analog inputs, PWM, I2C, OLED displays, MQTT, or camera basics depending on which
       part of this project you want to improve.

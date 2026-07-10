@@ -1,5 +1,11 @@
+from pathlib import Path
+
 from guide_mission import code_panel, illustration_placeholder
 from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
+
+
+ROOT = Path(__file__).resolve().parent.parent
+PROJECT_WIRING_DIR = ROOT / "assets" / "visuals" / "projects" / "wiring"
 
 
 def project_section_heading(section_id: str, icon: str, title: str) -> str:
@@ -192,10 +198,26 @@ def related_components_section(items: list) -> str:
 </section>"""
 
 
-def wiring_section(wiring: dict) -> str:
+def project_wiring_image(slug: str) -> str:
+    image = PROJECT_WIRING_DIR / f"{slug}-wiring.svg"
+    if image.exists():
+        return f"/assets/visuals/projects/wiring/{slug}-wiring.svg"
+    return ""
+
+
+def wiring_diagram_html(src: str, alt: str) -> str:
+    if not src:
+        return illustration_placeholder(alt, "Wiring Diagram", "🔗")
+    return f"""<figure class="mission-illustration mission-illustration--image">
+  <img src="{esc(src)}" alt="{esc(alt)}" loading="lazy" decoding="async" width="1200" height="800">
+</figure>"""
+
+
+def wiring_section(p: dict, wiring: dict) -> str:
     if not wiring:
         return ""
     alt = wiring.get("illustration_alt", "Wiring diagram")
+    image = wiring.get("image") or project_wiring_image(p.get("slug", ""))
     summary = (wiring.get("summary") or "").strip()
     steps = wiring.get("steps", [])
     summary_html = _paragraphs(summary) if summary else ""
@@ -215,7 +237,7 @@ def wiring_section(wiring: dict) -> str:
     return f"""<section class="project-section" id="wiring" aria-labelledby="wiring-heading">
   {project_section_heading("wiring", "🔗", "Wiring")}
   {summary_html}
-  {illustration_placeholder(alt, "Wiring Diagram", "🔗")}
+  {wiring_diagram_html(image, alt)}
   {steps_html}
 </section>"""
 
@@ -440,7 +462,7 @@ def render_project_body(p: dict) -> str:
 </section>
 {table_section("bom", "BOM", "Bill of Materials", ["Part", "Qty", "Estimated Cost", "Notes"], proj.get("bom", []))}
 {related_components_section(components)}
-{wiring_section(proj.get("wiring") or {})}
+{wiring_section(p, proj.get("wiring") or {})}
 {table_section("gpio-map", "GPIO", "GPIO Mapping", ["Signal", "ESP32 Pin", "Direction", "Notes"], proj.get("gpio_map", []))}
 {prose_section("circuit", "CIR", "Circuit Explanation", proj.get("circuit_explanation", ""))}
 {prose_section("engineering", "ENG", "Engineering Explanation", proj.get("engineering_explanation", ""))}
@@ -470,6 +492,7 @@ def project_hero_html(p: dict, category: str) -> str:
     title = p.get("title", "")
     desc = p.get("description", "")
     hero_image = p.get("hero_image") or p.get("featured_image") or ""
+    category_slug = p.get("category_slug") or category.lower().replace("&", "and").replace(" ", "-")
     hero_art = ""
     if hero_image:
         hero_art = (
@@ -478,7 +501,7 @@ def project_hero_html(p: dict, category: str) -> str:
         )
     return f"""<div class="project-hero-band">
   <section class="wrap project-hero">
-    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href("projects.html")}">Projects</a></li><li aria-current="page">{esc(title)}</li></ol></nav>
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href("projects.html")}">Projects</a></li><li><a href="{site_href(f"category/{category_slug}.html")}">{esc(category)}</a></li><li aria-current="page">{esc(title)}</li></ol></nav>
     <div class="project-hero-inner">
       <p class="hero-eyebrow project-hero-eyebrow">Build Project</p>
       <div class="project-hero-badges">

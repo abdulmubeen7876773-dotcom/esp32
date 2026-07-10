@@ -57,6 +57,8 @@ def _local_file_for_url(url: str) -> Path | None:
     rel = path.lstrip("/")
     if not rel:
         return ROOT / "index.html"
+    if path.endswith("/"):
+        return ROOT / rel / "index.html"
     candidate = ROOT / rel
     if candidate.is_file():
         return candidate
@@ -87,9 +89,9 @@ def _normalize_site_url(url: str) -> str:
     path = url.split("?")[0].split("#")[0]
     if not path.startswith("/"):
         return path
-    if path.endswith("/") and path != "/":
-        path = path[:-1]
     if path == "/":
+        return path
+    if path.endswith("/"):
         return path
     if "." in Path(path.lstrip("/")).name:
         return path

@@ -110,6 +110,20 @@ def wiring_table(rows: list[tuple[str, str, str]]) -> str:
     )
 
 
+def project_wiring_diagram(parent: dict) -> str:
+    slug = parent["slug"]
+    image = ROOT / "assets" / "visuals" / "projects" / "wiring" / f"{slug}-wiring.svg"
+    if not image.exists():
+        return ""
+    src = f"/assets/visuals/projects/wiring/{slug}-wiring.svg"
+    alt = f"{parent['title']} wiring diagram"
+    return (
+        '<figure class="mission-illustration mission-illustration--image">'
+        f'<img src="{esc(src)}" alt="{esc(alt)}" loading="lazy" decoding="async" width="1200" height="800">'
+        "</figure>"
+    )
+
+
 def accordion_item(level_id: str, section_id: str, title: str, body_html: str, open_default: bool = False) -> str:
     open_attr = " open" if open_default else ""
     return (
@@ -415,7 +429,7 @@ def render_difficulty_content(level: dict, parent: dict) -> str:
     sections = [
         acc("overview", "Overview", overview_body),
         acc("components", "Components", f'<ul class="parts-grid parts-grid-compact">{comps}</ul>'),
-        acc("wiring", "Wiring", wiring_table(level["wiring"])),
+        acc("wiring", "Wiring", project_wiring_diagram(parent) + wiring_table(level["wiring"])),
         acc("code", "Arduino Code", f'<div class="code-block"><div class="code-bar"><span>{esc(fname)}</span><button type="button" class="copy-btn">Copy</button></div><pre class="level-code">{code_esc}</pre></div>'),
         acc("how", "How It Works", steps_html(level["how"])),
         acc("apps", "Applications", f'<ul class="detail-list">{apps}</ul>'),

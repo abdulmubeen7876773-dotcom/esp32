@@ -1070,8 +1070,8 @@ def home_v2_declaration() -> str:
   <div class="wrap v2-declaration-inner">
     <div class="v2-declaration-content">
       <p class="v2-eyebrow">ESP32 Engine</p>
-      <h1 id="v2-hero-heading" class="v2-declaration-headline">Build things that exist<br>in the real world.</h1>
-      <p class="v2-declaration-sub">ESP32 Engine is where engineers, makers, and curious minds learn to build hardware that actually works.</p>
+      <h1 id="v2-hero-heading" class="v2-declaration-headline">ESP32 Engine for beginners,<br>students, teachers, parents, and makers.</h1>
+      <p class="v2-declaration-sub">Learn ESP32 with compact lessons, real projects, components, and classroom-friendly build paths.</p>
       <a class="v2-btn-hero" href="{site_href('learning.html')}">Start Building {_V2_ARROW_ICON}</a>
     </div>
     <div class="v2-declaration-visual">
