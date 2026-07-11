@@ -62,6 +62,11 @@ python tools\validate_phase_d_acceptance.py
 if errorlevel 1 goto :fail
 
 echo.
+echo === validate_badge_clarity.py ===
+python tools\validate_badge_clarity.py
+if errorlevel 1 goto :fail
+
+echo.
 echo === validate_visual_assets.py ===
 python tools\validate_visual_assets.py
 if errorlevel 1 goto :fail

@@ -190,7 +190,7 @@ def guide_trust_block(guide: dict, mission: bool = True) -> str:
     )
     cls = "mission-section academy-unlocks" if mission else "guide-technical-content"
     heading = (
-        '<h2 id="trust-heading"><span class="mission-section-icon" aria-hidden="true">TRUST</span><span class="mission-section-title">Review, Testing, and References</span></h2>'
+        '<h2 id="trust-heading"><span class="mission-section-icon" aria-hidden="true">Review</span><span class="mission-section-title">Review, Testing, and References</span></h2>'
         if mission
         else '<h2 id="trust-heading">Review, Testing, and References</h2>'
     )

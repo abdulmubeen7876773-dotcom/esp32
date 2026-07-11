@@ -447,7 +447,7 @@ def component_reference_section(component: dict) -> str:
         items.append(f'<li><a href="{esc(url)}"{attrs}>{esc(label)}</a></li>')
     updated = component.get("date_modified", "2026-07-05")
     return f"""<section class="component-section component-references" id="references" aria-labelledby="references-heading">
-  {component_section_heading("references", "REF", "Review, Testing, and References")}
+  {component_section_heading("references", "Review", "Review, Testing, and References")}
   <div class="component-section-prose">
     <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> {esc(updated)}. <strong>Reviewed:</strong> wiring, code, beginner safety, and ESP32 compatibility. <strong>Educational level:</strong> {esc(component.get("difficulty", "Beginner"))}.</p>
     <p>Use this component page as an educational starting point. Check official documentation before using the part in production, high-current, outdoor, battery, or safety-critical hardware.</p>
