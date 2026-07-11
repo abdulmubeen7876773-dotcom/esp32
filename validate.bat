@@ -57,6 +57,11 @@ python tools\validate_faq_quality.py
 if errorlevel 1 goto :fail
 
 echo.
+echo === validate_phase_d_acceptance.py ===
+python tools\validate_phase_d_acceptance.py
+if errorlevel 1 goto :fail
+
+echo.
 echo === validate_visual_assets.py ===
 python tools\validate_visual_assets.py
 if errorlevel 1 goto :fail

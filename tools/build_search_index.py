@@ -87,8 +87,8 @@ def search_page_html() -> str:
 {header_html("home")}
 <section class="section-block wrap page-head">
   <h1>Search</h1>
-  <form class="search-overlay-form" action="/search.html" method="get" style="max-width:640px">
-    <input id="search-page-input" name="q" type="search" placeholder="Search everything…" autocomplete="off" style="flex:1;padding:0.85rem 1rem;border-radius:14px;border:2px solid var(--border);font-size:1.125rem">
+  <form class="search-overlay-form" action="/search.html" method="get" style="max-width:640px;flex-wrap:wrap">
+    <input id="search-page-input" name="q" type="search" placeholder="Search everything…" autocomplete="off" style="flex:1 1 220px;min-width:0;padding:0.85rem 1rem;border-radius:14px;border:2px solid var(--border);font-size:1.125rem">
     <button type="submit" class="btn btn-primary">Search</button>
   </form>
   <p class="meta">Not sure what to search for? Browse <a href="/projects.html">all ESP32 projects</a>, check <a href="/news.html">latest site updates</a>, or use the <a href="/404.html">missing-page help page</a>.</p>
