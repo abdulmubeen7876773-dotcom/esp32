@@ -41,7 +41,6 @@ STATIC_PAGES = [
     ("downloads.html", "monthly", "0.6"),
     ("tools.html", "monthly", "0.6"),
     ("news.html", "weekly", "0.6"),
-    ("search.html", "monthly", "0.4"),
     ("about.html", "monthly", "0.5"),
     ("author.html", "monthly", "0.5"),
     ("editorial-policy.html", "monthly", "0.5"),
@@ -52,6 +51,17 @@ STATIC_PAGES = [
     ("disclaimer.html", "monthly", "0.4"),
     ("sitemap.html", "monthly", "0.3"),
 ]
+
+HUMAN_SITEMAP_ONLY_PAGES = [
+    ("search.html", "Search"),
+]
+
+SITEMAP_XML_EXCLUDED_PAGES = {
+    "404.html",
+    "search.html",
+    "sitemap.html",
+}
+
 
 def page_loc(page: str) -> str:
     return canonical_url(page)
@@ -126,16 +136,22 @@ def write_sitemap_xml(project_files: list[Path]) -> int:
     ]
     seen: set[str] = set()
     for page, freq, priority in STATIC_PAGES + guide_pages() + component_pages() + category_pages() + project_listing_pages():
-        if page == "sitemap.html" or page in seen:
+        if page in SITEMAP_XML_EXCLUDED_PAGES:
             continue
-        seen.add(page)
         loc = page_loc(page)
+        if loc in seen:
+            continue
+        seen.add(loc)
         lines.append(
             f"<url><loc>{html.escape(loc)}</loc><lastmod>{lastmod_for(page)}</lastmod>"
             f"<changefreq>{freq}</changefreq><priority>{priority}</priority></url>"
         )
+    public_slugs = {p["slug"] for p in public_projects(PARENTS)}
     for path in project_files:
         if "_archive" in path.parts or "-project-" in path.name:
+            continue
+        slug = path.stem
+        if slug not in public_slugs:
             continue
         loc = f"{SITE_DOMAIN}/projects/{path.name}"
         if loc in seen:
@@ -164,6 +180,10 @@ def write_sitemap_html(project_files: list[Path]) -> None:
         f'<li><a href="{esc(site_href(p))}">{esc(static_label(p))}</a></li>'
         for p, _, _ in STATIC_PAGES
         if p != "sitemap.html"
+    )
+    static_links += "".join(
+        f'<li><a href="{esc(site_href(p))}">{esc(label)}</a></li>'
+        for p, label in HUMAN_SITEMAP_ONLY_PAGES
     )
     cat_links = "".join(
         f'<li><a href="category/{esc(slug_cat(c))}.html">{esc(c)}</a></li>'

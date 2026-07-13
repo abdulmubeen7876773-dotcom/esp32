@@ -552,7 +552,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 {GOOGLE_TAG_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#6D28D9">
+<meta name="theme-color" content="#081D3A">
 <meta name="robots" content="index,follow,max-image-preview:large">
 {pinterest_verification_meta()}
 {gsc_verification_meta()}
@@ -620,7 +620,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
   </article>
   <aside class="sidebar-right">
     <div class="sidebar-sticky">
-      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">{site_counts()['total_projects']} projects with practical wiring, code, and troubleshooting.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects »</a></p></div>
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">{site_counts()['golden_projects']} public projects with practical wiring, code, and troubleshooting.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects »</a></p></div>
     </div>
   </aside>
 </div>

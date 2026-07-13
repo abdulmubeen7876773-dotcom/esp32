@@ -297,7 +297,7 @@ def home_html(projects):
     home = store.home()
     desc = home.get(
         "meta_description",
-        f"Build, connect, and automate with ESP32. {site_counts()['total_projects']} projects with wiring, code, and troubleshooting for makers, students, and teachers.",
+        f"Build, connect, and automate with ESP32. {site_counts()['golden_projects']} public projects with wiring, code, and troubleshooting for makers, students, and teachers.",
     )
     title = home.get("meta_title", "ESP32 Engine — Build, Connect & Automate with ESP32")
     schema = organization_schema() + website_schema()

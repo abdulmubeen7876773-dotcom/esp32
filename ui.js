@@ -23,7 +23,7 @@
       }
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) {
-        meta.setAttribute('content', theme === 'dark' ? '#0F172A' : '#2563EB');
+        meta.setAttribute('content', theme === 'dark' ? '#071426' : '#081D3A');
       }
     }
     function currentTheme() {

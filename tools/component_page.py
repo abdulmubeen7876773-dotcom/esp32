@@ -45,13 +45,13 @@ def component_art_svg(component: dict) -> str:
     return f"""<svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="{esc(name)} illustration">
   <defs>
     <linearGradient id="{board_id}" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2563EB"/><stop offset="1" stop-color="#00B894"/>
+      <stop stop-color="#081D3A"/><stop offset="1" stop-color="#1488A6"/>
     </linearGradient>
     <radialGradient id="{glow_id}" cx="50%" cy="50%" r="60%">
       <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
     </radialGradient>
     <filter id="{shadow_id}" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#0F172A" flood-opacity=".22"/>
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#081D3A" flood-opacity=".18"/>
     </filter>
   </defs>
   <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
@@ -59,7 +59,7 @@ def component_art_svg(component: dict) -> str:
   <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
   <g filter="url(#{shadow_id})">
     <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#{board_id})"/>
-    <rect x="174" y="124" width="116" height="78" rx="14" fill="#0F172A" opacity=".88"/>
+    <rect x="174" y="124" width="116" height="78" rx="14" fill="#081D3A" opacity=".88"/>
     <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
     <circle cx="327" cy="183" r="19" fill="#FBBF24"/>
     <text x="232" y="174" text-anchor="middle" fill="#E0F2FE" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800">{esc(initials)}</text>

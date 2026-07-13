@@ -407,6 +407,165 @@ test('theme toggle persists and keeps content readable', async ({ page }, testIn
   await expect(page.locator(':focus')).toBeVisible();
 });
 
+test('academy color tokens render readable light and dark surfaces', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await preparePage(page, testInfo);
+  await gotoOk(page, '/');
+
+  const auditColors = async () =>
+    page.evaluate(() => {
+      function parseRgb(value: string) {
+        const match = value.match(/rgba?\(([^)]+)\)/);
+        if (!match) return null;
+        const channels = match[1].split(/[\s,\/]+/).filter(Boolean).slice(0, 3).map(Number);
+        return channels.length === 3 && channels.every((channel) => Number.isFinite(channel)) ? channels : null;
+      }
+      function linear(channel: number) {
+        const normalized = channel / 255;
+        return normalized <= 0.03928 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+      }
+      function contrast(foreground: number[], background: number[]) {
+        const f = 0.2126 * linear(foreground[0]) + 0.7152 * linear(foreground[1]) + 0.0722 * linear(foreground[2]);
+        const b = 0.2126 * linear(background[0]) + 0.7152 * linear(background[1]) + 0.0722 * linear(background[2]);
+        return (Math.max(f, b) + 0.05) / (Math.min(f, b) + 0.05);
+      }
+      const root = getComputedStyle(document.documentElement);
+      const body = getComputedStyle(document.body);
+      const header = getComputedStyle(document.querySelector('.site-nav-sticky') as HTMLElement);
+      const button = getComputedStyle(document.querySelector('.btn-primary, .v2-btn-hero') as HTMLElement);
+      const text = parseRgb(body.color);
+      const pageBg = parseRgb(body.backgroundColor);
+      const buttonText = parseRgb(button.color);
+      const buttonBg = parseRgb(button.backgroundColor);
+      return {
+        theme: document.documentElement.getAttribute('data-theme'),
+        surfacePage: root.getPropertyValue('--surface-page').trim(),
+        surfaceCard: root.getPropertyValue('--surface-card').trim(),
+        actionPrimary: root.getPropertyValue('--action-primary').trim(),
+        focusRing: root.getPropertyValue('--focus-ring').trim(),
+        bodyContrast: text && pageBg ? contrast(text, pageBg) : 0,
+        buttonContrast: buttonText && buttonBg ? contrast(buttonText, buttonBg) : 0,
+        headerBackground: header.backgroundColor,
+      };
+    });
+
+  const light = await auditColors();
+  expect(light.surfacePage).toBeTruthy();
+  expect(light.surfaceCard).toBeTruthy();
+  expect(light.actionPrimary).toBeTruthy();
+  expect(light.focusRing).toBeTruthy();
+  expect(light.bodyContrast).toBeGreaterThanOrEqual(4.5);
+  expect(light.buttonContrast).toBeGreaterThanOrEqual(4.5);
+  expect(light.headerBackground).not.toBe('rgba(0, 0, 0, 0)');
+
+  await page.locator('#theme-toggle').click();
+  const dark = await auditColors();
+  expect(dark.theme).toBe('dark');
+  expect(dark.surfacePage).not.toBe(light.surfacePage);
+  expect(dark.bodyContrast).toBeGreaterThanOrEqual(4.5);
+  expect(dark.buttonContrast).toBeGreaterThanOrEqual(4.5);
+  expect(dark.headerBackground).not.toBe('rgba(0, 0, 0, 0)');
+});
+
+test('dark mode keeps representative cards and headings readable', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await preparePage(page, testInfo);
+  await page.addInitScript(() => localStorage.setItem('theme', 'light'));
+
+  for (const path of ['/learning.html', '/projects.html', '/guides/blink-led-esp32.html', '/components.html', '/teachers.html', '/tools.html', '/about.html']) {
+    await gotoOk(page, path);
+    await page.locator('#theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.waitForFunction(() => {
+      function parseRgb(value: string) {
+        const match = value.match(/rgba?\(([^)]+)\)/);
+        if (!match) return null;
+        return match[1].split(/[\s,\/]+/).filter(Boolean).slice(0, 3).map(Number);
+      }
+      function isWhite(value: string) {
+        const channels = parseRgb(value);
+        return !!channels && channels.every((channel) => channel >= 245);
+      }
+      const selectors = '.premium-card, .tool-card, .path-card, .project-card-item, .guide-index-card, .component-card, .mission-section, .resource-card, .premium-stats div';
+      return [...document.querySelectorAll<HTMLElement>(selectors)].every((el) => {
+        const style = getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return rect.width <= 0 || rect.height <= 0 || !isWhite(style.backgroundColor);
+      });
+    });
+    const audit = await page.evaluate(() => {
+      function parseRgb(value: string) {
+        const match = value.match(/rgba?\(([^)]+)\)/);
+        if (!match) return null;
+        return match[1].split(/[\s,\/]+/).filter(Boolean).slice(0, 3).map(Number);
+      }
+      function isWhite(value: string) {
+        const channels = parseRgb(value);
+        return !!channels && channels.every((channel) => channel >= 245);
+      }
+      const selectors = '.premium-card, .tool-card, .path-card, .project-card-item, .guide-index-card, .component-card, .mission-section, .resource-card, .premium-stats div';
+      const whiteCards = [...document.querySelectorAll<HTMLElement>(selectors)]
+        .filter((el) => {
+          const style = getComputedStyle(el);
+          const rect = el.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && isWhite(style.backgroundColor);
+        })
+        .map((el) => `${el.tagName}.${el.className}`.slice(0, 120));
+      const invisibleHeadings = [...document.querySelectorAll<HTMLElement>('h1, h2, h3')]
+        .filter((el) => {
+          const style = getComputedStyle(el);
+          const bg = getComputedStyle(el.closest<HTMLElement>('.premium-card, .tool-card, .path-card, .project-card-item, .guide-index-card, .component-card, .mission-section, .resource-card, .premium-page-hero, body') || document.body).backgroundColor;
+          return style.color === bg;
+        })
+        .map((el) => el.textContent?.trim().slice(0, 80));
+      return { whiteCards, invisibleHeadings };
+    });
+    expect(audit.whiteCards, `${path}: no unintended white cards in dark mode`).toEqual([]);
+    expect(audit.invisibleHeadings, `${path}: headings remain visible in dark mode`).toEqual([]);
+  }
+});
+
+test('sticky header leaves headings and anchor targets visible', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await preparePage(page, testInfo);
+  await gotoOk(page, '/learning.html');
+  const headingTop = await page.locator('h1').evaluate((h1) => (h1 as HTMLElement).getBoundingClientRect().top);
+  expect(headingTop, 'initial heading should not sit under sticky bars').toBeGreaterThanOrEqual(-4);
+
+  await page.goto('/learning.html#advanced', { waitUntil: 'networkidle' });
+  const result = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    const safeTop = parseFloat(root.getPropertyValue('--sticky-safe-top')) || 120;
+    const target = document.querySelector('#advanced') as HTMLElement;
+    return {
+      safeTop,
+      targetTop: target.getBoundingClientRect().top,
+    };
+  });
+  expect(result.targetTop, 'anchor target should remain below sticky bars').toBeGreaterThanOrEqual(result.safeTop - 8);
+});
+
+test('public counts and section headings stay consistent', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await preparePage(page, testInfo);
+  await gotoOk(page, '/about.html');
+  await expect(page.locator('.premium-stats')).toContainText('49');
+  await expect(page.locator('.premium-stats')).toContainText('8');
+  await expect(page.locator('.premium-stats')).toContainText('16');
+  await expect(page.locator('body')).not.toContainText('7Core components');
+  await expect(page.locator('body')).not.toContainText('7 Core components');
+
+  await gotoOk(page, '/learning.html');
+  await expect(page.locator('#builder')).toContainText('49 projects');
+  await expect(page.locator('#explorer')).toContainText('8 components');
+  await expect(page.locator('#beginner')).toContainText('16 missions');
+  await expect(page.locator('body')).not.toContainText('50 projects');
+
+  await gotoOk(page, '/guides/blink-led-esp32.html');
+  const visibleText = await page.locator('body').innerText();
+  expect(visibleText).not.toMatch(/PARTSComponents|ENGEngineering|CODECode|GPIOGPIO|SAFETYSafety|WIRINGWiring/);
+});
+
 test('reduced motion and constrained zoom-like viewport remain usable', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 320, height: 568 });

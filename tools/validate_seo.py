@@ -8,6 +8,9 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 from xml.etree import ElementTree as ET
 
+from cms_loader import load_projects
+from project_text import is_golden_project
+
 ROOT = Path(__file__).resolve().parent.parent
 DOMAIN = "https://esp32engine.com"
 PUBLIC_EXCLUDES = {
@@ -195,6 +198,12 @@ def sitemap_urls():
     return [el.text.strip() for el in tree.findall(".//sm:loc", ns) if el.text]
 
 
+def project_slug_for_page(page: str) -> str:
+    if page.startswith("projects/") and page.endswith(".html"):
+        return Path(page).stem
+    return ""
+
+
 def source_for_page(page: str) -> str:
     if page == "index.html":
         return "content/home.yaml"
@@ -254,11 +263,33 @@ def main():
     canonicals = Counter(page_to_canonical(page, p) for page, p in parsed.items())
     sm_urls = sitemap_urls()
     sm_set = set(sm_urls)
+    projects = load_projects()
+    public_project_slugs = {p["slug"] for p in projects if is_golden_project(p)}
+    non_public_project_slugs = {p["slug"] for p in projects if not is_golden_project(p)}
 
     if len(sm_urls) != len(sm_set):
         errors.append("sitemap contains duplicate URLs")
-    if any(not url.startswith(DOMAIN + "/") for url in sm_urls):
-        errors.append("sitemap contains non-production URLs")
+    for url in sm_urls:
+        parsed_url = urlparse(url)
+        if parsed_url.scheme != "https" or parsed_url.netloc != "esp32engine.com":
+            errors.append(f"sitemap contains non-HTTPS or non-production URL: {url}")
+        if parsed_url.query:
+            errors.append(f"sitemap contains query-string URL: {url}")
+        if parsed_url.path == "/search.html":
+            errors.append("sitemap includes search.html")
+        if parsed_url.path == "/404.html":
+            errors.append("sitemap includes 404.html")
+        if parsed_url.path == "/category/index.html":
+            errors.append("sitemap includes /category/index.html instead of /category/")
+        if any(token in parsed_url.path.lower() for token in ("google", "pinterest", "verification")):
+            errors.append(f"sitemap includes verification file: {url}")
+        if any(part in parsed_url.path.strip("/").split("/") for part in ("docs", "tools", "test-results", "playwright-report")):
+            errors.append(f"sitemap includes non-public report or tool artifact: {url}")
+        slug = project_slug_for_page(route_to_page(url))
+        if slug in non_public_project_slugs:
+            errors.append(f"sitemap includes non-public project: {url}")
+        elif slug and slug not in public_project_slugs:
+            errors.append(f"sitemap includes unknown project: {url}")
 
     robots = (ROOT / "robots.txt").read_text(encoding="utf-8", errors="ignore")
     if f"Sitemap: {DOMAIN}/sitemap.xml" not in robots:
@@ -305,7 +336,13 @@ def main():
         page = route_to_page(url)
         if page not in page_set:
             errors.append(f"sitemap URL has no output file: {url}")
-        elif "noindex" in parsed[page].robots.lower():
+            continue
+        sitemap_parser = parsed[page]
+        canonical = page_to_canonical(page, sitemap_parser)
+        if canonical != url:
+            errors.append(f"sitemap URL is not self-canonical: {url} (canonical: {canonical})")
+        robots_meta = sitemap_parser.robots.lower()
+        if any(token in robots_meta for token in ("noindex", "none", "nofollow")):
             errors.append(f"sitemap includes noindex page: {url}")
 
     for url in KNOWN_AFFECTED_URLS:

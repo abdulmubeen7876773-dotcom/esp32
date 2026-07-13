@@ -567,7 +567,7 @@ def render_page(d: dict) -> str:
 {GOOGLE_TAG_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#020617">
+<meta name="theme-color" content="#071426">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <script>document.documentElement.classList.add("js")</script>
 {analytics_config_script()}

@@ -11,6 +11,11 @@ ID_RE = re.compile(r"\sid=[\"']([^\"']+)[\"']", re.I)
 EMPTY_LINK_RE = re.compile(r"<a\b(?=[^>]*href=)[^>]*>\s*</a>", re.I | re.S)
 EMPTY_BUTTON_RE = re.compile(r"<button\b(?![^>]*aria-label=)[^>]*>\s*</button>", re.I | re.S)
 TAG_RE = re.compile(r"<[^>]+>")
+MERGED_LABEL_RE = re.compile(
+    r"\b(?:PARTS|ENG|CODE|GPIO|FAQ|SAFETY|WIRING|OUTPUT|REVIEW|BUILD|TESTING)"
+    r"(?:Components|Engineering|Code|GPIO|FAQs|Safety|Wiring|Expected|Review|Build|Testing)",
+    re.I,
+)
 
 
 def strip_tags(html: str) -> str:
@@ -46,7 +51,12 @@ def main() -> int:
         if rel.name != "404.html" and h1_count != 1:
             errors.append(f"{rel}: expected exactly one H1, found {h1_count}")
         for _, heading_html in HEADING_RE.findall(text):
-            words = re.findall(r"[A-Za-z]+", strip_tags(heading_html).lower())
+            heading_text = strip_tags(heading_html)
+            merged = MERGED_LABEL_RE.search(heading_text)
+            if merged:
+                errors.append(f"{rel}: merged label/heading text detected: {merged.group(0)!r}")
+                continue
+            words = re.findall(r"[A-Za-z]+", heading_text.lower())
             for left, right in zip(words, words[1:]):
                 if left == right and len(left) > 2 and left not in {"review", "display"}:
                     errors.append(f"{rel}: repeated heading word {left!r}")

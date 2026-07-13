@@ -7,8 +7,10 @@ ROOT = Path(__file__).resolve().parent.parent
 TEXT_EXTS = {".html", ".xml", ".json", ".js", ".css", ".py", ".yaml", ".yml", ".md", ".bat"}
 SKIP_PARTS = {".git", ".venv", "node_modules", "__pycache__", "playwright-report", "test-results"}
 MOJIBAKE = [
+    "\ufffd",
     "\u00c2",
     "\u00c3",
+    "\u00e2",
     "\u00e2\u20ac",
     "\u00e2\u20ac\u2122",
     "\u00e2\u20ac\u0153",
@@ -18,6 +20,9 @@ MOJIBAKE = [
     "\u00e2\u20ac\u00a6",
     "\u00e2\u2020",
     "\u00f0\u0178",
+    "\u00f0\u0178\u0152",
+    "\u00f0\u0178\u201d",
+    "\u00f0\u0178\u0161",
 ]
 
 
