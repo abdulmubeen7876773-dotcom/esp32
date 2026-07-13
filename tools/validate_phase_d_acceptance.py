@@ -23,6 +23,7 @@ VERIFICATION_PAGES = {
     "googlec0cbd82255f45946.html",
     "pinterest-f71bc.html",
 }
+SKIP_PARTS = {".git", ".venv", "node_modules", "__pycache__", "_archive", "playwright-report", "test-results"}
 
 
 class LinkParser(HTMLParser):
@@ -58,7 +59,7 @@ def public_html_pages() -> list[Path]:
     pages = []
     for path in ROOT.rglob("*.html"):
         rel = path.relative_to(ROOT)
-        if ".git" in rel.parts or "_archive" in rel.parts or path.name in VERIFICATION_PAGES:
+        if any(part in SKIP_PARTS for part in rel.parts) or path.name in VERIFICATION_PAGES:
             continue
         pages.append(path)
     return pages

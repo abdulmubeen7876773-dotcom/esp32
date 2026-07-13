@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-07-11T06:06:32Z
+Generated: 2026-07-13T15:30:07Z
 
 ## Release Status
 
@@ -151,4 +151,4 @@ Count: 300
 
 - Guides roadmap: 16/100 complete (84 remaining)
 - Components roadmap: 7/210 complete (203 remaining)
-- Projects portfolio: 50 golden projects published
+- Projects portfolio: 49 golden projects published

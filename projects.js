@@ -46,7 +46,7 @@
   }
 
   function levelBadges(levels) {
-    var list = levels || ['Beginner', 'Intermediate', 'Advanced'];
+    var list = levels || ['Beginner'];
     return list
       .map(function (lv) {
         return '<span class="badge ' + badgeClass(lv) + '">' + esc(lv) + '</span>';
@@ -57,7 +57,7 @@
   function cardHtml(p) {
     var desc = p.desc || '';
     var descHtml = desc ? '<p class="card-desc">' + esc(desc) + '</p>' : '';
-    var levels = p.levels || ['Beginner', 'Intermediate', 'Advanced'];
+    var levels = p.levels || ['Beginner'];
     var levelsStr = levels.join(',');
     var rt = readTime(p.slug || '');
     return (
@@ -119,6 +119,8 @@
     cards.forEach(function (card, i) {
       var hide = i >= PAGE_SIZE && !expanded;
       card.classList.toggle('page-hidden', hide);
+      card.setAttribute('aria-hidden', hide ? 'true' : 'false');
+      card.tabIndex = hide ? -1 : 0;
       if (!hide) shown++;
     });
     if (wrap && btn) {
@@ -194,10 +196,15 @@
           (!category || cardCat === category) &&
           (!difficulty || levels.indexOf(difficulty) !== -1);
         card.classList.toggle('filter-hidden', !ok);
+        card.setAttribute('aria-hidden', ok ? 'false' : 'true');
+        card.tabIndex = ok ? 0 : -1;
       });
       sortCards();
       var visible = applyPagination();
-      count.textContent = getVisibleCards().length + ' projects found · showing ' + visible;
+      var total = getVisibleCards().length;
+      count.textContent = total + ' projects found, showing ' + visible;
+      var noResults = document.getElementById('projects-no-results');
+      if (noResults) noResults.hidden = total !== 0;
     }
 
     [q, cat, diff].forEach(function (el) {
@@ -215,6 +222,8 @@
         if (g) g.dataset.expanded = '1';
         getVisibleCards().forEach(function (card) {
           card.classList.remove('page-hidden');
+          card.setAttribute('aria-hidden', 'false');
+          card.tabIndex = 0;
         });
         var wrap = document.getElementById('projects-more-wrap');
         if (wrap) wrap.style.display = 'none';

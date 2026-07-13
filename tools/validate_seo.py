@@ -10,7 +10,20 @@ from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
 DOMAIN = "https://esp32engine.com"
-PUBLIC_EXCLUDES = {".git", ".venv", "tmp", "docs", "tools", "assets", "content", "admin"}
+PUBLIC_EXCLUDES = {
+    ".git",
+    ".venv",
+    "tmp",
+    "docs",
+    "tools",
+    "assets",
+    "content",
+    "admin",
+    "node_modules",
+    "playwright-report",
+    "test-results",
+    "__pycache__",
+}
 
 KNOWN_AFFECTED_URLS = [
     "https://esp32engine.com/category/education.html",

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
 <script>(function(){
   function cleanPath(path){
     path = (path || "/").replace(/\/+/g, "/");
@@ -40,7 +41,6 @@
     page_title: document.title
   });
 </script>
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ESP32 Multiple Buttons and State Detection Tutorial | ESP32 Engine</title>
 <meta name="description" content="Mission 06 - learn how to read multiple ESP32 buttons, track button states, detect press and release events, and avoid repeated triggers.">
@@ -57,7 +57,7 @@
 <meta property="og:image" content="https://esp32engine.com/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ESP32 Engine â€” ESP32 projects and tutorials">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ESP32 Multiple Buttons and State Detection Tutorial | ESP32 Engine">
 <meta name="twitter:description" content="Mission 06 - learn how to read multiple ESP32 buttons, track button states, detect press and release events, and avoid repeated triggers.">
@@ -96,19 +96,19 @@
   <div class="wrap nav-spotlight-scroll">
     <div class="nav-spotlight-inner">
     <span class="nav-spotlight-label">Explore</span>
-    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
     </div>
   </div>
 </div>
 </div>
-<div class="search-overlay" id="search-overlay" hidden>
+<div class="search-overlay" id="search-overlay" hidden inert>
   <div class="search-overlay-backdrop" data-close-search></div>
   <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
     <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
       <label class="visually-hidden" for="global-search">Search</label>
-      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guidesâ€¦" autocomplete="off">
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
       <button type="submit" class="btn btn-primary">Search</button>
-      <button type="button" class="search-close" data-close-search aria-label="Close search">Ã—</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
     </form>
     <div class="search-results" id="search-results-live" hidden></div>
   </div>
@@ -169,7 +169,7 @@
   <ul class="guide-related-list"><li><a href="/guides/debouncing-buttons.html"><strong>Button Debouncing</strong></a> <span class="meta">You should understand how one button becomes one clean software event.</span></li></ul>
 </section>
 <section class="mission-section" id="skills" aria-labelledby="skills-heading">
-  <h2 id="skills-heading"><span class="mission-section-icon" aria-hidden="true">Skills</span><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
+  <h2 id="skills-heading"><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
   <ul class="mission-bullets"><li>Read more than one button without mixing up the inputs</li><li>Give every button its own pin, name, state, and debounce timer</li><li>Detect the difference between held state and new press event</li><li>Handle press and release actions separately</li><li>Use arrays and small helper functions to keep button code organized</li></ul>
 </section>
 <section class="mission-section" id="parts" aria-labelledby="parts-heading">
@@ -177,7 +177,7 @@
   <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">Reads three independent button inputs</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BTN</span><span class="mission-thing-body"><span class="mission-thing-name">Three push buttons</span><span class="mission-thing-note">Use the same type if possible</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BOARD</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard</span><span class="mission-thing-note">Keeps each button in its own rows</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Jumper wires</span><span class="mission-thing-note">For GPIO25, GPIO26, GPIO27, and GND</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload code and watch Serial Monitor</span></span></li></ul>
 </section>
 <section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
-  <h2 id="engineering-heading"><span class="mission-section-icon" aria-hidden="true">Engineering</span><span class="mission-section-title">Engineering Explanation</span></h2>
+  <h2 id="engineering-heading"><span class="mission-section-title">Engineering Explanation</span></h2>
   <div class="mission-prose"><p>With one button, you tracked one raw reading, one stable state, and one last-change time. With three buttons, you need the same information three times.</p><p>The beginner mistake is to reuse one variable for everything. That mixes the buttons together. If Button A changes, it can overwrite the timing or state that Button B needed. Reliable multi-input code keeps each button independent.</p><p>This mission uses arrays. An array is a numbered list. buttonPins[0] stores the first GPIO pin, buttonPins[1] stores the second, and buttonPins[2] stores the third. Matching arrays store the raw readings, stable states, and debounce times for the same button number.</p><p>The loop checks each button one by one. For each button, the code reads the GPIO, restarts that button&#x27;s debounce timer if the raw value changed, and accepts a new stable state only after the reading has stayed still long enough. When the accepted state changes to LOW, that is a press event. When it changes to HIGH, that is a release event.</p><p>This pattern scales. Three buttons, five buttons, and ten buttons use the same idea: separate identity, separate state, repeated clean logic.</p></div>
 </section>
 <section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
@@ -189,7 +189,7 @@
 
 
 <section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
-  <h2 id="wiring-heading"><span class="mission-section-icon" aria-hidden="true">Wiring</span><span class="mission-section-title">Wiring Diagram</span></h2>
+  <h2 id="wiring-heading"><span class="mission-section-title">Wiring Diagram</span></h2>
   <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
   <figure class="mission-illustration" aria-label="ESP32 GPIO25, GPIO26, and GPIO27 each connected to one side of a push button, with the other side of each button connected to GND">
   <div class="mission-illustration-frame">
@@ -241,7 +241,7 @@
 </li></ol>
 </section>
 <section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
-  <h2 id="gpio-table-heading"><span class="mission-section-icon" aria-hidden="true">GPIO</span><span class="mission-section-title">GPIO Table</span></h2>
+  <h2 id="gpio-table-heading"><span class="mission-section-title">GPIO Table</span></h2>
   <div class="wiring-table-wrap"><table class="wiring-table">
     <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
     <tbody><tr><td>Button 1</td><td>GPIO25</td><td>INPUT_PULLUP</td><td>Released reads HIGH. Pressed reads LOW.</td></tr><tr><td>Button 2</td><td>GPIO26</td><td>INPUT_PULLUP</td><td>Tracked separately from Button 1.</td></tr><tr><td>Button 3</td><td>GPIO27</td><td>INPUT_PULLUP</td><td>Uses its own debounce timer.</td></tr><tr><td>Common ground</td><td>GND</td><td>Ground</td><td>The other side of every button connects to GND.</td></tr></tbody>
@@ -350,7 +350,7 @@ MODE released</p><p>If you hold START down, it should not print START pressed ag
   <div class="mission-prose"><p>Give every physical input its own identity: pin number, name, purpose, state, and debounce timer. Professional firmware stays reliable because it never lets one input overwrite another input&#x27;s memory.</p></div>
 </section>
 <section class="mission-section" id="remember" aria-labelledby="remember-heading">
-  <h2 id="remember-heading"><span class="mission-section-icon" aria-hidden="true">Remember</span><span class="mission-section-title">Remember This Forever</span></h2>
+  <h2 id="remember-heading"><span class="mission-section-title">Remember This Forever</span></h2>
   <div class="mission-build-panel"><p>A button state says what is true now.</p><p>A button event says what just changed.</p><p>Reliable projects act on events, remember states, and keep every input separate.</p></div>
 </section>
 <section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
@@ -371,11 +371,11 @@ MODE released</p><p>If you hold START down, it should not print START pressed ag
   <ul class="guide-related-list"><li><a href="/projects/esp32-smart-door-lock.html"><strong>ESP32 Smart Door Lock</strong></a> <span class="meta">Build a safe smart lock prototype using ESP32, an access input, and a low-voltage lock actuator output.</span></li><li><a href="/projects/esp32-wifi-robot-controller.html"><strong>ESP32 WiFi Robot Controller</strong></a> <span class="meta">Build a browser-controlled ESP32 robot that drives motors from Wi-Fi commands served by the board itself.</span></li><li><a href="/projects/esp32-learning-trainer.html"><strong>ESP32 Learning Trainer Board</strong></a> <span class="meta">Classroom ESP32 trainer with a push button on GPIO12 and status LED on GPIO14.</span></li></ul>
 </section>
 <section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
-  <h2 id="previous-mission-heading"><span class="mission-section-icon" aria-hidden="true">Previous</span><span class="mission-section-title">Previous Mission</span></h2>
+  <h2 id="previous-mission-heading"><span class="mission-section-title">Previous Mission</span></h2>
   <ul class="guide-related-list"><li><a href="/guides/debouncing-buttons.html"><strong>Button Debouncing</strong></a> <span class="meta">You learned how to count one clean press from one mechanical button.</span></li></ul>
 </section>
 <section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
-  <h2 id="next-mission-heading"><span class="mission-section-icon" aria-hidden="true">Next</span><span class="mission-section-title">Next Mission</span></h2>
+  <h2 id="next-mission-heading"><span class="mission-section-title">Next Mission</span></h2>
   <ul class="guide-related-list"><li><a href="/guides/pwm-fundamentals.html"><strong>Mission 07 - PWM Fundamentals</strong></a> <span class="meta">Next you will use reliable button events to control output strength instead of only ON and OFF.</span></li></ul>
 </section>
 <section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
@@ -390,17 +390,17 @@ MODE released</p><p>If you hold START down, it should not print START pressed ag
     <div class="footer-brand">
       <strong>ESP32 Engine</strong>
       <p class="footer-tagline">Learn · Build · Explore</p>
-      <p>The world's friendliest ESP32 learning platform â€” built for kids, trusted by parents, loved by makers.</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
       <div class="footer-social">
         <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
         <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
       </div>
     </div>
     <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
-    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
     <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
   </div>
-  <div class="wrap footer-bottom"><p>Â© 2026 ESP32 Engine. All rights reserved.</p></div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
 </footer>
 <script src="/search.js?v=20260627-header-logo-v2" defer></script>
 <script src="/ui.js?v=20260627-header-logo-v2" defer></script>

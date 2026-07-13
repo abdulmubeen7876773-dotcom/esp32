@@ -9,11 +9,17 @@ FRAMEWORKS = [
     ("espidf", "ESP-IDF", "main/main.c"),
 ]
 
+_ART_RENDER_COUNTS: dict[str, int] = {}
+
 
 def component_section_heading(section_id: str, icon: str, title: str) -> str:
+    icon_text = str(icon or "").strip()
+    title_text = str(title or "").strip()
+    show_icon = icon_text and not title_text.lower().startswith(icon_text.lower())
+    icon_html = f'<span class="component-section-icon" aria-hidden="true">{icon}</span>' if show_icon else ""
     return (
         f'<h2 id="{section_id}-heading">'
-        f'<span class="component-section-icon" aria-hidden="true">{icon}</span>'
+        f'{icon_html}'
         f'<span class="component-section-title">{esc(title)}</span>'
         f"</h2>"
     )
@@ -29,24 +35,30 @@ def _paragraphs(text: str) -> str:
 def component_art_svg(component: dict) -> str:
     name = component.get("name", "ESP32 component")
     category = component.get("category", "Component")
+    slug = "".join(ch if ch.isalnum() else "-" for ch in component.get("slug", "component")).strip("-") or "component"
+    _ART_RENDER_COUNTS[slug] = _ART_RENDER_COUNTS.get(slug, 0) + 1
+    suffix = f"{slug}-{_ART_RENDER_COUNTS[slug]}"
+    board_id = f"ca-board-{suffix}"
+    glow_id = f"ca-glow-{suffix}"
+    shadow_id = f"ca-shadow-{suffix}"
     initials = "".join(part[0] for part in name.replace("&", " ").split()[:2]).upper() or "C"
     return f"""<svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="{esc(name)} illustration">
   <defs>
-    <linearGradient id="ca-board" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
+    <linearGradient id="{board_id}" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
       <stop stop-color="#2563EB"/><stop offset="1" stop-color="#00B894"/>
     </linearGradient>
-    <radialGradient id="ca-glow" cx="50%" cy="50%" r="60%">
+    <radialGradient id="{glow_id}" cx="50%" cy="50%" r="60%">
       <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
     </radialGradient>
-    <filter id="ca-shadow" x="-20%" y="-20%" width="140%" height="150%">
+    <filter id="{shadow_id}" x="-20%" y="-20%" width="140%" height="150%">
       <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#0F172A" flood-opacity=".22"/>
     </filter>
   </defs>
   <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
-  <circle cx="260" cy="178" r="168" fill="url(#ca-glow)"/>
+  <circle cx="260" cy="178" r="168" fill="url(#{glow_id})"/>
   <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
-  <g filter="url(#ca-shadow)">
-    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#ca-board)"/>
+  <g filter="url(#{shadow_id})">
+    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#{board_id})"/>
     <rect x="174" y="124" width="116" height="78" rx="14" fill="#0F172A" opacity=".88"/>
     <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
     <circle cx="327" cy="183" r="19" fill="#FBBF24"/>

@@ -67,6 +67,21 @@ python tools\validate_badge_clarity.py
 if errorlevel 1 goto :fail
 
 echo.
+echo === validate_encoding_integrity.py ===
+python tools\validate_encoding_integrity.py
+if errorlevel 1 goto :fail
+
+echo.
+echo === validate_publication_integrity.py ===
+python tools\validate_publication_integrity.py
+if errorlevel 1 goto :fail
+
+echo.
+echo === validate_html_integrity.py ===
+python tools\validate_html_integrity.py
+if errorlevel 1 goto :fail
+
+echo.
 echo === validate_visual_assets.py ===
 python tools\validate_visual_assets.py
 if errorlevel 1 goto :fail

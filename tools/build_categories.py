@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cms_loader import load_categories
 from parent_registry import PARENTS
 from project_icons import slug_cat
-from project_text import card_description, project_title
+from project_text import card_description, primary_difficulty, project_title, public_projects
 from site_layout import (
     SITE_DOMAIN,
     SITE_NAME,
@@ -171,13 +171,13 @@ def category_context_html(cat: str, projects: list[dict]) -> str:
 def category_intro(cat: str) -> str:
     return CATEGORY_INTROS.get(
         cat,
-        f"Browse ESP32 {short_category(cat)} tutorials with wiring diagrams, Arduino code, and three skill levels.",
+        f"Browse ESP32 {short_category(cat)} tutorials with wiring diagrams, Arduino code, and clear difficulty labels.",
     )
 
 
 def projects_for_category(cat: str) -> list[dict]:
     items = []
-    for p in PARENTS:
+    for p in public_projects(PARENTS):
         if p["category"] != cat:
             continue
         items.append(
@@ -186,7 +186,7 @@ def projects_for_category(cat: str) -> list[dict]:
                 "title": project_title(p),
                 "desc": card_description(p),
                 "category": p["category"],
-                "difficulty": "Beginner",
+                "difficulty": primary_difficulty(p),
                 "slug": p["slug"],
                 "featured": False,
             }
@@ -220,7 +220,7 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
     )
     badges = (
         f'<span class="badge badge-light">{len(projects)} Projects</span>'
-        f'<span class="badge badge-light">3 Difficulty Levels</span>'
+        f'<span class="badge badge-light">Clear difficulty labels</span>'
         f'<span class="badge badge-light">{esc(short_category(cat))}</span>'
     )
     sidebar_key = SIDEBAR_KEYS.get(cat, slug)
@@ -258,10 +258,50 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
 </html>"""
 
 
+def render_category_index(by_cat: dict[str, list[dict]]) -> str:
+    cards = []
+    for cat in sorted(by_cat):
+        slug = slug_cat(cat)
+        projects = projects_for_category(cat)
+        desc = category_intro(cat)
+        cards.append(
+            f"""<a class="post-card modern-card" href="{site_href(f'category/{slug}.html')}">
+  <div class="card-body">
+    <div class="card-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge badge-time">{len(projects)} projects</span></div>
+    <h3>{esc(category_section_title(cat))}</h3>
+    <p class="card-desc">{esc(desc)}</p>
+    <div class="card-footer"><span class="btn btn-card">Open category<span aria-hidden="true">→</span></span></div>
+  </div>
+</a>"""
+        )
+    title = f"ESP32 Project Categories | {SITE_NAME}"
+    desc = "Browse ESP32 Engine project categories by topic, with only public reviewed project tutorials included."
+    schema = organization_schema() + webpage_schema(title, desc, "category/")
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{head_html("", title, desc, canonical_path="category/", extra_schema=schema)}
+</head>
+<body class="category-page">
+<main>
+{header_html("projects")}
+<section class="section-block wrap page-head static-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('projects.html')}">Projects</a></li><li aria-current="page">Categories</li></ol></nav>
+  <h1>ESP32 Project Categories</h1>
+  <p class="section-sub">Choose a topic and browse public ESP32 projects with clear wiring, code, safety notes, and troubleshooting.</p>
+  <div class="grid grid-projects category-project-grid">{"".join(cards)}</div>
+</section>
+</main>
+{footer_html()}
+<script src="{UI_JS_SRC}" defer></script>
+</body>
+</html>"""
+
+
 def main():
     CATEGORY_DIR.mkdir(exist_ok=True)
     by_cat = defaultdict(list)
-    for p in PARENTS:
+    for p in public_projects(PARENTS):
         by_cat[p["category"]].append(p)
     written = 0
     for cat in sorted(by_cat):
@@ -270,6 +310,7 @@ def main():
         out = CATEGORY_DIR / f"{slug}.html"
         out.write_text(render_category_page(cat, projects), encoding="utf-8")
         written += 1
+    (CATEGORY_DIR / "index.html").write_text(render_category_index(by_cat), encoding="utf-8")
     print(f"Wrote {written} category landing pages in category/")
 
 

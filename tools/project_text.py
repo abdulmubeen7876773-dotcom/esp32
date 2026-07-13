@@ -9,6 +9,18 @@ def is_golden_project(project: dict) -> bool:
     return project.get("format") == "golden" or bool(project.get("project"))
 
 
+def public_projects(projects: list[dict]) -> list[dict]:
+    return [project for project in projects if is_golden_project(project)]
+
+
+def primary_difficulty(project: dict) -> str:
+    project_block = project.get("project") or {}
+    value = str(project_block.get("difficulty") or project.get("difficulty") or "").strip()
+    if value.lower() in {"beginner", "intermediate", "advanced"}:
+        return value.title()
+    return "Beginner"
+
+
 def project_title(project: dict) -> str:
     return str(project.get("title") or project.get("slug") or "").strip()
 

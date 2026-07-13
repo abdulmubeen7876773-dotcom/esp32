@@ -1,4 +1,4 @@
-﻿import html
+import html
 import json
 import re
 
@@ -110,9 +110,9 @@ LOGO_HTML = (
 )
 
 HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
-<div class="hero-float-card hero-float-card-a"><span class="hero-float-label">ðŸŒ¡ Temperature</span><strong>24Â°C</strong><span class="hero-float-sub">DHT22 Sensor</span></div>
-<div class="hero-float-card hero-float-card-b"><span class="hero-float-label">ðŸ“¡ Wi-Fi</span><strong>Connected!</strong><span class="hero-float-sub">Your project is live</span></div>
-<div class="hero-float-card hero-float-card-c"><span class="hero-float-label">ðŸ’¡ LED</span><strong>ON</strong><span class="hero-float-sub">You did it!</span></div>
+<div class="hero-float-card hero-float-card-a"><span class="hero-float-label">🌡 Temperature</span><strong>24°C</strong><span class="hero-float-sub">DHT22 Sensor</span></div>
+<div class="hero-float-card hero-float-card-b"><span class="hero-float-label">📡 Wi-Fi</span><strong>Connected!</strong><span class="hero-float-sub">Your project is live</span></div>
+<div class="hero-float-card hero-float-card-c"><span class="hero-float-label">💡 LED</span><strong>ON</strong><span class="hero-float-sub">You did it!</span></div>
 </div>"""
 
 NAV_ITEMS = [
@@ -241,7 +241,7 @@ def modern_card(
     rt = read_time_label(diff, slug)
     feat_badge = '<span class="badge badge-featured">Featured</span>' if p.get("featured") else ""
     media = card_media_html(cat, slug, p.get("featured_image") or p.get("image") or "")
-    return f"""<a class="{card_class} modern-card project-card-item" href="{esc(link)}"{extra_attrs}><div class="card-media-wrap">{media}</div><div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">â†’</span></span></div></div></a>"""
+    return f"""<a class="{card_class} modern-card project-card-item" href="{esc(link)}"{extra_attrs}><div class="card-media-wrap">{media}</div><div class="card-body"><div class="card-badges">{feat_badge}<span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge {badge_class(diff)}">{esc(diff.replace(' build',''))}</span><span class="badge badge-time">{esc(rt)}</span></div><h3>{esc(p['title'])}</h3>{desc_html}<div class="card-footer"><span class="btn btn-card">Read More<span aria-hidden="true">→</span></span></div></div></a>"""
 
 
 def normalize_public_path(path: str = "") -> str:
@@ -380,7 +380,7 @@ def social_meta(
 <meta property="og:image" content="{img}">
 <meta property="og:image:width" content="{OG_IMAGE_WIDTH}">
 <meta property="og:image:height" content="{OG_IMAGE_HEIGHT}">
-<meta property="og:image:alt" content="{esc(SITE_NAME)} â€” ESP32 projects and tutorials">
+<meta property="og:image:alt" content="{esc(SITE_NAME)} — ESP32 projects and tutorials">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{d}">
@@ -447,9 +447,9 @@ def pagination_nav_html(page: int, total_pages: int, page_path_fn, base: str = "
     prev_link = ""
     next_link = ""
     if page > 1:
-        prev_link = f'<a class="btn btn-secondary btn-sm" rel="prev" href="{esc(base + page_path_fn(page - 1))}">â† Previous</a>'
+        prev_link = f'<a class="btn btn-secondary btn-sm" rel="prev" href="{esc(base + page_path_fn(page - 1))}">← Previous</a>'
     if page < total_pages:
-        next_link = f'<a class="btn btn-secondary btn-sm" rel="next" href="{esc(base + page_path_fn(page + 1))}">Next â†’</a>'
+        next_link = f'<a class="btn btn-secondary btn-sm" rel="next" href="{esc(base + page_path_fn(page + 1))}">Next →</a>'
     nums = []
     for n in range(1, total_pages + 1):
         if n == page:
@@ -516,9 +516,9 @@ def head_html(
     pinterest = pinterest_verification_meta()
     extras = head_extras_html()
     redirect = CANONICAL_ROUTE_SCRIPT
-    return f"""{redirect}
+    return f"""<meta charset="utf-8">
+{redirect}
 {GOOGLE_TAG_HTML}
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t}</title>
 <meta name="description" content="{d}">
@@ -554,14 +554,14 @@ def sidebar_categories_html(active: str = "") -> str:
 
 
 def search_overlay_html() -> str:
-    return """<div class="search-overlay" id="search-overlay" hidden>
+    return """<div class="search-overlay" id="search-overlay" hidden inert>
   <div class="search-overlay-backdrop" data-close-search></div>
   <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
     <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
       <label class="visually-hidden" for="global-search">Search</label>
-      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guidesâ€¦" autocomplete="off">
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
       <button type="submit" class="btn btn-primary">Search</button>
-      <button type="button" class="search-close" data-close-search aria-label="Close search">Ã—</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
     </form>
     <div class="search-results" id="search-results-live" hidden></div>
   </div>
@@ -570,7 +570,7 @@ def search_overlay_html() -> str:
 
 def nav_spotlight_html(project_count: int | None = None) -> str:
     if project_count is None:
-        project_count = site_counts()["total_projects"]
+        project_count = site_counts()["golden_projects"]
     links = [
         ("Smart Thermostat", "projects/esp32-smart-thermostat.html"),
         ("BME280 Sensor", "components/bme280.html"),
@@ -593,7 +593,7 @@ def nav_spotlight_html(project_count: int | None = None) -> str:
 
 def header_html(active: str = "home", base: str = "", project_count: int | None = None):
     if project_count is None:
-        project_count = site_counts()["total_projects"]
+        project_count = site_counts()["golden_projects"]
     nav_links = []
     for key, label, href in NAV_ITEMS:
         cls = ' class="active"' if active == key else ""
@@ -623,10 +623,21 @@ def category_hero_html(title: str, description: str, category: str, badges: str 
     tc = thumb_class(category)
     icon = pick_icon(category)
     badge_html = f'<div class="hero-badges">{badges}</div>' if badges else ""
+    if title == "ESP32 Project Library":
+        breadcrumb = (
+            f'<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol>'
+            f'<li><a href="{site_href()}">Home</a></li><li aria-current="page">Projects</li></ol></nav>'
+        )
+    else:
+        breadcrumb = (
+            f'<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol>'
+            f'<li><a href="{site_href()}">Home</a></li><li><a href="{site_href("projects.html")}">Projects</a></li>'
+            f'<li aria-current="page">{esc(short_category(category))}</li></ol></nav>'
+        )
     return f"""<section class="category-banner reveal">
   <div class="wrap category-banner-inner">
     <div class="category-banner-content">
-      <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('projects.html')}">Projects</a></li><li aria-current="page">{esc(short_category(category))}</li></ol></nav>
+      {breadcrumb}
       <p class="hero-eyebrow">{esc(SITE_TAGLINE)}</p>
       <h1>{esc(title)}</h1>
       <p class="hero-sub">{esc(description)}</p>
@@ -642,12 +653,12 @@ def filters_bar_html(show_sort: bool = True) -> str:
     if show_sort:
         sort = """<select id="sort" aria-label="Sort projects">
       <option value="featured">Sort: Featured</option>
-      <option value="title">Sort: Aâ€“Z</option>
+      <option value="title">Sort: A–Z</option>
       <option value="category">Sort: Category</option>
     </select>"""
     return f"""<div class="filters-bar">
   <div class="search-panel">
-    <input id="q" type="search" placeholder="Search projectsâ€¦" aria-label="Search projects">
+    <input id="q" type="search" placeholder="Search projects…" aria-label="Search projects">
     {sort}
     <select id="cat" aria-label="Filter by category"><option value="">All categories</option></select>
     <select id="diff" aria-label="Filter by difficulty"><option value="">All levels</option><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
@@ -723,8 +734,8 @@ def home_featured_carousel(projects: list, card_fn) -> str:
     <div><p class="section-eyebrow">Editor's pick</p><h2>Featured Projects</h2></div>
     <div class="carousel-controls">
       <a class="btn btn-secondary btn-sm" href="/projects.html">View all</a>
-      <button type="button" class="carousel-btn" data-carousel="featured" data-dir="-1" aria-label="Scroll left">â€¹</button>
-      <button type="button" class="carousel-btn" data-carousel="featured" data-dir="1" aria-label="Scroll right">â€º</button>
+      <button type="button" class="carousel-btn" data-carousel="featured" data-dir="-1" aria-label="Scroll left">‹</button>
+      <button type="button" class="carousel-btn" data-carousel="featured" data-dir="1" aria-label="Scroll right">›</button>
     </div>
   </div>
   <div class="carousel-shell">
@@ -745,8 +756,8 @@ def home_latest_categories_section(projects: list) -> str:
             f'<a class="tutorial-row" href="{esc(p["href"])}">'
             f'<span class="tutorial-icon {tc}">{icon}</span>'
             f'<span class="tutorial-meta"><strong>{esc(p["title"])}</strong>'
-            f'<span class="tutorial-cat">{esc(short_category(p["category"]))} Â· 3 levels</span></span>'
-            f'<span class="tutorial-arrow" aria-hidden="true">â†’</span></a>'
+            f'<span class="tutorial-cat">{esc(short_category(p["category"]))} · {esc(p.get("difficulty", "Beginner"))}</span></span>'
+            f'<span class="tutorial-arrow" aria-hidden="true">→</span></a>'
         )
     cats = [
         ("IoT", "IoT Projects"),
@@ -811,7 +822,7 @@ def home_roadmap_stats_section(project_count: int) -> str:
       <div class="roadmap-connector roadmap-connector-premium" aria-hidden="true"></div>
       <div class="roadmap-node roadmap-node-premium"><span class="roadmap-num">03</span><div><strong class="badge badge-advanced">Advanced</strong><span>Wi-Fi dashboards, alerts, logging</span></div></div>
     </div>
-    <a class="roadmap-link" href="/projects.html">Browse all {project_count} projects â†’</a>
+    <a class="roadmap-link" href="/projects.html">Browse all {project_count} projects →</a>
   </div>
   <div class="portal-duo-col stats-panel">
     <div class="section-head-portal section-head-portal-inline">
@@ -820,9 +831,9 @@ def home_roadmap_stats_section(project_count: int) -> str:
     </div>
     <div class="portal-stats-grid">{stat_cards}</div>
     <div class="stats-highlights">
-      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">âš¡</span><span>Wiring tables on every guide</span></div>
-      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">âŒ¨</span><span>Copy-paste Arduino sketches</span></div>
-      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">ðŸ“±</span><span>Mobile-friendly layouts</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⚡</span><span>Wiring tables on every guide</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">⌨</span><span>Copy-paste Arduino sketches</span></div>
+      <div class="stats-highlight"><span class="stats-highlight-icon" aria-hidden="true">📱</span><span>Mobile-friendly layouts</span></div>
     </div>
   </div>
 </section>"""
@@ -830,12 +841,12 @@ def home_roadmap_stats_section(project_count: int) -> str:
 
 def home_why_section() -> str:
     items = [
-        ("ðŸŽ¯", "Beginner Friendly", "Start with breadboard builds and clear wiring tables."),
-        ("ðŸ”§", "Real Hardware Projects", "Every guide maps to sensors, relays, and ESP32 pins."),
-        ("ðŸ“Š", "Multiple Difficulty Levels", "Beginner, Intermediate, and Advanced on every project."),
-        ("âš¡", "Practical Learning", "Copy-paste Arduino code with troubleshooting steps."),
-        ("ðŸ“¡", "Modern ESP32 Techniques", "Wi-Fi, OLED, MQTT, and IoT dashboards."),
-        ("ðŸš€", "Production Ready Concepts", "Patterns you can ship beyond the prototype stage."),
+        ("🎯", "Beginner Friendly", "Start with breadboard builds and clear wiring tables."),
+        ("🔧", "Real Hardware Projects", "Every guide maps to sensors, relays, and ESP32 pins."),
+        ("📊", "Clear Difficulty Labels", "Each public project shows the difficulty level supported by its source content."),
+        ("⚡", "Practical Learning", "Copy-paste Arduino code with troubleshooting steps."),
+        ("📡", "Modern ESP32 Techniques", "Wi-Fi, OLED, MQTT, and IoT dashboards."),
+        ("🚀", "Production Ready Concepts", "Patterns you can ship beyond the prototype stage."),
     ]
     cards = "".join(
         f'<div class="why-card-premium reveal"><span class="why-icon" aria-hidden="true">{icon}</span><strong>{esc(title)}</strong><p>{esc(desc)}</p></div>'
@@ -860,7 +871,7 @@ def home_learning_paths_section() -> str:
         steps = p.get("steps_label") or f"{p.get('lessons', 0)} steps"
         cards.append(
             f'<a class="path-card" href="{esc(site_href(p.get("href", "learning.html")))}">'
-            f'<span class="path-icon" aria-hidden="true">{esc(p.get("icon", "ðŸš€"))}</span>'
+            f'<span class="path-icon" aria-hidden="true">{esc(p.get("icon", "🚀"))}</span>'
             f'<h3>{esc(p["title"])}</h3>'
             f'<p>{esc(p.get("description", ""))}</p>'
             f'<div class="path-meta">'
@@ -883,7 +894,7 @@ def home_components_section() -> str:
     cards = []
     for c in components:
         img = c.get("image", "")
-        img_html = f'<img src="{esc(img)}" alt="{esc(c["name"])}" loading="lazy">' if img else f'<span style="font-size:3rem">{esc(c.get("icon", "ðŸ”Œ"))}</span>'
+        img_html = f'<img src="{esc(img)}" alt="{esc(c["name"])}" loading="lazy">' if img else f'<span style="font-size:3rem">{esc(c.get("icon", "🔌"))}</span>'
         cards.append(
             f'<a class="component-card" href="{site_href(f"components/{c["slug"]}.html")}">'
             f'<div class="component-card-img">{img_html}</div>'
@@ -891,7 +902,7 @@ def home_components_section() -> str:
             f'<span class="badge badge-cat">{esc(c.get("category", ""))}</span>'
             f'<span class="badge {badge_class(c.get("difficulty", "Beginner"))}">{esc(c.get("difficulty", "Beginner"))}</span>'
             f'<h3>{esc(c["name"])}</h3>'
-            f'<span class="btn btn-card">View Guide<span aria-hidden="true">â†’</span></span>'
+            f'<span class="btn btn-card">View Guide<span aria-hidden="true">→</span></span>'
             f'</div></a>'
         )
     return f"""<section class="section-premium wrap reveal" id="components">
@@ -910,7 +921,6 @@ def home_featured_projects_section(projects: list, card_fn) -> str:
         "ESP32 Smart Irrigation System",
         "ESP32 Motion Security Alert",
         "ESP32 Home Climate Automation",
-        "ESP32 TinyML Sound Classifier",
     ]
     by_title = {p["title"]: p for p in projects}
     featured = [by_title[t] for t in featured_titles if t in by_title]
@@ -919,7 +929,7 @@ def home_featured_projects_section(projects: list, card_fn) -> str:
     cards = "".join(card_fn(p) for p in featured)
     return f"""<section class="section-premium wrap reveal" id="featured">
   <div class="section-head">
-    <div><p class="section-eyebrow">Build something cool</p><h2>Featured Projects</h2><p class="section-sub">Weather stations, robots, smart homes and more â€” pick a project and start building.</p></div>
+    <div><p class="section-eyebrow">Build something cool</p><h2>Featured Projects</h2><p class="section-sub">Weather stations, robots, smart homes and more — pick a project and start building.</p></div>
     <a class="btn btn-secondary btn-sm" href="{site_href('projects.html')}">All projects</a>
   </div>
   <div class="carousel-shell">
@@ -931,7 +941,7 @@ def home_featured_projects_section(projects: list, card_fn) -> str:
 def home_parents_section() -> str:
     return f"""<section class="section-premium wrap reveal audience-section audience-parents" id="for-parents">
   <div class="audience-panel">
-    <div class="audience-icon" aria-hidden="true">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§</div>
+    <div class="audience-icon" aria-hidden="true">👨‍👩‍👧</div>
     <div class="audience-content">
       <p class="section-eyebrow">For Parents</p>
       <h2>Safe, Simple Learning for Young Makers</h2>
@@ -945,7 +955,7 @@ def home_parents_section() -> str:
 def home_teachers_section() -> str:
     return f"""<section class="section-premium wrap reveal audience-section audience-teachers" id="for-teachers">
   <div class="audience-panel">
-    <div class="audience-icon" aria-hidden="true">ðŸ«</div>
+    <div class="audience-icon" aria-hidden="true">🏫</div>
     <div class="audience-content">
       <p class="section-eyebrow">For Teachers</p>
       <h2>Ready for Classroom Learning</h2>
@@ -969,11 +979,11 @@ def home_latest_guides_section(guides: list) -> str:
             f'<a class="mission-index-card guide-home-mission-card" href="{site_href(f"guides/{slug}.html")}">'
             f'{mission_meta_badges_html(g)}'
             f'<h3>{esc(headline)}</h3>'
-            f'<span class="btn btn-card">Start Mission<span aria-hidden="true">â†’</span></span></a>'
+            f'<span class="btn btn-card">Start Mission<span aria-hidden="true">→</span></span></a>'
         )
     return f"""<section class="section-premium wrap reveal" id="latest-guides">
   <div class="section-head">
-    <div><p class="section-eyebrow">Interactive journeys</p><h2>Mission Journeys</h2><p class="section-sub">Hands-on missions with stories, safety tips, and step-by-step builds â€” not boring articles.</p></div>
+    <div><p class="section-eyebrow">Interactive journeys</p><h2>Mission Journeys</h2><p class="section-sub">Hands-on missions with stories, safety tips, and step-by-step builds — not boring articles.</p></div>
     <a class="btn btn-secondary btn-sm" href="{site_href('guides.html')}">All guides</a>
   </div>
   <div class="guide-home-grid">{"".join(cards)}</div>
@@ -1019,7 +1029,7 @@ def home_cta_banner(project_count: int) -> str:
   <div class="portal-cta-inner">
     <div class="portal-cta-text">
       <h2>Start Building with ESP32 Today</h2>
-      <p>{project_count} parent projects Â· 3 difficulty levels Â· wiring &amp; code included</p>
+      <p>{project_count} parent projects · 3 difficulty levels · wiring &amp; code included</p>
     </div>
     <div class="portal-cta-actions">
       <a class="btn btn-primary" href="/projects.html">Explore Projects</a>
@@ -1034,18 +1044,18 @@ _V2_ARROW_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" str
 _V2_HERO_IMAGE = """<img class="v2-hero-board-svg" src="/assets/images/heroes/home-hero.webp" alt="ESP32 development workspace with breadboard, relays, and display" width="1024" height="572" fetchpriority="high" decoding="async">"""
 
 _V2_HERO_FLOAT_CARDS = """<div class="v2-hero-float-stack" aria-hidden="true">
-<div class="v2-hero-float-card v2-hero-float-card-a"><span class="v2-float-label">Temperature</span><strong>24.3Â°C</strong><span class="v2-float-sub">DHT22 Sensor</span></div>
+<div class="v2-hero-float-card v2-hero-float-card-a"><span class="v2-float-label">Temperature</span><strong>24.3°C</strong><span class="v2-float-sub">DHT22 Sensor</span></div>
 <div class="v2-hero-float-card v2-hero-float-card-b"><span class="v2-float-label">Wi-Fi</span><strong>Connected</strong><span class="v2-float-sub">Your project is live</span></div>
 <div class="v2-hero-float-card v2-hero-float-card-c"><span class="v2-float-label">LED</span><strong>ON</strong><span class="v2-float-sub">Mission complete</span></div>
 </div>"""
 
-_V2_SVG_WEATHER = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2wG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#0099FF" stop-opacity=".8"/><stop offset="1" stop-color="#00C896" stop-opacity=".6"/></linearGradient><filter id="v2wGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="70" y="30" width="140" height="100" rx="8" stroke="url(#v2wG)" stroke-width="2" fill="rgba(0,153,255,0.07)" filter="url(#v2wGl)"/><rect x="82" y="46" width="116" height="2" rx="1" fill="rgba(0,153,255,0.5)"/><text x="140" y="90" text-anchor="middle" fill="#0099FF" font-size="30" font-weight="700" font-family="JetBrains Mono,monospace">24Â°C</text><text x="140" y="112" text-anchor="middle" fill="rgba(0,200,150,0.75)" font-size="11" font-family="Inter,sans-serif">Humidity: 62% Â· UV: Low</text><line x1="105" y1="130" x2="105" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="140" y1="130" x2="140" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="175" y1="130" x2="175" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><rect x="88" y="165" width="104" height="64" rx="6" stroke="rgba(0,200,150,0.55)" stroke-width="1.5" fill="rgba(0,200,150,0.05)"/><text x="140" y="193" text-anchor="middle" fill="rgba(0,200,150,0.7)" font-size="10" font-family="JetBrains Mono,monospace">DHT22</text><text x="140" y="210" text-anchor="middle" fill="rgba(0,200,150,0.45)" font-size="9" font-family="Inter,sans-serif">Temperature &amp; Humidity</text><line x1="105" y1="229" x2="105" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><line x1="140" y1="229" x2="140" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><line x1="175" y1="229" x2="175" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><path d="M220 80 Q230 70 240 80" stroke="rgba(0,153,255,0.5)" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M214 74 Q228 58 242 74" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="228" cy="87" r="3" fill="rgba(0,153,255,0.65)"/></svg>"""
+_V2_SVG_WEATHER = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2wG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#0099FF" stop-opacity=".8"/><stop offset="1" stop-color="#00C896" stop-opacity=".6"/></linearGradient><filter id="v2wGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="70" y="30" width="140" height="100" rx="8" stroke="url(#v2wG)" stroke-width="2" fill="rgba(0,153,255,0.07)" filter="url(#v2wGl)"/><rect x="82" y="46" width="116" height="2" rx="1" fill="rgba(0,153,255,0.5)"/><text x="140" y="90" text-anchor="middle" fill="#0099FF" font-size="30" font-weight="700" font-family="JetBrains Mono,monospace">24°C</text><text x="140" y="112" text-anchor="middle" fill="rgba(0,200,150,0.75)" font-size="11" font-family="Inter,sans-serif">Humidity: 62% · UV: Low</text><line x1="105" y1="130" x2="105" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="140" y1="130" x2="140" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="175" y1="130" x2="175" y2="165" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" stroke-dasharray="3,3"/><rect x="88" y="165" width="104" height="64" rx="6" stroke="rgba(0,200,150,0.55)" stroke-width="1.5" fill="rgba(0,200,150,0.05)"/><text x="140" y="193" text-anchor="middle" fill="rgba(0,200,150,0.7)" font-size="10" font-family="JetBrains Mono,monospace">DHT22</text><text x="140" y="210" text-anchor="middle" fill="rgba(0,200,150,0.45)" font-size="9" font-family="Inter,sans-serif">Temperature &amp; Humidity</text><line x1="105" y1="229" x2="105" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><line x1="140" y1="229" x2="140" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><line x1="175" y1="229" x2="175" y2="250" stroke="rgba(0,153,255,0.25)" stroke-width="1.5"/><path d="M220 80 Q230 70 240 80" stroke="rgba(0,153,255,0.5)" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M214 74 Q228 58 242 74" stroke="rgba(0,153,255,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="228" cy="87" r="3" fill="rgba(0,153,255,0.65)"/></svg>"""
 
 _V2_SVG_IRRIGATION = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2iG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#00C896" stop-opacity=".9"/><stop offset="1" stop-color="#0099FF" stop-opacity=".5"/></linearGradient><filter id="v2iGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="140" y1="240" x2="140" y2="150" stroke="#00C896" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><path d="M140 175 C140 175 115 160 112 140 C128 142 140 155 140 175Z" fill="rgba(0,200,150,0.16)" stroke="#00C896" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/><path d="M140 155 C140 155 165 140 168 120 C152 122 140 135 140 155Z" fill="rgba(0,200,150,0.16)" stroke="#00C896" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/><path d="M140 130 C140 130 155 110 152 92 C138 96 130 112 140 130Z" fill="rgba(0,200,150,0.2)" stroke="#00C896" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/><rect x="115" y="225" width="50" height="18" rx="4" stroke="rgba(0,200,150,0.55)" stroke-width="1.5" fill="rgba(0,200,150,0.08)" filter="url(#v2iGl)"/><text x="140" y="239" text-anchor="middle" fill="rgba(0,200,150,0.65)" font-size="9" font-family="JetBrains Mono,monospace">SOIL SENSOR</text><line x1="70" y1="243" x2="210" y2="243" stroke="rgba(0,200,150,0.18)" stroke-width="2" stroke-dasharray="4,4"/><ellipse cx="65" cy="80" rx="8" ry="11" fill="rgba(0,153,255,0.3)" stroke="rgba(0,153,255,0.55)" stroke-width="1.5"/><ellipse cx="88" cy="65" rx="6" ry="9" fill="rgba(0,153,255,0.22)" stroke="rgba(0,153,255,0.45)" stroke-width="1.2"/><ellipse cx="50" cy="55" rx="5" ry="7" fill="rgba(0,153,255,0.16)" stroke="rgba(0,153,255,0.35)" stroke-width="1"/><path d="M75 85 Q100 100 115 200" stroke="rgba(0,153,255,0.15)" stroke-width="1.5" fill="none" stroke-dasharray="3,4"/><rect x="175" y="155" width="80" height="52" rx="6" stroke="rgba(0,200,150,0.38)" stroke-width="1.5" fill="rgba(0,200,150,0.05)"/><text x="215" y="175" text-anchor="middle" fill="#00C896" font-size="9" font-family="Inter,sans-serif">Soil: 45%</text><text x="215" y="190" text-anchor="middle" fill="rgba(0,200,150,0.55)" font-size="9" font-family="Inter,sans-serif">Valve: OPEN</text><text x="215" y="201" text-anchor="middle" fill="rgba(0,200,150,0.38)" font-size="8" font-family="JetBrains Mono,monospace">Auto Mode</text></svg>"""
 
 _V2_SVG_SECURITY = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2sG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#FF6B6B" stop-opacity=".9"/><stop offset="1" stop-color="#FFD54F" stop-opacity=".5"/></linearGradient><filter id="v2sGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M140 30 L205 56 L205 116 C205 158 173 190 140 204 C107 190 75 158 75 116 L75 56 Z" stroke="url(#v2sG)" stroke-width="2.5" fill="rgba(255,107,107,0.06)" filter="url(#v2sGl)"/><path d="M110 116 L132 138 L170 96" stroke="#FF6B6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/><path d="M70 200 Q75 180 90 170" stroke="rgba(255,107,107,0.28)" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M58 215 Q65 185 88 168" stroke="rgba(255,107,107,0.18)" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M45 230 Q55 190 86 165" stroke="rgba(255,107,107,0.1)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="75" cy="200" r="12" stroke="rgba(255,107,107,0.48)" stroke-width="1.5" fill="rgba(255,107,107,0.08)"/><circle cx="75" cy="200" r="5" fill="rgba(255,107,107,0.4)"/><rect x="185" y="170" width="68" height="56" rx="8" stroke="rgba(255,107,107,0.38)" stroke-width="1.5" fill="rgba(255,107,107,0.05)"/><text x="219" y="192" text-anchor="middle" fill="#FF6B6B" font-size="9" font-family="Inter,sans-serif" font-weight="600">ALERT</text><text x="219" y="207" text-anchor="middle" fill="rgba(255,107,107,0.55)" font-size="8" font-family="JetBrains Mono,monospace">Motion: YES</text><text x="219" y="218" text-anchor="middle" fill="rgba(255,107,107,0.38)" font-size="8" font-family="Inter,sans-serif">SMS Sent</text><circle cx="219" cy="232" r="4" fill="#FF6B6B" opacity=".75"/></svg>"""
 
-_V2_SVG_CLIMATE = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2cG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#A855F7" stop-opacity=".9"/><stop offset="1" stop-color="#0099FF" stop-opacity=".5"/></linearGradient><filter id="v2cGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 150 L140 60 L230 150 L230 240 L50 240 Z" stroke="url(#v2cG)" stroke-width="2.5" fill="rgba(168,85,247,0.05)" stroke-linejoin="round" filter="url(#v2cGl)"/><rect x="118" y="200" width="44" height="40" rx="3" stroke="rgba(168,85,247,0.38)" stroke-width="1.5" fill="rgba(168,85,247,0.05)"/><rect x="72" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="90" y1="175" x2="90" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="72" y1="190" x2="108" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="172" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="190" y1="175" x2="190" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="172" y1="190" x2="208" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="104" y="120" width="72" height="50" rx="8" stroke="rgba(168,85,247,0.48)" stroke-width="1.5" fill="rgba(168,85,247,0.08)"/><text x="140" y="143" text-anchor="middle" fill="#A855F7" font-size="16" font-weight="700" font-family="JetBrains Mono,monospace">22Â°C</text><text x="140" y="159" text-anchor="middle" fill="rgba(168,85,247,0.55)" font-size="9" font-family="Inter,sans-serif">AUTO Â· COOL</text><circle cx="35" cy="75" r="4" fill="rgba(168,85,247,0.48)"/><circle cx="245" cy="75" r="4" fill="rgba(0,153,255,0.48)"/><text x="35" y="65" text-anchor="middle" fill="rgba(168,85,247,0.38)" font-size="8" font-family="Inter,sans-serif">WiFi</text><text x="245" y="65" text-anchor="middle" fill="rgba(0,153,255,0.38)" font-size="8" font-family="Inter,sans-serif">Cloud</text><line x1="35" y1="79" x2="55" y2="100" stroke="rgba(168,85,247,0.18)" stroke-width="1" stroke-dasharray="3,3"/><line x1="245" y1="79" x2="225" y2="100" stroke="rgba(0,153,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/></svg>"""
+_V2_SVG_CLIMATE = """<svg viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="v2cG" x1="0" y1="0" x2="280" y2="280"><stop stop-color="#A855F7" stop-opacity=".9"/><stop offset="1" stop-color="#0099FF" stop-opacity=".5"/></linearGradient><filter id="v2cGl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 150 L140 60 L230 150 L230 240 L50 240 Z" stroke="url(#v2cG)" stroke-width="2.5" fill="rgba(168,85,247,0.05)" stroke-linejoin="round" filter="url(#v2cGl)"/><rect x="118" y="200" width="44" height="40" rx="3" stroke="rgba(168,85,247,0.38)" stroke-width="1.5" fill="rgba(168,85,247,0.05)"/><rect x="72" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="90" y1="175" x2="90" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="72" y1="190" x2="108" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="172" y="175" width="36" height="30" rx="3" stroke="rgba(168,85,247,0.32)" stroke-width="1.5" fill="rgba(168,85,247,0.07)"/><line x1="190" y1="175" x2="190" y2="205" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><line x1="172" y1="190" x2="208" y2="190" stroke="rgba(168,85,247,0.25)" stroke-width="1"/><rect x="104" y="120" width="72" height="50" rx="8" stroke="rgba(168,85,247,0.48)" stroke-width="1.5" fill="rgba(168,85,247,0.08)"/><text x="140" y="143" text-anchor="middle" fill="#A855F7" font-size="16" font-weight="700" font-family="JetBrains Mono,monospace">22°C</text><text x="140" y="159" text-anchor="middle" fill="rgba(168,85,247,0.55)" font-size="9" font-family="Inter,sans-serif">AUTO · COOL</text><circle cx="35" cy="75" r="4" fill="rgba(168,85,247,0.48)"/><circle cx="245" cy="75" r="4" fill="rgba(0,153,255,0.48)"/><text x="35" y="65" text-anchor="middle" fill="rgba(168,85,247,0.38)" font-size="8" font-family="Inter,sans-serif">WiFi</text><text x="245" y="65" text-anchor="middle" fill="rgba(0,153,255,0.38)" font-size="8" font-family="Inter,sans-serif">Cloud</text><line x1="35" y1="79" x2="55" y2="100" stroke="rgba(168,85,247,0.18)" stroke-width="1" stroke-dasharray="3,3"/><line x1="245" y1="79" x2="225" y2="100" stroke="rgba(0,153,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/></svg>"""
 
 
 _V2_TRUST_ICON_PROJECTS = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.8" rx="3"/></svg>'
@@ -1057,9 +1067,9 @@ _V2_TRUST_ICON_HARDWARE = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="tru
 
 _V2_TRUST_STRIP = """<div class="v2-trust-strip" aria-label="ESP32 Engine platform highlights">
   <div class="wrap v2-trust-strip-inner">
-    <span class="v2-trust-item">""" + _V2_TRUST_ICON_PROJECTS + """<strong>50+</strong><span>Projects</span></span>
-    <span class="v2-trust-item">""" + _V2_TRUST_ICON_GUIDES + """<strong>40+</strong><span>Guides</span></span>
-    <span class="v2-trust-item">""" + _V2_TRUST_ICON_COMPONENTS + """<strong>7</strong><span>Components</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_PROJECTS + f"""<strong>{site_counts()["golden_projects"]}</strong><span>Projects</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_GUIDES + f"""<strong>{site_counts()["guides"]}</strong><span>Guides</span></span>
+    <span class="v2-trust-item">""" + _V2_TRUST_ICON_COMPONENTS + f"""<strong>{site_counts()["components"]}</strong><span>Components</span></span>
     <span class="v2-trust-item">""" + _V2_TRUST_ICON_FREE + """<strong>100%</strong><span>Free</span></span>
     <span class="v2-trust-item">""" + _V2_TRUST_ICON_RESPONSIVE + """<span>Responsive</span></span>
     <span class="v2-trust-item">""" + _V2_TRUST_ICON_HARDWARE + """<span>Real Hardware</span></span>
@@ -1068,7 +1078,7 @@ _V2_TRUST_STRIP = """<div class="v2-trust-strip" aria-label="ESP32 Engine platfo
 
 
 def home_v2_declaration() -> str:
-    """Section 1 â€” Homepage v2: The Declaration (full-viewport hero)."""
+    """Section 1 — Homepage v2: The Declaration (full-viewport hero)."""
     return f"""<section class="v2-declaration" aria-labelledby="v2-hero-heading">
   <div class="wrap v2-declaration-inner">
     <div class="v2-declaration-content">
@@ -1091,12 +1101,12 @@ def home_v2_declaration() -> str:
 
 
 def home_v2_proof() -> str:
-    """Section 2 â€” Homepage v2: Proof of Possibility (full-bleed showcase, links to live projects)."""
+    """Section 2 — Homepage v2: Proof of Possibility (full-bleed showcase, links to live projects)."""
     panels = [
-        ("v2-panel-weather", _V2_SVG_WEATHER, "esp32-iot-weather-station", "Weather Station â€” ESP32 + DHT22"),
-        ("v2-panel-irrigation", _V2_SVG_IRRIGATION, "esp32-smart-irrigation-system", "Smart Irrigation â€” Soil Sensor + Relay"),
-        ("v2-panel-security", _V2_SVG_SECURITY, "esp32-motion-security-alert", "Motion Security â€” ESP32 + PIR"),
-        ("v2-panel-climate", _V2_SVG_CLIMATE, "esp32-smart-thermostat", "Smart Thermostat â€” DHT22 + Relay"),
+        ("v2-panel-weather", _V2_SVG_WEATHER, "esp32-iot-weather-station", "Weather Station — ESP32 + DHT22"),
+        ("v2-panel-irrigation", _V2_SVG_IRRIGATION, "esp32-smart-irrigation-system", "Smart Irrigation — Soil Sensor + Relay"),
+        ("v2-panel-security", _V2_SVG_SECURITY, "esp32-motion-security-alert", "Motion Security — ESP32 + PIR"),
+        ("v2-panel-climate", _V2_SVG_CLIMATE, "esp32-smart-thermostat", "Smart Thermostat — DHT22 + Relay"),
     ]
     panel_html = ""
     for cls, svg, slug, tag in panels:
@@ -1126,14 +1136,14 @@ def home_v2_proof() -> str:
 
 
 def home_v2_engine(guides: list) -> str:
-    """Section 3 â€” Homepage v2: The Engine (methodology)."""
-    from guide_mission import mission_meta_badges_html  # noqa: F401 â€“ kept for parity
+    """Section 3 — Homepage v2: The Engine (methodology)."""
+    from guide_mission import mission_meta_badges_html  # noqa: F401 – kept for parity
 
     by_slug = {g.get("slug", ""): g for g in guides}
     ordered = [by_slug[slug] for slug in FOUNDATION_HOME_MISSION_SLUGS if slug in by_slug]
 
     pillars = [
-        ("LEARN", "Focused Theory", "Only what you need for the next step â€” no filler, no detours."),
+        ("LEARN", "Focused Theory", "Only what you need for the next step — no filler, no detours."),
         ("BUILD", "A Guided Project", "Build something real from scratch, wire to final firmware."),
         ("SHIP", "A Working Circuit", "A physical project you understand completely. Ship it."),
     ]
@@ -1156,7 +1166,7 @@ def home_v2_engine(guides: list) -> str:
             guide = ordered[i - 1]
             slug = guide["slug"]
             headline = (guide.get("headline") or guide.get("title", "")).split("|")[0].strip()
-            short = (headline[:24] + "â€¦") if len(headline) > 24 else headline
+            short = (headline[:24] + "…") if len(headline) > 24 else headline
             href = site_href(f"guides/{slug}.html")
             arc_nodes.append(
                 f'<a class="v2-arc-node is-milestone" href="{esc(href)}" title="{esc(headline)}">'
@@ -1181,7 +1191,7 @@ def home_v2_engine(guides: list) -> str:
     <p class="v2-engine-sub">Every mission ends with something real you built. Not a quiz. Not a certificate. A working project.</p>
     <div class="v2-engine-pillars">{pillar_html}</div>
     <div class="v2-mission-arc">
-      <p class="v2-arc-label-row">Mission path â€” start here, ship something every step</p>
+      <p class="v2-arc-label-row">Mission path — start here, ship something every step</p>
       <div class="v2-arc-track">
         <div class="v2-arc-spine" aria-hidden="true"></div>
         {"".join(arc_nodes)}
@@ -1192,13 +1202,13 @@ def home_v2_engine(guides: list) -> str:
 
 
 def home_v2_invitation() -> str:
-    """Section 4 â€” Homepage v2: The Invitation (final CTA)."""
+    """Section 4 — Homepage v2: The Invitation (final CTA)."""
     return f"""<section class="v2-invitation" aria-labelledby="v2-invite-heading">
   <div class="wrap v2-invitation-inner reveal">
     <h2 id="v2-invite-heading" class="v2-invitation-heading">Your first project<br>ships in two hours.</h2>
     <p class="v2-invitation-sub">No prior experience needed.<br>A USB cable and curiosity are enough.</p>
     <div>
-      <a class="v2-btn-invitation" href="{site_href('guides/blink-led-esp32.html')}">Start Mission 01 â€” Free {_V2_ARROW_ICON}</a>
+      <a class="v2-btn-invitation" href="{site_href('guides/blink-led-esp32.html')}">Start Mission 01 — Free {_V2_ARROW_ICON}</a>
     </div>
     <p class="v2-no-account">No account required to begin.</p>
   </div>
@@ -1209,7 +1219,7 @@ def home_v2_showcase_js() -> str:
     return ""
 
 
-# â”€â”€ Homepage v3 Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Homepage v3 Constants ─────────────────────────────────────────────────
 
 _V3_LED_SVG = """<svg viewBox="0 0 280 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <circle cx="200" cy="168" r="60" fill="rgba(255,213,79,0.06)"/>
@@ -1232,7 +1242,7 @@ _V3_LED_SVG = """<svg viewBox="0 0 280 240" fill="none" xmlns="http://www.w3.org
   <text x="164" y="73" fill="rgba(0,200,150,0.55)" font-size="7.5" font-family="JetBrains Mono,monospace">GPIO2</text>
   <text x="164" y="103" fill="rgba(255,255,255,0.2)" font-size="7.5" font-family="JetBrains Mono,monospace">GND</text>
   <text x="213" y="119" fill="rgba(255,213,79,0.55)" font-size="7.5" font-family="JetBrains Mono,monospace">220Î©</text>
-  <text x="200" y="222" text-anchor="middle" fill="rgba(255,213,79,0.4)" font-size="8" font-family="JetBrains Mono,monospace" letter-spacing="2">â— BLINK</text>
+  <text x="200" y="222" text-anchor="middle" fill="rgba(255,213,79,0.4)" font-size="8" font-family="JetBrains Mono,monospace" letter-spacing="2">● BLINK</text>
 </svg>"""
 
 
@@ -1376,11 +1386,11 @@ def home_build_experiment_upgrade(projects: list[dict]) -> str:
 
 
 def home_parent_teacher_split() -> str:
-    return f"""<section class="home-adults" aria-labelledby="home-adults-heading"><div class="wrap"><p class="home-section-eyebrow">For adults helping learners</p><h2 id="home-adults-heading">Parents and teachers get clear next steps</h2><div class="home-split-grid"><article><h3>Parents</h3><p>Start with low-voltage projects, supervise wiring changes, and ask learners to explain what changed before powering the circuit again.</p><ul><li>Safe beginner starting points</li><li>Supervision notes inside Golden projects</li><li>Plain-language learning outcomes</li></ul><a href="{site_href('parents.html')}">Parent guide</a></article><article><h3>Teachers</h3><p>Use compact missions and Golden projects for short classroom experiments, skill progression, and evidence-based troubleshooting.</p><ul><li>Classroom-suitable project paths</li><li>Experiment prompts and testing checklists</li><li>Progression from GPIO to IoT</li></ul><a href="{site_href('teachers.html')}">Teacher guide</a></article></div></div></section>"""
+    return f"""<section class="home-adults" aria-labelledby="home-adults-heading"><div class="wrap"><p class="home-section-eyebrow">For adults helping learners</p><h2 id="home-adults-heading">Parents and teachers get clear next steps</h2><div class="home-split-grid"><article><h3>Parents</h3><p>Start with low-voltage projects, supervise wiring changes, and ask learners to explain what changed before powering the circuit again.</p><ul><li>Safe beginner starting points</li><li>Supervision notes inside fully reviewed projects</li><li>Plain-language learning outcomes</li></ul><a href="{site_href('parents.html')}">Parent guide</a></article><article><h3>Teachers</h3><p>Use compact missions and fully reviewed projects for short classroom experiments, skill progression, and evidence-based troubleshooting.</p><ul><li>Classroom-suitable project paths</li><li>Experiment prompts and testing checklists</li><li>Progression from GPIO to IoT</li></ul><a href="{site_href('teachers.html')}">Teacher guide</a></article></div></div></section>"""
 
 
 def home_discovery_links(counts: dict[str, int]) -> str:
-    links = [(f"All Projects ({counts['total_projects']})", "projects.html"), (f"Guides ({counts['guides']})", "guides.html"), (f"Components ({counts['components']})", "components.html"), ("Categories", "projects.html"), ("Learning/Missions", "learning.html"), ("Parents", "parents.html"), ("Teachers", "teachers.html")]
+    links = [(f"All Projects ({counts['golden_projects']})", "projects.html"), (f"Guides ({counts['guides']})", "guides.html"), (f"Components ({counts['components']})", "components.html"), ("Categories", "projects.html"), ("Learning/Missions", "learning.html"), ("Parents", "parents.html"), ("Teachers", "teachers.html")]
     return f"""<section class="home-discovery" aria-labelledby="home-discovery-heading"><div class="wrap"><h2 id="home-discovery-heading">Keep exploring</h2><div class="home-discovery-links">{"".join(f'<a href="{site_href(href)}">{esc(label)}</a>' for label, href in links)}</div></div></section>"""
 
 
@@ -1417,13 +1427,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 def home_v3_journey() -> str:
-    """Section 3 â€” Homepage v3: Choose Your Journey (row links, not cards). White bg."""
+    """Section 3 — Homepage v3: Choose Your Journey (row links, not cards). White bg."""
     counts = site_counts()
     PATHS = [
         {
             "num": "01", "level": "Beginner", "cls": "beginner",
             "title": "First Circuits",
-            "desc": "Start from zero. Blink an LED, read a sensor, display data. No experience needed â€” just curiosity.",
+            "desc": "Start from zero. Blink an LED, read a sensor, display data. No experience needed — just curiosity.",
             "meta": f"{counts['missions']} missions",
             "href": "guides.html",
         },
@@ -1431,14 +1441,14 @@ def home_v3_journey() -> str:
             "num": "02", "level": "Builder", "cls": "intermediate",
             "title": "Real Projects",
             "desc": "Build weather stations, robots, access control, and IoT dashboards with wiring tables and Arduino code.",
-            "meta": f"{counts['total_projects']} projects",
+            "meta": f"{counts['golden_projects']} projects",
             "href": "projects.html",
         },
         {
             "num": "03", "level": "Engineer", "cls": "advanced",
             "title": "Advanced Systems",
-            "desc": "IoT dashboards, TinyML on-device AI, automated control systems, and production-grade firmware.",
-            "meta": f"{counts['golden_projects']} Golden projects",
+            "desc": "IoT dashboards, automation projects, camera builds, and safety-aware control systems.",
+            "meta": f"{counts['golden_projects']} reviewed projects",
             "href": "learning.html",
         },
     ]
@@ -1468,15 +1478,15 @@ def home_v3_journey() -> str:
 
 
 def home_v3_roadmap(guides: list) -> str:
-    """Section 4 â€” Homepage v3: Learning Roadmap (LEARN/BUILD/SHIP + mission arc). Off-white bg."""
+    """Section 4 — Homepage v3: Learning Roadmap (LEARN/BUILD/SHIP + mission arc). Off-white bg."""
     counts = site_counts()
     by_slug = {g.get("slug", ""): g for g in guides}
     ordered = [by_slug[slug] for slug in FOUNDATION_HOME_MISSION_SLUGS if slug in by_slug]
 
     PILLARS = [
-        ("01", "Learn", "Only what you need for the next step â€” focused theory through guided missions, not textbook chapters."),
+        ("01", "Learn", "Only what you need for the next step — focused theory through guided missions, not textbook chapters."),
         ("02", "Build", "Build something real from wire to firmware. Every project ends with a working circuit you fully understand."),
-        ("03", "Ship", "Go beyond the breadboard â€” publish data to the web, add a display, and grow toward connected devices."),
+        ("03", "Ship", "Go beyond the breadboard — publish data to the web, add a display, and grow toward connected devices."),
     ]
     pillar_html = "".join(
         f'<div class="v3-roadmap-pillar">'
@@ -1519,11 +1529,11 @@ def home_v3_roadmap(guides: list) -> str:
   <div class="wrap">
     <p class="v3-roadmap-eyebrow">The Method</p>
     <h2 id="v3-roadmap-heading" class="v3-roadmap-heading">Learn. Build. Ship.</h2>
-    <p class="v3-roadmap-sub">Every project on ESP32 Engine follows a three-phase progression â€” from understanding the parts to shipping something real.</p>
+    <p class="v3-roadmap-sub">Every project on ESP32 Engine follows a three-phase progression — from understanding the parts to shipping something real.</p>
     <div class="v3-roadmap-pillars">{pillar_html}</div>
     <div class="v3-roadmap-separator"></div>
     <div class="v3-roadmap-arc-header">
-      <span class="v3-roadmap-arc-title">Mission Track â€” {counts['missions']} missions</span>
+      <span class="v3-roadmap-arc-title">Mission Track — {counts['missions']} missions</span>
       <a class="v3-roadmap-arc-cta" href="/guides.html">Explore all guides {cta_arrow}</a>
     </div>
     <div class="v3-arc-track">
@@ -1566,7 +1576,7 @@ def home_v3_academy() -> str:
     return f"""<section class="v3-top-picks reveal" aria-labelledby="v3-academy-heading">
   <div class="wrap">
     <p class="v3-top-picks-eyebrow">ESP32 Academy</p>
-    <h2 id="v3-academy-heading" class="v3-top-picks-heading">Course 01 â€” ESP32 Foundations</h2>
+    <h2 id="v3-academy-heading" class="v3-top-picks-heading">Course 01 — ESP32 Foundations</h2>
     <p class="v3-top-picks-sub">A structured learning journey from your first LED to confident digital inputs.</p>
     <div class="v3-top-picks-grid">
       <div class="v3-top-picks-col">
@@ -1587,7 +1597,7 @@ def home_v3_academy() -> str:
 
 
 def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
-    """Section â€” Top 3 projects, guides, and components from live catalog."""
+    """Section — Top 3 projects, guides, and components from live catalog."""
     arrow = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
     def project_rows():
@@ -1595,7 +1605,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
         for p in _pick_by_slug(projects, TOP_PROJECT_SLUGS):
             desc = card_description(p, 88)
             if len(desc) > 88:
-                desc = desc[:85].rstrip() + "â€¦"
+                desc = desc[:85].rstrip() + "…"
             feat = '<span class="v3-pick-badge">Featured</span>' if p.get("featured") else ""
             image = p.get("featured_image") or p.get("image") or ""
             image_html = ""
@@ -1622,7 +1632,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
             title = (g.get("headline") or g.get("title", "")).split("|")[0].strip()
             desc = g.get("lead") or g.get("meta_description") or ""
             if len(desc) > 88:
-                desc = desc[:85].rstrip() + "â€¦"
+                desc = desc[:85].rstrip() + "…"
             mission = ""
             if g.get("format") == "mission" or g.get("mission"):
                 num = g.get("mission_number") or g.get("sort_order") or ""
@@ -1643,7 +1653,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
         for c in _pick_by_slug(components, TOP_COMPONENT_SLUGS):
             summary = c.get("summary") or ""
             if len(summary) > 88:
-                summary = summary[:85].rstrip() + "â€¦"
+                summary = summary[:85].rstrip() + "…"
             rows.append(
                 f'<a class="v3-pick-row" href="{site_href(f"components/{c["slug"]}.html")}">'
                 f'<span class="v3-pick-row-main">'
@@ -1659,7 +1669,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
   <div class="wrap">
     <p class="v3-top-picks-eyebrow">Launch picks</p>
     <h2 id="v3-top-picks-heading" class="v3-top-picks-heading">Top projects, guides, and components</h2>
-    <p class="v3-top-picks-sub">Hand-picked from the live catalog â€” start with any row below.</p>
+    <p class="v3-top-picks-sub">Hand-picked from the live catalog — start with any row below.</p>
     <div class="v3-top-picks-grid">
       <div class="v3-top-picks-col">
         <h3 class="v3-top-picks-col-title">Projects</h3>
@@ -1682,14 +1692,14 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
 
 
 def home_v3_mission_feature(guides: list) -> str:
-    """Section 5 â€” Homepage v3: Featured Mission (Mission 01 spotlight). Blue-teal gradient bg."""
+    """Section 5 — Homepage v3: Featured Mission (Mission 01 spotlight). Blue-teal gradient bg."""
     mission_guides = [g for g in guides if g.get("format") == "mission" or g.get("mission")]
     ordered = sorted(mission_guides or guides, key=lambda g: (g.get("phase", 99), g.get("sort_order", 99)))
     featured = ordered[0] if ordered else None
     slug = featured["slug"] if featured else "blink-led-esp32"
     headline = (featured.get("headline") or featured.get("title", "Blink an LED with ESP32")).split("|")[0].strip() if featured else "Blink an LED with ESP32"
-    lead = (featured.get("lead") or "Your first real ESP32 project â€” one LED, a few wires, and code you write yourself.") if featured else "Your first real ESP32 project â€” one LED, a few wires, and code you write yourself."
-    time_label = (featured.get("reading_time") or "10â€“15 min") if featured else "10â€“15 min"
+    lead = (featured.get("lead") or "Your first real ESP32 project — one LED, a few wires, and code you write yourself.") if featured else "Your first real ESP32 project — one LED, a few wires, and code you write yourself."
+    time_label = (featured.get("reading_time") or "10–15 min") if featured else "10–15 min"
     href = site_href(f"guides/{slug}.html")
     BUILD_POINTS = [
         "A working LED circuit on a breadboard",
@@ -1719,10 +1729,10 @@ def home_v3_mission_feature(guides: list) -> str:
 
 
 def home_v3_component_feature() -> str:
-    """Section 6 â€” Homepage v3: Featured Component (BME280 spotlight). White bg."""
+    """Section 6 — Homepage v3: Featured Component (BME280 spotlight). White bg."""
     SPECS = [
         ("Measures", "Temperature, humidity, and pressure"),
-        ("Voltage", "3.3 V â€” direct ESP32 compatible"),
+        ("Voltage", "3.3 V — direct ESP32 compatible"),
         ("Best for", "Weather stations, altitude tracking"),
     ]
     spec_items = "".join(
@@ -1743,7 +1753,7 @@ def home_v3_component_feature() -> str:
     <div class="v3-component-content">
       <p class="v3-component-eyebrow">Featured Component</p>
       <h2 class="v3-component-name">BME280 Environmental Sensor</h2>
-      <p class="v3-component-summary">One I2C chip reads temperature, humidity, and barometric pressure â€” the upgrade path when you want real weather data from a single module.</p>
+      <p class="v3-component-summary">One I2C chip reads temperature, humidity, and barometric pressure — the upgrade path when you want real weather data from a single module.</p>
       <ul class="v3-spec-list">{spec_items}</ul>
       <a class="v3-btn-component" href="/components/bme280.html">Learn about BME280 {arrow}</a>
     </div>
@@ -1752,7 +1762,7 @@ def home_v3_component_feature() -> str:
 
 
 def home_v3_project_feature() -> str:
-    """Section 7 â€” Homepage v3: Featured Project (Weather Station spotlight). Dark bg."""
+    """Section 7 — Homepage v3: Featured Project (Weather Station spotlight). Dark bg."""
     LEVELS = [("Beginner", "is-beginner"), ("Intermediate", "is-intermediate"), ("Advanced", "is-advanced")]
     PARTS = ["ESP32 DevKit", "DHT22 Sensor", "220 Î© Resistor"]
     level_chips = "".join(
@@ -1772,9 +1782,9 @@ def home_v3_project_feature() -> str:
     <div class="v3-project-content">
       <p class="v3-project-eyebrow">Featured Project</p>
       <h2 class="v3-project-name">ESP32 Mini Weather Station</h2>
-      <p class="v3-project-desc">Build a sensor that reads temperature and humidity â€” then displays live data on your screen. The same circuit used in classroom weather stations.</p>
+      <p class="v3-project-desc">Build a sensor that reads temperature and humidity — then displays live data on your screen. The same circuit used in classroom weather stations.</p>
       <div class="v3-project-levels">{level_chips}</div>
-      <p style="font-size:0.8125rem;color:rgba(230,237,243,0.4);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Parts youâ€™ll use</p>
+      <p style="font-size:0.8125rem;color:rgba(230,237,243,0.4);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Parts you’ll use</p>
       <div class="v3-project-parts">{part_chips}</div>
       <a class="v3-btn-project" href="/projects/esp32-iot-weather-station.html">Start this project {arrow}</a>
     </div>
@@ -1783,13 +1793,13 @@ def home_v3_project_feature() -> str:
 
 
 def home_v3_why() -> str:
-    """Section 8 â€” Homepage v3: Why ESP32 Engine (statement rows, not icon cards). White bg."""
+    """Section 8 — Homepage v3: Why ESP32 Engine (statement rows, not icon cards). White bg."""
     REASONS = [
         ("Open forever", "No paywalls. No login required. No premium tier. Every guide, project, and component page is free."),
-        ("Three levels every time", "Every project has Beginner, Intermediate, and Advanced stages â€” so youâ€™re never stuck and never bored."),
+        ("Clear difficulty labels", "Each public project shows the difficulty level supported by its wiring, code, and source content."),
         ("Built for parents", "Safety notes, simple explanations, and age-appropriate language. Designed for supervised learning from age 10+."),
         ("Ready for classrooms", "Structured missions, printable notes, and content aligned to hands-on STEM learning standards."),
-        ("Works on any device", "Every page is mobile-first â€” follow a guide on your phone while you build at the bench."),
+        ("Works on any device", "Every page is mobile-first — follow a guide on your phone while you build at the bench."),
         ("Made for real making", "Every guide has wiring tables, copy-paste Arduino code, a troubleshooting section, and a real working output."),
     ]
     rows = "".join(
@@ -1811,7 +1821,7 @@ def home_v3_why() -> str:
 
 
 def home_v3_progress(counts: dict[str, int] | None = None) -> str:
-    """Section 9 â€” Homepage v3: Community Progress (large stat numbers). Deep dark bg."""
+    """Section 9 — Homepage v3: Community Progress (large stat numbers). Deep dark bg."""
     counts = counts or site_counts()
     STATS = [
         (str(counts["total_projects"]), "Projects"),
@@ -1842,23 +1852,23 @@ def footer_html(base: str = "") -> str:
     <div class="footer-brand">
       <strong>{SITE_NAME}</strong>
       <p class="footer-tagline">{esc(SITE_TAGLINE)}</p>
-      <p>The world's friendliest ESP32 learning platform â€” built for kids, trusted by parents, loved by makers.</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
       <div class="footer-social">
         <a href="{esc(GITHUB_URL)}" rel="noopener noreferrer" target="_blank" aria-label="GitHub">{ICON_GITHUB}</a>
         <a href="{esc(YOUTUBE_URL)}" rel="noopener noreferrer" target="_blank" aria-label="YouTube">{ICON_YOUTUBE}</a>
       </div>
     </div>
     <div class="footer-col"><p class="footer-col-title">Learn</p><a href="{site_href('learning.html')}">Learning Paths</a><a href="{site_href('guides.html')}">Guides</a><a href="{site_href('components.html')}">Components</a><a href="{site_href('projects.html')}">Projects</a></div>
-    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Downloads</a><a href="{site_href('tools.html')}">Tools</a><a href="{site_href('testing-methodology.html')}">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Learning Resources</a><a href="{site_href('tools.html')}">Tools</a><a href="{site_href('testing-methodology.html')}">Testing Methodology</a></div>
     <div class="footer-col"><p class="footer-col-title">Company</p><a href="{site_href('about.html')}">About</a><a href="{site_href('author.html')}">Author</a><a href="{site_href('editorial-policy.html')}">Editorial Policy</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a></div>
   </div>
-  <div class="wrap footer-bottom"><p>Â© 2026 {SITE_NAME}. All rights reserved.</p></div>
+  <div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div>
 </footer>"""
 
 
 def related_cards_html(related: list, base: str = "") -> str:
     if not related:
-        return f'<p class="meta"><a href="{base}projects.html">Browse all ESP32 projects â†’</a></p>'
+        return f'<p class="meta"><a href="{base}projects.html">Browse all ESP32 projects →</a></p>'
     cards = []
     for r in related[:4]:
         cat = r.get("cat") or r.get("category") or "ESP32"

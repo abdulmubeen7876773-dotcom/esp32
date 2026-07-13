@@ -6,7 +6,8 @@
     .catch(function () { index = []; return []; });
 
   function normalize(s) {
-    return (s || '').toLowerCase().trim();
+    if (Array.isArray(s)) return s.map(normalize).join(' ');
+    return String(s || '').toLowerCase().trim();
   }
 
   function haystack(item) {
@@ -35,6 +36,12 @@
     return clean.length <= max ? clean : clean.substring(0, max - 1).trim() + '…';
   }
 
+  function esc(text) {
+    var d = document.createElement('div');
+    d.textContent = text || '';
+    return d.innerHTML;
+  }
+
   function renderResults(container, results) {
     if (!container) return;
     if (!results.length) {
@@ -43,13 +50,13 @@
       return;
     }
     container.innerHTML = results.map(function (item) {
-      var cat = item.category ? '<span class="search-result-cat">' + item.category + '</span>' : '';
-      return '<a class="search-result-item" href="' + item.href + '">' +
+      var cat = item.category ? '<span class="search-result-cat">' + esc(item.category) + '</span>' : '';
+      return '<a class="search-result-item" href="' + esc(item.href) + '">' +
         '<span class="search-result-head">' +
-        '<span class="search-result-type">' + item.type + '</span>' + cat +
+        '<span class="search-result-type">' + esc(item.type) + '</span>' + cat +
         '</span>' +
-        '<strong class="search-result-title">' + item.title + '</strong>' +
-        (item.desc ? '<span class="search-result-desc">' + snippet(item.desc, 120) + '</span>' : '') +
+        '<strong class="search-result-title">' + esc(item.title) + '</strong>' +
+        (item.desc ? '<span class="search-result-desc">' + esc(snippet(item.desc, 120)) + '</span>' : '') +
         '</a>';
     }).join('');
     container.hidden = false;

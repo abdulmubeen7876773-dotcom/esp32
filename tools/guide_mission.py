@@ -27,9 +27,13 @@ _TOKEN_RE = re.compile(r"\#[a-zA-Z_]\w*|\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+(?:\.\d+
 
 
 def section_heading(section_id: str, icon: str, title: str) -> str:
+    icon_text = str(icon or "").strip()
+    title_text = str(title or "").strip()
+    show_icon = icon_text and not title_text.lower().startswith(icon_text.lower())
+    icon_html = f'<span class="mission-section-icon" aria-hidden="true">{icon}</span>' if show_icon else ""
     return (
         f'<h2 id="{section_id}-heading">'
-        f'<span class="mission-section-icon" aria-hidden="true">{icon}</span>'
+        f'{icon_html}'
         f'<span class="mission-section-title">{esc(title)}</span>'
         f"</h2>"
     )

@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
+from project_text import public_projects
 from content_store import get_content_store
 from site_layout import (
     PROJECTS_PAGE_SIZE,
@@ -81,7 +82,7 @@ def lastmod_for(page: str) -> str:
 
 
 def category_pages() -> list[tuple[str, str, str]]:
-    cats = sorted({p["category"] for p in PARENTS})
+    cats = sorted({p["category"] for p in public_projects(PARENTS)})
     return [(f"category/{slug_cat(c)}.html", "weekly", "0.85") for c in cats]
 
 
@@ -92,7 +93,7 @@ def slug_cat(cat: str) -> str:
 
 
 def project_listing_pages() -> list[tuple[str, str, str]]:
-    total = len(PARENTS)
+    total = len(public_projects(PARENTS))
     pages = max(1, (total + PROJECTS_PAGE_SIZE - 1) // PROJECTS_PAGE_SIZE)
     out = []
     for n in range(1, pages + 1):
@@ -166,7 +167,7 @@ def write_sitemap_html(project_files: list[Path]) -> None:
     )
     cat_links = "".join(
         f'<li><a href="category/{esc(slug_cat(c))}.html">{esc(c)}</a></li>'
-        for c in sorted({p["category"] for p in PARENTS})
+        for c in sorted({p["category"] for p in public_projects(PARENTS)})
     )
     project_links = "".join(
         f'<li><a href="projects/{esc(path.name)}">{esc(parse_title(path))}</a></li>'
@@ -175,8 +176,8 @@ def write_sitemap_html(project_files: list[Path]) -> None:
     body = f"""  <h1>Sitemap</h1>
   <p>Browse every page on {SITE_DOMAIN.replace("https://", "")} — main pages, categories, and {len(valid)} ESP32 project tutorials.</p>
   <section class="sitemap-static"><h2>Main Pages</h2><ul>{static_links}</ul></section>
-  <section class="sitemap-categories"><h2>Categories ({len({p["category"] for p in PARENTS})})</h2><ul>{cat_links}</ul></section>
-  <section class="sitemap-support"><h2>Support and verification</h2><ul><li><a href="/404.html">Missing-page help</a></li><li><a href="/google926bc78bc682aaf9.html">Google verification file</a></li><li><a href="/googlec0cbd82255f45946.html">Google verification file</a></li><li><a href="/pinterest-f71bc.html">Pinterest verification file</a></li></ul></section>
+  <section class="sitemap-categories"><h2>Categories ({len({p["category"] for p in public_projects(PARENTS)})})</h2><ul>{cat_links}</ul></section>
+  <section class="sitemap-support"><h2>Help</h2><ul><li><a href="/404.html">Missing-page help</a></li></ul></section>
   <section class="sitemap-projects"><h2>Projects ({len(valid)})</h2>
   <p class="meta">Search engines: <a href="sitemap.xml">sitemap.xml</a></p>
   <ul class="sitemap-project-list">{project_links}</ul></section>"""

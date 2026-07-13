@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import assert_phase1_static, get_content_store
-from project_text import project_meta_description, project_title
+from project_text import project_meta_description, project_title, public_projects
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_OUT = ROOT / "search-index.json"
@@ -47,7 +47,7 @@ def build_index() -> list:
                 category=g.get("phase", "Guide"),
             )
         )
-    for p in store.projects():
+    for p in public_projects(store.projects()):
         cat = p.get("category", "")
         desc = project_meta_description(p)
         items.append(
@@ -92,7 +92,7 @@ def search_page_html() -> str:
     <button type="submit" class="btn btn-primary">Search</button>
   </form>
   <p class="meta">Not sure what to search for? Browse <a href="/projects.html">all ESP32 projects</a>, check <a href="/news.html">latest site updates</a>, or use the <a href="/404.html">missing-page help page</a>.</p>
-  <div class="search-results" id="search-page-results"></div>
+  <div class="search-results" id="search-page-results" role="status" aria-live="polite"></div>
 </section>
 </main>
 {footer_html()}

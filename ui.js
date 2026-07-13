@@ -236,20 +236,24 @@
   var searchOverlay = document.getElementById('search-overlay');
   if (searchOpen && searchOverlay) {
     var searchInput = document.getElementById('global-search');
+    searchOverlay.setAttribute('inert', '');
     searchOpen.addEventListener('click', function () {
       searchOverlay.hidden = false;
+      searchOverlay.removeAttribute('inert');
       document.body.style.overflow = 'hidden';
       if (searchInput) searchInput.focus();
     });
     searchOverlay.querySelectorAll('[data-close-search]').forEach(function (el) {
       el.addEventListener('click', function () {
         searchOverlay.hidden = true;
+        searchOverlay.setAttribute('inert', '');
         document.body.style.overflow = '';
       });
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !searchOverlay.hidden) {
         searchOverlay.hidden = true;
+        searchOverlay.setAttribute('inert', '');
         document.body.style.overflow = '';
       }
     });

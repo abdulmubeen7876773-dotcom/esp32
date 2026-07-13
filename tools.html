@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
 <script>(function(){
   function cleanPath(path){
     path = (path || "/").replace(/\/+/g, "/");
@@ -40,7 +41,6 @@
     page_title: document.title
   });
 </script>
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ESP32 Tools — GPIO, LED, PWM &amp; More | ESP32 Engine</title>
 <meta name="description" content="Free ESP32 calculators — GPIO planner, LED resistor, PWM, ADC, voltage divider, battery life, resistor color code, and more.">
@@ -57,7 +57,7 @@
 <meta property="og:image" content="https://esp32engine.com/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ESP32 Engine â€” ESP32 projects and tutorials">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ESP32 Tools — GPIO, LED, PWM &amp; More | ESP32 Engine">
 <meta name="twitter:description" content="Free ESP32 calculators — GPIO planner, LED resistor, PWM, ADC, voltage divider, battery life, resistor color code, and more.">
@@ -96,19 +96,19 @@
   <div class="wrap nav-spotlight-scroll">
     <div class="nav-spotlight-inner">
     <span class="nav-spotlight-label">Explore</span>
-    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">50 Projects</a>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
     </div>
   </div>
 </div>
 </div>
-<div class="search-overlay" id="search-overlay" hidden>
+<div class="search-overlay" id="search-overlay" hidden inert>
   <div class="search-overlay-backdrop" data-close-search></div>
   <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
     <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
       <label class="visually-hidden" for="global-search">Search</label>
-      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guidesâ€¦" autocomplete="off">
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
       <button type="submit" class="btn btn-primary">Search</button>
-      <button type="button" class="search-close" data-close-search aria-label="Close search">Ã—</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
     </form>
     <div class="search-results" id="search-results-live" hidden></div>
   </div>
@@ -191,36 +191,44 @@
   </section>
   <script>
   (function(){
-    function num(sel){ var el=document.querySelector('[data-tool="'+sel+'"]'); return el ? Number(el.value) : 0; }
+    function num(sel){ var el=document.querySelector('[data-tool="'+sel+'"]'); var value = el ? Number(el.value) : NaN; return Number.isFinite(value) ? value : NaN; }
     function out(sel,msg){ var el=document.querySelector('[data-tool-output="'+sel+'"]'); if(el) el.textContent=msg; }
     function calc(){
       var pin=num('gpio-pin');
-      if(pin || pin===0){
+      if(Number.isFinite(pin)){
         var caution=[0,2,12,15].indexOf(pin)>=0 ? ' Boot strap pin - use carefully.' : '';
         var flash=[6,7,8,9,10,11].indexOf(pin)>=0 ? ' Flash pin - do NOT use.' : '';
         var inputOnly=[34,35,36,39].indexOf(pin)>=0 ? ' Input-only ADC pin.' : '';
         var msg = flash ? ('GPIO '+pin+':'+flash) : ('GPIO '+pin+':'+(inputOnly||caution||' Safe general-purpose GPIO.'));
         out('gpio', msg);
+      } else {
+        out('gpio', 'Enter a GPIO number to check common ESP32 guidance.');
       }
       var r=(num('led-vs')-num('led-vf'))/(num('led-ma')/1000);
       out('led', isFinite(r)&&r>0 ? 'Use about '+Math.ceil(r)+' ohms. Choose the next standard value up.' : 'Check voltage and current values.');
       var vin=num('div-vin'), r1=num('div-r1'), r2=num('div-r2'), vout=vin*(r2/(r1+r2));
-      out('divider', isFinite(vout) ? 'Output is about '+vout.toFixed(2)+' V.' : 'Enter resistor values.');
+      out('divider', isFinite(vout)&&r1>=0&&r2>0&&(r1+r2)>0 ? 'Output is about '+vout.toFixed(2)+' V.' : 'Enter resistor values.');
       var hours=num('bat-cap')/num('bat-ma');
       out('battery', isFinite(hours)&&hours>0 ? 'About '+hours.toFixed(1)+' hours before losses.' : 'Enter capacity and current.');
       var freq=num('pwm-freq'), duty=num('pwm-duty'), bits=num('pwm-bits');
-      if(freq>0){
+      if(freq>0 && duty>=0 && duty<=100 && bits>0){
         var period=(1/freq)*1000, onTime=period*(duty/100), maxVal=Math.pow(2,bits)-1, dutyCount=Math.round(maxVal*(duty/100));
         out('pwm','Period: '+period.toFixed(3)+'ms | On-time: '+onTime.toFixed(3)+'ms | ledcWrite value: '+dutyCount+'/'+maxVal);
+      } else {
+        out('pwm', 'Enter frequency, duty cycle, and resolution values.');
       }
       var raw=num('adc-raw'), ref=num('adc-ref'), abits=num('adc-bits'), maxRaw=Math.pow(2,abits)-1;
-      if(raw>=0 && raw<=maxRaw){
+      if(raw>=0 && raw<=maxRaw && ref>0 && abits>0){
         out('adc','Voltage: ~'+((raw/maxRaw)*ref).toFixed(3)+'V ('+((raw/maxRaw)*100).toFixed(1)+'% of full scale)');
+      } else {
+        out('adc', 'Enter ADC raw, reference voltage, and resolution values.');
       }
       var aMa=num('pwr-active-ma'), aMs=num('pwr-active-ms'), sMa=num('pwr-sleep-ma'), sMs=num('pwr-sleep-ms'), total=aMs+sMs;
       if(total>0){
         var avg=((aMa*aMs)+(sMa*sMs))/total;
-        out('pwr','Average current: '+avg.toFixed(3)+'mA | Est. runtime on 2000mAh: ~'+(2000/avg/24).toFixed(1)+' days');
+        out('pwr', isFinite(avg)&&avg>0 ? 'Average current: '+avg.toFixed(3)+'mA | Est. runtime on 2000mAh: ~'+(2000/avg/24).toFixed(1)+' days' : 'Enter active and sleep current values.');
+      } else {
+        out('pwr', 'Enter active and sleep timing values.');
       }
       var b1=num('ohm-b1'), b2=num('ohm-b2'), mult=num('ohm-mult'), ohms=(b1*10+b2)*mult;
       var display = ohms>=1000000 ? (ohms/1000000).toFixed(2)+' MΩ' : ohms>=1000 ? (ohms/1000).toFixed(2)+' kΩ' : ohms.toFixed(0)+' Ω';
@@ -237,17 +245,17 @@
     <div class="footer-brand">
       <strong>ESP32 Engine</strong>
       <p class="footer-tagline">Learn · Build · Explore</p>
-      <p>The world's friendliest ESP32 learning platform â€” built for kids, trusted by parents, loved by makers.</p>
+      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
       <div class="footer-social">
         <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
         <a href="https://www.youtube.com/@ESP32Engine" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
       </div>
     </div>
     <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
-    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Downloads</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
     <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a></div>
   </div>
-  <div class="wrap footer-bottom"><p>Â© 2026 ESP32 Engine. All rights reserved.</p></div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
 </footer>
 <script src="/search.js?v=20260627-header-logo-v2" defer></script>
 <script src="/ui.js?v=20260627-header-logo-v2" defer></script>

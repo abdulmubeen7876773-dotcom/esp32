@@ -79,36 +79,44 @@ body_html: |
   </section>
   <script>
   (function(){
-    function num(sel){ var el=document.querySelector('[data-tool="'+sel+'"]'); return el ? Number(el.value) : 0; }
+    function num(sel){ var el=document.querySelector('[data-tool="'+sel+'"]'); var value = el ? Number(el.value) : NaN; return Number.isFinite(value) ? value : NaN; }
     function out(sel,msg){ var el=document.querySelector('[data-tool-output="'+sel+'"]'); if(el) el.textContent=msg; }
     function calc(){
       var pin=num('gpio-pin');
-      if(pin || pin===0){
+      if(Number.isFinite(pin)){
         var caution=[0,2,12,15].indexOf(pin)>=0 ? ' Boot strap pin - use carefully.' : '';
         var flash=[6,7,8,9,10,11].indexOf(pin)>=0 ? ' Flash pin - do NOT use.' : '';
         var inputOnly=[34,35,36,39].indexOf(pin)>=0 ? ' Input-only ADC pin.' : '';
         var msg = flash ? ('GPIO '+pin+':'+flash) : ('GPIO '+pin+':'+(inputOnly||caution||' Safe general-purpose GPIO.'));
         out('gpio', msg);
+      } else {
+        out('gpio', 'Enter a GPIO number to check common ESP32 guidance.');
       }
       var r=(num('led-vs')-num('led-vf'))/(num('led-ma')/1000);
       out('led', isFinite(r)&&r>0 ? 'Use about '+Math.ceil(r)+' ohms. Choose the next standard value up.' : 'Check voltage and current values.');
       var vin=num('div-vin'), r1=num('div-r1'), r2=num('div-r2'), vout=vin*(r2/(r1+r2));
-      out('divider', isFinite(vout) ? 'Output is about '+vout.toFixed(2)+' V.' : 'Enter resistor values.');
+      out('divider', isFinite(vout)&&r1>=0&&r2>0&&(r1+r2)>0 ? 'Output is about '+vout.toFixed(2)+' V.' : 'Enter resistor values.');
       var hours=num('bat-cap')/num('bat-ma');
       out('battery', isFinite(hours)&&hours>0 ? 'About '+hours.toFixed(1)+' hours before losses.' : 'Enter capacity and current.');
       var freq=num('pwm-freq'), duty=num('pwm-duty'), bits=num('pwm-bits');
-      if(freq>0){
+      if(freq>0 && duty>=0 && duty<=100 && bits>0){
         var period=(1/freq)*1000, onTime=period*(duty/100), maxVal=Math.pow(2,bits)-1, dutyCount=Math.round(maxVal*(duty/100));
         out('pwm','Period: '+period.toFixed(3)+'ms | On-time: '+onTime.toFixed(3)+'ms | ledcWrite value: '+dutyCount+'/'+maxVal);
+      } else {
+        out('pwm', 'Enter frequency, duty cycle, and resolution values.');
       }
       var raw=num('adc-raw'), ref=num('adc-ref'), abits=num('adc-bits'), maxRaw=Math.pow(2,abits)-1;
-      if(raw>=0 && raw<=maxRaw){
+      if(raw>=0 && raw<=maxRaw && ref>0 && abits>0){
         out('adc','Voltage: ~'+((raw/maxRaw)*ref).toFixed(3)+'V ('+((raw/maxRaw)*100).toFixed(1)+'% of full scale)');
+      } else {
+        out('adc', 'Enter ADC raw, reference voltage, and resolution values.');
       }
       var aMa=num('pwr-active-ma'), aMs=num('pwr-active-ms'), sMa=num('pwr-sleep-ma'), sMs=num('pwr-sleep-ms'), total=aMs+sMs;
       if(total>0){
         var avg=((aMa*aMs)+(sMa*sMs))/total;
-        out('pwr','Average current: '+avg.toFixed(3)+'mA | Est. runtime on 2000mAh: ~'+(2000/avg/24).toFixed(1)+' days');
+        out('pwr', isFinite(avg)&&avg>0 ? 'Average current: '+avg.toFixed(3)+'mA | Est. runtime on 2000mAh: ~'+(2000/avg/24).toFixed(1)+' days' : 'Enter active and sleep current values.');
+      } else {
+        out('pwr', 'Enter active and sleep timing values.');
       }
       var b1=num('ohm-b1'), b2=num('ohm-b2'), mult=num('ohm-mult'), ohms=(b1*10+b2)*mult;
       var display = ohms>=1000000 ? (ohms/1000000).toFixed(2)+' MΩ' : ohms>=1000 ? (ohms/1000).toFixed(2)+' kΩ' : ohms.toFixed(0)+' Ω';

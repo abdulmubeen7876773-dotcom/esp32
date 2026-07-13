@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_icons import pick_icon, thumb_class as icon_thumb_class, featured_cat_bar, slug_cat
 from project_images import project_image_path
-from project_text import card_description, project_meta_description, project_title
+from project_text import card_description, primary_difficulty, project_meta_description, project_title, public_projects
 from parent_registry import PARENTS
 from content_store import get_content_store
 from site_counts import site_counts
@@ -43,6 +43,7 @@ from site_layout import (
     home_discovery_links,
     home_learning_finder_js,
     card_media_html,
+    badge_class,
     home_v3_journey,
     home_v3_roadmap,
     home_v3_academy,
@@ -181,7 +182,7 @@ def post_card(p):
     return modern_card(p, "post-card", "post-thumb")
 
 
-LEVELS = ["Beginner", "Intermediate", "Advanced"]
+DEFAULT_LEVEL = ["Beginner"]
 
 
 def parent_listing_record(parent: dict) -> dict:
@@ -189,6 +190,7 @@ def parent_listing_record(parent: dict) -> dict:
     desc = card_description(parent, 120)
     if len(desc) > 120:
         desc = desc[:117].rstrip() + "…"
+    difficulty = primary_difficulty(parent)
     return {
         "href": f"projects/{slug}.html",
         "title": project_title(parent),
@@ -198,7 +200,8 @@ def parent_listing_record(parent: dict) -> dict:
         "slug": slug,
         "featured": bool(parent.get("featured")),
         "featured_image": project_image_path(slug) or parent.get("featured_image") or parent.get("image"),
-        "levels": LEVELS,
+        "levels": [difficulty],
+        "difficulty": difficulty,
         "readMin": 12,
     }
 
@@ -210,7 +213,7 @@ def portal_carousel_card(p: dict) -> str:
 <span class="product-card-glow" aria-hidden="true"></span>
 <span class="carousel-card-thumb {tc}">{icon}</span>
 <span class="carousel-card-body">
-<span class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span><span class="badge badge-beginner">3 Levels</span></span>
+<span class="card-badges"><span class="badge badge-cat">{esc(short_category(p['category']))}</span><span class="badge {badge_class(p.get('difficulty', 'Beginner'))}">{esc(p.get('difficulty', 'Beginner'))}</span></span>
 <strong>{esc(p['title'])}</strong>
 <span class="carousel-card-meta">Beginner · Intermediate · Advanced</span>
 </span></a>"""
@@ -218,12 +221,12 @@ def portal_carousel_card(p: dict) -> str:
 
 def parent_grid_card(p: dict) -> str:
     levels_html = "".join(
-        f'<span class="badge badge-{lv.lower()}">{esc(lv)}</span>' for lv in p.get("levels", LEVELS)
+        f'<span class="badge {badge_class(lv)}">{esc(lv)}</span>' for lv in p.get("levels", [p.get("difficulty", "Beginner")])
     )
     attrs = (
         f' data-title="{esc(p["title"].lower())}"'
         f' data-category="{esc(p["category"])}"'
-        f' data-levels="{esc(",".join(p.get("levels", LEVELS)))}"'
+        f' data-levels="{esc(",".join(p.get("levels", [p.get("difficulty", "Beginner")])))}"'
         f' data-featured="{1 if p.get("featured") else 0}"'
     )
     tc = icon_thumb_class(p["category"])
@@ -254,7 +257,8 @@ def project_json_record(p: dict) -> dict:
         "desc": desc,
         "category": p["category"],
         "slug": p["slug"],
-        "levels": p.get("levels", LEVELS),
+        "levels": p.get("levels", [p.get("difficulty", "Beginner")]),
+        "difficulty": p.get("difficulty", "Beginner"),
         "readMin": p.get("readMin", 12),
         "featured": bool(p.get("featured")),
         "featured_image": project_image_path(p.get("slug", "")) or p.get("featured_image") or p.get("image") or "",
@@ -299,10 +303,10 @@ def home_html(projects):
     schema = organization_schema() + website_schema()
     guides = store.guides()
     components = store.components()
-    source_projects = store.projects()
+    source_projects = public_projects(store.projects())
     catalog = projects
     counts = site_counts()
-    project_count = counts["total_projects"]
+    project_count = counts["golden_projects"]
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -350,7 +354,7 @@ def projects_listing_html(
     page_label = f" — Page {page}" if total_pages > 1 else ""
     desc = (
         f"Browse {total_count} ESP32 project tutorials — wiring tables, Arduino code, "
-        f"and Beginner, Intermediate, and Advanced stages.{f' Page {page} of {total_pages}.' if total_pages > 1 else ''}"
+        f"and honest primary difficulty labels.{f' Page {page} of {total_pages}.' if total_pages > 1 else ''}"
     )
     schema = organization_schema() + website_schema()
     preview = "\n".join(parent_grid_card(p) for p in page_projects)
@@ -364,9 +368,9 @@ def projects_listing_html(
     )
     hero = category_hero_html(
         "ESP32 Project Library",
-        f"Browse {total_count} hands-on ESP32 tutorials with wiring diagrams, Arduino code, and Beginner, Intermediate, and Advanced build stages.",
+        f"Browse {total_count} hands-on ESP32 tutorials with wiring diagrams, Arduino code, and clear primary difficulty labels.",
         "IoT Projects",
-        f'<span class="badge badge-light">{total_count} Projects</span><span class="badge badge-light">3 Levels Each</span><span class="badge badge-light">Free &amp; Open</span>',
+        f'<span class="badge badge-light">{total_count} Projects</span><span class="badge badge-light">Clear difficulty labels</span><span class="badge badge-light">Free &amp; Open</span>',
     )
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -385,6 +389,7 @@ def projects_listing_html(
     <section class="section-block">
       <p class="meta">Prefer browsing by topic? See the <a href="/category/">ESP32 project category index</a>.</p>
       <div class="grid grid-projects" id="grid">{preview}</div>
+      <p class="meta" id="projects-no-results" hidden>No projects match these filters. Try another category, difficulty, or search word.</p>
       <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary" id="projects-load-more">Load More</button></div>
       {text_index}
       {pagination}
@@ -422,7 +427,7 @@ def write_project_listing_pages(projects: list, cat_opts: str, text_index: str) 
 
 
 def main():
-    projects = [parent_listing_record(p) for p in PARENTS]
+    projects = [parent_listing_record(p) for p in public_projects(PARENTS)]
     cat_opts = "".join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in CATEGORIES)
     text_index = projects_text_index(projects)
     INDEX_OUT.write_text(home_html(projects), encoding="utf-8")

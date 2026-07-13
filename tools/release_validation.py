@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from cms_loader import load_components, load_guides, load_projects, load_yaml
+from project_text import is_golden_project
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "content"
@@ -200,6 +201,8 @@ def check_missing_pages() -> list[dict]:
                 )
             )
     for proj in load_projects():
+        if not is_golden_project(proj):
+            continue
         slug = proj.get("slug", "?")
         html_path = ROOT / "projects" / f"{slug}.html"
         if not html_path.is_file():
@@ -548,7 +551,7 @@ def check_incomplete_roadmap_items() -> list[dict]:
             )
         )
 
-    projects_complete = len(load_projects())
+    projects_complete = len([project for project in load_projects() if is_golden_project(project)])
     findings.append(
         _finding(
             "INFO",

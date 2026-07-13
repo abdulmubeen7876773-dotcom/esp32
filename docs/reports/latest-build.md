@@ -1,6 +1,6 @@
 # Latest Build Report
 
-Generated: 2026-07-11T06:03:52Z
+Generated: 2026-07-13T15:29:00Z
 
 ## Build Status
 
@@ -10,16 +10,16 @@ PASS
 
 - Guides: 18
 - Components: 8
-- Projects: 50
+- Projects: 49
 - Static pages: 41
 
 ## Search Index
 
-90
+89
 
 ## Sitemap
 
-112
+111
 
 ## Feed
 
@@ -27,11 +27,11 @@ PASS
 
 ## Build Time
 
-123.98s
+28.4s
 
 ## Build Duration
 
-123.98s
+28.4s
 
 ## Warnings (0)
 

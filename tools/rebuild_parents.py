@@ -1,4 +1,4 @@
-﻿import html
+import html
 import re
 import sys
 from pathlib import Path
@@ -236,7 +236,7 @@ def build_head(parent: dict, hardware: dict) -> str:
             {
                 "@type": "HowToStep",
                 "position": i + 1,
-                "name": (step[:100] + "â€¦") if len(step) > 100 else step,
+                "name": (step[:100] + "…") if len(step) > 100 else step,
                 "text": step,
             }
             for i, step in enumerate(beginner_how)
@@ -398,7 +398,7 @@ def section_toc_html(active_level: str = "beginner") -> str:
 
 
 def mobile_nav_select(active_level: str = "beginner") -> str:
-    opts = ['<option value="">Jump to sectionâ€¦</option>']
+    opts = ['<option value="">Jump to section…</option>']
     for sec_id, label in SECTION_NAV:
         opts.append(f'<option value="sec-{active_level}-{sec_id}">{esc(label)}</option>')
     opts.append('<option value="related">Related Projects</option>')
@@ -620,7 +620,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
   </article>
   <aside class="sidebar-right">
     <div class="sidebar-sticky">
-      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">{site_counts()['total_projects']} projects with practical wiring, code, and troubleshooting.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects Â»</a></p></div>
+      <div class="promo-box"><strong>ESP32 Engine</strong><p class="promo-text">{site_counts()['total_projects']} projects with practical wiring, code, and troubleshooting.</p><p class="promo-link"><a href="{site_href('projects.html')}">Browse all projects »</a></p></div>
     </div>
   </aside>
 </div>
@@ -692,13 +692,13 @@ def main():
             out.write_text(render_golden_parent(parent), encoding="utf-8")
             golden += 1
         else:
-            hardware = load_hardware(parent)
-            related = build_related(PARENTS, parent)
-            out.write_text(render_page(parent, hardware, related), encoding="utf-8")
+            if out.exists():
+                out.unlink()
             staged += 1
+            continue
         written.append(parent["slug"])
     print(f"Archived {moved} legacy variant pages to projects/_archive/")
-    print(f"Wrote {len(written)} parent project pages ({golden} golden, {staged} staged)")
+    print(f"Wrote {len(written)} public project pages ({golden} golden, {staged} staged hidden)")
 
 
 if __name__ == "__main__":

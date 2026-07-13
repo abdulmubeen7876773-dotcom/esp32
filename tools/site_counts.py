@@ -2,7 +2,7 @@ from functools import lru_cache
 
 from content_store import get_content_store
 from project_icons import slug_cat
-from project_text import is_golden_project
+from project_text import is_golden_project, public_projects
 
 
 def _project_difficulty(project: dict) -> str:
@@ -19,9 +19,9 @@ def _has_text(project: dict, keys: list[str]) -> bool:
 def site_counts() -> dict[str, int]:
     store = get_content_store()
     projects = store.projects()
-    golden = [project for project in projects if is_golden_project(project)]
+    golden = public_projects(projects)
     guides = store.guides()
-    categories = {slug_cat(project.get("category", "")) for project in projects if project.get("category")}
+    categories = {slug_cat(project.get("category", "")) for project in golden if project.get("category")}
     return {
         "total_projects": len(projects),
         "golden_projects": len(golden),

@@ -11,9 +11,13 @@ PROJECT_WIRING_DIR = ROOT / "assets" / "visuals" / "projects" / "wiring"
 
 
 def project_section_heading(section_id: str, icon: str, title: str) -> str:
+    icon_text = str(icon or "").strip()
+    title_text = str(title or "").strip()
+    show_icon = icon_text and not title_text.lower().startswith(icon_text.lower())
+    icon_html = f'<span class="project-section-icon" aria-hidden="true">{icon}</span>' if show_icon else ""
     return (
         f'<h2 id="{section_id}-heading">'
-        f'<span class="project-section-icon" aria-hidden="true">{icon}</span>'
+        f'{icon_html}'
         f'<span class="project-section-title">{esc(title)}</span>'
         f"</h2>"
     )
