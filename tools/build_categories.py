@@ -48,6 +48,11 @@ CATEGORY_INTROS = load_categories() or {
     "Education": "Classroom-friendly trainer projects that teach GPIO, sensors, and displays in progressive difficulty stages.",
 }
 
+CATEGORY_TITLE_OVERRIDES = {
+    "AI Projects": "ESP32 AI Projects",
+    "Home Automation": "ESP32 Home Automation Projects",
+}
+
 SIDEBAR_KEYS = {
     "ESP32-CAM": "esp32-cam",
     "IoT Projects": "iot-projects",
@@ -57,6 +62,14 @@ SIDEBAR_KEYS = {
 }
 
 CATEGORY_SEO_DETAILS = {
+    "AI Projects": {
+        "covers": "Practical ESP32 camera and edge-AI learning builds, including capture, QR scanning, face-detection demos, and bounded computer-vision experiments.",
+        "start": "Begin with the ESP32-CAM setup path, then compare camera capture with QR scanning and the color object detector demo.",
+        "skills": ["ESP32-CAM setup", "camera privacy", "image-processing limits", "safe AI claim boundaries"],
+        "guides": [("Install Arduino IDE", "/guides/installing-arduino-ide-esp32.html"), ("ESP32 basics", "/guides/what-is-esp32.html")],
+        "components": [("ESP32-CAM", "/components/esp32-cam.html"), ("ESP32 DevKit", "/components/esp32-devkit.html")],
+        "related": [("ESP32-CAM", "/category/esp32-cam.html"), ("Security Projects", "/category/security-projects.html")],
+    },
     "Education": {
         "covers": "Classroom and self-study projects that make GPIO, inputs, displays, and simple debugging visible on the bench.",
         "start": "Begin with the ESP32 Learning Trainer if you want a repeatable classroom board before moving into sensors.",
@@ -90,11 +103,11 @@ CATEGORY_SEO_DETAILS = {
         "related": [("Sensor Projects", "/category/sensor-projects.html"), ("Education", "/category/education.html")],
     },
     "Home Automation": {
-        "covers": "Room control, appliance indicators, relays, locks, climate projects, and safety-first smart-home prototypes.",
-        "start": "Begin with low-voltage outputs and clear status indicators before switching mains-powered devices.",
-        "skills": ["relay control", "sensor thresholds", "manual overrides", "safe low-voltage prototyping"],
-        "guides": [("Digital inputs", "/guides/digital-inputs-floating-pins.html"), ("PWM fundamentals", "/guides/pwm-fundamentals.html")],
-        "components": [("Relay module", "/components/relay-module.html"), ("DHT22", "/components/dht22.html"), ("PIR sensor", "/components/pir-sensor.html")],
+        "covers": "ESP32 home automation builds for smart thermostats, climate control, relay-safe switching, door locks, lighting, and sensor-triggered actions.",
+        "start": "Begin with a low-voltage sensor-and-output project such as the smart thermostat before moving to relays, locks, or network dashboards.",
+        "skills": ["relay control", "sensor thresholds", "manual overrides", "safe low-voltage prototyping", "dashboard-ready status"],
+        "guides": [("Digital inputs", "/guides/digital-inputs-floating-pins.html"), ("Read temperature with DHT22", "/guides/read-temperature-dht22.html"), ("PWM fundamentals", "/guides/pwm-fundamentals.html")],
+        "components": [("Relay module", "/components/relay-module.html"), ("DHT22", "/components/dht22.html"), ("PIR sensor", "/components/pir-sensor.html"), ("SSD1306 OLED", "/components/ssd1306-oled.html")],
         "related": [("Security Projects", "/category/security-projects.html"), ("IoT Projects", "/category/iot-projects.html")],
     },
     "LED Projects": {
@@ -196,7 +209,7 @@ def projects_for_category(cat: str) -> list[dict]:
 
 def render_category_page(cat: str, projects: list[dict]) -> str:
     slug = slug_cat(cat)
-    title = category_section_title(cat)
+    title = CATEGORY_TITLE_OVERRIDES.get(cat, category_section_title(cat))
     desc = category_intro(cat)
     canon = f"category/{slug}.html"
     cards = "".join(
@@ -268,7 +281,7 @@ def render_category_index(by_cat: dict[str, list[dict]]) -> str:
             f"""<a class="post-card modern-card" href="{site_href(f'category/{slug}.html')}">
   <div class="card-body">
     <div class="card-badges"><span class="badge badge-cat">{esc(short_category(cat))}</span><span class="badge badge-time">{len(projects)} projects</span></div>
-    <h3>{esc(category_section_title(cat))}</h3>
+    <h3>{esc(CATEGORY_TITLE_OVERRIDES.get(cat, category_section_title(cat)))}</h3>
     <p class="card-desc">{esc(desc)}</p>
     <div class="card-footer"><span class="btn btn-card">Open category<span aria-hidden="true">→</span></span></div>
   </div>

@@ -353,13 +353,13 @@ def projects_listing_html(
 ):
     page_label = f" — Page {page}" if total_pages > 1 else ""
     desc = (
-        f"Browse {total_count} ESP32 project tutorials — wiring tables, Arduino code, "
-        f"and honest primary difficulty labels.{f' Page {page} of {total_pages}.' if total_pages > 1 else ''}"
+        f"Browse {total_count} practical ESP32 projects for beginners and makers, with wiring tables, Arduino code, "
+        f"filters by category and difficulty, and safety notes for a steady learning path.{f' Page {page} of {total_pages}.' if total_pages > 1 else ''}"
     )
     schema = organization_schema() + website_schema()
     preview = "\n".join(parent_grid_card(p) for p in page_projects)
     canon = projects_page_canonical(page)
-    title = f"ESP32 Projects — {total_count} Tutorials | ESP32 Engine{page_label}"
+    title = f"ESP32 Projects: {total_count} Practical Tutorials | ESP32 Engine{page_label}"
     page_links = pagination_head_links(page, total_pages, lambda n: projects_page_path(n))
     pagination = pagination_nav_html(page, total_pages, projects_page_path)
     filters = filters_bar_html(True).replace(
@@ -368,7 +368,7 @@ def projects_listing_html(
     )
     hero = category_hero_html(
         "ESP32 Project Library",
-        f"Browse {total_count} hands-on ESP32 tutorials with wiring diagrams, Arduino code, and clear primary difficulty labels.",
+        f"Browse {total_count} hands-on ESP32 projects with beginner, intermediate, and advanced difficulty labels, topic filters, wiring diagrams, Arduino code, and safe next steps.",
         "IoT Projects",
         f'<span class="badge badge-light">{total_count} Projects</span><span class="badge badge-light">Clear difficulty labels</span><span class="badge badge-light">Free &amp; Open</span>',
     )
@@ -387,7 +387,7 @@ def projects_listing_html(
   <div class="main-with-sidebar">
     <div class="filters-sticky">{filters}</div>
     <section class="section-block">
-      <p class="meta">Prefer browsing by topic? See the <a href="/category/">ESP32 project category index</a>.</p>
+      <p class="meta">Prefer browsing by topic? See the <a href="/category/">ESP32 project category index</a>, start with <a href="/projects/esp32-iot-weather-station.html">the IoT weather station</a>, or try <a href="/guides/blink-led-esp32.html">Mission 01 - Blink LED</a> before choosing a bigger build.</p>
       <div class="grid grid-projects" id="grid">{preview}</div>
       <p class="meta" id="projects-no-results" hidden>No projects match these filters. Try another category, difficulty, or search word.</p>
       <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary" id="projects-load-more">Load More</button></div>
