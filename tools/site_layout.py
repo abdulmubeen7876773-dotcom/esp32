@@ -65,25 +65,11 @@ CANONICAL_ROUTE_SCRIPT = """<script>(function(){
 GOOGLE_TAG_HTML = f"""<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id={GA4_MEASUREMENT_ID}"></script>
 <script>
-  function esp32CanonicalPath(path) {{
-    path = (path || '/').replace(/\\/+/g, '/');
-    path = path.replace(/^\\/esp32(?=\\/|$)/i, '');
-    if (!path || path === '/index.html') return '/';
-    if (/\\/index\\.html$/i.test(path)) return path.replace(/index\\.html$/i, '');
-    if (/^\\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\\/$/i.test(path)) {{
-      return path.replace(/\\/$/, '.html');
-    }}
-    return path;
-  }}
   window.dataLayer = window.dataLayer || [];
   function gtag(){{dataLayer.push(arguments);}}
   gtag('js', new Date());
 
-  gtag('config', '{GA4_MEASUREMENT_ID}', {{
-    page_path: esp32CanonicalPath(location.pathname),
-    page_location: 'https://esp32engine.com' + esp32CanonicalPath(location.pathname) + (location.search || ''),
-    page_title: document.title
-  }});
+  gtag('config', '{GA4_MEASUREMENT_ID}');
 </script>"""
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#1488A6"/><stop offset="1" stop-color="#081D3A"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(20,136,166,.08)" stroke="rgba(20,136,166,.26)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#1488A6" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="140" cy="130" r="10" fill="#1488A6"/><circle cx="140" cy="130" r="20" stroke="#1488A6" stroke-width="1.5" opacity=".35"/><text x="140" y="136" text-anchor="middle" fill="#081D3A" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#F59E0B" opacity=".86"/><circle cx="70" cy="220" r="5" fill="#EF4444" opacity=".68"/><path d="M200 220l20-16 12 20" stroke="#1488A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>"""
@@ -408,8 +394,7 @@ def itemlist_schema(name: str, items: list[dict]) -> str:
 
 
 def analytics_config_script() -> str:
-    ga = esc(GA4_MEASUREMENT_ID)
-    return f'<script>window.SITE_GA4="{ga}";</script>'
+    return ""
 
 
 FONT_CSS = (

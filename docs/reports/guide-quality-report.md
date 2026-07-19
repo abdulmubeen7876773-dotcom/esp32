@@ -1,6 +1,6 @@
 # Guide Quality Report
 
-Generated: 2026-07-17T21:23:51Z
+Generated: 2026-07-18T18:53:34Z
 
 Benchmark: **Blink LED** is the golden standard (`content/guides/blink-led-esp32.yaml`).
 
