@@ -1,4 +1,6 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 const viewports = [
   { width: 320, height: 568, name: '320x568' },
@@ -72,6 +74,61 @@ async function gotoOk(page: Page, path: string) {
   const response = await page.goto(path, { waitUntil: 'networkidle' });
   expect(response, `No response for ${path}`).toBeTruthy();
   expect(response!.status(), `${path} should return successfully`).toBeLessThan(400);
+}
+
+function isGaUrl(url: string) {
+  return /\/\/(?:www\.)?googletagmanager\.com\//i.test(url) || /\/\/(?:www\.)?google-analytics\.com\//i.test(url);
+}
+
+function contentTypeFor(filePath: string) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.css') return 'text/css; charset=utf-8';
+  if (ext === '.js') return 'text/javascript; charset=utf-8';
+  if (ext === '.json') return 'application/json; charset=utf-8';
+  if (ext === '.svg') return 'image/svg+xml; charset=utf-8';
+  if (ext === '.png') return 'image/png';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.webp') return 'image/webp';
+  if (ext === '.html') return 'text/html; charset=utf-8';
+  return 'application/octet-stream';
+}
+
+async function fulfillProductionHostFromLocalBuild(page: Page, gaRequests: string[]) {
+  await page.route('**/*', async (route) => {
+    const requestUrl = route.request().url();
+    if (isGaUrl(requestUrl)) {
+      gaRequests.push(requestUrl);
+      await route.fulfill({
+        status: requestUrl.includes('googletagmanager.com') ? 200 : 204,
+        contentType: 'text/javascript; charset=utf-8',
+        body: '',
+      });
+      return;
+    }
+
+    const url = new URL(requestUrl);
+    if (url.hostname !== 'esp32engine.com' && url.hostname !== 'www.esp32engine.com') {
+      await route.abort();
+      return;
+    }
+
+    const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
+    const filePath = path.resolve(process.cwd(), `.${pathname}`);
+    if (!filePath.startsWith(process.cwd())) {
+      await route.fulfill({ status: 403, body: 'Forbidden' });
+      return;
+    }
+
+    try {
+      await route.fulfill({
+        status: 200,
+        contentType: contentTypeFor(filePath),
+        body: await fs.readFile(filePath),
+      });
+    } catch {
+      await route.fulfill({ status: 404, body: 'Not found' });
+    }
+  });
 }
 
 async function visibleBoxCount(page: Page, selector: string) {
@@ -547,6 +604,15 @@ test('sticky header leaves headings and anchor targets visible', async ({ page }
 
 test('public counts and section headings stay consistent', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1024, height: 768 });
+  const localGaRequests: string[] = [];
+  await page.route('**/*', async (route) => {
+    if (isGaUrl(route.request().url())) {
+      localGaRequests.push(route.request().url());
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
   await preparePage(page, testInfo);
   await gotoOk(page, '/about.html');
   await expect(page.locator('.premium-stats')).toContainText('49');
@@ -554,6 +620,8 @@ test('public counts and section headings stay consistent', async ({ page }, test
   await expect(page.locator('.premium-stats')).toContainText('16');
   await expect(page.locator('body')).not.toContainText('7Core components');
   await expect(page.locator('body')).not.toContainText('7 Core components');
+  await expect(page.locator('#ga4-gtag-js')).toHaveCount(0);
+  expect(localGaRequests, 'localhost should not request GA resources').toEqual([]);
 
   await gotoOk(page, '/learning.html');
   await expect(page.locator('#builder')).toContainText('49 projects');
@@ -564,6 +632,28 @@ test('public counts and section headings stay consistent', async ({ page }, test
   await gotoOk(page, '/guides/blink-led-esp32.html');
   const visibleText = await page.locator('body').innerText();
   expect(visibleText).not.toMatch(/PARTSComponents|ENGEngineering|CODECode|GPIOGPIO|SAFETYSafety|WIRINGWiring/);
+
+  const productionGaRequests: string[] = [];
+  const prodPage = await page.context().newPage();
+  await fulfillProductionHostFromLocalBuild(prodPage, productionGaRequests);
+  await prodPage.goto('https://esp32engine.com/about.html', { waitUntil: 'networkidle' });
+  const productionGaState = await prodPage.evaluate(() => {
+    const initScript = [...document.scripts].find((script) => script.textContent?.includes('__esp32EngineGa4Initialized'));
+    if (initScript?.textContent) {
+      new Function(initScript.textContent)();
+      new Function(initScript.textContent)();
+    }
+    return {
+      scriptCount: document.querySelectorAll('#ga4-gtag-js').length,
+      configCount: (window.dataLayer || []).filter((entry: unknown[]) => entry[0] === 'config' && entry[1] === 'G-WLHZKSEFP3').length,
+    };
+  });
+  await prodPage.close();
+
+  expect(productionGaState.scriptCount, 'production hostname should insert one GA script').toBe(1);
+  expect(productionGaState.configCount, 'production hostname should initialize GA config once').toBe(1);
+  expect(productionGaRequests.filter((url) => url.includes('googletagmanager.com')), 'production GA script request should be mocked once').toHaveLength(1);
+  expect(productionGaRequests.filter((url) => url.includes('google-analytics.com')), 'mocked production test should not send GA hits').toHaveLength(0);
 });
 
 test('reduced motion and constrained zoom-like viewport remain usable', async ({ page }, testInfo) => {
