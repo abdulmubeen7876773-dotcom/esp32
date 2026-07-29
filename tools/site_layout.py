@@ -24,9 +24,19 @@ GSC_VERIFICATION = _cfg["gsc_verification"]
 PINTEREST_VERIFICATION = _cfg["pinterest_verification"]
 INDEXNOW_KEY = _cfg["indexnow_key"]
 PROJECTS_PAGE_SIZE = int(_cfg["projects_page_size"])
-OG_IMAGE = f"{SITE_DOMAIN}/og-image.jpg"
+OG_IMAGE = f"{SITE_DOMAIN}/assets/images/og/esp32-engine-home.webp"
 OG_IMAGE_WIDTH = int(_cfg.get("og_image_width", 1200))
 OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
+DEFAULT_SOCIAL_IMAGE = "/assets/images/og/esp32-engine-home.webp"
+SOCIAL_IMAGE_BY_PATH = {
+    "/": "/assets/images/og/esp32-engine-home.webp",
+    "/index.html": "/assets/images/og/esp32-engine-home.webp",
+    "/projects.html": "/assets/images/og/esp32-project-library.webp",
+    "/guides.html": "/assets/images/og/esp32-learning-guides.webp",
+    "/components.html": "/assets/images/og/esp32-component-encyclopedia.webp",
+    "/parents.html": "/assets/images/og/esp32-for-parents.webp",
+    "/teachers.html": "/assets/images/og/esp32-for-teachers.webp",
+}
 DIRECTORY_ALIAS_PAGES = {
     "projects",
     "guides",
@@ -284,6 +294,11 @@ def canonical_url(path: str = "") -> str:
     return SITE_DOMAIN.rstrip("/") + normalize_public_path(path)
 
 
+def social_image_for_path(path: str = "") -> str:
+    public_path = normalize_public_path(path).split("?", 1)[0].split("#", 1)[0]
+    return SOCIAL_IMAGE_BY_PATH.get(public_path, DEFAULT_SOCIAL_IMAGE)
+
+
 def index_redirect_script() -> str:
     return CANONICAL_ROUTE_SCRIPT
 
@@ -514,6 +529,7 @@ def head_html(
     pinterest = pinterest_verification_meta()
     extras = head_extras_html()
     redirect = CANONICAL_ROUTE_SCRIPT
+    social_image = og_image or social_image_for_path(canonical_path)
     return f"""<meta charset="utf-8">
 {redirect}
 {GOOGLE_TAG_HTML}
@@ -525,7 +541,7 @@ def head_html(
 <link rel="canonical" href="{esc(canon)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 {extras}
-{social_meta(title, description, canon, og_type, og_image)}
+{social_meta(title, description, canon, og_type, social_image)}
 {pinterest}
 {gsc}
 <script>(function(){{try{{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){{document.documentElement.setAttribute("data-theme",t);return;}}if(window.matchMedia("(prefers-color-scheme: dark)").matches){{document.documentElement.setAttribute("data-theme","dark");return;}}document.documentElement.setAttribute("data-theme","light");}}catch(e){{document.documentElement.setAttribute("data-theme","light");}}}})();</script>
@@ -867,8 +883,19 @@ def home_learning_paths_section() -> str:
     cards = []
     for p in paths:
         steps = p.get("steps_label") or f"{p.get('lessons', 0)} steps"
+        image = p.get("image") or ""
+        image_html = ""
+        if image:
+            srcset = p.get("image_srcset") or ""
+            srcset_attr = f' srcset="{esc(srcset)}"' if srcset else ""
+            image_html = (
+                f'<figure class="path-card-media"><img src="{esc(image)}"{srcset_attr} '
+                f'sizes="(max-width: 900px) 100vw, 33vw" alt="{esc(p.get("image_alt", ""))}" '
+                f'width="640" height="360" loading="lazy" decoding="async"></figure>'
+            )
         cards.append(
             f'<a class="path-card" href="{esc(site_href(p.get("href", "learning.html")))}">'
+            f'{image_html}'
             f'<span class="path-icon" aria-hidden="true">{esc(p.get("icon", "🚀"))}</span>'
             f'<h3>{esc(p["title"])}</h3>'
             f'<p>{esc(p.get("description", ""))}</p>'
