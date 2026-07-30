@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
-from guide_images import guide_image_alt, guide_image_path
+from guide_images import guide_image_alt, guide_image_path, guide_image_srcset, guide_image_variant_path
 from guide_mission import mission_index_card, mission_meta_badges_html, render_friendly_intro, render_mission_guide
 from site_layout import (
     OG_IMAGE,
@@ -41,11 +41,15 @@ def normalize_body(body: str) -> str:
 
 
 def guide_hero_image_html(guide: dict) -> str:
-    image = guide_image_path(guide["slug"])
+    slug = guide["slug"]
+    image = guide_image_path(slug)
+    srcset = guide_image_srcset(slug, (640, 1024))
+    srcset_attr = f' srcset="{esc(srcset)}" sizes="(max-width: 900px) 100vw, 76vw"' if srcset else ""
+    loading_attr = ' loading="eager" fetchpriority="high"' if srcset else ""
     alt = guide_image_alt(guide)
     return (
         f'<figure class="guide-hero-image" style="margin:1.5rem 0 0;">'
-        f'<img src="{esc(image)}" alt="{esc(alt)}" width="1024" height="576" decoding="async" '
+        f'<img src="{esc(image)}"{srcset_attr} alt="{esc(alt)}" width="1024" height="576"{loading_attr} decoding="async" '
         f'style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);">'
         f"</figure>"
     )
@@ -67,11 +71,15 @@ def legacy_guide_card_html(g: dict) -> str:
     if len(desc) > 160:
         desc = desc[:157].rstrip() + "…"
     reading = g.get("reading_time", "")
-    image = guide_image_path(slug)
+    srcset = guide_image_srcset(slug, (480, 640))
+    image = guide_image_variant_path(slug, 640) if srcset else guide_image_path(slug)
+    srcset_attr = f' srcset="{esc(srcset)}" sizes="(max-width: 680px) 100vw, 33vw"' if srcset else ""
+    width = "640" if srcset else "1024"
+    height = "360" if srcset else "576"
     alt = guide_image_alt(g)
     return (
         f'<a class="guide-index-card reference-guide-card" href="{esc(href)}">'
-        f'<span class="card-media card-media--has-image"><img class="card-media-img" src="{esc(image)}" alt="{esc(alt)}" width="1024" height="576" loading="lazy" decoding="async" style="object-fit:contain;"></span>'
+        f'<span class="card-media card-media--has-image"><img class="card-media-img" src="{esc(image)}"{srcset_attr} alt="{esc(alt)}" width="{width}" height="{height}" loading="lazy" decoding="async" style="object-fit:contain;"></span>'
         f'<span class="badge badge-reference">Reference Guide</span>'
         f'<span class="badge {badge_class(g.get("proficiency_level", "Beginner"))}">{esc(g.get("proficiency_level", "Beginner"))}</span>'
         f"<h3>{esc(headline)}</h3>"

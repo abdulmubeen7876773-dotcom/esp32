@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from site_layout import badge_class, esc, site_href
-from guide_images import guide_image_alt, guide_image_path
+from guide_images import guide_image_alt, guide_image_path, guide_image_srcset, guide_image_variant_path
 from parent_registry import PARENT_BY_SLUG
 from project_text import card_description, project_slug_from_href, project_title
 
@@ -948,10 +948,14 @@ def mission_index_card(guide: dict) -> str:
         desc = desc[:117].rstrip() + "…"
     m = guide.get("mission") or {}
     icon = m.get("icon", "🚀")
-    image = guide_image_path(slug)
+    srcset = guide_image_srcset(slug, (480, 640))
+    image = guide_image_variant_path(slug, 640) if srcset else guide_image_path(slug)
+    srcset_attr = f' srcset="{esc(srcset)}" sizes="(max-width: 680px) 100vw, 33vw"' if srcset else ""
+    width = "640" if srcset else "1024"
+    height = "360" if srcset else "576"
     alt = guide_image_alt(guide)
     return f"""<a class="mission-index-card" href="{esc(href)}">
-  <span class="card-media card-media--has-image"><img class="card-media-img" src="{esc(image)}" alt="{esc(alt)}" width="1024" height="576" loading="lazy" decoding="async" style="object-fit:contain;"></span>
+  <span class="card-media card-media--has-image"><img class="card-media-img" src="{esc(image)}"{srcset_attr} alt="{esc(alt)}" width="{width}" height="{height}" loading="lazy" decoding="async" style="object-fit:contain;"></span>
   <span class="mission-index-icon" aria-hidden="true">{esc(icon)}</span>
   {mission_meta_badges_html(guide)}
   <h3>{esc(headline)}</h3>
