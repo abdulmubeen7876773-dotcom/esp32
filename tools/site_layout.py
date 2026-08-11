@@ -1137,7 +1137,7 @@ def home_v2_proof() -> str:
     for cls, svg, slug, tag in panels:
         href = site_href(f"projects/{slug}.html")
         panel_html += (
-            f'<a class="{cls} v2-showcase-panel v2-showcase-link" href="{esc(href)}" role="group" aria-label="{esc(tag)}">'
+            f'<a class="{cls} v2-showcase-panel v2-showcase-link" href="{esc(href)}" aria-label="{esc(tag)}">'
             f'<div class="v2-showcase-glow" aria-hidden="true"></div>'
             f'<div class="v2-showcase-illustration" aria-hidden="true">{svg}</div>'
             f'<div class="v2-showcase-info"><span class="v2-showcase-tag">{esc(tag)}</span></div>'
@@ -1393,7 +1393,7 @@ def home_popular_paths(projects: list[dict]) -> str:
         slug = path.get("featured_project", "")
         if slug not in by_slug:
             continue
-        cards.append(f"""<article class="home-path-card"><h3>{esc(title)}</h3><p>{esc(desc)}</p><a href="{site_href(href)}">Open path</a><a href="{site_href(f'projects/{slug}.html')}">Featured: {esc(project_title(by_slug[slug]))}</a></article>""")
+        cards.append(f"""<article class="home-path-card"><h3>{esc(title)}</h3><p>{esc(desc)}</p><a href="{site_href(href)}" aria-label="Open {esc(title)} path">Open path</a><a href="{site_href(f'projects/{slug}.html')}">Featured: {esc(project_title(by_slug[slug]))}</a></article>""")
     return f"""<section class="home-paths" aria-labelledby="home-paths-heading"><div class="wrap"><p class="home-section-eyebrow">Popular learning paths</p><h2 id="home-paths-heading">Pick a skill path</h2><div class="home-path-grid">{"".join(cards)}</div></div></section>"""
 
 
@@ -1406,7 +1406,8 @@ def home_build_experiment_upgrade(projects: list[dict]) -> str:
     for key in ["build", "experiment", "upgrade"]:
         item = steps.get(key, {})
         if item:
-            cards.append(f"""<article class="home-path-card"><h3>{esc(item.get("title", key.title()))}</h3><p>{esc(item.get("text", ""))}</p><a href="{site_href(item.get("href", "projects.html"))}">Open example</a></article>""")
+            title = item.get("title", key.title())
+            cards.append(f"""<article class="home-path-card"><h3>{esc(title)}</h3><p>{esc(item.get("text", ""))}</p><a href="{site_href(item.get("href", "projects.html"))}" aria-label="Open {esc(title)} example">Open example</a></article>""")
     return f"""<section class="home-experiment" aria-labelledby="home-experiment-heading"><div class="wrap"><p class="home-section-eyebrow">Build, experiment, upgrade</p><h2 id="home-experiment-heading">Grow one stable project at a time</h2><div class="home-path-grid home-path-grid-three">{"".join(cards)}</div></div></section>"""
 
 
