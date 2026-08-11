@@ -7,30 +7,33 @@ featured_image: /assets/visuals/projects/thumbs/esp32-oled-weather-clock-thumb.s
 hero_image: /assets/visuals/projects/heroes/esp32-oled-weather-clock-hero.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-oled-weather-clock-placeholder.svg
 og_image: /assets/visuals/projects/heroes/esp32-oled-weather-clock-hero.svg
-description: Build a Wi-Fi clock that shows NTP time and weather-style readings on a crisp OLED display.
-meta_description: Build a Wi-Fi clock that shows NTP time and weather-style readings on a crisp OLED display.
+description: Build an ESP32 OLED weather clock that syncs NTP time over Wi-Fi and shows BME280 temperature, humidity, and pressure on an SSD1306 display.
+meta_description: Build an ESP32 OLED weather clock that syncs NTP time over Wi-Fi and shows BME280 temperature, humidity, and pressure on an SSD1306 display.
 source_base: esp32-oled-weather-clock
-sensor: NTP time and optional BME280 sensor
+sensor: Wi-Fi NTP time and BME280 environmental sensor
 output: SSD1306 OLED display
 featured: true
 date_published: '2026-06-14'
 date_modified: '2026-06-29'
 keywords:
 - ESP32
-- ESP32 OLED Weather Clock
-- NTP time and optional BME280 sensor
-- SSD1306 OLED display
+- ESP32 OLED weather clock
+- ESP32 OLED clock
+- ESP32 NTP clock
+- SSD1306 ESP32
+- BME280 ESP32
+- ESP32 weather display
 - Arduino tutorial
 hardware:
   sensor_pin: GPIO21/GPIO22
-  output_pin: I2C OLED
-  sensor_name: NTP time and optional BME280 sensor
+  output_pin: GPIO21/GPIO22
+  sensor_name: BME280 environmental sensor
   output_name: SSD1306 OLED display
   wiring:
-  - component: NTP time and optional BME280 sensor
-    pin: GPIO21/GPIO22
   - component: SSD1306 OLED display
-    pin: I2C OLED
+    pin: SDA GPIO21, SCL GPIO22
+  - component: BME280 environmental sensor
+    pin: SDA GPIO21, SCL GPIO22
 project:
   icon: ESP
   mission_title: Build Your OLED Weather Clock
@@ -38,23 +41,22 @@ project:
   age: Ages 12+
   estimated_time: 90-150 min
   budget: Under $35
-  what_you_build: A working weather clock with an ESP32, a real input, a controlled output, Serial Monitor diagnostics,
-    and a wiring map you can expand into a more advanced version.
+  what_you_build: A Wi-Fi-synced ESP32 OLED clock that shows local time, temperature, humidity, and optional pressure on a compact SSD1306 display, with Serial Monitor diagnostics for Wi-Fi, NTP, OLED, and BME280 checks.
   components:
   - item: ESP32 DevKit board
-    note: Main controller
+    note: Main controller with Wi-Fi
     icon: PART
     link: /components/esp32-devkit.html
-  - item: Ntp Time And Optional Bme280 Sensor
-    note: Primary input for the project
+  - item: BME280 environmental sensor
+    note: Measures temperature, humidity, and pressure
     icon: PART
     link: /components/bme280.html
-  - item: Ssd1306 Oled Display
-    note: Physical output controlled by ESP32
+  - item: SSD1306 OLED display
+    note: Shows clock and weather readings
     icon: PART
     link: /components/ssd1306-oled.html
   - item: Breadboard and jumper wires
-    note: Prototype wiring
+    note: Prototype the shared I2C bus
     icon: PART
   - item: USB data cable
     note: Programming and testing
@@ -63,166 +65,267 @@ project:
   - part: ESP32 DevKit
     qty: '1'
     estimated_cost: $6-$10
-    notes: USB board
-  - part: Ntp Time And Optional Bme280 Sensor
+    notes: USB board with Wi-Fi
+  - part: BME280 sensor module
     qty: '1'
-    estimated_cost: $2-$10
-    notes: Project input
-  - part: Ssd1306 Oled Display
+    estimated_cost: $3-$10
+    notes: Use BME280 for humidity; BMP280 does not measure humidity
+  - part: SSD1306 OLED display
     qty: '1'
     estimated_cost: $3-$12
-    notes: Use low-voltage test hardware
+    notes: Most I2C modules use address 0x3C; some use 0x3D
   - part: Breadboard and wires
     qty: 1 set
     estimated_cost: $3-$5
-    notes: Prototype wiring
+    notes: Short I2C jumpers make debugging easier
   wiring:
-    illustration_alt: ESP32 OLED Weather Clock wiring diagram
-    summary: Wire the NTP time and optional BME280 sensor first, verify readings, then connect the SSD1306 OLED
-      display.
+    illustration_alt: ESP32 OLED weather clock wiring diagram with SSD1306 OLED and BME280 on shared I2C
+    summary: Connect the SSD1306 OLED and BME280 to the same ESP32 I2C bus, then verify Wi-Fi and NTP before trusting the displayed time.
     steps:
-    - Unplug USB before placing modules on the breadboard.
-    - Connect the NTP time and optional BME280 sensor power pins to the correct 3.3 V or 5 V rail according to its
-      module label.
-    - Connect the NTP time and optional BME280 sensor signal line to GPIO21/GPIO22.
-    - Connect the SSD1306 OLED display control input to I2C OLED and share ground with the ESP32.
-    - Power the ESP32 from USB and test the input reading before enabling the output.
+    - Unplug USB before placing the OLED or BME280 on the breadboard.
+    - Connect OLED VCC to 3.3 V and OLED GND to ESP32 GND.
+    - Connect OLED SDA to GPIO21 and OLED SCL to GPIO22.
+    - Connect BME280 VIN or VCC to 3.3 V and BME280 GND to ESP32 GND.
+    - Connect BME280 SDA to GPIO21 and BME280 SCL to GPIO22 so it shares the I2C bus with the OLED.
+    - Reconnect USB, upload the sketch, and use Serial Monitor to confirm Wi-Fi, NTP, and BME280 startup messages.
   gpio_map:
-  - signal: NTP time and optional BME280 sensor
-    esp32_pin: GPIO21/GPIO22
-    direction: Input
-    notes: Read before controlling output
-  - signal: SSD1306 OLED display
-    esp32_pin: I2C OLED
-    direction: Output
-    notes: Drive through a module or driver
-  - signal: Status LED
-    esp32_pin: GPIO2
-    direction: Output
-    notes: Optional debug indicator
+  - signal: OLED SDA
+    esp32_pin: GPIO21
+    direction: I2C data
+    notes: Match Wire.begin(21, 22); some ESP32 boards expose different default SDA pins
+  - signal: OLED SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Match Wire.begin(21, 22); keep jumpers short for reliable I2C
+  - signal: BME280 SDA
+    esp32_pin: GPIO21
+    direction: I2C data
+    notes: Shares the same bus as the OLED when the addresses do not conflict
+  - signal: BME280 SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Most BME280 boards use address 0x76 or 0x77
+  - signal: Wi-Fi and NTP
+    esp32_pin: Internal radio
+    direction: Network
+    notes: NTP supplies UTC time; your offset controls the local display
   - signal: Serial Monitor
     esp32_pin: USB
     direction: Debug
     notes: 115200 baud
   code:
     filename: oled-weather-clock.ino
-    content: "#include <WiFi.h>\n#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n#include\
-      \ <time.h>\n\nconst char* ssid = \"YOUR_WIFI\";\nconst char* password = \"YOUR_PASSWORD\";\nAdafruit_SSD1306\
-      \ display(128, 64, &Wire, -1);\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  display.begin(SSD1306_SWITCHCAPVCC,\
-      \ 0x3C);\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  WiFi.begin(ssid, password);\n\
-      \  while (WiFi.status() != WL_CONNECTED) delay(300);\n  configTime(0, 0, \"pool.ntp.org\");\n}\n\nvoid loop()\
-      \ {\n  struct tm timeinfo;\n  if (!getLocalTime(&timeinfo)) return;\n  display.clearDisplay();\n  display.setTextSize(2);\n\
-      \  display.setCursor(0, 0);\n  display.printf(\"%02d:%02d\", timeinfo.tm_hour, timeinfo.tm_min);\n  display.setTextSize(1);\n\
-      \  display.setCursor(0, 32);\n  display.println(\"ESP32 Weather Clock\");\n  display.println(WiFi.localIP());\n\
-      \  display.display();\n  delay(1000);\n}\n"
-  expected_output: Serial Monitor should show a changing reading. When the NTP time and optional BME280 sensor reaches
-    the test condition, the status LED and SSD1306 OLED display should switch state. If the reading changes but
-    the output does not, debug the output wiring separately.
+    content: |
+      #include <WiFi.h>
+      #include <Wire.h>
+      #include <Adafruit_GFX.h>
+      #include <Adafruit_SSD1306.h>
+      #include <Adafruit_BME280.h>
+      #include <time.h>
+
+      #define I2C_SDA 21
+      #define I2C_SCL 22
+      #define OLED_ADDRESS 0x3C
+      #define SCREEN_WIDTH 128
+      #define SCREEN_HEIGHT 64
+
+      const char* ssid = "YOUR_WIFI";
+      const char* password = "YOUR_PASSWORD";
+
+      // NTP supplies UTC. Set these values for your local time zone.
+      const long GMT_OFFSET_SEC = 0;
+      const int DAYLIGHT_OFFSET_SEC = 0;
+
+      Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+      Adafruit_BME280 bme;
+      bool bmeReady = false;
+
+      void showMessage(const char* line1, const char* line2) {
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 0);
+        display.println(line1);
+        display.println(line2);
+        display.display();
+      }
+
+      bool beginBME280() {
+        if (bme.begin(0x76)) return true;
+        if (bme.begin(0x77)) return true;
+        return false;
+      }
+
+      void setup() {
+        Serial.begin(115200);
+        Wire.begin(I2C_SDA, I2C_SCL);
+
+        if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
+          Serial.println("SSD1306 not found. Check address, power, SDA, and SCL.");
+          while (true) delay(1000);
+        }
+
+        showMessage("OLED Weather Clock", "Connecting WiFi...");
+
+        WiFi.begin(ssid, password);
+        while (WiFi.status() != WL_CONNECTED) {
+          delay(300);
+          Serial.print(".");
+        }
+        Serial.println();
+        Serial.print("WiFi connected: ");
+        Serial.println(WiFi.localIP());
+
+        configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, "pool.ntp.org", "time.nist.gov");
+
+        bmeReady = beginBME280();
+        Serial.println(bmeReady ? "BME280 ready" : "BME280 not found");
+        showMessage("Clock ready", bmeReady ? "BME280 ready" : "Check BME280");
+        delay(1200);
+      }
+
+      void loop() {
+        struct tm timeinfo;
+        if (!getLocalTime(&timeinfo)) {
+          Serial.println("Waiting for NTP time...");
+          showMessage("NTP sync", "Waiting...");
+          delay(1000);
+          return;
+        }
+
+        char timeText[6];
+        char dateText[18];
+        strftime(timeText, sizeof(timeText), "%H:%M", &timeinfo);
+        strftime(dateText, sizeof(dateText), "%a %d %b", &timeinfo);
+
+        display.clearDisplay();
+        display.setTextColor(SSD1306_WHITE);
+        display.setTextSize(2);
+        display.setCursor(0, 0);
+        display.println(timeText);
+
+        display.setTextSize(1);
+        display.setCursor(0, 22);
+        display.println(dateText);
+
+        if (bmeReady) {
+          display.print("Temp: ");
+          display.print(bme.readTemperature(), 1);
+          display.println(" C");
+          display.print("Hum:  ");
+          display.print(bme.readHumidity(), 0);
+          display.println(" %");
+          display.print("Pres: ");
+          display.print(bme.readPressure() / 100.0F, 0);
+          display.println(" hPa");
+        } else {
+          display.println("BME280 not found");
+          display.println("Clock only mode");
+        }
+
+        display.display();
+        delay(2000);
+      }
+  expected_output: The OLED should show local HH:MM time, the date, temperature in Celsius, humidity percent, and pressure in hPa when a BME280 is connected. Serial Monitor should report Wi-Fi connection, BME280 status, and any NTP waiting messages.
   common_mistakes:
-  - text: Testing input and output for the first time together.
-  - text: Using a GPIO pin that does not match the code constant.
-  - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
-  - text: Forgetting the shared ground between modules.
+  - text: Leaving GMT_OFFSET_SEC at 0 and expecting local time in every country.
+  - text: Buying a BMP280 board and expecting humidity; use BME280 if humidity is required.
+  - text: Swapping SDA and SCL or using pins that do not match Wire.begin(21, 22).
+  - text: Assuming every OLED is address 0x3C; some modules use 0x3D.
+  - text: Powering an I2C module from 5 V when the board is not clearly 3.3 V safe.
   troubleshooting:
-  - problem: NTP time and optional BME280 sensor never changes
-    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
-  - problem: SSD1306 OLED display does not switch
-    fix: Test the output module with a simple blink-style sketch before using the full project.
-  - problem: ESP32 resets under load
-    fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
-  - problem: Behavior is reversed
-    fix: Your module may be active LOW; invert the output logic after confirming with Serial Monitor.
+  - problem: OLED stays blank
+    fix: Confirm 3.3 V, GND, SDA on GPIO21, SCL on GPIO22, and the OLED address. Try 0x3D if your module is not found at 0x3C.
+  - problem: BME280 is not detected
+    fix: Check the shared I2C wiring and sensor address. Most BME280 modules answer at 0x76 or 0x77.
+  - problem: Time is wrong
+    fix: NTP gives network time in UTC. Set GMT_OFFSET_SEC and DAYLIGHT_OFFSET_SEC for your location before judging the displayed time.
+  - problem: NTP sync keeps waiting
+    fix: Verify SSID, password, router access, and that the ESP32 can reach pool.ntp.org from your network.
+  - problem: OLED works alone but fails with the BME280 connected
+    fix: Make sure both modules share SDA and SCL cleanly, use short jumpers, and confirm the devices do not use the same I2C address.
   upgrade_ideas:
-  - Add OLED status feedback.
-  - Add Wi-Fi dashboard or mobile alerts.
-  - Store event history in flash or a cloud service.
-  - Add calibration settings instead of hard-coded thresholds.
+  - Add a setup screen for timezone and 12-hour or 24-hour display.
+  - Show pressure trend arrows after storing recent BME280 readings.
+  - Alternate between clock, weather, and Wi-Fi status screens.
+  - Add deep sleep or dimming for a desk clock enclosure.
   related_guides:
-  - title: Read Temperature with DHT22
-    href: /guides/read-temperature-dht22.html
-    description: Learn the sensor-reading workflow used in many ESP32 projects.
+  - title: ESP32 OLED Display Tutorial
+    href: /guides/oled-display-esp32.html
+    description: Learn how SSD1306 OLED text, coordinates, and display updates work on ESP32.
+  - title: I2C Communication
+    href: /guides/i2c-communication.html
+    description: Understand how the OLED and BME280 share SDA and SCL on one bus.
   - title: Connect an OLED Display
     href: /guides/connect-oled-esp32.html
-    description: Add a local display for values, status, and debugging.
+    description: Wire a simple OLED test before combining display output with sensors.
   related_projects:
   - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
-    description: Practice sensor readings and clean Serial output.
-  - title: ESP32 Home Climate Automation
-    href: /projects/esp32-home-climate-automation.html
-    description: Turn measurements into automatic control decisions.
+    description: Expand the same environmental readings into a fuller weather station.
+  - title: ESP32 Smart Thermostat
+    href: /projects/esp32-smart-thermostat.html
+    description: Compare display-only monitoring with a temperature-control project.
   complete:
-    summary: You built a real weather clock and learned how to connect sensing, decision logic, and output control
-      in one ESP32 project.
+    summary: You built an ESP32 OLED weather clock that combines Wi-Fi time, local timezone configuration, BME280 environmental readings, and a compact SSD1306 display.
     skills:
-    - Wire and test NTP time and optional BME280 sensor
-    - Control SSD1306 OLED display from ESP32
-    - Debug hardware with Serial Monitor
-    - Improve the project safely
-  story: 'ESP32 OLED Weather Clock turns the ESP32 into a real object that senses something, decides what it means,
-    and reacts in the physical world.
+    - Wire SSD1306 and BME280 modules on the same I2C bus
+    - Sync ESP32 time with NTP over Wi-Fi
+    - Configure timezone offset for local clock display
+    - Show temperature, humidity, and pressure on an OLED
+  story: 'ESP32 OLED Weather Clock turns the ESP32 into a small desk display that combines network time with local room conditions.
 
 
-    The important lesson is not only the finished weather clock. You learn how to separate input, decision logic,
-    and output so a project stays debuggable instead of becoming a pile of wires and guesses.'
-  eli12: Think of the ESP32 as the brain. The NTP time and optional BME280 sensor is how it notices the world. The
-    SSD1306 OLED display is how it answers back. The code is the rule book that tells the brain what to do when
-    the numbers change.
-  parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
-    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
-    circuit. Do not use mains voltage on a breadboard.
+    The useful lesson is how several layers work together: Wi-Fi gets time from NTP, the timezone settings turn that into a local clock, the BME280 measures the environment, and the SSD1306 turns those values into something easy to read.'
+  eli12: Think of the ESP32 as a tiny clock brain. Wi-Fi lets it ask the internet for the current time, the timezone setting tells it what that time should look like where you live, the BME280 checks the room, and the OLED is the little screen that shows the result.
+  parent_safety: This tutorial is designed for low-voltage learning on USB power and 3.3 V modules. Unplug the ESP32 before changing wires, keep the OLED and BME280 wiring tidy, and do not use mains voltage on a breadboard.
+  safety_standards:
+  - Unplug USB before changing jumper wires. Recheck 3.3 V and GND before reconnecting power.
+  - Keep the OLED and BME280 on the ESP32 I2C pins shown in the wiring table, or update the Wire.begin pins to match your board.
+  - Breadboards are for supervised, low-voltage prototypes. Move any permanent clock build into an insulated enclosure with strain relief for the USB cable.
   learning_objectives:
-  - Wire and test the NTP time and optional BME280 sensor before connecting the rest of the circuit.
-  - Map each signal to a named ESP32 GPIO and keep the code constants readable.
-  - Control SSD1306 OLED display using a clear threshold or command instead of hidden magic numbers.
-  - Use Serial Monitor as an engineering tool, not only as a success message.
-  - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an output side. The NTP time and optional BME280
-    sensor tells the ESP32 what is happening. The SSD1306 OLED display receives a controlled signal from the ESP32,
-    usually through a driver, relay, or module that can handle more current than a GPIO pin.
-  engineering_explanation: A reliable weather clock is built in layers. First prove the input, then prove the output,
-    then join them with simple state logic. This prevents a common beginner problem where the robot, lock, or automation
-    fails and every wire looks suspicious at the same time.
-  code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
-    and then updates the output and status LED. Replace the threshold with values measured from your own NTP time
-    and optional BME280 sensor because modules vary.
+  - Wire an SSD1306 OLED and BME280 sensor on the ESP32 I2C pins.
+  - Match SDA and SCL wiring to Wire.begin(21, 22) in the sketch.
+  - Connect ESP32 Wi-Fi and sync time from NTP.
+  - Configure UTC offset and daylight saving offset for local clock display.
+  - Read BME280 temperature, humidity, and pressure and format them for a 128x64 OLED.
+  circuit_explanation: The OLED and BME280 both use I2C, so they share SDA on GPIO21 and SCL on GPIO22 while keeping separate device addresses. The SSD1306 display is usually at 0x3C, while many BME280 boards use 0x76 or 0x77. Those addresses let the ESP32 talk to both modules on the same two signal wires.
+  engineering_explanation: A reliable weather clock is built in layers. First initialize I2C, then confirm the OLED address, connect Wi-Fi, sync NTP time, apply the correct timezone offset, check the BME280 address, and only then draw the clock and weather values. Testing in that order makes a blank display or wrong time much easier to troubleshoot.
+  code_explanation: The sketch starts I2C with Wire.begin(21, 22), initializes the SSD1306 at 0x3C, connects to Wi-Fi, and starts NTP with configTime. In the loop, getLocalTime returns the current local time, strftime formats it for the screen, the BME280 readings are collected when the sensor is detected, and the OLED is refreshed every two seconds.
   testing_checklist:
-  - ESP32 appears on the correct port and accepts a basic blink upload.
-  - Ground is shared between every module that exchanges signals with the ESP32.
-  - Each GPIO in the code matches the wire connected on the breadboard.
-  - Serial Monitor prints startup text at 115200 baud.
-  - The NTP time and optional BME280 sensor value changes when you create a real test condition.
-  - The SSD1306 OLED display changes only when the expected condition is reached.
-  - The circuit still behaves correctly after power is removed and restored.
+  - ESP32 appears on the correct port and accepts a basic upload.
+  - OLED VCC is on 3.3 V, GND is shared, SDA is GPIO21, and SCL is GPIO22.
+  - OLED address 0x3C is correct, or the code is changed to 0x3D for your module.
+  - BME280 is connected to the same SDA and SCL lines and is detected at 0x76 or 0x77.
+  - Serial Monitor prints the Wi-Fi IP address.
+  - The OLED shows local time after NTP sync.
+  - Temperature, humidity, and pressure update about every two seconds.
   build_photos:
   - title: Breadboard overview
-    note: Show the ESP32, module placement, and power rails clearly.
-  - title: Close-up wiring
-    note: Capture each GPIO wire so beginners can compare their build.
-  - title: Working output
-    note: Show the Serial Monitor, display, robot, pump, or lock state after the code runs.
+    note: Show the ESP32, SSD1306 OLED, BME280, 3.3 V rail, and shared ground clearly.
+  - title: I2C wiring close-up
+    note: Capture SDA on GPIO21 and SCL on GPIO22 for both the OLED and BME280.
+  - title: Working display
+    note: Show the OLED with time, date, temperature, humidity, and pressure after Wi-Fi sync.
   downloads:
   - text: ESP32 OLED Weather Clock Arduino sketch
     note: Use the code section as the downloadable source until file downloads are published.
   - text: Wiring checklist
     note: Match the GPIO table and wiring steps before powering the circuit.
   - text: Troubleshooting worksheet
-    note: Record symptoms, Serial output, voltage checks, and fixes.
+    note: Record OLED address, BME280 address, Wi-Fi status, NTP status, and fixes.
   real_world_applications:
   - Classroom weather clock trainer
-  - STEM lab demonstration
-  - Home automation prototype
-  - Engineering debugging practice
+  - Desk clock with room conditions
+  - Environmental display prototype
   - IoT portfolio project
+  - I2C debugging practice
   faqs:
-  - question: Why does my NTP time and optional BME280 sensor reading look wrong?
-    answer: Confirm Wi-Fi is connected before trusting NTP time, then check the optional BME280 I2C wiring on GPIO21
-      and GPIO22.
-  - question: Why does SSD1306 OLED display not respond?
-    answer: Check OLED power, ground, SDA on GPIO21, SCL on GPIO22, and the display I2C address before replacing
-      the screen.
-  - question: Will the clock keep time without Wi-Fi?
-    answer: The NTP version needs Wi-Fi to set time after boot. Add a real-time clock module only if you want local
-      timekeeping without network access.
+  - question: Why is the displayed time not my local time?
+    answer: NTP supplies UTC time. Set GMT_OFFSET_SEC and DAYLIGHT_OFFSET_SEC for your location before using the clock as a local display.
+  - question: Can I build the clock without a BME280?
+    answer: Yes. The sketch will still show the NTP clock and a BME280 warning, but the complete weather clock needs a BME280 for temperature, humidity, and pressure.
+  - question: Why does the OLED not respond?
+    answer: Check OLED power, ground, SDA on GPIO21, SCL on GPIO22, and the display I2C address before replacing the screen.
 quality_status: golden
 status: complete

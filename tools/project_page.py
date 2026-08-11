@@ -169,6 +169,14 @@ def education_support_section(p: dict) -> str:
 
 
 def project_safety_standards_section(p: dict) -> str:
+    custom_notes = (p.get("project") or {}).get("safety_standards") or []
+    if custom_notes:
+        items = "".join(f"<li>{esc(note)}</li>" for note in custom_notes)
+        return f"""<section class="project-section project-safety-section" id="safety-standards" aria-labelledby="safety-standards-heading">
+  {project_section_heading("safety-standards", "Safety", "Safety Standards")}
+  <ul class="project-callout-list">{items}</ul>
+</section>"""
+
     title_blob = " ".join(
         [
             p.get("title", ""),
