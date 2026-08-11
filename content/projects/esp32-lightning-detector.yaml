@@ -1,7 +1,7 @@
 slug: esp32-lightning-detector
 title: "ESP32 Lightning Detector: AS3935 Sensor Demo"
 category: Environmental
-description: Build an ESP32 lightning detector demo with an AS3935 sensor, SPI wiring, interrupt handling, OLED output, and clear storm-safety limits.
+description: Build an ESP32 AS3935 lightning sensor demo that classifies noise, disturber, and lightning-like events while explaining tuning and storm-safety limits.
 meta_description: Build an ESP32 AS3935 lightning sensor demo with SPI wiring, interrupt handling, OLED output, noise/disturber classification, and official-alert safety limits.
 source_base: esp32-lightning-detector-legacy-import
 sensor: AS3935 CS
@@ -70,8 +70,9 @@ levels:
     key_concepts:
     - The AS3935 reports event types through registers after raising IRQ. SPI reads classify noise, disturber, or lightning-like
       events.
-    - Distance codes are estimates from the sensor algorithm, not guaranteed strike distance. Indoor electronics can cause
-      false positives.
+    - Noise means the local electrical environment is too noisy, disturber means interference looked storm-like but was rejected,
+      and lightning-like means the chip accepted the pattern.
+    - Distance codes are estimates from the sensor algorithm, not exact strike distances. Indoor electronics can cause false positives.
     applications: &id003
     - Weather-sensor education
     - Interrupt classification lesson
@@ -80,7 +81,7 @@ levels:
     - - AS3935 not found
       - Check SPI wiring, chip select GPIO5, and 3.3 V power.
     - - Frequent disturbers
-      - Move away from switching supplies, motors, and LED lamps; adjust noise settings.
+      - Move away from USB chargers, switching supplies, laptop power bricks, LED lamps, and long jumper wires; tune one setting at a time.
     - - No events
       - Confirm IRQ wiring and module library configuration with a register read example.
     improvements: &id002
@@ -101,8 +102,8 @@ levels:
       \  if (type == NOISE_INT) {\n    Serial.println(\"Noise event. Move the sensor away from electronics or raise noise\
       \ level.\");\n  } else if (type == DISTURBER_INT) {\n    Serial.println(\"Disturber event. Electrical interference,\
       \ not confirmed lightning.\");\n  } else if (type == LIGHTNING_INT) {\n    int distanceKm = lightning.distanceToStorm();\n\
-      \    Serial.print(\"Lightning-like event. Estimated distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
-      \ km. Treat as educational only.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
+      \    Serial.print(\"Lightning-like event. AS3935 distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
+      \ km. Not a verified strike distance.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
       \ LOW);\n\n    oled.clearDisplay();\n    oled.setTextSize(1);\n    oled.setCursor(0, 0);\n    oled.println(\"Lightning-like\
       \ event\");\n    oled.print(\"Distance code: \");\n    oled.print(distanceKm);\n    oled.println(\" km\");\n    oled.println(\"\
       Use official alerts\");\n    oled.display();\n  }\n}\n"
@@ -121,7 +122,7 @@ project:
   estimated_time: 75-90 min
   budget: Under 40 USD
   adult_supervision: Adult supervision required; do not test outdoors during storms.
-  classroom_use: Use the project indoors as a sensor-classification and false-positive discussion, not as a storm warning.
+  classroom_use: Use the project indoors as a sensor-classification, tuning, and false-positive discussion, not as a storm alert.
   parent_prompt: Ask why official weather alerts matter more than a hobby sensor.
   screen_free_activity: Draw noise, disturber, and lightning-like event categories.
   skills_practiced:
@@ -139,13 +140,16 @@ project:
   - Move the module away from power supplies.
   - Log event types without storm claims.
   next_challenge: Add timestamped local logging after the sensor is stable indoors.
-  what_you_build: An ESP32 AS3935 educational lightning sensor demo that logs event types, flashes an LED, and displays lightning-like distance codes on an OLED.
-  story: This is a technically honest lightning-sensor lesson. It is not weather forecasting, protection equipment, or a certified
-    warning system.
+  what_you_build: An ESP32 AS3935 educational lightning sensor demo that classifies noise, disturber, and lightning-like events, flashes an LED for lightning-like events, and displays distance codes on an OLED.
+  story: This is a technically honest lightning-sensor lesson. It is not weather forecasting, protection equipment, or a certified alert device.
   eli12: Lightning makes radio noise. The AS3935 listens for patterns like that, but other electronics can also make noise,
     so the ESP32 labels what the chip reports.
   parent_safety: Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not go outside
-    to test during lightning. Unplug USB and external power before rewiring.
+    to test during lightning. Use the project as an indoor bench lesson, and unplug USB and external power before rewiring.
+  safety_standards:
+  - Follow official weather alerts and local guidance for storm decisions; this hobby circuit is educational only.
+  - Do not go outdoors, handle antennas, or move wiring during thunder or lightning.
+  - Keep the AS3935, ESP32, OLED, and LED on low-voltage bench power. Unplug USB before changing SPI, IRQ, OLED, or LED wiring.
   learning_objectives: *id001
   components:
   - item: ESP32 DevKit board
@@ -220,10 +224,8 @@ project:
     esp32_pin: GPIO21/GPIO22
     direction: I2C
     notes: Optional display.
-  circuit_explanation: The AS3935 reports event types through registers after raising IRQ. SPI reads classify noise, disturber,
-    or lightning-like events.
-  engineering_explanation: Distance codes are estimates from the sensor algorithm, not guaranteed strike distance. Indoor
-    electronics can cause false positives.
+  circuit_explanation: The AS3935 raises its IRQ pin when it has an event to report. The ESP32 then reads the interrupt register over SPI and classifies the event as noise, disturber, or lightning-like. Noise means the sensor floor is too noisy for a clean decision. Disturber means an electrical pulse looked storm-like but did not pass the chip's lightning checks. Lightning-like means the AS3935 algorithm accepted the pattern and can return a distance code.
+  engineering_explanation: Indoor and outdoor modes change the AS3935 analog front-end gain, so the same wiring can behave differently on a desk, near electronics, or outside under cover. Start indoors with disturbers unmasked so you can see interference instead of hiding it. Tune noise level and spike rejection one step at a time, record the false-positive rate, then decide whether the setting is too sensitive or too quiet. The distance value is a sensor code in kilometers from the AS3935 algorithm, not a verified strike location or a safety radius.
   libraries:
   - name: SparkFun AS3935
     note: Install SparkFun AS3935 Lightning Detector library.
@@ -245,33 +247,44 @@ project:
       \  if (type == NOISE_INT) {\n    Serial.println(\"Noise event. Move the sensor away from electronics or raise noise\
       \ level.\");\n  } else if (type == DISTURBER_INT) {\n    Serial.println(\"Disturber event. Electrical interference,\
       \ not confirmed lightning.\");\n  } else if (type == LIGHTNING_INT) {\n    int distanceKm = lightning.distanceToStorm();\n\
-      \    Serial.print(\"Lightning-like event. Estimated distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
-      \ km. Treat as educational only.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
+      \    Serial.print(\"Lightning-like event. AS3935 distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
+      \ km. Not a verified strike distance.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
       \ LOW);\n\n    oled.clearDisplay();\n    oled.setTextSize(1);\n    oled.setCursor(0, 0);\n    oled.println(\"Lightning-like\
       \ event\");\n    oled.print(\"Distance code: \");\n    oled.print(distanceKm);\n    oled.println(\" km\");\n    oled.println(\"\
       Use official alerts\");\n    oled.display();\n  }\n}\n"
-  code_explanation: GPIO4 sets an event flag. The loop reads the AS3935 interrupt register and prints noise, disturber, or
-    lightning-like event messages.
-  expected_output: Serial Monitor reports noise/disturber/lightning-like event categories. The LED flashes only on lightning-like
-    events.
+  code_explanation: GPIO4 sets an event flag when the AS3935 raises IRQ. The loop waits for that flag, reads the AS3935 interrupt register over SPI, and handles three event types. NOISE_INT means the noise floor is too high. DISTURBER_INT means an electrical pulse resembled lightning but was rejected as interference. LIGHTNING_INT means the chip accepted the pattern and returns a distance code for display and logging.
+  expected_output: Serial Monitor reports noise, disturber, and lightning-like event categories. The LED flashes only on lightning-like events, and the OLED labels the distance as an AS3935 distance code rather than an exact strike location.
   common_mistakes:
   - text: Treating the project as a life-safety warning system.
   - text: Testing outdoors during storms.
-  - text: Ignoring disturber events.
-  - text: Claiming exact distance accuracy.
+  - text: Masking disturbers before learning what local interference looks like.
+  - text: Changing indoor/outdoor mode, noise level, and spike rejection all at once.
+  - text: Claiming exact strike distance from the distance code.
   troubleshooting:
   - problem: AS3935 not found
     fix: Check SPI wiring, chip select GPIO5, and 3.3 V power.
   - problem: Frequent disturbers
-    fix: Move away from switching supplies, motors, and LED lamps; adjust noise settings.
+    fix: Move the module away from USB chargers, switching supplies, laptop power bricks, LED lamps, appliance wiring, and long jumper wires. Keep disturbers unmasked while tuning so you can see the interference source.
+  - problem: Frequent noise events
+    fix: Shorten wiring, improve ground connections, move the antenna/module away from the ESP32 Wi-Fi antenna and power wiring, then raise the AS3935 noise level one step if needed.
+  - problem: Lightning-like events happen indoors with no storm nearby
+    fix: Treat them as false positives until compared with official weather information. Increase spike rejection one step, move away from noisy electronics, and log whether the event repeats.
   - problem: No events
     fix: Confirm IRQ wiring and module library configuration with a register read example.
+  - problem: Distance value seems wrong
+    fix: Treat distance as the AS3935 algorithm's distance code in kilometers, not a GPS location, exact range, or proof that a strike occurred.
   testing_checklist:
   - Verify SPI communication indoors.
-  - Trigger and log only safe noise/disturber behavior.
-  - Compare messages with official weather alerts without relying on the sensor.
+  - Confirm GPIO4 IRQ changes when the AS3935 reports an event.
+  - Log noise, disturber, and lightning-like categories separately.
+  - Change only one tuning setting at a time, then record whether false positives improve.
+  - Compare any lightning-like messages with official weather alerts without relying on the sensor.
   engineer_tips:
   - Keep antenna/module away from noisy electronics.
+  - Use INDOOR mode for bench testing and OUTDOOR mode only for protected, supervised experiments when conditions are safe.
+  - Start with disturbers visible, then mask them only if the lesson needs quieter output after tuning.
+  - Tune noise level and spike rejection separately so you know which change helped.
+  - Label distance as a sensor code in any display, log, or screenshot.
   - Use official alerts for safety decisions.
   - Document false positives instead of hiding them.
   upgrade_ideas: *id002
@@ -279,24 +292,32 @@ project:
   related_guides:
   - title: Digital Inputs and Floating Pins
     href: /guides/digital-inputs-floating-pins.html
-    description: Learn why clean digital inputs and pull-ups matter.
+    description: Learn why clean interrupt inputs and stable GPIO wiring matter.
   - title: OLED Display with ESP32
     href: /guides/oled-display-esp32.html
     description: Show event messages and distance codes on the optional OLED display.
+  - title: What Is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review how ESP32 GPIO, SPI, I2C, and Serial debugging fit together.
   related_projects:
+  - title: ESP32 UV Index Monitor
+    href: /projects/esp32-uv-index-monitor.html
+    description: Compare another environmental sensor that clearly labels estimates and safety limits.
   - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
     description: Compare environmental sensing with safer weather measurements.
   - title: ESP32 Air Quality Monitor
     href: /projects/esp32-air-quality-monitor.html
-    description: Review another environmental sensor with calibration limits.
+    description: Review another environmental sensor where noise, calibration, and limits matter.
   faqs:
   - question: Is this a safety alarm?
     answer: No. Follow official weather alerts.
   - question: Can I test it in a storm?
     answer: No. Do not go outdoors during lightning.
+  - question: What do AS3935 event types mean?
+    answer: Noise means the local electrical environment is too noisy, disturber means interference resembled lightning but was rejected, and lightning-like means the chip accepted the pattern.
   - question: Are distance readings exact?
-    answer: No. Treat them as sensor distance codes with false-positive limits.
+    answer: No. Treat them as AS3935 distance codes with false-positive limits, not verified strike distances.
   complete:
     summary: You completed Build an Educational Lightning Sensor Demo with matching wiring, code, tests, and limitations.
     skills:
