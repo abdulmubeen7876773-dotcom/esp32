@@ -7,29 +7,29 @@ featured_image: /assets/visuals/projects/thumbs/esp32-line-following-robot-thumb
 hero_image: /assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-line-following-robot-placeholder.svg
 og_image: /assets/visuals/projects/heroes/esp32-line-following-robot-hero.svg
-description: Build a two-motor robot that reads line sensors and steers itself along a dark track.
-meta_description: Build a two-motor robot that reads line sensors and steers itself along a dark track.
+description: Build an ESP32 line following robot with two analog IR sensors, calibrated thresholds, dual H-bridge motor driver wiring, and simple steering logic.
+meta_description: Build an ESP32 line following robot with two IR sensors, motor driver wiring, sensor calibration, steering logic, troubleshooting, and complete Arduino code.
 source_base: esp32-line-following-robot
-sensor: left and right IR line sensors
-output: motor driver
+sensor: two analog IR line sensors
+output: dual H-bridge motor driver
 featured: true
 date_published: '2026-06-14'
 date_modified: '2026-06-29'
 keywords:
 - ESP32
 - ESP32 Line Following Robot
-- left and right IR line sensors
-- motor driver
+- two analog IR line sensors
+- dual H-bridge motor driver
 - Arduino tutorial
 hardware:
   sensor_pin: GPIO34/GPIO35
   output_pin: GPIO16-GPIO19
-  sensor_name: left and right IR line sensors
-  output_name: motor driver
+  sensor_name: two analog IR line sensors
+  output_name: dual H-bridge motor driver
   wiring:
-  - component: left and right IR line sensors
+  - component: Left IR analog output / right IR analog output
     pin: GPIO34/GPIO35
-  - component: motor driver
+  - component: Dual H-bridge motor driver direction inputs
     pin: GPIO16-GPIO19
 project:
   icon: ESP
@@ -38,18 +38,18 @@ project:
   age: Ages 12+
   estimated_time: 90-150 min
   budget: Under $35
-  what_you_build: A working line-following robot with an ESP32, a real input, a controlled output, Serial Monitor
-    diagnostics, and a wiring map you can expand into a more advanced version.
+  what_you_build: A working ESP32 line following robot that reads two analog IR reflectance sensors, calibrates
+    separate left and right thresholds, drives a dual H-bridge motor driver, and prints raw sensor readings in Serial Monitor.
   components:
   - item: ESP32 DevKit board
-    note: Main controller
+    note: Reads analog sensors and commands the motor driver
     icon: PART
     link: /components/esp32-devkit.html
-  - item: Left And Right Ir Line Sensors
-    note: Primary input for the project
+  - item: Two analog IR reflectance sensor modules
+    note: Left and right line sensors
     icon: PART
-  - item: Motor Driver
-    note: Physical output controlled by ESP32
+  - item: Dual H-bridge motor driver
+    note: Direction-control inputs for two DC motors
     icon: PART
   - item: Breadboard and jumper wires
     note: Prototype wiring
@@ -62,95 +62,188 @@ project:
     qty: '1'
     estimated_cost: $6-$10
     notes: USB board
-  - part: Left And Right Ir Line Sensors
-    qty: '1'
+  - part: Analog IR reflectance sensor modules
+    qty: '2'
     estimated_cost: $2-$10
-    notes: Project input
-  - part: Motor Driver
+    notes: Use analog AO outputs for this build
+  - part: Dual H-bridge motor driver
     qty: '1'
     estimated_cost: $3-$12
-    notes: Use low-voltage test hardware
+    notes: Direction-input style such as TB6612FNG or L298N-compatible modules
   - part: Breadboard and wires
     qty: 1 set
     estimated_cost: $3-$5
     notes: Prototype wiring
   wiring:
     illustration_alt: ESP32 Line Following Robot wiring diagram
-    summary: Wire the left and right IR line sensors first, verify readings, then connect the motor driver.
+    summary: Wire the analog outputs of two IR reflectance sensors first, calibrate raw readings over your track,
+      then connect the dual H-bridge motor driver direction inputs.
     steps:
     - Unplug USB before placing modules on the breadboard.
-    - Connect the left and right IR line sensors power pins to the correct 3.3 V or 5 V rail according to its module
-      label.
-    - Connect the left and right IR line sensors signal line to GPIO34/GPIO35.
-    - Connect the motor driver control input to GPIO16-GPIO19 and share ground with the ESP32.
-    - Power the ESP32 from USB and test the input reading before enabling the output.
+    - Connect both IR sensor modules to the voltage recommended by the module, but keep any signal sent to the ESP32 within 3.3 V.
+    - Connect the left sensor analog output AO to GPIO34 and the right sensor analog output AO to GPIO35.
+    - Leave digital DO outputs disconnected for this build; DO-only modules need different digital reading logic.
+    - Connect left motor direction inputs to GPIO16 and GPIO17, and right motor direction inputs to GPIO18 and GPIO19.
+    - Power motors through the motor driver from an appropriate low-voltage motor supply, not from ESP32 GPIO pins.
+    - Share a ground/reference between the ESP32 and motor driver control side when your driver module requires it.
+    - Upload the sketch with the robot lifted first, record raw line/background readings, then place it on the floor.
   gpio_map:
-  - signal: left and right IR line sensors
-    esp32_pin: GPIO34/GPIO35
-    direction: Input
-    notes: Read before controlling output
-  - signal: motor driver
-    esp32_pin: GPIO16-GPIO19
+  - signal: Left IR sensor AO
+    esp32_pin: GPIO34
+    direction: Analog input
+    notes: ADC1 input-only pin for raw reflectance reading
+  - signal: Right IR sensor AO
+    esp32_pin: GPIO35
+    direction: Analog input
+    notes: ADC1 input-only pin for raw reflectance reading
+  - signal: Left motor IN1 / IN2
+    esp32_pin: GPIO16/GPIO17
     direction: Output
-    notes: Drive through a module or driver
-  - signal: Status LED
-    esp32_pin: GPIO2
+    notes: Direction inputs on a dual H-bridge motor driver
+  - signal: Right motor IN1 / IN2
+    esp32_pin: GPIO18/GPIO19
     direction: Output
-    notes: Optional debug indicator
+    notes: Direction inputs on a dual H-bridge motor driver
   - signal: Serial Monitor
     esp32_pin: USB
     direction: Debug
     notes: 115200 baud
   code:
     filename: line-following-robot.ino
-    content: "const int LEFT_SENSOR = 34;\nconst int RIGHT_SENSOR = 35;\nconst int L_IN1 = 16;\nconst int L_IN2\
-      \ = 17;\nconst int R_IN1 = 18;\nconst int R_IN2 = 19;\nconst int LINE_THRESHOLD = 1800;\n\nvoid leftMotor(bool\
-      \ forward) {\n  digitalWrite(L_IN1, forward ? HIGH : LOW);\n  digitalWrite(L_IN2, forward ? LOW : HIGH);\n\
-      }\n\nvoid rightMotor(bool forward) {\n  digitalWrite(R_IN1, forward ? HIGH : LOW);\n  digitalWrite(R_IN2,\
-      \ forward ? LOW : HIGH);\n}\n\nvoid stopMotors() {\n  digitalWrite(L_IN1, LOW); digitalWrite(L_IN2, LOW);\n\
-      \  digitalWrite(R_IN1, LOW); digitalWrite(R_IN2, LOW);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(L_IN1,\
-      \ OUTPUT); pinMode(L_IN2, OUTPUT);\n  pinMode(R_IN1, OUTPUT); pinMode(R_IN2, OUTPUT);\n}\n\nvoid loop() {\n\
-      \  bool leftOnLine = analogRead(LEFT_SENSOR) > LINE_THRESHOLD;\n  bool rightOnLine = analogRead(RIGHT_SENSOR)\
-      \ > LINE_THRESHOLD;\n\n  if (leftOnLine && rightOnLine) { leftMotor(true); rightMotor(true); }\n  else if\
-      \ (leftOnLine) { stopMotors(); rightMotor(true); }\n  else if (rightOnLine) { leftMotor(true); stopMotors();\
-      \ }\n  else { stopMotors(); }\n\n  Serial.printf(\"L:%d R:%d\\n\", leftOnLine, rightOnLine);\n  delay(40);\n\
-      }\n"
-  expected_output: Serial Monitor should show a changing reading. When the left and right IR line sensors reaches
-    the test condition, the status LED and motor driver should switch state. If the reading changes but the output
-    does not, debug the output wiring separately.
+    content: |
+      const int LEFT_SENSOR = 34;
+      const int RIGHT_SENSOR = 35;
+
+      const int L_IN1 = 16;
+      const int L_IN2 = 17;
+      const int R_IN1 = 18;
+      const int R_IN2 = 19;
+
+      // Calibrate these from your own dark line and light floor readings.
+      const int LEFT_THRESHOLD = 1800;
+      const int RIGHT_THRESHOLD = 1800;
+
+      // Set false if your sensors produce lower values on the dark line.
+      const bool LINE_IS_HIGH = true;
+
+      bool isOnLine(int value, int threshold) {
+        return LINE_IS_HIGH ? value > threshold : value < threshold;
+      }
+
+      void leftMotor(bool forward) {
+        digitalWrite(L_IN1, forward ? HIGH : LOW);
+        digitalWrite(L_IN2, forward ? LOW : HIGH);
+      }
+
+      void rightMotor(bool forward) {
+        digitalWrite(R_IN1, forward ? HIGH : LOW);
+        digitalWrite(R_IN2, forward ? LOW : HIGH);
+      }
+
+      void stopLeftMotor() {
+        digitalWrite(L_IN1, LOW);
+        digitalWrite(L_IN2, LOW);
+      }
+
+      void stopRightMotor() {
+        digitalWrite(R_IN1, LOW);
+        digitalWrite(R_IN2, LOW);
+      }
+
+      void stopMotors() {
+        stopLeftMotor();
+        stopRightMotor();
+      }
+
+      void setup() {
+        Serial.begin(115200);
+        analogReadResolution(12);
+        pinMode(L_IN1, OUTPUT); pinMode(L_IN2, OUTPUT);
+        pinMode(R_IN1, OUTPUT); pinMode(R_IN2, OUTPUT);
+        stopMotors();
+        Serial.println("ESP32 line follower ready");
+        Serial.println("Record raw values over LINE and FLOOR before running motors.");
+      }
+
+      void loop() {
+        int leftValue = analogRead(LEFT_SENSOR);
+        int rightValue = analogRead(RIGHT_SENSOR);
+
+        bool leftOnLine = isOnLine(leftValue, LEFT_THRESHOLD);
+        bool rightOnLine = isOnLine(rightValue, RIGHT_THRESHOLD);
+
+        if (leftOnLine && rightOnLine) {
+          leftMotor(true);
+          rightMotor(true);
+        } else if (leftOnLine && !rightOnLine) {
+          stopLeftMotor();
+          rightMotor(true);
+        } else if (!leftOnLine && rightOnLine) {
+          leftMotor(true);
+          stopRightMotor();
+        } else {
+          stopMotors();
+        }
+
+        Serial.printf("L:%4d %s | R:%4d %s\n",
+                      leftValue, leftOnLine ? "LINE" : "FLOOR",
+                      rightValue, rightOnLine ? "LINE" : "FLOOR");
+        delay(40);
+      }
+  expected_output: |
+    Serial Monitor should show raw left and right analog readings plus LINE or FLOOR labels, such as "L:2350 LINE | R: 900 FLOOR".
+
+    With both sensors on the line the robot moves forward. With one sensor on the line it corrects toward that side. With both sensors on the floor it stops because the line is lost.
   common_mistakes:
-  - text: Testing input and output for the first time together.
-  - text: Using a GPIO pin that does not match the code constant.
-  - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
-  - text: Forgetting the shared ground between modules.
+  - text: Using the digital DO pin from the IR module while the sketch expects analog AO on GPIO34/GPIO35.
+  - text: Treating LEFT_THRESHOLD and RIGHT_THRESHOLD starter values as universal instead of calibrating each sensor.
+  - text: Expecting an ESP32 GPIO to power a DC motor directly.
+  - text: Forgetting the shared ground/reference between ESP32 and the motor driver control side.
+  - text: Testing floor movement before raw sensor readings and motor direction are verified.
   troubleshooting:
-  - problem: left and right IR line sensors never changes
-    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
-  - problem: motor driver does not switch
-    fix: Test the output module with a simple blink-style sketch before using the full project.
-  - problem: ESP32 resets under load
-    fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
-  - problem: Behavior is reversed
-    fix: Your module may be active LOW; invert the output logic after confirming with Serial Monitor.
+  - problem: Both sensors always read the same
+    fix: Confirm the left AO wire goes to GPIO34 and the right AO wire goes to GPIO35, then test each sensor over the line and floor separately.
+  - problem: Sensor readings barely change between black and white
+    fix: Adjust sensor height, improve track contrast, avoid glossy material, and test under the same room lighting used for driving.
+  - problem: Robot turns the wrong direction
+    fix: If left LINE / right FLOOR makes the robot turn away from the line, swap the left/right sensor wires or reverse the correction actions.
+  - problem: Robot oscillates left and right
+    fix: Calibrate separate LEFT_THRESHOLD and RIGHT_THRESHOLD values, slow the robot mechanically, or add PWM speed control later.
+  - problem: Robot loses the line on sharp curves
+    fix: Use wider curves, lower motor speed as an upgrade, and keep the sensors close to the floor but not scraping.
+  - problem: Readings change when room lighting changes
+    fix: Re-test thresholds under real lighting, shade the sensors from direct sunlight, and avoid shiny track surfaces.
+  - problem: One motor spins backwards
+    fix: Reverse that motor's two output wires or swap its two motor-driver direction inputs; motor orientation varies by chassis.
+  - problem: Motors run but ESP32 resets
+    fix: Power motors through the driver from a suitable low-voltage motor supply and use common ground only as required by the module.
+  - problem: Robot works while lifted but fails on the floor
+    fix: Recheck traction, battery voltage under motor load, sensor height at driving height, and threshold values measured on the actual floor.
   upgrade_ideas:
-  - Add OLED status feedback.
-  - Add Wi-Fi dashboard or mobile alerts.
-  - Store event history in flash or a cloud service.
-  - Add calibration settings instead of hard-coded thresholds.
+  - Add PWM speed control after the steering logic works.
+  - Show raw left/right sensor values on an OLED for debugging.
+  - Add buttons or stored settings for calibration.
+  - Try PID control later with more sensors, after the two-sensor robot is reliable.
   related_guides:
-  - title: Read Temperature with DHT22
-    href: /guides/read-temperature-dht22.html
-    description: Learn the sensor-reading workflow used in many ESP32 projects.
+  - title: ESP32 Analog Inputs Tutorial
+    href: /guides/analog-inputs.html
+    description: Review analogRead(), ADC values, GPIO34, and why raw readings must be printed before choosing thresholds.
+  - title: Reading Analog Sensors
+    href: /guides/reading-analog-sensors.html
+    description: Practice turning raw sensor readings into decisions before the robot starts moving.
+  - title: PWM Fundamentals
+    href: /guides/pwm-fundamentals.html
+    description: Use this later when you want speed control instead of simple on/off motor steering.
   - title: Connect an OLED Display
     href: /guides/connect-oled-esp32.html
-    description: Add a local display for values, status, and debugging.
+    description: Optional debugging upgrade for showing left and right sensor values without a laptop.
   related_projects:
-  - title: ESP32 IoT Weather Station
-    href: /projects/esp32-iot-weather-station.html
-    description: Practice sensor readings and clean Serial output.
-  - title: ESP32 Home Climate Automation
-    href: /projects/esp32-home-climate-automation.html
-    description: Turn measurements into automatic control decisions.
+  - title: ESP32 WiFi Robot Controller
+    href: /projects/esp32-wifi-robot-controller.html
+    description: Compare line-sensor steering with browser-controlled robot movement on a similar motor-driver wiring pattern.
+  - title: ESP32 Educational Servo Arm Controller
+    href: /projects/esp32-robot-arm-controller.html
+    description: Review another robotics project that uses ADC inputs, calibration, and careful power separation.
   complete:
     summary: You built a real line-following robot and learned how to connect sensing, decision logic, and output
       control in one ESP32 project.
@@ -165,33 +258,58 @@ project:
 
     The important lesson is not only the finished line-following robot. You learn how to separate input, decision
     logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.'
-  eli12: Think of the ESP32 as the brain. The left and right IR line sensors is how it notices the world. The motor
-    driver is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.
+  eli12: Think of the ESP32 as the brain. The left and right IR sensors are its eyes looking at the floor. The motor
+    driver is the muscle that turns the wheels. The code reads both eyes, decides where the dark line is, and nudges
+    the robot back onto the track.
   parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
-    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
-    circuit. Do not use mains voltage on a breadboard.
+    the ESP32 before changing wires. Keep motor power separate from the USB programming circuit, drive motors only
+    through a motor driver, and keep the whole project low-voltage. Do not use mains voltage on a breadboard.
+  safety_standards:
+  - Unplug USB and the motor supply before changing IR sensor or motor-driver wiring.
+  - ESP32 GPIO pins provide control signals only; never power DC motors directly from a GPIO pin or the 3.3 V pin.
+  - Power the motors through the dual H-bridge driver from a suitable low-voltage motor supply.
+  - Share a ground/reference between the ESP32 and the driver control side when your module requires it.
+  - Test with the wheels lifted before floor runs because motor startup current can reset the ESP32 if the supply is weak.
   learning_objectives:
-  - Wire and test the left and right IR line sensors before connecting the rest of the circuit.
+  - Wire analog IR sensor outputs to GPIO34 and GPIO35 and print raw ADC readings.
+  - Calibrate separate left and right thresholds from the actual track surface.
   - Map each signal to a named ESP32 GPIO and keep the code constants readable.
-  - Control motor driver using a clear threshold or command instead of hidden magic numbers.
+  - Control a dual H-bridge motor driver on GPIO16-GPIO19 using simple two-sensor steering logic.
   - Use Serial Monitor as an engineering tool, not only as a success message.
-  - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an output side. The left and right IR line sensors
-    tells the ESP32 what is happening. The motor driver receives a controlled signal from the ESP32, usually through
-    a driver, relay, or module that can handle more current than a GPIO pin.
-  engineering_explanation: A reliable line-following robot is built in layers. First prove the input, then prove
-    the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
-    lock, or automation fails and every wire looks suspicious at the same time.
-  code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
-    and then updates the output and status LED. Replace the threshold with values measured from your own left and
-    right IR line sensors because modules vary.
+  - Identify sensor, steering, motor direction, and power faults using a repeatable test checklist.
+  circuit_explanation: |
+    The core build assumes two compatible IR reflectance modules using their analog AO outputs. The left sensor AO goes to GPIO34 and the right sensor AO goes to GPIO35. On the classic ESP32, GPIO34 and GPIO35 are input-only ADC1 pins, which makes them suitable for sensor inputs. GPIO34-GPIO39 do not provide internal pull-up or pull-down resistors on the classic ESP32, but this analog sensor build normally does not need internal pulls because the module drives an analog output voltage.
+
+    If your module exposes only a digital DO output, use a different sketch that reads HIGH/LOW with digitalRead(). This tutorial is teaching analog calibration with analogRead().
+
+    The motor side assumes a dual H-bridge motor driver with two direction inputs per motor. The left motor uses GPIO16/GPIO17 and the right motor uses GPIO18/GPIO19. TB6612FNG-style and L298N-compatible boards may use this kind of direction-control idea, but their pin labels and enable pins are not identical, so follow your module's datasheet.
+
+    ESP32 GPIO pins provide control signals only. Do not power DC motors directly from a GPIO. Power motors through the driver from an appropriate low-voltage motor supply, and share a ground/reference between the ESP32 and driver control side when your module requires it. Motor startup current can reset the ESP32 if power is poorly designed.
+  engineering_explanation: |
+    Calibrate before driving. Upload the sketch with the robot lifted so the wheels cannot run away. Record LEFT and RIGHT raw readings over the dark line, then over the light background, at the actual sensor mounting height. Choose LEFT_THRESHOLD and RIGHT_THRESHOLD roughly between each sensor's dark-line and light-floor readings, then re-test under the room lighting where the robot will run.
+
+    The value 1800 is only a starter value. Real readings vary with sensor module, mounting height, surface color, glossy or matte material, ambient light, and individual sensor variation. The two sensors may not match, so separate thresholds are safer than one universal number.
+
+    Steering table: left LINE and right LINE means drive forward. Left LINE and right FLOOR means the line is under the left sensor, so stop the left motor and run the right motor to correct left. Left FLOOR and right LINE means stop the right motor and run the left motor to correct right. FLOOR/FLOOR means stop because the line is lost.
+
+    Motor orientation varies by chassis. If the robot corrects away from the line, reverse one motor direction or swap the relevant driver outputs after confirming the sensor readings are correct.
+  code_explanation: |
+    The sketch reads raw ADC values first: leftValue from GPIO34 and rightValue from GPIO35. It converts those readings into leftOnLine and rightOnLine using LEFT_THRESHOLD, RIGHT_THRESHOLD, and LINE_IS_HIGH.
+
+    Do not assume every IR module reports the same polarity. If your dark line gives lower readings than the floor, set LINE_IS_HIGH to false instead of rewriting the steering logic.
+
+    Serial Monitor prints both the raw numbers and the interpreted state, for example "L:2350 LINE | R: 900 FLOOR". The motor code then follows the same four-row state table explained above.
   testing_checklist:
   - ESP32 appears on the correct port and accepts a basic blink upload.
   - Ground is shared between every module that exchanges signals with the ESP32.
   - Each GPIO in the code matches the wire connected on the breadboard.
   - Serial Monitor prints startup text at 115200 baud.
-  - The left and right IR line sensors value changes when you create a real test condition.
-  - The motor driver changes only when the expected condition is reached.
+  - Raw left and right ADC readings are recorded over both dark line and light background before floor testing.
+  - LEFT_THRESHOLD and RIGHT_THRESHOLD are set between each sensor's measured line and floor values.
+  - LINE_IS_HIGH matches the actual sensor polarity seen in Serial Monitor.
+  - The dual H-bridge direction inputs match GPIO16/GPIO17 for the left motor and GPIO18/GPIO19 for the right motor.
+  - The robot drives forward on LINE/LINE, corrects left or right on single-sensor line detection, and stops on FLOOR/FLOOR.
+  - The motor supply does not reset the ESP32 when the wheels start.
   - The circuit still behaves correctly after power is removed and restored.
   build_photos:
   - title: Breadboard overview
@@ -199,7 +317,7 @@ project:
   - title: Close-up wiring
     note: Capture each GPIO wire so beginners can compare their build.
   - title: Working output
-    note: Show the Serial Monitor, display, robot, pump, or lock state after the code runs.
+    note: Show Serial Monitor raw sensor readings and the robot following a dark line after calibration.
   downloads:
   - text: ESP32 Line Following Robot Arduino sketch
     note: Use the code section as the downloadable source until file downloads are published.
@@ -209,17 +327,23 @@ project:
     note: Record symptoms, Serial output, voltage checks, and fixes.
   real_world_applications:
   - Classroom line-following robot trainer
-  - STEM lab demonstration
-  - Home automation prototype
-  - Engineering debugging practice
-  - IoT portfolio project
+  - STEM lab calibration demonstration
+  - Robotics steering logic practice
+  - Motor driver wiring exercise
+  - Beginner robotics portfolio project
   faqs:
-  - question: Why does my left and right IR line sensors reading look wrong?
-    answer: Check the sensor height, track contrast, and GPIO34/GPIO35 wiring. Glossy paper and uneven lighting can
-      make the two sensors disagree.
-  - question: Why does motor driver not respond?
-    answer: Confirm the shared ground, motor supply, and GPIO16-GPIO19 control wiring. The ESP32 GPIO pins control
-      the driver; they do not power the motors directly.
+  - question: Why does my ESP32 line follower threshold not work?
+    answer: The starter value is not universal. Print raw GPIO34/GPIO35 readings over the dark line and light floor,
+      then choose separate LEFT_THRESHOLD and RIGHT_THRESHOLD values between your measured readings.
+  - question: Can I use digital DO outputs instead of analog AO outputs?
+    answer: Only with different code. This project uses analogRead() on GPIO34 and GPIO35 so you can calibrate raw
+      sensor values. DO-only modules require digitalRead() logic.
+  - question: Why does the robot turn the wrong way?
+    answer: First confirm the left and right sensor readings in Serial Monitor. Then reverse one motor's direction
+      or swap the relevant motor-driver outputs because chassis wiring and motor orientation vary.
+  - question: Why does the motor driver not respond?
+    answer: Confirm shared ground/reference, motor supply, and GPIO16-GPIO19 direction wiring. The ESP32 GPIO pins
+      control the driver; they do not power the motors directly.
   - question: Why does the robot reset when motors start?
     answer: Motor startup current can pull the supply down. Use a separate motor supply with common ground and test
       sensor readings before enabling movement.
