@@ -373,6 +373,10 @@ def projects_listing_html(
         "IoT Projects",
         f'<span class="badge badge-light">{total_count} Projects</span><span class="badge badge-light">Wiring + Arduino code</span><span class="badge badge-light">Difficulty filters</span>',
     )
+    hero = hero.replace(
+        '<li><a href="/projects.html">Projects</a></li><li aria-current="page">IoT</li>',
+        '<li aria-current="page">Projects</li>',
+    )
     chooser = """<div class="home-path-grid" aria-label="Choose an ESP32 project path">
         <article class="home-path-card"><h3>Beginner ESP32 Projects</h3><p>Start with the Beginner filter for simple wiring, clear Arduino code, and low-risk first builds.</p><a href="#grid">Use the Beginner filter</a></article>
         <article class="home-path-card"><h3>IoT Projects</h3><p>Build Wi-Fi dashboards, MQTT devices, weather stations, and connected sensor nodes.</p><a href="/category/iot-projects.html">Browse IoT projects</a></article>
