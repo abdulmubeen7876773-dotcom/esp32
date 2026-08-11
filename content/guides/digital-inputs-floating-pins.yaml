@@ -9,8 +9,8 @@
   "track_order": 3,
   "title": "ESP32 Digital Inputs and Floating Pins Explained | ESP32 Engine",
   "headline": "Understanding Digital Inputs and Floating Pins",
-  "meta_description": "Mission 03 - understand ESP32 digital inputs, HIGH, LOW, floating pins, random button values, and why pull-up and pull-down resistors are needed.",
-  "lead": "Your button worked in Mission 02. Now you will learn the electronics behind it: why an input pin needs a clear HIGH or LOW, and why an unconnected pin can behave randomly.",
+  "meta_description": "Learn why an ESP32 GPIO can return random HIGH and LOW readings when left floating, how digital inputs work, and how pull-up or pull-down resistors stabilize the input.",
+  "lead": "Your button worked in Mission 02. Now you will learn why an ESP32 GPIO can return random HIGH and LOW readings when it is left floating, and why every button or sensor input needs a defined default state.",
   "keywords": "ESP32 digital input, ESP32 floating pin, ESP32 HIGH LOW, ESP32 button random values, ESP32 pullup pulldown explained",
   "proficiency_level": "Beginner",
   "reading_time": "18-22 min",
@@ -23,7 +23,7 @@
       {
         "slug": "button-led-control",
         "title": "Button Controls LED with ESP32",
-        "description": "You should already know how a button can control an LED with code."
+        "description": "Review the ESP32 digital input mission that used INPUT_PULLUP to avoid a floating button."
       }
     ],
     "skills_learned": [
@@ -46,18 +46,18 @@
     "previous_mission": {
       "slug": "button-led-control",
       "title": "Button Controls LED with ESP32",
-      "description": "You used a button input; now learn why it worked."
+      "description": "You used INPUT_PULLUP for a stable button input; now learn what problem it solved."
     },
     "next_mission": {
       "slug": "pull-up-vs-pull-down-resistors",
-      "title": "Mission 04 - Pull-up vs Pull-down Resistors",
-      "description": "Next you will learn the two resistor patterns that stop pins from floating."
+      "title": "Mission 04 - ESP32 Pull-up vs Pull-down Resistors",
+      "description": "Next you will learn the internal and external pull resistor patterns that stop an ESP32 GPIO from floating."
     },
     "unlocked_components": [
       {
         "title": "ESP32 DevKit Board",
         "href": "/components/esp32-devkit.html",
-        "description": "The board whose GPIO input thresholds you are learning."
+        "description": "The ESP32 DevKit GPIO input behavior you are learning."
       }
     ],
     "unlocked_projects": [
@@ -97,11 +97,11 @@
     },
     {
       "question": "What voltage is HIGH on ESP32?",
-      "answer": "ESP32 uses 3.3 V logic. A voltage near 3.3 V is read as HIGH. A voltage near GND is read as LOW."
+      "answer": "ESP32 uses 3.3 V logic. digitalRead() reports HIGH when the pin voltage is above the logic HIGH threshold and LOW when it is below the logic LOW threshold; it does not measure exact voltage."
     },
     {
       "question": "Why does an unconnected ESP32 pin change randomly?",
-      "answer": "An unconnected input has no strong electrical reference. Tiny noise, nearby wires, your hand, or radio signals can nudge the pin above or below the input threshold."
+      "answer": "An unconnected input has no strong electrical reference. Tiny noise, nearby wires, your hand, long jumpers, or nearby electronics can nudge the pin above or below the input threshold."
     },
     {
       "question": "Is a floating pin dangerous?",
@@ -117,21 +117,21 @@
     },
     {
       "question": "What should I learn after floating pins?",
-      "answer": "The next concept is pull-up versus pull-down resistors. Those two patterns give input pins a reliable default HIGH or default LOW state."
+      "answer": "The next concept is ESP32 pull-up and pull-down resistors. Mission 03 explains why pins float; Mission 04 shows the wiring patterns that give input pins a reliable default HIGH or default LOW state."
     }
   ],
   "mission": {
     "badge": "Mission 03",
     "icon": "IN",
     "title": "Catch a Floating Pin in the Act",
-    "story": "In Mission 02 your button behaved nicely because the code used INPUT_PULLUP. That one line quietly solved a real electronics problem.\n\nNow you will remove the safety net. You will leave an ESP32 input pin unconnected and watch Serial Monitor print values that seem to change for no reason. It looks strange at first, but it is one of the most important beginner lessons in electronics: an input pin must never be left undecided.",
+    "story": "In Mission 02 your button behaved nicely because the code used INPUT_PULLUP. That one line quietly solved a real electronics problem: without a defined HIGH or LOW state, an ESP32 input can float.\n\nA floating ESP32 GPIO is an input with no clear voltage driving it. When nothing drives the pin and no pull resistor is active, electrical noise can make digitalRead() appear to change randomly. Now you will remove the safety net, leave an input unconnected, and watch Serial Monitor show why every button or sensor input needs a defined default state.",
     "eli12": "Imagine asking a friend a yes-or-no question, but they are standing far away in a noisy room. You might hear yes, no, yes, no, even if they never answered.\n\nA floating GPIO pin is like that. The ESP32 is listening, but the pin is not clearly connected to HIGH or LOW. Electrical noise becomes the answer.",
     "learning_objectives": [
       "Define a digital input in plain language.",
-      "Explain HIGH and LOW using ESP32 3.3 V logic.",
+      "Explain HIGH and LOW as logic states, not exact voltage measurements.",
       "Run an experiment that intentionally leaves GPIO27 floating.",
       "Observe random Serial Monitor values and explain why they happen.",
-      "Understand why pull-up and pull-down resistors are the next concept."
+      "Understand why ESP32 pull-up and pull-down resistors are the next concept."
     ],
     "what_you_build": "- A tiny test circuit with ESP32 GPIO27 configured as a digital input.\n- A Serial Monitor experiment that prints HIGH and LOW.\n- A floating-pin demonstration where the input changes without a real button press.\n- A controlled comparison where touching the jumper to 3.3 V gives HIGH and touching it to GND gives LOW.",
     "things_you_need": [
@@ -173,14 +173,32 @@
     ],
     "component_spotlight_lead": "This mission focuses on the ESP32 DevKit GPIO input itself.",
     "concept": {
-      "title": "What Is a Digital Input?",
+      "title": "What Is a Floating ESP32 GPIO?",
       "illustration_alt": "ESP32 GPIO27 input connected sometimes to 3.3 V for HIGH, sometimes to GND for LOW, and sometimes left floating",
-      "body": "A digital input is a GPIO pin that the ESP32 reads instead of controls. In code, pinMode(INPUT) tells the ESP32, 'do not drive this pin; just listen to it.'\n\nThe ESP32 then uses digitalRead() to answer one question: does this pin look HIGH or LOW right now?\n\nHIGH does not mean magic. It means the pin voltage is high enough to count as logic 1. On ESP32, that usually means the pin is near 3.3 V. LOW means the pin is near 0 V, which is GND.\n\nThe important beginner trap is this: a pin that is not connected to HIGH or LOW is not automatically LOW. It is unknown. That unknown state is called floating."
+      "body": "A digital input is a GPIO pin that the ESP32 reads instead of controls. In code, pinMode(pin, INPUT) tells the ESP32 to listen to the pin without enabling an internal pull-up or pull-down resistor.\n\nThat input is high impedance, so it draws very little current. If nothing externally drives the pin to a valid logic level, the voltage is undefined. The pin is floating.\n\nESP32 uses 3.3 V logic, but digitalRead() does not measure the exact voltage. LOW means the pin voltage is below the logic LOW threshold. HIGH means the pin voltage is above the logic HIGH threshold. A floating pin can wander between those regions, so digitalRead() may alternate between HIGH and LOW.\n\nNoise, capacitive coupling, a long jumper wire, nearby electronics, or your hand can influence a floating GPIO. The important beginner trap is this: a pin that is not connected to HIGH or LOW is not automatically LOW. It is unknown until a circuit gives it a defined default state."
     },
-    "engineering_explanation": "Inside the ESP32, each GPIO input is connected to a tiny sensing circuit. That circuit has very high impedance, which means it does not draw much current from the outside world. High impedance is useful because sensors and buttons do not have to supply much current.\n\nBut high impedance also means the input is easy to influence. A nearby jumper wire, your finger, USB noise, Wi-Fi activity, or static charge can move the pin voltage enough to cross the HIGH/LOW threshold. The ESP32 is not confused; it is faithfully reporting a voltage that has not been forced to a stable value.\n\nA stable digital input needs a defined path to either 3.3 V or GND. That path can come from a switch, a sensor output, an internal pull-up, an external pull-up, or an external pull-down. Without one of those paths, the input is electrically undecided.",
+    "engineering_explanation": "Inside the ESP32, each GPIO input is connected to a tiny sensing circuit. That circuit has very high impedance, which means it does not draw much current from the outside world. High impedance is useful because sensors and buttons do not have to supply much current.\n\nBut high impedance also means the input is easy to influence when it is undriven. A nearby jumper wire, your finger, USB noise, Wi-Fi activity, static charge, or capacitive coupling from nearby electronics can move the pin voltage enough to cross a logic threshold. The ESP32 is not confused; it is reporting HIGH or LOW from a voltage that has not been forced to a stable value.\n\nA stable digital input needs a defined path to either 3.3 V or GND. That path can come from a switch, a sensor output, INPUT_PULLUP, INPUT_PULLDOWN on a supported GPIO, an external pull-up, or an external pull-down. Mission 03 explains the problem and demonstrates the unstable reading. Mission 04, ESP32 pull-up and pull-down resistors, teaches the wiring patterns that create the reliable default state.",
     "real_life_analogy": "Think of a digital input like a door sensor in a quiet hallway. If the door is fully closed, the answer is clear. If the door is fully open, the answer is clear. But if the sensor wire is not connected to the door at all, the alarm system is just listening to a dangling wire. It may report open, closed, open, closed because the wire is picking up noise from the room.\n\nA pull-up or pull-down resistor is like a gentle spring that keeps the door sensor in one default position until a real action moves it.",
     "engineer_tip": "A random input is usually not random software. It is usually an input pin without a defined voltage. Before changing code, ask what physical connection forces the pin HIGH or LOW.",
-    "remember_forever": "A digital input must have a decision.\n\nHIGH means the pin is driven toward 3.3 V.\n\nLOW means the pin is driven toward GND.\n\nFloating means nobody is making the decision, so noise can decide for you.",
+    "remember_forever": "A digital input must have a decision.\n\nHIGH means the pin voltage is high enough to count as logic 1.\n\nLOW means the pin voltage is low enough to count as logic 0.\n\ndigitalRead() reports the logic state; it does not measure exact voltage.\n\nFloating means nobody is making the decision, so noise can decide for you.",
+    "input_mode_comparison": [
+      {
+        "mode": "INPUT",
+        "internal_pull": "No internal pull resistor",
+        "typical_default": "Can float when no external circuit drives the pin"
+      },
+      {
+        "mode": "INPUT_PULLUP",
+        "internal_pull": "Internal pull-up on supported GPIOs",
+        "typical_default": "Defaults HIGH until a button, switch, or circuit pulls the pin LOW"
+      },
+      {
+        "mode": "INPUT_PULLDOWN",
+        "internal_pull": "Internal pull-down on supported GPIOs",
+        "typical_default": "Defaults LOW until a button, switch, or circuit drives the pin HIGH"
+      }
+    ],
+    "internal_resistor_explanation": "Arduino ESP32 supports INPUT_PULLUP and INPUT_PULLDOWN on GPIOs that provide those internal pull resistors. These modes are a convenient way to give an input a default state without adding a separate resistor.\n\nFor the original classic ESP32, GPIO34-GPIO39 are input-only and do not provide integrated pull-up or pull-down resistors. If you need a defined default state on one of those pins, use an external pull-up or pull-down resistor. Do not assume every ESP32 family member or board has identical GPIO behavior; check the board and chip documentation when choosing pins.",
     "wiring": {
       "illustration_alt": "ESP32 GPIO27 connected to one loose jumper wire; the loose end can be left floating, touched to 3.3 V, or touched to GND",
       "steps": [
@@ -303,6 +321,36 @@
     ],
     "common_problems": [
       {
+        "problem": "digitalRead() keeps changing between HIGH and LOW",
+        "cause": "GPIO27 is floating because nothing is driving it and no pull resistor is active.",
+        "fix": "First prove the cause by touching the jumper to GND or 3.3 V. If the value becomes stable, the circuit needs a defined default state."
+      },
+      {
+        "problem": "GPIO reads HIGH when nothing is connected",
+        "cause": "An undriven high-impedance input is undefined, not automatically LOW.",
+        "fix": "Do not treat the HIGH reading as a real button press. Add a pull-up, pull-down, or an active sensor output in the real circuit."
+      },
+      {
+        "problem": "Button input gives random values",
+        "cause": "The button may leave the GPIO open when released, so the ESP32 input floats.",
+        "fix": "Check the released state before changing code. Mission 04 shows how INPUT_PULLUP or a pull-down resistor gives the button a stable default."
+      },
+      {
+        "problem": "Touching the wire changes the reading",
+        "cause": "Your body adds capacitive coupling to the loose high-impedance input.",
+        "fix": "This is expected in the floating-pin experiment. Keep real input wiring short and define the default state."
+      },
+      {
+        "problem": "A long jumper wire makes the problem worse",
+        "cause": "The longer loose wire acts more like an antenna and picks up more electrical noise.",
+        "fix": "Shorten the wire for the experiment, then use a pull resistor or supported internal pull mode in real projects."
+      },
+      {
+        "problem": "The input becomes stable when connected to GND or 3.3 V",
+        "cause": "GND and 3.3 V force the pin below the LOW threshold or above the HIGH threshold.",
+        "fix": "That confirms the ESP32 and code are working. The unstable behavior came from the floating input, not from random software."
+      },
+      {
         "problem": "The floating input seems stuck HIGH or LOW",
         "cause": "Some boards, breadboards, or nearby wiring may weakly bias the pin by accident.",
         "fix": "Move the jumper, try a different safe GPIO such as GPIO26, and make sure the loose end is not touching a breadboard row connected to power or ground."
@@ -342,8 +390,8 @@
     "next_missions": [
       {
         "slug": "pull-up-vs-pull-down-resistors",
-        "title": "Mission 04 - Pull-up vs Pull-down Resistors",
-        "description": "Next you will learn how to stop floating pins by choosing a reliable default state."
+        "title": "Mission 04 - ESP32 Pull-up vs Pull-down Resistors",
+        "description": "Next you will learn how to stop an ESP32 GPIO from floating by choosing a reliable default state."
       },
       {
         "slug": "read-temperature-dht22",

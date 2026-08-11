@@ -257,6 +257,24 @@ def comparison_table_section(rows: list) -> str:
 </section>"""
 
 
+def input_mode_table_section(rows: list) -> str:
+    if not rows:
+        return ""
+    body = []
+    for row in rows:
+        mode = row.get("mode", "")
+        internal_pull = row.get("internal_pull", "")
+        default = row.get("typical_default", "")
+        body.append(f"<tr><td>{esc(mode)}</td><td>{esc(internal_pull)}</td><td>{esc(default)}</td></tr>")
+    return f"""<section class="mission-section" id="input-modes" aria-labelledby="input-modes-heading">
+  {section_heading("input-modes", "Modes", "INPUT vs INPUT_PULLUP vs INPUT_PULLDOWN")}
+  <div class="wiring-table-wrap"><table class="wiring-table">
+    <thead><tr><th>Mode</th><th>Internal Pull</th><th>Typical Default Behavior</th></tr></thead>
+    <tbody>{"".join(body)}</tbody>
+  </table></div>
+</section>"""
+
+
 def things_list(items: list) -> str:
     rows = []
     for item in items:
@@ -861,6 +879,9 @@ def render_mission_guide(guide: dict) -> str:
     resistor_value_html = mission_prose_section("resistor-value", "Value", "What Value Pull-up Resistor Should I Use with ESP32?", m.get("resistor_value_explanation", ""))
     if resistor_value_html:
         resistor_value_html = "\n" + resistor_value_html
+    input_mode_html = input_mode_table_section(m.get("input_mode_comparison", []))
+    if input_mode_html:
+        input_mode_html = "\n" + input_mode_html
     comparison_html = comparison_table_section(m.get("comparison_table", []))
 
     wiring = m.get("wiring") or {}
@@ -921,7 +942,7 @@ def render_mission_guide(guide: dict) -> str:
 {analogy_html}
 {floating_recap_html}
 {internal_resistor_html}
-{external_resistor_html}{resistor_value_html}
+{external_resistor_html}{resistor_value_html}{input_mode_html}
 {comparison_html}
 {wiring_html}
 {gpio_html}
