@@ -245,13 +245,13 @@ def comparison_table_section(rows: list) -> str:
     for row in rows:
         mode = row.get("mode", "")
         default = row.get("default_state", "")
-        wiring = row.get("wiring", "")
+        active = row.get("active_state") or row.get("wiring", "")
         use = row.get("when_to_use", "")
-        body.append(f"<tr><td>{esc(mode)}</td><td>{esc(default)}</td><td>{esc(wiring)}</td><td>{esc(use)}</td></tr>")
+        body.append(f"<tr><td>{esc(mode)}</td><td>{esc(default)}</td><td>{esc(active)}</td><td>{esc(use)}</td></tr>")
     return f"""<section class="mission-section" id="input-comparison" aria-labelledby="input-comparison-heading">
-  {section_heading("input-comparison", "Compare", "INPUT vs INPUT_PULLUP")}
+  {section_heading("input-comparison", "Compare", "Pull-up vs Pull-down Comparison")}
   <div class="wiring-table-wrap"><table class="wiring-table">
-    <thead><tr><th>Mode</th><th>Default State</th><th>Typical Wiring</th><th>When to Use</th></tr></thead>
+    <thead><tr><th>Setup</th><th>Default State</th><th>Active/Button State</th><th>Typical Use</th></tr></thead>
     <tbody>{"".join(body)}</tbody>
   </table></div>
 </section>"""
@@ -856,8 +856,11 @@ def render_mission_guide(guide: dict) -> str:
     analogy_html = mission_prose_section("analogy", "Real World", "Real-World Analogy", m.get("real_life_analogy", "") or m.get("eli12", ""))
     engineer_tip_html = mission_prose_section("engineer-tip", "Tip", "Engineer Tip", m.get("engineer_tip", ""))
     floating_recap_html = mission_prose_section("floating-recap", "Recap", "Floating Pin Recap", m.get("floating_pin_recap", ""))
-    internal_resistor_html = mission_prose_section("internal-resistor", "Internal", "Internal Pull-Up Resistor", m.get("internal_resistor_explanation", ""))
+    internal_resistor_html = mission_prose_section("internal-resistor", "Internal", "ESP32 Internal Pull-up and Pull-down Resistors", m.get("internal_resistor_explanation", ""))
     external_resistor_html = mission_prose_section("external-resistor", "External", "External Pull-Up and Pull-Down Resistors", m.get("external_resistor_explanation", ""))
+    resistor_value_html = mission_prose_section("resistor-value", "Value", "What Value Pull-up Resistor Should I Use with ESP32?", m.get("resistor_value_explanation", ""))
+    if resistor_value_html:
+        resistor_value_html = "\n" + resistor_value_html
     comparison_html = comparison_table_section(m.get("comparison_table", []))
 
     wiring = m.get("wiring") or {}
@@ -918,7 +921,7 @@ def render_mission_guide(guide: dict) -> str:
 {analogy_html}
 {floating_recap_html}
 {internal_resistor_html}
-{external_resistor_html}
+{external_resistor_html}{resistor_value_html}
 {comparison_html}
 {wiring_html}
 {gpio_html}

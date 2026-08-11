@@ -133,7 +133,7 @@
     },
     {
       "question": "Does ESP32 have INPUT_PULLDOWN?",
-      "answer": "Many ESP32 GPIOs support internal pull-down too, but beginner button examples usually use INPUT_PULLUP because it is simple, common, and works well with a button to GND."
+      "answer": "Arduino ESP32 supports INPUT_PULLDOWN on GPIOs that provide an internal pull-down resistor. Pin capabilities vary by ESP32 family and board, and classic ESP32 GPIO34-GPIO39 do not have integrated pull-up or pull-down resistors."
     },
     {
       "question": "What resistor value should I use for an external pull-up or pull-down?",
@@ -188,7 +188,7 @@
     "badge": "Mission 04",
     "icon": "R",
     "title": "Give Your Button a Default State",
-    "story": "Mission 03 showed the problem: an input pin with no clear connection can drift between HIGH and LOW. That was not a software bug. It was an unfinished circuit.\n\nMission 04 fixes that circuit. You will add a weak electrical default so the ESP32 always knows what the button means when it is not being pressed.",
+    "story": "Mission 03 showed the problem: an input pin with no clear connection can drift between HIGH and LOW. That was not a software bug. It was an unfinished circuit.\n\nMission 04 fixes that circuit. A pull-up or pull-down resistor keeps an ESP32 GPIO at a known HIGH or LOW state when nothing else is driving the pin, so the ESP32 always knows what the button means when it is not being pressed. That default can come from an external pull-up or pull-down resistor, or from an internal pull mode such as INPUT_PULLUP or INPUT_PULLDOWN when the selected GPIO supports it.",
     "eli12": "Imagine a classroom where the teacher asks one student to answer yes or no. If the student says nothing, the class has no official answer. That is a floating pin: the ESP32 is listening, but nobody is giving the pin a clear HIGH or LOW.\n\nA pull-down resistor is like a quiet default vote for LOW. If nobody presses the button, the pin rests at LOW. When the button is pressed, the button gives a stronger vote for HIGH by connecting the pin to 3.3 V.\n\nA pull-up resistor is the opposite default. It quietly votes HIGH when nobody presses the button. With INPUT_PULLUP, the ESP32 turns on that quiet internal HIGH vote for you. Then the button connects the pin to GND when pressed, so pressed reads LOW.\n\nRemember This Forever:\nA floating pin is not broken.\nIt is simply undecided.\nA pull-up or pull-down resistor gives the pin a default decision until the button intentionally changes it.",
     "learning_objectives": [
       "Explain how pull-up and pull-down resistors stop floating inputs.",
@@ -256,26 +256,33 @@
     "engineer_tip": "When debugging a button, first ask one question: what should this pin read when nobody is pressing anything? If you cannot answer HIGH or LOW immediately, the circuit probably needs a pull-up, pull-down, or a sensor output that actively drives the pin.",
     "remember_forever": "A floating pin is not broken.\n\nIt is simply undecided.\n\nA pull-up or pull-down resistor gives the pin a default decision until the button intentionally changes it.",
     "floating_pin_recap": "In Mission 03, GPIO27 changed because the loose wire had no path to 3.3 V or GND. It picked up tiny noise from your hand, USB cable, nearby wiring, and the room.\n\nA floating pin is not broken. It is simply undecided. The ESP32 input circuit is still working; it is just measuring a point that nobody has forced to HIGH or LOW.\n\nA pull-up or pull-down resistor fixes that undecided state. It gives the pin a default decision while the button is open, and then the button intentionally changes that decision when pressed.",
-    "internal_resistor_explanation": "The ESP32 includes small internal pull resistors that can be enabled in software. INPUT_PULLUP turns on an internal resistor from the GPIO pin to 3.3 V.\n\nThat line of code means the released button has a default HIGH decision even though you did not place a resistor on the breadboard. When the button is pressed, it connects the GPIO to GND, so the stronger GND path wins and the pin reads LOW.\n\nThis is why many ESP32 examples use INPUT_PULLUP: it is stable, simple, and uses fewer parts. The only thing to remember is the logic: released equals HIGH, pressed equals LOW.",
-    "external_resistor_explanation": "An external resistor is a physical resistor you place on the breadboard. External pull-down wiring is excellent for learning because the logic feels natural: released is LOW, pressed is HIGH.\n\nIn the water-flow analogy, the external pull-down resistor is the small drain that keeps the pin empty until the button connects it to 3.3 V. In the scale analogy, it is the tiny default weight on LOW.\n\nExternal resistors are also useful when you need a specific resistor value, when a sensor output requires a pull resistor, or when you want the circuit behavior to be obvious even before reading the code.",
+    "internal_resistor_explanation": "Arduino ESP32 provides INPUT_PULLUP and INPUT_PULLDOWN on supported GPIOs. These modes enable weak internal resistors so an input has a default logic state instead of floating.\n\nINPUT_PULLUP holds the released input HIGH until a button or switch connects the pin to GND. INPUT_PULLDOWN does the opposite on GPIOs that support it: the pin rests LOW until the circuit drives it HIGH.\n\nTreat internal pulls as convenient defaults, not strong loads. Arduino-ESP32 documentation describes the internal pull resistance as roughly 45 kOhm, so it is much weaker than a common 10 kOhm external resistor.\n\nGPIO capabilities vary by ESP32 family and by board. On the original classic ESP32, GPIO34-GPIO39 are input-only and do not provide integrated pull-up or pull-down resistors, so use an external pull resistor if one of those pins needs a defined default state.",
+    "external_resistor_explanation": "An external resistor is a physical resistor you place on the breadboard. External pull-down wiring is excellent for learning because the logic feels natural: released is LOW, pressed is HIGH.\n\nExternal pull-up wiring works the other way: the resistor connects the GPIO weakly to 3.3 V, and the button or active circuit pulls the pin to GND. That is the same logic pattern you get from INPUT_PULLUP, but with a resistor value you choose yourself.\n\nExternal resistors are useful when you need a specific resistor value, when a pin does not support an internal pull, when a sensor output requires a pull resistor, or when you want the circuit behavior to be obvious even before reading the code.",
+    "resistor_value_explanation": "For most ESP32 button experiments, 10 kOhm is a practical starting point for an external pull-up or pull-down resistor. It defines the input clearly without wasting much current.\n\nA lower resistance makes a stronger pull, but it increases current when something drives the pin against that resistor. A higher resistance saves a little current, but the default state becomes weaker and more sensitive to noise, leakage, or long wires.\n\nESP32 internal pull resistors are convenient but weaker. Arduino-ESP32 documentation describes them as roughly 45 kOhm, so use an external resistor when you need a firmer default state or when the selected GPIO does not provide an internal pull.",
     "comparison_table": [
       {
-        "mode": "INPUT with external pull-down",
-        "default_state": "LOW when released",
-        "wiring": "GPIO to button, button to 3.3 V, 10 kOhm from GPIO to GND",
-        "when_to_use": "Best for learning natural button logic or when an external circuit already defines the pin."
+        "mode": "External pull-up",
+        "default_state": "HIGH when the button/input is open",
+        "active_state": "LOW when the button or active circuit connects the GPIO to GND",
+        "when_to_use": "Common for buttons to GND, open-drain outputs, and circuits where active LOW logic is acceptable."
+      },
+      {
+        "mode": "External pull-down",
+        "default_state": "LOW when the button/input is open",
+        "active_state": "HIGH when the button or active circuit connects the GPIO to 3.3 V",
+        "when_to_use": "Good for learning natural pressed-equals-HIGH button logic or when a pin needs a physical resistor."
       },
       {
         "mode": "INPUT_PULLUP",
-        "default_state": "HIGH when released",
-        "wiring": "GPIO to button, button to GND, internal resistor enabled in code",
-        "when_to_use": "Best for simple ESP32 buttons with fewer parts."
+        "default_state": "HIGH when released/open",
+        "active_state": "LOW when pressed to GND",
+        "when_to_use": "Best for simple ESP32 buttons with fewer parts, on GPIOs that support the internal pull-up."
       },
       {
-        "mode": "INPUT with no pull resistor",
-        "default_state": "None",
-        "wiring": "GPIO connected to an open button or loose wire",
-        "when_to_use": "Avoid for buttons. It can float and read randomly."
+        "mode": "INPUT_PULLDOWN",
+        "default_state": "LOW when released/open",
+        "active_state": "HIGH when pressed or driven to 3.3 V",
+        "when_to_use": "Useful when supported by the selected GPIO and you want pressed or active to read HIGH without an external resistor."
       }
     ],
     "wiring": {
