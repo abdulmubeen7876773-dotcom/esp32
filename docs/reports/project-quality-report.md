@@ -1,6 +1,6 @@
 # Project Quality Report
 
-Generated: 2026-07-18T18:53:38Z
+Generated: 2026-08-11T05:41:36Z
 
 Benchmark: **ESP32 Mini Weather Station** is the golden standard (`content/projects/esp32-iot-weather-station.yaml`).
 
@@ -29,7 +29,6 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | Build a Touch-Key Digital Piano | golden | 98/100 | LOW | 0 |
 | Build a Smoke Sensor Alert Demo | golden | 98/100 | LOW | 0 |
 | Build an LED Matrix Display | golden | 98/100 | LOW | 0 |
-| Build Your OLED Weather Clock | golden | 98/100 | LOW | 0 |
 | Build Your Smart Door Lock | golden | 98/100 | LOW | 0 |
 | Build a Low-Voltage Energy Meter | golden | 98/100 | LOW | 0 |
 | Build a Mailbox Open Alert | golden | 98/100 | LOW | 0 |
@@ -57,6 +56,7 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | Build a Machine Monitoring Node | golden | 100/100 | LOW | 0 |
 | Build Your Motion Security Alert | golden | 100/100 | LOW | 0 |
 | esp32-neopixel-music-visualizer | golden | 100/100 | LOW | 0 |
+| Build Your OLED Weather Clock | golden | 100/100 | LOW | 0 |
 | esp32-pulse-oximeter-logger | golden | 100/100 | LOW | 0 |
 | Build Your RFID Access Control System | golden | 100/100 | LOW | 0 |
 | Build an RFID Inventory Tracker | golden | 100/100 | LOW | 0 |
@@ -245,27 +245,6 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 - Minor polish only — align with Mini Weather Station depth where applicable.
 
 ## Build an LED Matrix Display (`esp32-led-matrix-display`)
-
-**Type:** golden · **Overall score:** 98/100 · **Priority:** LOW
-
-### Scores
-
-- Child Experience: 100/100
-- Parent Experience: 100/100
-- Teacher Experience: 100/100
-- Engineering: 100/100
-- SEO: 100/100
-- Accessibility: 88/100
-
-### Missing sections
-
-- None
-
-### Recommendations
-
-- Minor polish only — align with Mini Weather Station depth where applicable.
-
-## Build Your OLED Weather Clock (`esp32-oled-weather-clock`)
 
 **Type:** golden · **Overall score:** 98/100 · **Priority:** LOW
 
@@ -833,6 +812,27 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 - Minor polish only — align with Mini Weather Station depth where applicable.
 
 ## Build an Amplitude-Reactive NeoPixel Visualizer (`esp32-neopixel-music-visualizer`)
+
+**Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
+
+### Scores
+
+- Child Experience: 100/100
+- Parent Experience: 100/100
+- Teacher Experience: 100/100
+- Engineering: 100/100
+- SEO: 100/100
+- Accessibility: 100/100
+
+### Missing sections
+
+- None
+
+### Recommendations
+
+- Minor polish only — align with Mini Weather Station depth where applicable.
+
+## Build Your OLED Weather Clock (`esp32-oled-weather-clock`)
 
 **Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
 
