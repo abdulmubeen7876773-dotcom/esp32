@@ -34,7 +34,7 @@ const routes = [
 ];
 
 const mojibakePatterns = ['Ã‚', 'Ãƒ', 'Ã¢â‚¬', 'Ã°Å¸', 'Â', 'â€', 'ðŸ'];
-const ignoredConsole = [/favicon/i, /googletagmanager/i, /google-analytics/i, /fonts\.googleapis/i, /fonts\.gstatic/i];
+const ignoredConsole = [/favicon/i, /googletagmanager/i, /google-analytics/i, /googlesyndication/i, /fonts\.googleapis/i, /fonts\.gstatic/i];
 
 function isIgnored(message: string, url = '') {
   const haystack = `${message} ${url}`;
@@ -58,6 +58,8 @@ async function preparePage(page: Page, testInfo: TestInfo) {
     failedRequests.push(`${request.method()} ${url} ${request.failure()?.errorText || ''}`.trim());
   });
 
+  await mockAdsense(page);
+
   await page.addInitScript(() => {
     localStorage.setItem('cookie-consent', 'rejected');
   });
@@ -80,6 +82,10 @@ function isGaUrl(url: string) {
   return /\/\/(?:www\.)?googletagmanager\.com\//i.test(url) || /\/\/(?:www\.)?google-analytics\.com\//i.test(url);
 }
 
+function isAdsenseUrl(url: string) {
+  return /\/\/pagead2\.googlesyndication\.com\//i.test(url);
+}
+
 function contentTypeFor(filePath: string) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.css') return 'text/css; charset=utf-8';
@@ -96,6 +102,15 @@ function contentTypeFor(filePath: string) {
 async function fulfillProductionHostFromLocalBuild(page: Page, gaRequests: string[]) {
   await page.route('**/*', async (route) => {
     const requestUrl = route.request().url();
+    if (isAdsenseUrl(requestUrl)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/javascript; charset=utf-8',
+        body: '',
+      });
+      return;
+    }
+
     if (isGaUrl(requestUrl)) {
       gaRequests.push(requestUrl);
       await route.fulfill({
@@ -128,6 +143,16 @@ async function fulfillProductionHostFromLocalBuild(page: Page, gaRequests: strin
     } catch {
       await route.fulfill({ status: 404, body: 'Not found' });
     }
+  });
+}
+
+async function mockAdsense(page: Page) {
+  await page.route('**://pagead2.googlesyndication.com/**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/javascript; charset=utf-8',
+      body: '',
+    });
   });
 }
 

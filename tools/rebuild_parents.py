@@ -36,6 +36,7 @@ from site_layout import (
     webpage_schema,
     UI_JS_SRC,
     GOOGLE_TAG_HTML,
+    ADSENSE_SITE_VERIFICATION_HTML,
     index_redirect_script,
 )
 
@@ -550,6 +551,7 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
 <head>
 {index_redirect_script()}
 {GOOGLE_TAG_HTML}
+{ADSENSE_SITE_VERIFICATION_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#081D3A">

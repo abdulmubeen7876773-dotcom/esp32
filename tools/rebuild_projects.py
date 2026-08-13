@@ -31,6 +31,7 @@ from site_layout import (
     analytics_config_script,
     JS_VERSION,
     GOOGLE_TAG_HTML,
+    ADSENSE_SITE_VERIFICATION_HTML,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -565,6 +566,7 @@ def render_page(d: dict) -> str:
 <head>
 {index_redirect_script()}
 {GOOGLE_TAG_HTML}
+{ADSENSE_SITE_VERIFICATION_HTML}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#071426">
