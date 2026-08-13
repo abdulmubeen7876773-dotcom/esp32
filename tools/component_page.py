@@ -1,7 +1,11 @@
+from pathlib import Path
+
 from component_images import component_image_path
 from guide_mission import code_panel, illustration_placeholder
 from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
 
+
+_ROOT = Path(__file__).resolve().parent.parent
 
 FRAMEWORKS = [
     ("arduino", "Arduino", "example.ino"),
@@ -118,6 +122,19 @@ def text_section_html(section_id: str, icon: str, title: str, body: str) -> str:
 </section>"""
 
 
+def local_visual_figure(image: str, alt: str, class_name: str = "component-visual-art") -> str:
+    image = (image or "").strip()
+    alt = (alt or "").strip()
+    if not image.startswith("/"):
+        return ""
+    local_path = _ROOT / image.lstrip("/")
+    if not local_path.is_file():
+        return ""
+    return f"""<figure class="{esc(class_name)}">
+  <img src="{esc(image)}" alt="{esc(alt)}" loading="lazy" decoding="async">
+</figure>"""
+
+
 def quick_facts_html(facts: list) -> str:
     if not facts:
         return ""
@@ -174,6 +191,11 @@ def pinout_html(component: dict) -> str:
     pins = component.get("pins", [])
     if not pinout and not pins:
         return ""
+    slug = component.get("slug", "component")
+    image = component.get("pinout_image") or f"/assets/visuals/components/illustrations/{slug}-pinout.svg"
+    alt = component.get("pinout_illustration_alt") or f"Pinout diagram for {component.get('name', 'component')}"
+    image_html = local_visual_figure(image, alt, "component-visual-art component-pinout-art")
+    image_block = f"  {image_html}\n" if image_html else ""
     if pinout:
         rows = []
         for row in pinout:
@@ -192,6 +214,7 @@ def pinout_html(component: dict) -> str:
         body = f'<ul class="component-spec-list">{"".join(f"<li>{esc(p)}</li>" for p in pins)}</ul>'
     return f"""<section class="component-section" id="pinout" aria-labelledby="pinout-heading">
   {component_section_heading("pinout", "03", "Pinout")}
+{image_block}\
   {body}
 </section>"""
 
@@ -200,6 +223,7 @@ def wiring_html(wiring: dict) -> str:
     if not wiring:
         return ""
     alt = wiring.get("illustration_alt", "Wiring diagram")
+    image = wiring.get("image", "")
     summary = (wiring.get("summary") or "").strip()
     steps = wiring.get("steps", [])
     summary_html = _paragraphs(summary) if summary else ""
@@ -219,7 +243,7 @@ def wiring_html(wiring: dict) -> str:
     return f"""<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
   {component_section_heading("wiring", "04", "Wiring Diagram")}
   {summary_html}
-  <div class="component-wiring-art">{illustration_placeholder(alt, "Wiring Diagram", "Wire")}</div>
+  <div class="component-wiring-art">{local_visual_figure(image, alt, "component-visual-art component-wiring-image") or illustration_placeholder(alt, "Wiring Diagram", "Wire")}</div>
   {steps_html}
 </section>"""
 
@@ -501,7 +525,8 @@ def derive_quick_facts(component: dict) -> list:
 
 def component_card_html(c: dict) -> str:
     img = component_image_path(c["slug"]) or c.get("image", "")
-    img_html = f'<img src="{esc(img)}" alt="{esc(c["name"])}" width="1376" height="768" loading="lazy" decoding="async">' if img else component_art_svg(c)
+    alt = c.get("image_alt") or c["name"]
+    img_html = f'<img src="{esc(img)}" alt="{esc(alt)}" width="1376" height="768" loading="lazy" decoding="async">' if img else component_art_svg(c)
     facts = derive_quick_facts(c)
     first_fact = facts[0].get("value", "") if facts and isinstance(facts[0], dict) else "ESP32 ready"
     summary = c.get("summary", "")
@@ -558,7 +583,8 @@ def component_hero_html(component: dict) -> str:
     name = component["name"]
     img = component_image_path(component["slug"]) or component.get("image", "")
     icon = component.get("icon", "C")
-    media_img = f'<img src="{esc(img)}" alt="{esc(name)}" loading="eager" width="320" height="240">' if img else f'<span class="component-hero-fallback" aria-hidden="true">{esc(icon)}</span>'
+    alt = component.get("image_alt") or name
+    media_img = f'<img src="{esc(img)}" alt="{esc(alt)}" loading="eager" width="320" height="240">' if img else f'<span class="component-hero-fallback" aria-hidden="true">{esc(icon)}</span>'
     media = f'<div class="component-hero-photo">{media_img}</div><div class="component-hero-illustration" aria-hidden="true">{component_art_svg(component)}</div>'
     return f"""<div class="component-hero-band">
   <section class="wrap component-hero">

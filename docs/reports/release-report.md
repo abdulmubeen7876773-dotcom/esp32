@@ -11,9 +11,9 @@ Build status: VALIDATION
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 54
+- WARNING: 51
 - INFO: 300
-- Total findings: 354
+- Total findings: 351
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 54
+Count: 51
 
 ### missing_illustrations (16)
 
@@ -67,9 +67,8 @@ Count: 54
 - guides/reading-analog-sensors.yaml: missing concept illustration (guides/reading-analog-sensors.yaml)
 - guides/smart-environment-monitor-capstone.yaml: missing concept illustration (guides/smart-environment-monitor-capstone.yaml)
 
-### missing_photos (8)
+### missing_photos (7)
 
-- components/bme280.yaml: no local component photo in /assets/visuals/ (https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg)
 - components/dht22.yaml: no local component photo in /assets/visuals/ (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
 - components/esp32-cam.yaml: no local component photo in /assets/visuals/ (components/esp32-cam.yaml)
 - components/esp32-devkit.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
@@ -78,7 +77,7 @@ Count: 54
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
 
-### missing_wiring_diagrams (23)
+### missing_wiring_diagrams (22)
 
 - guides/analog-inputs-reading-real-world.yaml: missing wiring diagram file (guides/analog-inputs-reading-real-world.yaml)
 - guides/analog-inputs.yaml: missing wiring diagram file (guides/analog-inputs.yaml)
@@ -95,7 +94,6 @@ Count: 54
 - guides/read-temperature-dht22.yaml: missing wiring diagram file (guides/read-temperature-dht22.yaml)
 - guides/reading-analog-sensors.yaml: missing wiring diagram file (guides/reading-analog-sensors.yaml)
 - guides/smart-environment-monitor-capstone.yaml: missing wiring diagram file (guides/smart-environment-monitor-capstone.yaml)
-- components/bme280.yaml: missing wiring diagram file (components/bme280.yaml)
 - components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
 - components/esp32-cam.yaml: missing wiring diagram file (components/esp32-cam.yaml)
 - components/esp32-devkit.yaml: missing wiring diagram file (components/esp32-devkit.yaml)
@@ -104,9 +102,8 @@ Count: 54
 - components/relay-module.yaml: missing wiring diagram file (components/relay-module.yaml)
 - components/ssd1306-oled.yaml: missing wiring diagram file (components/ssd1306-oled.yaml)
 
-### placeholder_images (7)
+### placeholder_images (6)
 
-- components/bme280.yaml: external CDN URL (https://cdn-learn.adafruit.com/assets/assets/000/097/111/medium800/adafruit_products_BME280_top_angle.jpg)
 - components/dht22.yaml: external CDN URL (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
 - components/esp32-devkit.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
 - components/hc-sr04.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg)

@@ -129,7 +129,6 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Add 2+ FAQ entries prefixed "Parent tips —" (safety, parts, time).
 - Add 2+ FAQ entries prefixed "Teacher tips —" (period fit, objectives, assessment).
 - Add 2+ FAQ entries prefixed "Challenge yourself —".
-- Plan migration to local /assets/visuals/components/photos/ image.
 
 ### Warnings
 
@@ -137,7 +136,6 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Missing Parent Tips
 - Missing Teacher Tips
 - Missing Challenge
-- Image uses external CDN URL — migrate to /assets/visuals/ when ready
 
 ## HC-SR501 PIR Motion Sensor (`pir-sensor`)
 

@@ -1,5 +1,5 @@
 COMPONENT_IMAGE_BY_SLUG = {
-    "bme280": "/assets/images/components/component-01.webp",
+    "bme280": "/assets/visuals/components/photos/bme280-photo.svg",
     "dht22": "/assets/images/components/component-02.webp",
     "esp32-devkit": "/assets/images/components/component-03.webp",
     "hc-sr04": "/assets/images/components/component-04.webp",

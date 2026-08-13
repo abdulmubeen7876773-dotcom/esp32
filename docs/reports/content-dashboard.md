@@ -47,12 +47,11 @@ Missing items:
 
 ## Photos
 
-- Complete: 0
-- Missing: 8
+- Complete: 1
+- Missing: 7
 
 Missing items:
 
-- components/bme280: photo
 - components/dht22: photo
 - components/esp32-cam: photo
 - components/esp32-devkit: photo
@@ -68,8 +67,8 @@ Missing items:
 
 ## Wiring
 
-- Complete: 1
-- Missing: 23
+- Complete: 2
+- Missing: 22
 
 Missing items:
 
@@ -88,7 +87,6 @@ Missing items:
 - guides/read-temperature-dht22: wiring diagram
 - guides/reading-analog-sensors: wiring diagram
 - guides/smart-environment-monitor-capstone: wiring diagram
-- components/bme280: wiring diagram
 - components/dht22: wiring diagram
 - components/esp32-cam: wiring diagram
 - components/esp32-devkit: wiring diagram

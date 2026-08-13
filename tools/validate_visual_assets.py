@@ -184,8 +184,8 @@ def collect_content_assets() -> dict[str, dict]:
             )
 
         if comp.get("pinout") or comp.get("pins"):
-            p_alt = f"Pinout diagram for {name}"
-            p_path = f"/assets/visuals/components/illustrations/{slug}-pinout.svg"
+            p_alt = _text(comp.get("pinout_illustration_alt")) or f"Pinout diagram for {name}"
+            p_path = _text(comp.get("pinout_image")) or f"/assets/visuals/components/illustrations/{slug}-pinout.svg"
             _add_entry(
                 entries,
                 _make_entry(
