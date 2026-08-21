@@ -1116,7 +1116,7 @@ def home_v2_declaration() -> str:
       <h1 id="v2-hero-heading" class="v2-declaration-headline">Learn ESP32 by building real projects.</h1>
       <p class="v2-declaration-sub">Start with safe breadboard builds, clear wiring, working code, and project paths for students, parents, teachers, and makers.</p>
       <div class="home-hero-actions">
-        <a class="v2-btn-hero" href="{site_href('guides/blink-led-esp32.html')}">Start Your First Project {_V2_ARROW_ICON}</a>
+        <a class="v2-btn-hero" href="{site_href('learning.html#esp32-basics')}">Start With ESP32 Basics {_V2_ARROW_ICON}</a>
         <a class="home-btn-secondary" href="#learning-adventure">Find a Project for Me</a>
       </div>
     </div>
@@ -1463,10 +1463,10 @@ def home_v3_journey() -> str:
     PATHS = [
         {
             "num": "01", "level": "Beginner", "cls": "beginner",
-            "title": "First Circuits",
-            "desc": "Start from zero. Blink an LED, read a sensor, display data. No experience needed — just curiosity.",
+            "title": "ESP32 Basics",
+            "desc": "Start from zero with a clear order: what ESP32 is, your first LED, buttons, pull resistors, debouncing, PWM, and analog input.",
             "meta": f"{counts['missions']} missions",
-            "href": "guides.html",
+            "href": "learning.html#esp32-basics",
         },
         {
             "num": "02", "level": "Builder", "cls": "intermediate",
@@ -1582,6 +1582,7 @@ def home_v3_academy() -> str:
         ("Mission 01", "Blink LED", "Complete", "guides/blink-led-esp32.html"),
         ("Mission 02", "Button Controls LED", "Complete", "guides/button-led-control.html"),
         ("Mission 03", "Digital Inputs & Floating Pins", "Complete", "guides/digital-inputs-floating-pins.html"),
+        ("Mission 04", "Pull-up vs Pull-down Resistors", "Next", "guides/pull-up-vs-pull-down-resistors.html"),
     ]
     mission_rows = "".join(
         f'<a class="v3-pick-row" href="{site_href(href)}">'
@@ -1594,31 +1595,21 @@ def home_v3_academy() -> str:
         f'</a>'
         for number, title, status, href in missions
     )
-    mission_rows += (
-        '<div class="v3-pick-row">'
-        '<span class="v3-pick-row-main">'
-        '<span class="v3-pick-badge">Mission 04</span>'
-        '<strong>Pull-up vs Pull-down Resistors</strong>'
-        '<span class="v3-pick-row-desc">Coming next in the Foundation Course.</span>'
-        '</span>'
-        '<span class="v3-pick-row-meta">Coming Next</span>'
-        '</div>'
-    )
     return f"""<section class="v3-top-picks reveal" aria-labelledby="v3-academy-heading">
   <div class="wrap">
     <p class="v3-top-picks-eyebrow">ESP32 Academy</p>
     <h2 id="v3-academy-heading" class="v3-top-picks-heading">Course 01 — ESP32 Foundations</h2>
-    <p class="v3-top-picks-sub">A structured learning journey from your first LED to confident digital inputs.</p>
+    <p class="v3-top-picks-sub">A structured learning journey from your first LED to confident digital inputs, PWM, and analog signals.</p>
     <div class="v3-top-picks-grid">
       <div class="v3-top-picks-col">
         <h3 class="v3-top-picks-col-title">Foundation Progress</h3>
         <div class="v3-pick-list">{mission_rows}</div>
-        <a class="v3-top-picks-more" href="{site_href("guides/digital-inputs-floating-pins.html")}">Continue Learning {arrow}</a>
+        <a class="v3-top-picks-more" href="{site_href("learning.html#esp32-basics")}">Open ESP32 Basics {arrow}</a>
       </div>
       <div class="v3-top-picks-col">
         <h3 class="v3-top-picks-col-title">Academy Links</h3>
         <div class="v3-pick-list">
-          <a class="v3-pick-row" href="{site_href("learning.html")}"><span class="v3-pick-row-main"><strong>Learning Paths</strong><span class="v3-pick-row-desc">Choose Beginner, IoT, Robotics, Smart Home, and more.</span></span><span class="v3-pick-row-meta">Open {arrow}</span></a>
+          <a class="v3-pick-row" href="{site_href("learning.html#esp32-basics")}"><span class="v3-pick-row-main"><strong>ESP32 Basics</strong><span class="v3-pick-row-desc">Follow the beginner sequence from board choice to input and output fundamentals.</span></span><span class="v3-pick-row-meta">Start {arrow}</span></a>
           <a class="v3-pick-row" href="{site_href("guides.html#missions")}"><span class="v3-pick-row-main"><strong>Foundation Roadmap</strong><span class="v3-pick-row-desc">See the full mission list and continue in order.</span></span><span class="v3-pick-row-meta">View {arrow}</span></a>
         </div>
       </div>
