@@ -6,15 +6,15 @@ slug: connect-oled-esp32
 guide_type: quick_build
 title: Connect OLED Display with ESP32 | ESP32 Engine
 headline: Connect OLED Display with ESP32
-meta_description: Mission 3 — connect an SSD1306 OLED display to ESP32. I2C wiring, friendly explanations,
-  Arduino code with copy button, mini challenge, and practical tips.
-lead: Serial Monitor is great for debugging — but a real screen on your project looks amazing. This mission
-  adds a tiny OLED display that shows your own messages.
+meta_description: Connect an SSD1306 I2C OLED to ESP32 with VCC, GND, SDA GPIO21, SCL GPIO22, address
+  0x3C or 0x3D, Arduino libraries, test code, and blank-screen fixes.
+lead: Wire a four-pin SSD1306 I2C OLED to ESP32 using 3.3 V, GND, SDA on GPIO21, and SCL on GPIO22
+  in this site's examples, then show Hello, Maker on the screen.
 keywords: ESP32 OLED, SSD1306 ESP32, I2C display beginner, ESP32 screen
 proficiency_level: Beginner
 reading_time: 10–15 min
 date_published: '2026-06-26'
-date_modified: '2026-06-26'
+date_modified: '2026-08-22'
 mission:
   badge: Mission 3
   icon: 📺
@@ -23,7 +23,8 @@ mission:
     phones, even microwave ovens show you what''s happening.
 
 
-    Your ESP32 will talk to a small OLED display using just four wires. When you see "Hello, Maker!" glow
+    Your ESP32 will talk to a four-pin SSD1306 OLED display over I2C using VCC, GND, SDA, and SCL.
+    This is not SPI wiring; SPI OLED modules use extra signal pins and different code. When you see "Hello, Maker!" glow
     on that blue screen, your project starts to feel like a real product.
 
     '
@@ -32,8 +33,9 @@ mission:
     instructions and the screen shows them.
 
     '
-  what_you_build: 'An SSD1306 128×64 OLED connected to ESP32 over I2C. Your code clears the screen and
-    displays a message in large text — the foundation for showing sensor readings, menus, and game scores.
+  what_you_build: 'An SSD1306 128×64 I2C OLED connected to ESP32 with VCC, GND, SDA, and SCL. Your
+    code starts I2C on GPIO21/GPIO22, clears the screen, and displays a message in large text - the
+    foundation for showing sensor readings, menus, and game scores.
 
     '
   things_you_need:
@@ -53,7 +55,12 @@ mission:
     title: What Is I2C?
     illustration_alt: ESP32 connected to OLED via SDA and SCL lines with shared ground, labeled 0x3C address
     body: 'I2C lets multiple devices share two wires — SDA (data) and SCL (clock). Each device has an
-      address; OLED modules usually use 0x3C.
+      address; SSD1306 OLED modules usually use 0x3C and some use 0x3D.
+
+
+      This site uses GPIO21 for SDA and GPIO22 for SCL in ESP32 examples. Those pins are common, not
+      universal fixed I2C pins. If you choose different ESP32 pins later, the wiring and Wire.begin(SDA,
+      SCL) call must match.
 
 
       The Adafruit SSD1306 library handles the hard work. You call display.println() like Serial, then
@@ -66,15 +73,37 @@ mission:
     - Unplug USB. Place the OLED module on the breadboard or connect its pins directly.
     - Connect OLED VCC to ESP32 3.3 V.
     - Connect OLED GND to ESP32 GND.
-    - Connect OLED SDA to ESP32 GPIO21 (default I2C SDA).
-    - Connect OLED SCL to ESP32 GPIO22 (default I2C SCL).
+    - Connect OLED SDA to ESP32 GPIO21, the common SDA example pin used here.
+    - Connect OLED SCL to ESP32 GPIO22, the common SCL example pin used here.
+    - If your module is labeled differently or has SPI pins such as MOSI, CLK, DC, or CS, do not copy this I2C wiring.
     - Install Adafruit SSD1306 and Adafruit GFX libraries in Arduino IDE.
+  gpio_table:
+  - signal: OLED VCC
+    esp32_pin: 3.3 V
+    mode: Power
+    notes: Use 3.3 V for this ESP32 beginner build. Some modules tolerate 5 V, but do not assume it.
+  - signal: OLED GND
+    esp32_pin: GND
+    mode: Ground
+    notes: The OLED and ESP32 must share ground.
+  - signal: OLED SDA
+    esp32_pin: GPIO21
+    mode: I2C data
+    notes: Common ESP32 Arduino example SDA pin used by this site; match Wire.begin(21, 22).
+  - signal: OLED SCL
+    esp32_pin: GPIO22
+    mode: I2C clock
+    notes: Common ESP32 Arduino example SCL pin used by this site; match Wire.begin(21, 22).
+  - signal: OLED address
+    esp32_pin: 0x3C or 0x3D
+    mode: I2C address
+    notes: Try 0x3C first, then run an I2C scanner or test 0x3D if the screen stays blank.
   code:
     filename: oled_hello.ino
     content: "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define SCREEN_WIDTH\
-      \ 128\n#define SCREEN_HEIGHT 64\n#define OLED_RESET -1\n\nAdafruit_SSD1306 display(SCREEN_WIDTH,\
-      \ SCREEN_HEIGHT, &Wire, OLED_RESET);\n\nvoid setup() {\n  if (!display.begin(SSD1306_SWITCHCAPVCC,\
-      \ 0x3C)) {\n    for (;;) {}\n  }\n  display.clearDisplay();\n  display.setTextSize(2);\n  display.setTextColor(SSD1306_WHITE);\n\
+      \ 128\n#define SCREEN_HEIGHT 64\n#define OLED_RESET -1\n#define OLED_ADDRESS 0x3C\n\nAdafruit_SSD1306 display(SCREEN_WIDTH,\
+      \ SCREEN_HEIGHT, &Wire, OLED_RESET);\n\nvoid setup() {\n  Wire.begin(21, 22);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC,\
+      \ OLED_ADDRESS)) {\n    for (;;) {}\n  }\n  display.clearDisplay();\n  display.setTextSize(2);\n  display.setTextColor(SSD1306_WHITE);\n\
       \  display.setCursor(0, 20);\n  display.println(\"Hello,\");\n  display.println(\"Maker!\");\n \
       \ display.display();\n}\n\nvoid loop() {\n}\n"
   expected_output: 'After upload, the OLED shows "Hello," on the first line and "Maker!" on the second
@@ -92,7 +121,7 @@ mission:
     - GPIO2 and GPIO4
     - GPIO34 and GPIO35
     correct: 0
-    explanation: Default I2C pins on ESP32 DevKit are GPIO21 for SDA and GPIO22 for SCL.
+    explanation: This site uses GPIO21 for SDA and GPIO22 for SCL in its ESP32 I2C examples.
   - question: What function updates the pixels on the screen?
     options:
     - display.display()
@@ -115,6 +144,12 @@ mission:
     - Use Adafruit SSD1306 and GFX libraries
     - Draw text on a 128×64 screen
   next_missions:
+  - slug: oled-display-esp32
+    title: OLED Display with ESP32
+    description: Continue from a Hello Maker screen to live values and display updates.
+  - slug: i2c-communication
+    title: I2C Communication
+    description: Run the scanner and confirm whether the OLED responds at 0x3C or 0x3D.
   - slug: read-temperature-dht22
     title: Read Temperature with DHT22
     description: Combine sensor data with your new display.

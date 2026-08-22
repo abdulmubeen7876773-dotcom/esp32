@@ -5,7 +5,8 @@
   "difficulty": "Beginner",
   "icon": "📏",
   "image": "https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg",
-  "summary": "Low-cost ultrasonic distance sensor that measures nearby objects with sound pulses for ESP32 robots, parking aids, and level sensing.",
+  "summary": "HC-SR04 ESP32 ultrasonic sensor reference with VCC 5 V, GND, TRIG on GPIO5, ECHO on GPIO18 through a 10 kOhm / 20 kOhm divider, distance code, and troubleshooting.",
+  "date_modified": "2026-08-22",
   "applications": [
     "Robot obstacle detection",
     "Parking distance indicator",
@@ -135,14 +136,41 @@
   ],
   "wiring": {
     "illustration_alt": "HC-SR04 VCC to 5 V, GND to GND, TRIG to GPIO5, ECHO through voltage divider to GPIO18",
-    "summary": "The HC-SR04 uses 5 V power but the ESP32 uses 3.3 V logic. TRIG from ESP32 to sensor is usually safe, but ECHO from sensor to ESP32 must be level shifted.\n\nA simple voltage divider can use 1 k ohm from ECHO to the ESP32 input and 2 k ohm from the ESP32 input to GND. A logic level shifter is also fine.",
+    "summary": "The HC-SR04 uses 5 V power but the ESP32 uses 3.3 V logic. TRIG from ESP32 to sensor is usually safe, but ECHO from sensor to ESP32 must be level shifted.\n\nThis site's distance-monitor and parking-sensor projects use a 10 kOhm / 20 kOhm voltage divider on ECHO before GPIO18. A proper logic level shifter is also fine. Do not connect a 5 V ECHO signal directly to an ESP32 GPIO.",
+    "table_columns": [
+      "HC-SR04 Pin",
+      "ESP32 Connection",
+      "Notes"
+    ],
+    "table_rows": [
+      {
+        "component_pin": "VCC",
+        "esp32_pin": "5 V / VIN",
+        "notes": "Power for common HC-SR04 modules. Confirm your ESP32 board's 5 V/VIN label before wiring."
+      },
+      {
+        "component_pin": "GND",
+        "esp32_pin": "GND",
+        "notes": "Shared ground is required for TRIG and ECHO timing to make sense."
+      },
+      {
+        "component_pin": "TRIG",
+        "esp32_pin": "GPIO5",
+        "notes": "ESP32 output. The sketch sends a 10 microsecond HIGH pulse to start one measurement."
+      },
+      {
+        "component_pin": "ECHO",
+        "esp32_pin": "GPIO18 via 10 kOhm / 20 kOhm divider",
+        "notes": "ECHO can be 5 V on common modules. Reduce it to ESP32-safe 3.3 V logic before GPIO18."
+      }
+    ],
     "steps": [
       "Unplug USB before wiring.",
       "Connect HC-SR04 VCC to 5 V or VIN on the ESP32 board.",
       "Connect HC-SR04 GND to ESP32 GND.",
       "Connect TRIG to ESP32 GPIO5.",
-      "Connect ECHO to a voltage divider or level shifter.",
-      "Connect the shifted ECHO signal to ESP32 GPIO18.",
+      "Connect ECHO through the 10 kOhm / 20 kOhm divider used by this site's distance projects, or through a proper level shifter.",
+      "Connect the divided or shifted ECHO signal to ESP32 GPIO18.",
       "Point the sensor at a flat object at least 5 cm away.",
       "Upload the code and open Serial Monitor at 115200 baud."
     ]
@@ -264,6 +292,11 @@
     }
   ],
   "related_guides": [
+    {
+      "title": "ESP32 Robotics Learning Path",
+      "href": "/learning.html#robotics-basics",
+      "description": "Use distance sensing as a step toward obstacle-aware robot projects."
+    },
     {
       "title": "What Is ESP32?",
       "href": "/guides/what-is-esp32.html",
