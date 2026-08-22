@@ -7,16 +7,15 @@ featured_image: /assets/visuals/projects/thumbs/esp32-motion-security-alert-thum
 hero_image: /assets/visuals/projects/heroes/esp32-motion-security-alert-hero.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-motion-security-alert-placeholder.svg
 og_image: /assets/visuals/projects/heroes/esp32-motion-security-alert-hero.svg
-description: Build a motion alert node that detects movement with a PIR sensor and triggers a buzzer, LED, or Wi-Fi
-  alert.
-meta_description: Build a motion alert node that detects movement with a PIR sensor and triggers a buzzer, LED,
-  or Wi-Fi alert.
+description: Build an ESP32 HC-SR501 PIR motion alert that reads OUT on GPIO27, waits for sensor warm-up, and triggers
+  a buzzer, LED, or Wi-Fi alert from GPIO25.
+meta_description: Build an ESP32 PIR motion sensor project with HC-SR501 OUT on GPIO27, warm-up behavior, buzzer or LED alert logic, false-trigger fixes, and safety limits.
 source_base: esp32-motion-security-alert
-sensor: PIR motion sensor
+sensor: HC-SR501 PIR motion sensor
 output: buzzer or alert LED
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-08-22'
 keywords:
 - ESP32
 - ESP32 Motion Security Alert
@@ -26,10 +25,10 @@ keywords:
 hardware:
   sensor_pin: GPIO27
   output_pin: GPIO25
-  sensor_name: PIR motion sensor
+  sensor_name: HC-SR501 PIR motion sensor
   output_name: buzzer or alert LED
   wiring:
-  - component: PIR motion sensor
+  - component: HC-SR501 PIR motion sensor OUT
     pin: GPIO27
   - component: buzzer or alert LED
     pin: GPIO25
@@ -40,15 +39,15 @@ project:
   age: Ages 12+
   estimated_time: 90-150 min
   budget: Under $35
-  what_you_build: A working motion security alert with an ESP32, a real input, a controlled output, Serial Monitor
-    diagnostics, and a wiring map you can expand into a more advanced version.
+  what_you_build: A working educational motion alert with an ESP32, an HC-SR501 PIR module on GPIO27, a buzzer or
+    alert LED on GPIO25, Serial Monitor diagnostics, and a clear warm-up/test workflow before any advanced alerting.
   components:
   - item: ESP32 DevKit board
     note: Main controller
     icon: PART
     link: /components/esp32-devkit.html
-  - item: Pir Motion Sensor
-    note: Primary input for the project
+  - item: HC-SR501 PIR motion sensor
+    note: Digital OUT signal connects to GPIO27; wait through warm-up before testing.
     icon: PART
     link: /components/pir-sensor.html
   - item: Buzzer Or Alert Led
@@ -65,10 +64,10 @@ project:
     qty: '1'
     estimated_cost: $6-$10
     notes: USB board
-  - part: Pir Motion Sensor
+  - part: HC-SR501 PIR motion sensor
     qty: '1'
     estimated_cost: $2-$10
-    notes: Project input
+    notes: Digital motion input; module behavior varies, so verify VCC, OUT level, trimpots, and jumper mode.
   - part: Buzzer Or Alert Led
     qty: '1'
     estimated_cost: $3-$12
@@ -79,18 +78,27 @@ project:
     notes: Prototype wiring
   wiring:
     illustration_alt: ESP32 Motion Security Alert wiring diagram
-    summary: Wire the PIR motion sensor first, verify readings, then connect the buzzer or alert LED.
+    summary: Wire the HC-SR501 PIR motion sensor first, wait for warm-up, verify GPIO27 readings in Serial Monitor,
+      then connect the buzzer or alert LED on GPIO25.
     steps:
     - Unplug USB before placing modules on the breadboard.
-    - Connect the PIR motion sensor power pins to the correct 3.3 V or 5 V rail according to its module label.
-    - Connect the PIR motion sensor signal line to GPIO27.
+    - Connect the PIR motion sensor power pins to the correct rail according to its module label; common HC-SR501 modules often use 5 V input.
+    - Connect the PIR OUT signal line to GPIO27.
     - Connect the buzzer or alert LED control input to GPIO25 and share ground with the ESP32.
-    - Power the ESP32 from USB and test the input reading before enabling the output.
+    - Power the ESP32 from USB, wait at least 30 seconds for PIR warm-up, and test the input reading before enabling the output.
   gpio_map:
-  - signal: PIR motion sensor
+  - signal: HC-SR501 PIR VCC
+    esp32_pin: 5 V / VIN typical
+    direction: Power
+    notes: Follow the module label; common HC-SR501 boards often use 5 V input.
+  - signal: HC-SR501 PIR GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Required for the ESP32 to read OUT correctly.
+  - signal: HC-SR501 PIR OUT
     esp32_pin: GPIO27
     direction: Input
-    notes: Read before controlling output
+    notes: Usually HIGH when motion is detected; wait for warm-up before trusting readings.
   - signal: buzzer or alert LED
     esp32_pin: GPIO25
     direction: Output
@@ -112,17 +120,19 @@ project:
       \ = millis();\n    Serial.println(\"Motion detected\");\n  }\n  bool alert = millis() - lastMotion < ALERT_TIME_MS;\n\
       \  digitalWrite(LED_PIN, alert ? HIGH : LOW);\n  digitalWrite(BUZZER_PIN, alert ? HIGH : LOW);\n  delay(100);\n\
       }\n"
-  expected_output: Serial Monitor should show a changing reading. When the PIR motion sensor reaches the test condition,
-    the status LED and buzzer or alert LED should switch state. If the reading changes but the output does not,
-    debug the output wiring separately.
+  expected_output: Serial Monitor prints the warm-up message first. After about 30 seconds, moving across the PIR field
+    of view prints Motion detected, then the status LED and buzzer or alert LED stay active for the alert window.
+    If the reading changes but the output does not, debug the output wiring separately.
   common_mistakes:
   - text: Testing input and output for the first time together.
   - text: Using a GPIO pin that does not match the code constant.
   - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
   - text: Forgetting the shared ground between modules.
   troubleshooting:
+  - problem: False triggers when nobody is moving
+    fix: Wait through warm-up, point the dome away from windows, heaters, fans, and pets, then reduce sensitivity if your module supports it.
   - problem: PIR motion sensor never changes
-    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
+    fix: Check power, ground, OUT on GPIO27, warm-up time, and whether the sensor is a digital PIR module.
   - problem: buzzer or alert LED does not switch
     fix: Test the output module with a simple blink-style sketch before using the full project.
   - problem: ESP32 resets under load
@@ -135,6 +145,15 @@ project:
   - Store event history in flash or a cloud service.
   - Add calibration settings instead of hard-coded thresholds.
   related_guides:
+  - title: HC-SR501 PIR Motion Sensor
+    href: /components/pir-sensor.html
+    description: Review the matching VCC, GND, OUT, GPIO27, warm-up, and false-trigger notes.
+  - title: ESP32 Sensors Learning Path
+    href: /learning.html#sensor-basics
+    description: Place PIR motion sensing in the beginner sensor sequence.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue toward connected alerts after the local motion test works.
   - title: Read Temperature with DHT22
     href: /guides/read-temperature-dht22.html
     description: Learn the sensor-reading workflow used in many ESP32 projects.
@@ -142,6 +161,9 @@ project:
     href: /guides/connect-oled-esp32.html
     description: Add a local display for values, status, and debugging.
   related_projects:
+  - title: ESP32 Smart Door Lock
+    href: /projects/esp32-smart-door-lock.html
+    description: Compare this educational alert with a more careful access-control style build.
   - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
     description: Practice sensor readings and clean Serial output.
@@ -173,12 +195,13 @@ project:
   - Control buzzer or alert LED using a clear threshold or command instead of hidden magic numbers.
   - Use Serial Monitor as an engineering tool, not only as a success message.
   - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an output side. The PIR motion sensor tells the
+  circuit_explanation: The circuit is split into an input side and an output side. The HC-SR501 PIR motion sensor tells the
     ESP32 what is happening. The buzzer or alert LED receives a controlled signal from the ESP32, usually through
     a driver, relay, or module that can handle more current than a GPIO pin.
-  engineering_explanation: A reliable motion security alert is built in layers. First prove the input, then prove
-    the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
-    lock, or automation fails and every wire looks suspicious at the same time.
+  engineering_explanation: A reliable motion alert is built in layers. First prove the HC-SR501 OUT signal after its
+    warm-up period, then prove the output, then join them with simple state logic. This prevents a common beginner
+    problem where the alarm, lock, or automation fails and every wire looks suspicious at the same time. This is an
+    educational local alert, not a certified security system.
   code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
     and then updates the output and status LED. Replace the threshold with values measured from your own PIR motion
     sensor because modules vary.
@@ -187,7 +210,8 @@ project:
   - Ground is shared between every module that exchanges signals with the ESP32.
   - Each GPIO in the code matches the wire connected on the breadboard.
   - Serial Monitor prints startup text at 115200 baud.
-  - The PIR motion sensor value changes when you create a real test condition.
+  - The PIR motion sensor has warmed up for about 30 seconds before judging the readings.
+  - The PIR motion sensor value changes when you walk across the lens field of view.
   - The buzzer or alert LED changes only when the expected condition is reached.
   - The circuit still behaves correctly after power is removed and restored.
   build_photos:

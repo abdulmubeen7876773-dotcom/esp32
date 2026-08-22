@@ -1,14 +1,14 @@
 slug: esp32-distance-monitoring-system
 title: ESP32 Distance Monitoring System
 category: Sensor Projects
-description: Measure distance with ultrasonic or ToF sensors on ESP32 — beginner breadboard builds through OLED feedback and
-  tuned alerts.
+description: Build an ESP32 HC-SR04 distance monitor that measures centimeters with TRIG on GPIO5, ECHO on GPIO18
+  through a 10 kOhm / 20 kOhm divider, and a buzzer alert on GPIO25.
 source_base: esp32-distance-monitoring-system-for-beginners
 sensor: HC-SR04 ultrasonic sensor
 output: buzzer alert
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-18'
+date_modified: '2026-08-22'
 hardware:
   sensor_pin: GPIO5
   output_pin: GPIO25
@@ -25,8 +25,8 @@ hardware:
     pin: 5V
   - component: GND
     pin: GND
-meta_description: Measure distance with an HC-SR04 on ESP32 using TRIG, ECHO through a voltage divider, and a buzzer alert.
-meta_title: ESP32 Distance Monitoring System for Signal Logger
+meta_description: Build an ESP32 HC-SR04 distance monitor with TRIG GPIO5, ECHO GPIO18 through a 10 kOhm / 20 kOhm divider, 5 V sensor power, distance code, and buzzer alert.
+meta_title: ESP32 Distance Monitoring System with HC-SR04
 levels:
   beginner:
     level: beginner
@@ -90,8 +90,9 @@ project:
   age: Ages 11+
   estimated_time: 60-75 min
   budget: Under 20 USD
-  what_you_build: An ESP32 distance monitor that triggers an HC-SR04 from GPIO5, reads ECHO on GPIO18 through a 10 kOhm /
-    20 kOhm divider, and sounds a buzzer on GPIO25.
+  what_you_build: An ESP32 HC-SR04 distance monitor that prints live centimeter readings in Serial Monitor, protects
+    the 5 V ECHO signal with a 10 kOhm / 20 kOhm divider before GPIO18, and sounds a buzzer on GPIO25 when an object
+    is closer than the limit.
   story: 'Distance projects are useful because the result is immediate: move an object and the ESP32 reacts. This build documents
     the important voltage detail, because the HC-SR04 ECHO line must be divided before it reaches GPIO18. The component list,
     wiring table, GPIO map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build so
@@ -161,14 +162,24 @@ project:
     esp32_pin: GPIO18
     direction: Input
     notes: Read through a 10 kOhm / 20 kOhm divider.
+  - signal: HC-SR04 VCC
+    esp32_pin: 5 V / VIN
+    direction: Power
+    notes: Powers the common 5 V HC-SR04 module.
+  - signal: HC-SR04 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Common ground is required for timing and buzzer output.
   - signal: Buzzer alert
     esp32_pin: GPIO25
     direction: Output
     notes: Turns on below DISTANCE_LIMIT_CM.
   circuit_explanation: GPIO5 creates the trigger pulse. The divided ECHO pulse reaches GPIO18, and GPIO25 drives the alert
     output.
-  engineering_explanation: DISTANCE_LIMIT_CM is 20 cm in the sketch. pulseIn() uses a timeout so a missing echo returns -1
-    instead of blocking forever.
+  engineering_explanation: GPIO5 sends a 10 microsecond trigger pulse. The HC-SR04 raises ECHO while it waits for the
+    sound reflection, and GPIO18 measures that pulse after the divider has reduced it to ESP32-safe logic. The code
+    returns duration / 58, a common centimeter shortcut for the round trip of sound. DISTANCE_LIMIT_CM is 20 cm in
+    the sketch. pulseIn() uses a timeout so a missing echo returns -1 instead of blocking forever.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
@@ -214,6 +225,12 @@ project:
   - Bench prototype
   - Local ESP32 learning project
   related_guides:
+  - title: HC-SR04 Ultrasonic Distance Sensor
+    href: /components/hc-sr04.html
+    description: Review the matching VCC, TRIG, divided ECHO, and GPIO18 safety wiring before building the project.
+  - title: ESP32 Robotics Learning Path
+    href: /learning.html#robotics-basics
+    description: Place distance sensing in the beginner robotics sequence before obstacle-aware robot projects.
   - title: What is ESP32?
     href: /guides/what-is-esp32.html
     description: Review ESP32 pins, power, Wi-Fi, and the beginner wiring rules used by this build.
@@ -224,6 +241,9 @@ project:
   - title: ESP32 Smart Parking Sensor
     href: /projects/esp32-smart-parking-sensor.html
     description: Apply the same distance idea to a parking-style indicator.
+  - title: ESP32 Line Following Robot
+    href: /projects/esp32-line-following-robot.html
+    description: Continue toward moving robots after the distance sensor is reliable on the bench.
   faqs:
   - question: Why is the divider required?
     answer: ESP32 GPIO is 3.3 V logic, while HC-SR04 ECHO can be 5 V.

@@ -1,16 +1,15 @@
 slug: esp32-smart-parking-sensor
 title: ESP32 Smart Parking Sensor
 category: Smart City
-description: Use HC-SR04 ultrasonic sensors with the ESP32 to detect vehicle presence in parking bays, display available
-  space count on an LED display, and publish occupancy data to a web dashboard for smart city parking management.
-meta_description: A parking-bay detector that measures distance with an HC-SR04 ultrasonic sensor and uses LEDs
-  or a dashboard output to show whether a space is free or occu
+description: Build an educational ESP32 smart parking sensor with an HC-SR04, TRIG on GPIO5, ECHO on GPIO18 through
+  a 10 kOhm / 20 kOhm divider, and LEDs or dashboard output for free/occupied status.
+meta_description: Build an ESP32 smart parking sensor with HC-SR04 TRIG GPIO5, protected ECHO GPIO18, 5 V sensor power, LED status, distance thresholds, and calibration tips.
 source_base: esp32-smart-parking-sensor-legacy-import
 sensor: HC-SR04 TRIG
 output: HC-SR04 ECHO
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-22'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
@@ -297,20 +296,23 @@ project:
   age: Ages 12+
   estimated_time: 60-90 min
   budget: Under 25 USD
-  what_you_build: A parking-bay detector that measures distance with an HC-SR04 ultrasonic sensor and uses LEDs
-    or a dashboard output to show whether a space is free or occupied.
+  what_you_build: An educational parking-bay prototype that measures distance with an HC-SR04 ultrasonic sensor,
+    protects ECHO with a 10 kOhm / 20 kOhm divider before GPIO18, and uses green/red LEDs or a dashboard output
+    to show whether the bay is free or occupied.
   story: 'ESP32 Smart Parking Sensor solves a real beginner problem: turning an ESP32 reading into a useful physical
     or networked result. Build this if you want a practical distance-sensing project that teaches timing, voltage
     protection, and threshold decisions.
 
 
     The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
-    then test the output under real conditions.'
+    then test the output under real conditions. Treat this as a bench prototype for learning, not a weatherproof or
+    road-approved automotive device.'
   eli12: The ultrasonic sensor works like a bat calling into a space and listening for the echo. The ESP32 measures
     how long the echo takes to return and decides whether a car is close enough to count as parked.
   parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
     power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
-    unless a proper driver, enclosure, and adult supervision are used.
+    unless a proper driver, enclosure, and adult supervision are used. Do not mount this educational prototype where
+    a driver depends on it for safety.
   learning_objectives:
   - Trigger an HC-SR04 sensor from an ESP32.
   - Protect the ESP32 input from a 5 V echo signal.
@@ -371,8 +373,9 @@ project:
     notes: Voltage divider for ECHO pin
   wiring:
     illustration_alt: ESP32 Smart Parking Sensor wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      GPIO5 sends a short trigger pulse.
+    summary: Wire the HC-SR04 first, confirm readings in Serial Monitor, then connect the LED output hardware. GPIO5
+      sends the trigger pulse, GPIO18 reads ECHO only after the 10 kOhm / 20 kOhm divider, and the threshold decides
+      free or occupied.
     steps:
     - Unplug USB before changing wires.
     - Connect HC-SR04 TRIG to GPIO 5 (3.3 V output is sufficient for trigger).
@@ -385,11 +388,11 @@ project:
   gpio_map:
   - signal: HC-SR04 TRIG
     esp32_pin: GPIO 5
-    direction: Power
+    direction: Output
     notes: 3.3 V output is sufficient for trigger
   - signal: HC-SR04 ECHO
     esp32_pin: GPIO 18 via divider
-    direction: Power
+    direction: Input
     notes: ECHO is 5 V; divide with 10k+20k to 3.3 V
   - signal: HC-SR04 VCC
     esp32_pin: 5 V (Vin)
@@ -413,7 +416,8 @@ project:
   engineering_explanation: Ultrasonic parking sensors are time-of-flight systems. They work best when the target
     surface reflects sound back toward the sensor. Angle, height, wind, nearby sensors, and soft surfaces can all
     affect readings, so a reliable parking project uses averaging, timeout handling, and a threshold measured from
-    the real bay.
+    the real bay. In this beginner build BAY_THRESHOLD_CM is 50 cm, but the correct value should come from your own
+    empty-bay and occupied-bay Serial Monitor readings.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
@@ -433,8 +437,9 @@ project:
     pins in setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading
     first, compares it with a threshold, then changes the output. Printing before controlling the output makes debugging
     much easier because you can see what the ESP32 believes is happening.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 smart parking sensor is reached.
+  expected_output: Serial Monitor prints Distance values and FREE or OCCUPIED status. With the bay clear, the green
+    LED should be on. When a target is closer than BAY_THRESHOLD_CM, the red LED turns on. If readings are -1, debug
+    the HC-SR04 wiring and ECHO divider before trusting the LEDs.
   common_mistakes:
   - text: Connecting HC-SR04 ECHO directly to an ESP32 pin without level shifting.
   - text: Mounting the sensor too high for low vehicles.
@@ -480,6 +485,12 @@ project:
   - text: Bench test checklist
     note: Follow the testing checklist before permanent installation.
   related_guides:
+  - title: HC-SR04 Ultrasonic Distance Sensor
+    href: /components/hc-sr04.html
+    description: Review the matching 5 V power, GPIO5 TRIG, divided GPIO18 ECHO, and distance test code.
+  - title: ESP32 Robotics Learning Path
+    href: /learning.html#robotics-basics
+    description: Use parking distance sensing as a practical step after the basic distance monitor.
   - title: Mission 01 - Blink LED
     href: /guides/blink-led-esp32.html
     description: Verify uploads and simple outputs before adding hardware.
@@ -495,7 +506,7 @@ project:
   related_projects:
   - title: ESP32 Distance Monitoring System
     href: /projects/esp32-distance-monitoring-system.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Start with the simpler single-sensor distance alert before adding parking thresholds.
   - title: ESP32 Smart Street Light
     href: /projects/esp32-smart-street-light.html
     description: Continue with a related ESP32 build that uses the same engineering idea.
