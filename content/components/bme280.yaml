@@ -1,11 +1,12 @@
 slug: bme280
-name: BME280 Environmental Sensor
+name: BME280 Sensor with ESP32
 category: Sensors
 difficulty: Beginner
 icon: 🌤
 image: /assets/visuals/components/photos/bme280-photo.svg
 image_alt: Product-style illustration of a generic BME280 breakout module with pin header labels
-summary: BME280 I2C environmental sensor for ESP32 weather projects, with wiring, pinout, Arduino code, 0x76/0x77 address handling, and temperature, humidity, pressure, and altitude-estimate guidance.
+summary: BME280 ESP32 wiring guide for I2C weather projects, with GPIO21/GPIO22 pinout, 3.3 V power, Arduino code, 0x76/0x77 address handling, and temperature, humidity, pressure, and altitude-estimate guidance.
+date_modified: '2026-08-22'
 experience_required: Basic Arduino upload, breadboard wiring, Serial Monitor, and beginner I2C wiring
 applications:
   - ESP32 weather station
@@ -127,6 +128,29 @@ wiring:
     The BME280 breakout uses I2C, so it needs power, ground, data, and clock. The common ESP32 Arduino defaults are GPIO21 for SDA and GPIO22 for SCL, but they are not fixed pins. Your wiring and Wire.begin(SDA, SCL) must agree.
 
     Most breakout boards already include I2C pull-up resistors. If you build with a bare BME280 chip, you must add the correct external circuit and follow the datasheet carefully. Beginners should use a 3.3 V breakout module, keep wires short, and run an I2C scanner when the address is uncertain.
+  table_columns:
+    - BME280 Pin
+    - ESP32 Pin
+    - Purpose / Notes
+  table_rows:
+    - component_pin: VIN / VCC
+      esp32_pin: 3.3 V
+      notes: Power the breakout from 3.3 V unless that exact module documents safe 5 V input and level shifting.
+    - component_pin: GND
+      esp32_pin: GND
+      notes: Shared ground is required for reliable I2C communication.
+    - component_pin: SDA / SDI
+      esp32_pin: GPIO21
+      notes: I2C data line in the site's ESP32 Arduino examples.
+    - component_pin: SCL / SCK
+      esp32_pin: GPIO22
+      notes: I2C clock line in the site's ESP32 Arduino examples.
+    - component_pin: SDO
+      esp32_pin: Breakout default
+      notes: Often selects address 0x76 or 0x77; follow your module labels and scan the bus if unsure.
+    - component_pin: CS / CSB
+      esp32_pin: Breakout default
+      notes: Usually kept high for I2C mode on breakout boards; do not guess if your board exposes this pin.
   steps:
     - Unplug the ESP32 USB cable before wiring.
     - Place the BME280 breakout on the breadboard so each pin is in a separate row.
@@ -295,6 +319,9 @@ troubleshooting:
     cause: Some breakout boards expose both I2C and SPI labels.
     fix: "For this guide, use I2C only: VCC, GND, SDA/SDI, and SCL/SCK. Leave CS/SDO at breakout defaults."
 related_guides:
+  - title: ESP32 Sensors Learning Path
+    href: /learning.html#sensor-basics
+    description: Place BME280 after basic sensor concepts and before complete weather-station projects.
   - title: ESP32 I2C Communication Guide
     href: /guides/i2c-communication.html
     description: Understand shared SDA/SCL wiring, I2C addresses, pull-ups, and scanner diagnostics for ESP32 devices.

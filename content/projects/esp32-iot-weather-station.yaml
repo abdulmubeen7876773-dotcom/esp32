@@ -7,14 +7,14 @@ featured_image: /assets/visuals/projects/thumbs/esp32-iot-weather-station-thumb.
 hero_image: /assets/visuals/projects/heroes/esp32-iot-weather-station-hero.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-iot-weather-station-placeholder.svg
 og_image: /assets/visuals/projects/heroes/esp32-iot-weather-station-hero.svg
-description: Build an ESP32 IoT weather station with BME280 temperature, humidity, and pressure readings over I2C, Arduino code, Serial Monitor output, and optional OLED or dashboard extensions.
-meta_description: Build an ESP32 weather station with BME280 temperature, humidity, pressure, I2C wiring, Arduino code, Serial Monitor output, and optional OLED or MQTT dashboard.
+description: Build an ESP32 IoT weather station that reads a BME280 over I2C on GPIO21/GPIO22, prints temperature, humidity, and pressure in Serial Monitor, and can later feed an OLED or dashboard.
+meta_description: Build an ESP32 BME280 weather station with I2C wiring on GPIO21/GPIO22, 3.3 V power, Arduino code, Serial Monitor output, and dashboard upgrades.
 source_base: esp32-iot-weather-station
 sensor: BME280 environmental sensor
 output: Serial Monitor readings
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-08-22'
 keywords:
 - ESP32
 - ESP32 IoT Weather Station
@@ -38,9 +38,7 @@ project:
   age: Ages 12+
   estimated_time: 60-90 min
   budget: Under $25
-  what_you_build: A working local ESP32 weather node that reads BME280 temperature, humidity, and pressure over
-    I2C, prints clear Serial Monitor diagnostics, and can later be extended with an OLED, MQTT, logging, or a Wi-Fi
-    dashboard.
+  what_you_build: A working local ESP32 weather node that powers a BME280 breakout from 3.3 V, reads temperature, humidity, and pressure over I2C on GPIO21/GPIO22, prints clear Serial Monitor diagnostics, and can later be extended with an OLED, MQTT, logging, or a Wi-Fi dashboard.
   components:
   - item: ESP32 DevKit board
     note: Main controller with Wi-Fi
@@ -79,8 +77,10 @@ project:
     notes: Male-to-male jumpers
   wiring:
     illustration_alt: ESP32 IoT Weather Station wiring diagram
-    summary: Wire the BME280 environmental sensor first and verify temperature, humidity, and pressure in Serial
-      Monitor before adding an optional OLED or dashboard.
+    summary: >
+      Wire the BME280 first: VCC to 3.3 V, GND to GND, SDA to GPIO21, and SCL to GPIO22. Verify temperature,
+      humidity, pressure, and the detected 0x76 or 0x77 I2C address in Serial Monitor before adding an optional OLED,
+      MQTT feed, or Wi-Fi dashboard.
     steps:
     - Unplug USB before wiring the breadboard.
     - Connect the BME280 breakout VCC to 3.3 V unless that exact breakout documentation says another supply is safe.
@@ -89,6 +89,14 @@ project:
     - Reconnect USB, upload the core sketch, and open Serial Monitor at 115200 baud.
     - If you later add an OLED, connect its SDA and SCL to the same I2C bus, confirm its address, and keep signals ESP32-safe.
   gpio_map:
+  - signal: BME280 VCC
+    esp32_pin: 3.3 V
+    direction: Power
+    notes: Use 3.3 V unless the exact breakout documents another safe input.
+  - signal: BME280 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Shared ground for the I2C sensor bus.
   - signal: BME280 SDA
     esp32_pin: GPIO21
     direction: I2C data
@@ -183,6 +191,12 @@ project:
   - Store pressure history and show rising or falling trend.
   - Add deep sleep and proper weather shielding for outdoor battery logging.
   related_guides:
+  - title: ESP32 Sensors Learning Path
+    href: /learning.html#sensor-basics
+    description: Follow the beginner sequence from sensor concepts to weather, motion, distance, and soil projects.
+  - title: BME280 Sensor with ESP32
+    href: /components/bme280.html
+    description: Review BME280 pin labels, 3.3 V wiring, 0x76/0x77 addresses, and ESP32 I2C troubleshooting.
   - title: ESP32 IoT Learning Path
     href: /learning.html#iot-basics
     description: Follow the connected-project sequence from Wi-Fi concepts to dashboards and smart-home builds.
@@ -209,7 +223,7 @@ project:
     - Recognize placement and airflow errors in environmental readings.
     - Extend stable sensor data to an optional OLED, MQTT dashboard, or logger later.
   story: 'ESP32 IoT Weather Station turns the ESP32 into a local environmental monitor. The core build reads a BME280
-    over I2C and prints temperature, humidity, and local pressure in Serial Monitor before you add any dashboard.
+    over I2C using GPIO21 for SDA and GPIO22 for SCL, then prints temperature, humidity, and local pressure in Serial Monitor before you add any dashboard.
 
 
     The important lesson is not only the finished weather station. You learn how to make sensor data trustworthy first:
@@ -233,7 +247,8 @@ project:
   - Identify placement-induced errors from heat, breath, sunlight, enclosures, and poor airflow.
   - Share the I2C bus with an optional SSD1306 OLED later when addresses do not conflict.
   - Extend reliable local sensor data into MQTT, logging, or a Wi-Fi dashboard after the core reading works.
-  circuit_explanation: The BME280 uses I2C, so the ESP32 communicates over SDA and SCL. GPIO21 and GPIO22 are common
+  circuit_explanation: The BME280 uses I2C, so the ESP32 communicates over SDA and SCL. In this project, BME280 VCC
+    connects to 3.3 V, GND connects to GND, SDA connects to GPIO21, and SCL connects to GPIO22. GPIO21 and GPIO22 are common
     Arduino-ESP32 defaults, but I2C pins are configurable in code. Most BME280 modules respond at 0x76 or 0x77.
     An optional SSD1306 OLED can share the same bus when its address, often 0x3C or sometimes 0x3D, does not conflict.
   engineering_explanation: Environmental readings are sensitive to placement. Heat from the ESP32, USB regulator,

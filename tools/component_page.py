@@ -227,6 +227,28 @@ def wiring_html(wiring: dict) -> str:
     summary = (wiring.get("summary") or "").strip()
     steps = wiring.get("steps", [])
     summary_html = _paragraphs(summary) if summary else ""
+    table_rows = wiring.get("table_rows", [])
+    table_html = ""
+    if table_rows:
+        columns = wiring.get("table_columns", ["Component Pin", "ESP32 Pin", "Purpose / Notes"])
+        head = "".join(f'<th scope="col">{esc(col)}</th>' for col in columns)
+        body = []
+        for row in table_rows:
+            if isinstance(row, dict):
+                cells = [
+                    row.get("component_pin", ""),
+                    row.get("esp32_pin", ""),
+                    row.get("notes", ""),
+                ]
+            else:
+                cells = list(row)
+            body.append("<tr>" + "".join(f"<td>{esc(str(cell))}</td>" for cell in cells[: len(columns)]) + "</tr>")
+        table_html = f"""<div class="wiring-table-wrap">
+  <table class="wiring-table">
+    <thead><tr>{head}</tr></thead>
+    <tbody>{"".join(body)}</tbody>
+  </table>
+</div>"""
     steps_html = ""
     if steps:
         items = []
@@ -240,10 +262,11 @@ def wiring_html(wiring: dict) -> str:
 </li>"""
             )
         steps_html = f'<ol class="component-steps-list">{"".join(items)}</ol>'
+    table_block = f"  {table_html}\n" if table_html else ""
     return f"""<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
   {component_section_heading("wiring", "04", "Wiring Diagram")}
   {summary_html}
-  <div class="component-wiring-art">{local_visual_figure(image, alt, "component-visual-art component-wiring-image") or illustration_placeholder(alt, "Wiring Diagram", "Wire")}</div>
+{table_block}  <div class="component-wiring-art">{local_visual_figure(image, alt, "component-visual-art component-wiring-image") or illustration_placeholder(alt, "Wiring Diagram", "Wire")}</div>
   {steps_html}
 </section>"""
 
