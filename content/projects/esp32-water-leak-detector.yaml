@@ -1,17 +1,16 @@
 slug: esp32-water-leak-detector
 title: ESP32 Water Leak Detector
 category: Home Automation
-description: Protect your home from water damage with an ESP32 leak detector. Start with a simple moisture sensor
-  and buzzer alert, scale to multi-zone monitoring with Telegram notifications, and finish with automatic main water
-  shutoff via a solenoid valve.
-meta_description: A low-voltage water leak alarm that detects moisture on a sensor strip, sounds a buzzer, and can
-  later send alerts over Wi-Fi. Includes wiring, code, troub
+description: Build an ESP32 water leak detector with a resistive water sensor strip on GPIO34/GPIO35, a buzzer on
+  GPIO25, red/green LEDs on GPIO26/GPIO27, wet/dry calibration, and corrosion-aware placement.
+meta_description: Build an ESP32 water leak detector with resistive water sensor AOUT GPIO34, DOUT GPIO35, buzzer
+  GPIO25, wet/dry threshold code, calibration, and placement tips.
 source_base: esp32-water-leak-detector-legacy-import
 sensor: Water sensor AOUT
 output: Water sensor DOUT
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-22'
 quality_status: golden_tutorial
 status: published
 import_tier: 3
@@ -317,8 +316,9 @@ project:
   age: Ages 12+
   estimated_time: 50-80 min
   budget: Under 20 USD
-  what_you_build: A low-voltage water leak alarm that detects moisture on a sensor strip, sounds a buzzer, and can
-    later send alerts over Wi-Fi.
+  what_you_build: A low-voltage ESP32 water leak alarm that reads a resistive water sensor strip through AOUT on
+    GPIO34 and DOUT on GPIO35, sounds a buzzer on GPIO25, turns on a red leak LED on GPIO26, and keeps a green normal
+    LED on GPIO27 when the sensor is dry.
   story: 'ESP32 Water Leak Detector solves a real beginner problem: turning an ESP32 reading into a useful physical
     or networked result. Build this to learn practical threshold sensing, corrosion limits, and how a small ESP32
     circuit can prevent real damage.
@@ -330,7 +330,8 @@ project:
     them, current can pass through the module, and the ESP32 sees the change.
   parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
     power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
-    unless a proper driver, enclosure, and adult supervision are used.
+    unless a proper driver, enclosure, and adult supervision are used. Keep the ESP32 board and USB cable away from
+    the wet area during every test.
   learning_objectives:
   - Detect water using analog and digital sensor outputs.
   - Understand why resistive water probes corrode over time.
@@ -387,13 +388,14 @@ project:
     notes: Required for this build
   wiring:
     illustration_alt: ESP32 Water Leak Detector wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      The water strip exposes conductive traces.
+    summary: Wire the resistive water sensor strip first and confirm dry and wet readings in Serial Monitor. Then
+      connect the buzzer and LEDs so the local alarm behavior is easy to test.
     steps:
     - Unplug USB before changing wires.
     - Connect Water sensor AOUT to GPIO 34 (Analog signal; higher voltage = wetter).
     - Connect Water sensor DOUT to GPIO 35 (Digital threshold from onboard comparator).
-    - Connect Water sensor VCC to 3.3 V (Power sensor only when reading to reduce electrolytic corrosion).
+    - Connect Water sensor VCC to 3.3 V for the beginner build; power the sensor only while reading in longer-term
+      versions to reduce electrolytic corrosion.
     - Connect Water sensor GND to GND.
     - Connect Buzzer + to GPIO 25.
     - Connect Red LED anode to GPIO 26.
@@ -411,7 +413,7 @@ project:
   - signal: Water sensor VCC
     esp32_pin: 3.3 V
     direction: Power
-    notes: Power sensor only when reading to reduce electrolytic corrosion
+    notes: Beginner wiring uses 3.3 V; longer-term builds should switch sensor power only during readings.
   - signal: Water sensor GND
     esp32_pin: GND
     direction: Ground
@@ -452,8 +454,9 @@ project:
     pins in setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading
     first, compares it with a threshold, then changes the output. Printing before controlling the output makes debugging
     much easier because you can see what the ESP32 believes is happening.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 water leak detector is reached.
+  expected_output: Serial Monitor should print the raw sensor value and "dry" while the strip is clean and dry.
+    When water bridges the copper traces and the reading rises above WET_THRESHOLD or DOUT goes HIGH, the red LED
+    and buzzer should turn on while the green LED turns off.
   common_mistakes:
   - text: Leaving a resistive water sensor powered continuously for months.
   - text: Placing the sensor where water reaches it too late.
@@ -462,11 +465,15 @@ project:
   - text: Forgetting to dry the sensor completely before retesting.
   troubleshooting:
   - problem: Alarm always stays on
-    fix: Dry the sensor, check for residue between traces, and print raw readings before threshold logic.
+    fix: Dry the sensor completely, clean residue between traces, and record raw dry readings before raising WET_THRESHOLD.
   - problem: Alarm never triggers
-    fix: Touch the traces with a damp cloth and verify VCC, GND, and signal wiring.
+    fix: Touch the traces with a damp cloth and verify 3.3 V, GND, AOUT on GPIO34, DOUT on GPIO35, and the sensor
+      module threshold potentiometer if present.
   - problem: False alarms happen overnight
     fix: Move the sensor away from condensation sources or raise the threshold after logging dry readings.
+  - problem: Sensor corrodes after repeated tests
+    fix: Use brief wet tests, dry the strip afterward, and switch sensor power only during readings for longer-term
+      monitoring.
   - problem: Buzzer is weak
     fix: Use an active buzzer module and check whether it needs 5 V or a transistor driver.
   testing_checklist:
@@ -508,16 +515,22 @@ project:
   - title: Mission 10 - I2C Communication
     href: /guides/i2c-communication.html
     description: Use structured communication thinking before connecting multiple modules.
+  - title: ESP32 Sensors Learning Path
+    href: /learning.html#sensor-basics
+    description: Review the beginner sequence for sensor readings, thresholds, and real projects.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue from local leak alarms to network alerts and smart-home monitoring.
   related_projects:
   - title: ESP32 Motion Security Alert
     href: /projects/esp32-motion-security-alert.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Compare another home-alert project with a digital sensor and buzzer-style output.
   - title: ESP32 Soil Moisture Monitor
     href: /projects/esp32-soil-moisture-monitor.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Home Climate Automation
-    href: /projects/esp32-home-climate-automation.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Compare moisture sensing in soil with water-strip leak detection.
+  - title: ESP32 Smart Irrigation System
+    href: /projects/esp32-smart-irrigation-system.html
+    description: Continue to a related smart-home water project after the leak detector works locally.
   faqs:
   - question: Can the sensor detect tiny droplets?
     answer: Only if the droplets bridge the sensor traces enough to change the reading. Test with small amounts of

@@ -7,30 +7,31 @@ featured_image: /assets/visuals/projects/thumbs/esp32-smart-door-lock-thumb.svg
 hero_image: /assets/visuals/projects/heroes/esp32-smart-door-lock-hero.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-smart-door-lock-placeholder.svg
 og_image: /assets/visuals/projects/heroes/esp32-smart-door-lock-hero.svg
-description: Build a safe smart lock prototype using ESP32, an access input, and a low-voltage lock actuator output.
-meta_description: Build a safe smart lock prototype using ESP32, an access input, and a low-voltage lock actuator
-  output.
+description: Build an ESP32 RFID smart door lock prototype with an MFRC522 reader, access-approved servo movement
+  on GPIO26, denied-card feedback in Serial Monitor, and low-voltage safety limits.
+meta_description: Build an ESP32 RFID smart door lock with MFRC522 SS GPIO5, RST GPIO22, servo output GPIO26,
+  access granted/denied logic, wiring, code, and safety limits.
 source_base: esp32-smart-door-lock
-sensor: RFID reader or keypad input
-output: servo or relay lock
+sensor: MFRC522 RFID reader
+output: servo lock actuator
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-08-22'
 keywords:
 - ESP32
 - ESP32 Smart Door Lock
-- RFID reader or keypad input
-- servo or relay lock
+- MFRC522 RFID reader
+- servo lock actuator
 - Arduino tutorial
 hardware:
   sensor_pin: GPIO5/GPIO22
   output_pin: GPIO26
-  sensor_name: RFID reader or keypad input
-  output_name: servo or relay lock
+  sensor_name: MFRC522 RFID reader
+  output_name: servo lock actuator
   wiring:
-  - component: RFID reader or keypad input
+  - component: MFRC522 RFID SS/RST
     pin: GPIO5/GPIO22
-  - component: servo or relay lock
+  - component: Servo signal
     pin: GPIO26
 project:
   icon: ESP
@@ -39,20 +40,20 @@ project:
   age: Ages 12+
   estimated_time: 90-150 min
   budget: Under $35
-  what_you_build: A working door lock prototype with an ESP32, a real input, a controlled output, Serial Monitor
-    diagnostics, and a wiring map you can expand into a more advanced version.
+  what_you_build: A working educational RFID door lock prototype with an ESP32, an MFRC522 RFID reader using SS
+    on GPIO5 and RST on GPIO22, a servo signal on GPIO26, Serial Monitor messages for approved and unknown cards,
+    and clear limits so it is not mistaken for a certified access-control system.
   components:
   - item: ESP32 DevKit board
     note: Main controller
     icon: PART
     link: /components/esp32-devkit.html
-  - item: Rfid Reader Or Keypad Input
-    note: Primary input for the project
+  - item: MFRC522 RFID reader
+    note: Card reader used for the access decision
     icon: PART
-  - item: Servo Or Relay Lock
-    note: Physical output controlled by ESP32
+  - item: Small hobby servo or low-voltage lock actuator
+    note: Demonstration lock movement controlled from GPIO26
     icon: PART
-    link: /components/relay-module.html
   - item: Breadboard and jumper wires
     note: Prototype wiring
     icon: PART
@@ -64,37 +65,49 @@ project:
     qty: '1'
     estimated_cost: $6-$10
     notes: USB board
-  - part: Rfid Reader Or Keypad Input
+  - part: MFRC522 RFID reader
     qty: '1'
     estimated_cost: $2-$10
-    notes: Project input
-  - part: Servo Or Relay Lock
+    notes: Card reader input
+  - part: Small hobby servo or low-voltage lock actuator
     qty: '1'
     estimated_cost: $3-$12
-    notes: Use low-voltage test hardware
+    notes: Use low-voltage test hardware and avoid real door hardware
   - part: Breadboard and wires
     qty: 1 set
     estimated_cost: $3-$5
     notes: Prototype wiring
   wiring:
     illustration_alt: ESP32 Smart Door Lock wiring diagram
-    summary: Wire the RFID reader or keypad input first, verify readings, then connect the servo or relay lock.
+    summary: Wire the MFRC522 RFID reader first, verify card reads in Serial Monitor, then connect the servo signal
+      on GPIO26. Keep the build low-voltage and treat the servo or lock mechanism as a classroom prototype.
     steps:
     - Unplug USB before placing modules on the breadboard.
-    - Connect the RFID reader or keypad input power pins to the correct 3.3 V or 5 V rail according to its module
-      label.
-    - Connect the RFID reader or keypad input signal line to GPIO5/GPIO22.
-    - Connect the servo or relay lock control input to GPIO26 and share ground with the ESP32.
-    - Power the ESP32 from USB and test the input reading before enabling the output.
+    - Connect the MFRC522 RFID reader power pins according to its module label; common MFRC522 boards use 3.3 V
+      logic, not 5 V GPIO signals.
+    - Connect MFRC522 SS/SDA to GPIO5 and RST to GPIO22 to match the code constants.
+    - Connect the MFRC522 SPI bus to the ESP32 SPI pins used by your board and library setup.
+    - Connect the servo signal wire to GPIO26 and share ground with the ESP32.
+    - Power the servo or lock actuator from a suitable low-voltage supply if USB power is not stable; do not power
+      a motorized lock directly from an ESP32 GPIO.
+    - Upload the sketch, scan a known card, and verify Serial Monitor before attaching the lock mechanism.
   gpio_map:
-  - signal: RFID reader or keypad input
-    esp32_pin: GPIO5/GPIO22
-    direction: Input
-    notes: Read before controlling output
-  - signal: servo or relay lock
+  - signal: MFRC522 SS/SDA
+    esp32_pin: GPIO5
+    direction: Output
+    notes: Chip-select pin defined as SS_PIN in the sketch
+  - signal: MFRC522 RST
+    esp32_pin: GPIO22
+    direction: Output
+    notes: Reset pin defined as RST_PIN in the sketch
+  - signal: MFRC522 SPI bus
+    esp32_pin: Board SPI pins
+    direction: I/O
+    notes: SPI.begin() uses the ESP32 board/library SPI setup
+  - signal: Servo signal
     esp32_pin: GPIO26
     direction: Output
-    notes: Drive through a module or driver
+    notes: Signal only; use suitable low-voltage actuator power
   - signal: Status LED
     esp32_pin: GPIO2
     direction: Output
@@ -114,48 +127,50 @@ project:
       \ {\n  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;\n  if (allowedCard()) {\n\
       \    Serial.println(\"Unlocked for 5 seconds\");\n    lockServo.write(90);\n    delay(5000);\n    lockServo.write(0);\n\
       \  } else {\n    Serial.println(\"Unknown card\");\n  }\n  rfid.PICC_HaltA();\n}\n"
-  expected_output: Serial Monitor should show a changing reading. When the RFID reader or keypad input reaches the
-    test condition, the status LED and servo or relay lock should switch state. If the reading changes but the output
-    does not, debug the output wiring separately.
+  expected_output: Serial Monitor should print "Door lock ready" after boot. An approved RFID card should print
+    "Unlocked for 5 seconds", move the servo to the unlocked position, wait, then return it to locked. An unknown
+    card should print "Unknown card" and leave the servo in the locked position.
   common_mistakes:
   - text: Testing input and output for the first time together.
   - text: Using a GPIO pin that does not match the code constant.
   - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
   - text: Forgetting the shared ground between modules.
   troubleshooting:
-  - problem: RFID reader or keypad input never changes
-    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
-  - problem: servo or relay lock does not switch
-    fix: Test the output module with a simple blink-style sketch before using the full project.
+  - problem: RFID reader never detects a card
+    fix: Check MFRC522 power, ground, SS on GPIO5, RST on GPIO22, SPI wiring, and whether the card is close enough
+      to the antenna.
+  - problem: Servo moves weakly or ESP32 resets
+    fix: Use a suitable separate low-voltage servo supply, keep grounds shared, and do not power the servo from
+      an ESP32 GPIO pin.
   - problem: ESP32 resets under load
     fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
   - problem: Behavior is reversed
-    fix: Your module may be active LOW; invert the output logic after confirming with Serial Monitor.
+    fix: Check the servo horn position and locked/unlocked angles before changing access logic.
   upgrade_ideas:
   - Add OLED status feedback.
   - Add Wi-Fi dashboard or mobile alerts.
   - Store event history in flash or a cloud service.
   - Add calibration settings instead of hard-coded thresholds.
   related_guides:
-  - title: Read Temperature with DHT22
-    href: /guides/read-temperature-dht22.html
-    description: Learn the sensor-reading workflow used in many ESP32 projects.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue from local access decisions to connected smart-home projects.
   - title: Connect an OLED Display
     href: /guides/connect-oled-esp32.html
     description: Add a local display for values, status, and debugging.
   related_projects:
-  - title: ESP32 IoT Weather Station
-    href: /projects/esp32-iot-weather-station.html
-    description: Practice sensor readings and clean Serial output.
-  - title: ESP32 Home Climate Automation
-    href: /projects/esp32-home-climate-automation.html
-    description: Turn measurements into automatic control decisions.
+  - title: ESP32 RFID Access Control System
+    href: /projects/esp32-rfid-access-control-system.html
+    description: Compare the RFID reader and approved-card logic with a relay-style access output.
+  - title: ESP32 Motion Security Alert
+    href: /projects/esp32-motion-security-alert.html
+    description: Add a related security input project after the door lock prototype works.
   complete:
     summary: You built a real door lock prototype and learned how to connect sensing, decision logic, and output
       control in one ESP32 project.
     skills:
-    - Wire and test RFID reader or keypad input
-    - Control servo or relay lock from ESP32
+    - Wire and test MFRC522 RFID reader
+    - Control servo lock actuator from ESP32
     - Debug hardware with Serial Monitor
     - Improve the project safely
   story: 'ESP32 Smart Door Lock turns the ESP32 into a real object that senses something, decides what it means,
@@ -164,34 +179,36 @@ project:
 
     The important lesson is not only the finished door lock prototype. You learn how to separate input, decision
     logic, and output so a project stays debuggable instead of becoming a pile of wires and guesses.'
-  eli12: Think of the ESP32 as the brain. The RFID reader or keypad input is how it notices the world. The servo
-    or relay lock is how it answers back. The code is the rule book that tells the brain what to do when the numbers
-    change.
+  eli12: Think of the ESP32 as the brain. The RFID reader checks the card. The servo is the small arm that moves
+    when the card is approved. The code is the rule book that decides whether to unlock or stay locked.
   parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
     the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
-    circuit. Do not use mains voltage on a breadboard.
+    circuit. Do not use mains voltage on a breadboard, and do not treat this classroom prototype as a certified
+    physical security system.
   learning_objectives:
-  - Wire and test the RFID reader or keypad input before connecting the rest of the circuit.
+  - Wire and test the MFRC522 RFID reader before connecting the rest of the circuit.
   - Map each signal to a named ESP32 GPIO and keep the code constants readable.
-  - Control servo or relay lock using a clear threshold or command instead of hidden magic numbers.
+  - Control the servo signal on GPIO26 using an explicit approved-card decision.
   - Use Serial Monitor as an engineering tool, not only as a success message.
   - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an output side. The RFID reader or keypad input
-    tells the ESP32 what is happening. The servo or relay lock receives a controlled signal from the ESP32, usually
-    through a driver, relay, or module that can handle more current than a GPIO pin.
+  circuit_explanation: The circuit is split into an input side and an actuator side. The MFRC522 RFID reader tells
+    the ESP32 which card is present. The servo receives only a control signal from GPIO26; actuator power must come
+    from a suitable low-voltage source, not from an ESP32 GPIO pin.
   engineering_explanation: A reliable door lock prototype is built in layers. First prove the input, then prove
     the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
-    lock, or automation fails and every wire looks suspicious at the same time.
-  code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
-    and then updates the output and status LED. Replace the threshold with values measured from your own RFID reader
-    or keypad input because modules vary.
+    lock, or automation fails and every wire looks suspicious at the same time. RFID card IDs are identifiers for
+    a prototype demo, not tamper-resistant authentication.
+  code_explanation: The example defines SS_PIN as GPIO5, RST_PIN as GPIO22, and SERVO_PIN as GPIO26. It reads the
+    RFID UID, compares it with allowedUid, moves the servo only for an approved card, and prints "Unknown card" for
+    anything else.
   testing_checklist:
   - ESP32 appears on the correct port and accepts a basic blink upload.
   - Ground is shared between every module that exchanges signals with the ESP32.
   - Each GPIO in the code matches the wire connected on the breadboard.
   - Serial Monitor prints startup text at 115200 baud.
-  - The RFID reader or keypad input value changes when you create a real test condition.
-  - The servo or relay lock changes only when the expected condition is reached.
+  - The MFRC522 reader reports card scans before the servo is attached.
+  - An unknown card leaves the servo locked.
+  - The approved card unlocks for 5 seconds and then returns to locked.
   - The circuit still behaves correctly after power is removed and restored.
   build_photos:
   - title: Breadboard overview
@@ -215,11 +232,11 @@ project:
   - IoT portfolio project
   faqs:
   - question: Why does my RFID reader or keypad input reading look wrong?
-    answer: Check the input power, ground, and signal wiring before changing access logic. Keypads and RFID readers
-      fail differently, so test the input alone first.
-  - question: Why does servo or relay lock not respond?
-    answer: Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the
-      output module uses active HIGH or active LOW logic.
+    answer: Check MFRC522 power, ground, SS on GPIO5, RST on GPIO22, and SPI wiring before changing access logic.
+      Test the reader alone first.
+  - question: Why does the servo lock not respond?
+    answer: Check the shared ground, GPIO26 signal wire, servo power supply, and servo horn position before changing
+      the allowed card list.
   - question: Can this protect a real door?
     answer: No. Treat it as a low-voltage classroom prototype. Real locks need mechanical fail-safe planning, secure
       installation, and adult review.

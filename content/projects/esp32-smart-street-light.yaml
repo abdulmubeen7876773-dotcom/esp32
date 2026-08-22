@@ -1,14 +1,14 @@
 slug: esp32-smart-street-light
 title: ESP32 Smart Street Light
 category: Smart City
-description: Smart street lighting with LDR or motion sensing on ESP32 — dusk-to-dawn control through connected
-  city-style automation.
+description: Build an ESP32 smart street light prototype with an LDR on GPIO33, a relay or low-voltage lamp control
+  output on GPIO25, Serial Monitor calibration, and day/night threshold logic.
 source_base: esp32-smart-street-light-with-ota-update
 sensor: LDR light sensor
 output: street light relay
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-22'
 hardware:
   sensor_pin: GPIO33
   output_pin: GPIO25
@@ -23,17 +23,17 @@ hardware:
     pin: 3.3V/5V
   - component: GND
     pin: GND
-meta_description: A light-sensing ESP32 controller that turns a lamp output on at night and can use motion sensing
-  to brighten only when movement is detected. Includes wirin
+meta_description: Build an ESP32 smart street light with LDR analog input on GPIO33, relay or low-voltage lamp control
+  on GPIO25, threshold code, calibration, and safety notes.
 meta_title: ESP32 Smart Street Light Tutorial with ESP32
 levels:
   beginner:
     level: beginner
     overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n     \
-      \ <p>Designed for Parking Sensor: ESP32 watches Ldr Sensor signal and activates Street Light Relay control\
-      \ when conditions cross your threshold.</p>\n      <ul class=\"overview-list\">\n        <li>Ldr Sensor signal\
-      \ connects to GPIO33 (ADC input)</li><li>Threshold is set to 1605 in firmware (adjust after calibration)</li><li>Street\
-      \ Light Relay control is driven on GPIO25 when the condition is met</li><li>The main loop samples every 300\
+      \ <p>ESP32 reads the LDR signal on GPIO33, compares it with a calibrated night threshold, and drives the street\
+      \ light control output on GPIO25 when the area is dark enough.</p>\n      <ul class=\"overview-list\">\n        <li>LDR sensor signal\
+      \ connects to GPIO33 (ADC input)</li><li>Threshold is set in firmware and should be adjusted from Serial Monitor readings</li><li>Street\
+      \ light relay or low-voltage lamp control is driven on GPIO25 when the night condition is met</li><li>The main loop samples every 300\
       \ ms while powered</li>\n      </ul>\n      </section>"
     components:
     - ESP32 Dev Board
@@ -55,7 +55,7 @@ levels:
       - ''
     how: []
     apps:
-    - Parking Sensor monitoring with Ldr Sensor signal
+    - Automatic street light monitoring with LDR day/night sensing
     troubleshooting: []
     upgrades: &id001
     - Publish readings to an MQTT broker or Home Assistant
@@ -92,8 +92,9 @@ project:
   age: Ages 12+
   estimated_time: 70-100 min
   budget: Under 30 USD
-  what_you_build: A light-sensing ESP32 controller that turns a lamp output on at night and can use motion sensing
-    to brighten only when movement is detected.
+  what_you_build: A light-sensing ESP32 street light prototype that reads an LDR voltage divider on GPIO33, prints
+    live light readings, compares them with a night threshold, and drives a relay module or low-voltage lamp control
+    signal on GPIO25.
   story: 'ESP32 Smart Street Light solves a real beginner problem: turning an ESP32 reading into a useful physical
     or networked result. Build this to learn LDR analog sensing, relay/driver control, hysteresis, and smart-city
     style automation.
@@ -118,13 +119,14 @@ project:
     icon: PART
     link: /components/esp32-devkit.html
   - item: Ldr Sensor
-    note: Required for this build
+    note: Light-level input for day/night decisions
     icon: PART
-  - item: Street Light Relay
-    note: Required for this build
+  - item: Relay module or low-voltage lamp driver
+    note: Output controlled from GPIO25
     icon: PART
-  - item: 5V Power Supply
-    note: Required for this build
+    link: /components/relay-module.html
+  - item: Low-voltage lamp supply
+    note: Use a safe bench load for learning
     icon: PART
   - item: Breadboard and jumper wires
     note: For safe low-voltage prototyping
@@ -155,12 +157,12 @@ project:
     notes: For safe low-voltage prototyping
   wiring:
     illustration_alt: ESP32 Smart Street Light wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      An LDR forms a voltage divider so changing light becomes changing voltage.
+    summary: Wire the LDR input first, confirm day and night readings in Serial Monitor, then connect the GPIO25
+      output to a relay module or low-voltage lamp driver. Do not put mains lighting on a breadboard.
     steps:
     - Unplug USB before changing wires.
     - Connect Ldr Sensor signal to GPIO33.
-    - Connect Street Light Relay control to GPIO25.
+    - Connect the relay module input or low-voltage lamp driver control to GPIO25.
     - Connect VCC to 3.3V/5V.
     - Connect GND to GND.
     - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
@@ -169,10 +171,10 @@ project:
     esp32_pin: GPIO33
     direction: Input
     notes: Match this wire to the code constant.
-  - signal: Street Light Relay control
+  - signal: Relay or lamp driver control
     esp32_pin: GPIO25
     direction: Output
-    notes: Match this wire to the code constant.
+    notes: Control signal only; use a proper module or driver for the lamp side.
   - signal: VCC
     esp32_pin: 3.3V/5V
     direction: Power
@@ -202,8 +204,10 @@ project:
     pins in setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading
     first, compares it with a threshold, then changes the output. Printing before controlling the output makes debugging
     much easier because you can see what the ESP32 believes is happening.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 smart street light is reached.
+  expected_output: >-
+    Serial Monitor should print "Starting: street light for urban node", show the threshold, then print live LDR
+    readings. Covering the LDR should move the reading below the threshold and turn the GPIO25 output on; bright
+    light should turn it off.
   common_mistakes:
   - text: Pointing the LDR at the lamp it controls.
   - text: Switching a mains light on a breadboard.
@@ -214,9 +218,13 @@ project:
   - problem: Light turns on and off repeatedly
     fix: Add hysteresis and move the LDR away from the lamp beam.
   - problem: Relay does not click
-    fix: Use a relay module with proper VCC, GND, IN wiring and common ground.
+    fix: Use a relay module with proper VCC, GND, IN wiring and common ground. Some relay modules are active LOW,
+      so test the module before connecting any load.
   - problem: Analog reading is stuck
     fix: 'Check the voltage divider: the LDR and fixed resistor must not both go to the same rail.'
+  - problem: Output switches at the wrong light level
+    fix: Record Serial Monitor readings in bright light and covered or dark conditions, then adjust THRESHOLD between
+      those two real values.
   - problem: Motion sensor retriggers oddly
     fix: Give PIR modules warm-up time and avoid pointing them at heat sources.
   testing_checklist:
@@ -258,16 +266,19 @@ project:
   - title: Mission 07 - PWM Fundamentals
     href: /guides/pwm-fundamentals.html
     description: Learn brightness and output control concepts.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue from local lighting logic to connected smart-home and smart-city builds.
   related_projects:
-  - title: ESP32 Led Matrix Display
-    href: /projects/esp32-led-matrix-display.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+  - title: ESP32 Voice Controlled Relay
+    href: /projects/esp32-voice-controlled-relay.html
+    description: Compare relay safety and active-low output behavior before switching real loads.
   - title: ESP32 Motion Security Alert
     href: /projects/esp32-motion-security-alert.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Add PIR motion thinking after the basic day/night light logic works.
   - title: ESP32 Smart Parking Sensor
     href: /projects/esp32-smart-parking-sensor.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Practice another smart-city threshold project with clear sensor readings.
   faqs:
   - question: Why does the light turn on and off repeatedly?
     answer: Relay chatter usually means the LDR reading is near the threshold or the lamp is shining back onto the
