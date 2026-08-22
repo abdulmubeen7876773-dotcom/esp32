@@ -1,6 +1,6 @@
 # Component Quality Report
 
-Generated: 2026-08-21T20:13:54Z
+Generated: 2026-08-22T04:36:59Z
 
 Benchmark: **DHT22** is the golden standard (`content/components/dht22.yaml`).
 
@@ -20,7 +20,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 |-----------|---------|----------|------------------|
 | 1-Channel Relay Module | 73/100 | MEDIUM | 4 |
 | SSD1306 OLED Display | 75/100 | LOW | 4 |
-| BME280 Environmental Sensor | 76/100 | LOW | 4 |
+| BME280 Sensor with ESP32 | 76/100 | LOW | 4 |
 | HC-SR501 PIR Motion Sensor | 76/100 | LOW | 4 |
 | DHT22 Temperature & Humidity Sensor | 78/100 | LOW | 4 |
 | HC-SR04 Ultrasonic Distance Sensor | 79/100 | LOW | 4 |
@@ -102,7 +102,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Missing Challenge
 - Image uses external CDN URL — migrate to /assets/visuals/ when ready
 
-## BME280 Environmental Sensor (`bme280`)
+## BME280 Sensor with ESP32 (`bme280`)
 
 **Overall score:** 76/100 · **Priority:** LOW
 
