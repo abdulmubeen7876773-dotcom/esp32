@@ -1,6 +1,6 @@
 # Component Quality Report
 
-Generated: 2026-08-22T05:25:43Z
+Generated: 2026-08-22T06:00:33Z
 
 Benchmark: **DHT22** is the golden standard (`content/components/dht22.yaml`).
 
@@ -19,7 +19,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 | Component | Overall | Priority | Missing required |
 |-----------|---------|----------|------------------|
 | 1-Channel Relay Module | 73/100 | MEDIUM | 4 |
-| SSD1306 OLED Display | 75/100 | LOW | 4 |
+| SSD1306 OLED Display with ESP32 | 75/100 | LOW | 4 |
 | BME280 Sensor with ESP32 | 76/100 | LOW | 4 |
 | HC-SR501 PIR Motion Sensor | 76/100 | LOW | 4 |
 | DHT22 Sensor with ESP32 | 78/100 | LOW | 4 |
@@ -65,7 +65,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Missing Challenge
 - Image uses external CDN URL — migrate to /assets/visuals/ when ready
 
-## SSD1306 OLED Display (`ssd1306-oled`)
+## SSD1306 OLED Display with ESP32 (`ssd1306-oled`)
 
 **Overall score:** 75/100 · **Priority:** LOW
 
