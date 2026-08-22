@@ -1,6 +1,6 @@
 # Component Quality Report
 
-Generated: 2026-08-22T04:36:59Z
+Generated: 2026-08-22T05:25:43Z
 
 Benchmark: **DHT22** is the golden standard (`content/components/dht22.yaml`).
 
@@ -22,9 +22,9 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 | SSD1306 OLED Display | 75/100 | LOW | 4 |
 | BME280 Sensor with ESP32 | 76/100 | LOW | 4 |
 | HC-SR501 PIR Motion Sensor | 76/100 | LOW | 4 |
-| DHT22 Temperature & Humidity Sensor | 78/100 | LOW | 4 |
+| DHT22 Sensor with ESP32 | 78/100 | LOW | 4 |
 | HC-SR04 Ultrasonic Distance Sensor | 79/100 | LOW | 4 |
-| ESP32 DevKit Board | 80/100 | LOW | 4 |
+| ESP32 DevKit Pinout and Board Guide | 80/100 | LOW | 4 |
 | ESP32-CAM (AI-Thinker) | 90/100 | LOW | 0 |
 
 ## 1-Channel Relay Module (`relay-module`)
@@ -174,7 +174,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Missing Challenge
 - Image uses external CDN URL — migrate to /assets/visuals/ when ready
 
-## DHT22 Temperature & Humidity Sensor (`dht22`)
+## DHT22 Sensor with ESP32 (`dht22`)
 
 **Overall score:** 78/100 · **Priority:** LOW
 
@@ -248,7 +248,7 @@ Run `py tools/validate_component_quality.py` to refresh this report.
 - Missing Challenge
 - Image uses external CDN URL — migrate to /assets/visuals/ when ready
 
-## ESP32 DevKit Board (`esp32-devkit`)
+## ESP32 DevKit Pinout and Board Guide (`esp32-devkit`)
 
 **Overall score:** 80/100 · **Priority:** LOW
 

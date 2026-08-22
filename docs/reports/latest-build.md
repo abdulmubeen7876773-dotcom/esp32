@@ -1,6 +1,6 @@
 # Latest Build Report
 
-Generated: 2026-08-22T04:36:35Z
+Generated: 2026-08-22T05:24:38Z
 
 ## Build Status
 
@@ -27,15 +27,15 @@ PASS
 
 ## Build Time
 
-32.52s
+27.14s
 
 ## Build Duration
 
-32.52s
+27.14s
 
-## Warnings (0)
+## Warnings (1)
 
-- None
+- IndexNow: HTTP 403 — {"errorCode":"UserForbiddedToAccessSite","message":"User is unauthorized to access the site. Please verify the site using the key and try again","details":null}
 
 ## Errors (0)
 
