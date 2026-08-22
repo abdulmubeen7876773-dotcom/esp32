@@ -9,13 +9,13 @@
   "track_order": 4,
   "title": "ESP32 Pull-up vs Pull-down Resistors Explained | ESP32 Engine",
   "headline": "Pull-up vs Pull-down Resistors",
-  "meta_description": "Mission 04 - learn why ESP32 buttons need pull-up or pull-down resistors, how INPUT differs from INPUT_PULLUP, and how to stop random button readings.",
-  "lead": "You saw in Mission 03 that a floating input can behave randomly. Now you will learn the two simple resistor patterns that give every button a reliable default state.",
+  "meta_description": "ESP32 pull-up vs pull-down resistors explained with button wiring, INPUT_PULLUP logic, floating GPIO fixes, and when to use each circuit.",
+  "lead": "A pull-up resistor gives an ESP32 input a default HIGH state. A pull-down resistor gives it a default LOW state. This mission shows both button wiring patterns and explains why they stop floating GPIO readings.",
   "keywords": "ESP32 pull-up resistor, ESP32 pull-down resistor, INPUT_PULLUP ESP32, ESP32 button wiring, floating pin fix",
   "proficiency_level": "Beginner",
   "reading_time": "20-25 min",
   "date_published": "2026-06-30",
-  "date_modified": "2026-06-30",
+  "date_modified": "2026-08-22",
   "academy": {
     "mission_id": "Mission 04",
     "level": "Foundation",
@@ -90,6 +90,11 @@
       }
     ],
     "future_paths": [
+      {
+        "title": "ESP32 Basics Learning Path",
+        "href": "/learning.html#esp32-basics",
+        "description": "Review the beginner sequence that connects floating pins, pull resistors, and debouncing."
+      },
       {
         "slug": "button-led-control",
         "title": "Button Controls LED with ESP32",
@@ -188,7 +193,7 @@
     "badge": "Mission 04",
     "icon": "R",
     "title": "Give Your Button a Default State",
-    "story": "Mission 03 showed the problem: an input pin with no clear connection can drift between HIGH and LOW. That was not a software bug. It was an unfinished circuit.\n\nMission 04 fixes that circuit. A pull-up or pull-down resistor keeps an ESP32 GPIO at a known HIGH or LOW state when nothing else is driving the pin, so the ESP32 always knows what the button means when it is not being pressed. That default can come from an external pull-up or pull-down resistor, or from an internal pull mode such as INPUT_PULLUP or INPUT_PULLDOWN when the selected GPIO supports it.",
+    "story": "Mission 03 showed the problem: an input pin with no clear connection can drift between HIGH and LOW. That was not a software bug. It was an unfinished circuit.\n\nMission 04 fixes that circuit. A pull-up resistor weakly connects the input to 3.3 V so the released/default state is HIGH. A pull-down resistor weakly connects the input to GND so the released/default state is LOW. Pressing the button then creates the intentional opposite state.\n\nThat default can come from an external pull-up or pull-down resistor, or from an internal pull mode such as INPUT_PULLUP or INPUT_PULLDOWN when the selected GPIO supports it.",
     "eli12": "Imagine a classroom where the teacher asks one student to answer yes or no. If the student says nothing, the class has no official answer. That is a floating pin: the ESP32 is listening, but nobody is giving the pin a clear HIGH or LOW.\n\nA pull-down resistor is like a quiet default vote for LOW. If nobody presses the button, the pin rests at LOW. When the button is pressed, the button gives a stronger vote for HIGH by connecting the pin to 3.3 V.\n\nA pull-up resistor is the opposite default. It quietly votes HIGH when nobody presses the button. With INPUT_PULLUP, the ESP32 turns on that quiet internal HIGH vote for you. Then the button connects the pin to GND when pressed, so pressed reads LOW.\n\nRemember This Forever:\nA floating pin is not broken.\nIt is simply undecided.\nA pull-up or pull-down resistor gives the pin a default decision until the button intentionally changes it.",
     "learning_objectives": [
       "Explain how pull-up and pull-down resistors stop floating inputs.",
@@ -251,7 +256,7 @@
       "illustration_alt": "ESP32 button input shown with a weak resistor pulling the GPIO to a default HIGH or LOW state",
       "body": "A button is not always connected. When it is open, it leaves one side of the circuit disconnected unless you add a default path.\n\nA pull resistor gives the input a weak default. Pull-up means the default is HIGH. Pull-down means the default is LOW. Pressing the button creates a stronger path to the opposite state.\n\nThe resistor is important because it limits current. It is strong enough to guide the input, but weak enough that a button press can safely override it."
     },
-    "engineering_explanation": "An ESP32 digital input is high impedance. That means it listens without taking much current. This is useful, but it also means the pin cannot decide its own state.\n\nThink about water flow. A floating input is like a pipe with no steady connection to a tank or drain, so tiny disturbances can move it around. A pull-down resistor is a narrow drain to GND. It gently drains the pin toward LOW when the button is open. Pressing the button connects the pin to 3.3 V, which is a much stronger source, so the pin becomes HIGH.\n\nA pull-up resistor is a narrow feed from 3.3 V. It gently fills the pin toward HIGH when the button is open. Pressing the button connects the pin to GND, which is a stronger path than the weak resistor, so the pin becomes LOW. This is why INPUT_PULLUP button logic looks inverted but works perfectly.",
+    "engineering_explanation": "An ESP32 digital input is high impedance. That means it listens without taking much current. This is useful, but it also means the pin cannot decide its own state.\n\nThink about water flow. A floating input is like a pipe with no steady connection to a tank or drain, so tiny disturbances can move it around. A pull-down resistor is a narrow drain to GND. It gently drains the pin toward LOW when the button is open. Pressing the button connects the pin to 3.3 V, which is a much stronger source, so the pin becomes HIGH.\n\nA pull-up resistor is a narrow feed from 3.3 V. It gently fills the pin toward HIGH when the button is open. Pressing the button connects the pin to GND, which is a stronger path than the weak resistor, so the pin becomes LOW. This is why INPUT_PULLUP button logic looks inverted but works perfectly: released reads HIGH, pressed reads LOW, and your code simply treats LOW as the pressed condition.",
     "real_life_analogy": "Think of the GPIO input like a scale with two labeled sides: LOW on one side and HIGH on the other. A pull-down resistor places a tiny weight on the LOW side so the scale rests there by default. A button press places a much heavier weight on the HIGH side, so HIGH wins.\n\nA pull-up resistor places the tiny default weight on the HIGH side instead. When the button is pressed to GND, the heavier LOW side wins. The resistor is not fighting the button; it only chooses the default when the button is not doing anything.\n\nThe classroom version is the same idea: the resistor gives the pin a quiet default answer, and the button is the student raising a hand to intentionally change that answer.",
     "engineer_tip": "When debugging a button, first ask one question: what should this pin read when nobody is pressing anything? If you cannot answer HIGH or LOW immediately, the circuit probably needs a pull-up, pull-down, or a sensor output that actively drives the pin.",
     "remember_forever": "A floating pin is not broken.\n\nIt is simply undecided.\n\nA pull-up or pull-down resistor gives the pin a default decision until the button intentionally changes it.",

@@ -7,14 +7,14 @@ featured_image: /assets/visuals/projects/thumbs/esp32-smart-thermostat-thumb.svg
 hero_image: /assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-smart-thermostat-placeholder.svg
 og_image: /assets/visuals/projects/heroes/esp32-smart-thermostat-hero.svg
-description: Build a safe low-voltage ESP32 smart thermostat that reads a DHT22 room sensor, applies hysteresis, and switches a relay fan output when thresholds are crossed.
-meta_description: Build an ESP32 thermostat with DHT22 temperature sensing, relay fan control, hysteresis, safe low-voltage wiring, and complete Arduino code.
+description: Build a safe low-voltage ESP32 smart thermostat that reads a DHT22 room sensor on GPIO4, applies hysteresis, and switches a relay fan output from GPIO26 when thresholds are crossed.
+meta_description: Build an ESP32 smart thermostat with DHT22 on GPIO4, relay fan control on GPIO26, hysteresis thresholds, safe low-voltage wiring, and Arduino code.
 source_base: esp32-smart-thermostat
 sensor: DHT22 temperature sensor
 output: relay module controlling a low-voltage fan
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-08-22'
 keywords:
 - ESP32
 - ESP32 Smart Thermostat
@@ -38,8 +38,7 @@ project:
   age: Ages 12+
   estimated_time: 90-120 min
   budget: Under $30
-  what_you_build: A working thermostat controller with ESP32 DHT22 temperature input, hysteresis logic, a controlled low-voltage relay output,
-    Serial Monitor diagnostics, and a wiring map you can expand into a more advanced version.
+  what_you_build: A working ESP32 thermostat controller that reads room temperature from a DHT22 on GPIO4, turns a relay fan command on from GPIO26 at 27.0 C, turns it off at 25.5 C, prints diagnostics in Serial Monitor, and keeps the relay contacts limited to a separate low-voltage fan or indicator load for learning.
   components:
   - item: ESP32 DevKit board
     note: DHT22 and relay thermostat controller
@@ -79,24 +78,43 @@ project:
     notes: I2C feedback
   wiring:
     illustration_alt: ESP32 Smart Thermostat wiring diagram
-    summary: Wire the DHT22 temperature sensor first, verify readings on GPIO4, then connect the relay module control
-      input on GPIO26 for a separate low-voltage fan or indicator load.
+    summary: Wire the low-voltage sensing side first. DHT22 VCC goes to 3.3 V, DHT22 GND goes to GND, and DHT22 DATA
+      or OUT goes to GPIO4. After temperature readings work, connect relay VCC to the voltage your relay module requires,
+      relay GND to ESP32 GND, and relay IN to GPIO26. The relay contacts are only for a separate low-voltage test fan
+      or indicator load in this tutorial.
     steps:
     - Unplug USB and keep the relay load disconnected.
     - Connect a 3-pin DHT22 module VCC to 3.3 V, GND to GND, and DATA or OUT to GPIO4.
     - If you use a bare 4-pin DHT22 sensor, add about a 10 k ohm pull-up resistor from DATA to 3.3 V and leave the NC pin disconnected.
     - Connect relay VCC to 5 V if your relay module requires it, GND to ESP32 GND, and IN to GPIO26.
+    - Keep the ESP32 GPIO side separate from the relay contact/load side; GPIO26 controls only the relay module input.
     - Connect only a separate low-voltage test fan or indicator load to the relay contacts during learning.
     - Power the ESP32 and watch Serial Monitor before connecting any moving fan.
   gpio_map:
-  - signal: DHT22 DATA
+  - signal: DHT22 DATA or OUT
     esp32_pin: GPIO4
     direction: Input
-    notes: Digital sensor data
+    notes: Digital temperature data from the sensor module.
+  - signal: DHT22 VCC
+    esp32_pin: 3.3 V
+    direction: Power
+    notes: Use 3.3 V for the DHT22 sensor side.
+  - signal: DHT22 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Common ground for the low-voltage sensor circuit.
   - signal: Relay IN
     esp32_pin: GPIO26
     direction: Output
-    notes: Relay module control input
+    notes: Relay module control input from the thermostat code.
+  - signal: Relay VCC
+    esp32_pin: 5 V if module requires it
+    direction: Power
+    notes: Follow the relay module label; keep load current off the ESP32 GPIO.
+  - signal: Relay GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Common signal ground between ESP32 and relay module.
   - signal: OLED SDA
     esp32_pin: GPIO21
     direction: I2C data
@@ -147,8 +165,7 @@ project:
         Serial.print(" | Fan: "); Serial.println(fanOn ? "ON" : "OFF");
         delay(2000);
       }
-  expected_output: 'Below the lower threshold, Serial Monitor prints Fan: OFF. Warm the sensor above the ON threshold
-    and the relay LED should switch on. Let the sensor cool below the OFF threshold and the relay turns off.'
+  expected_output: 'Below 25.5 C, Serial Monitor prints Fan: OFF. Between 25.5 C and 27.0 C, the sketch keeps the previous fan state so the relay does not chatter. Warm the DHT22 to 27.0 C or higher and the relay command switches ON. Let the sensor cool to 25.5 C or lower and the relay command switches OFF.'
   common_mistakes:
   - text: Driving a fan motor directly from an ESP32 GPIO.
   - text: Using mains voltage on a breadboard.
@@ -182,6 +199,12 @@ project:
   - title: Read Temperature with DHT22
     href: /guides/read-temperature-dht22.html
     description: Review GPIO4 wiring, the 2-second read interval, NaN fixes, and the pull-up resistor details used by this thermostat.
+  - title: DHT22 Temperature Sensor
+    href: /components/dht22.html
+    description: Check the sensor power, DATA pin, timing limits, and troubleshooting notes before debugging thermostat readings.
+  - title: Relay Module
+    href: /components/relay-module.html
+    description: Review relay input polarity, low-voltage testing, and safe separation between GPIO control and relay contacts.
   - title: ESP32 OLED Display Tutorial
     href: /guides/oled-display-esp32.html
     description: Add a local display for temperature, setpoint, fan state, and debugging.
@@ -196,15 +219,13 @@ project:
     href: /projects/esp32-mqtt-sensor-dashboard.html
     description: Send room readings to a dashboard after local thermostat behavior works.
   complete:
-    summary: You built a real thermostat controller and learned how to connect sensing, decision logic, and output
-      control in one ESP32 project.
+    summary: You built a low-voltage thermostat controller and learned how to connect DHT22 sensing on GPIO4, hysteresis decision logic, and relay output control on GPIO26 in one ESP32 project.
     skills:
     - Wire and test a DHT22 temperature sensor
     - Control a relay module and separate low-voltage fan from ESP32
     - Debug hardware with Serial Monitor
     - Improve the project safely
-  story: 'ESP32 Smart Thermostat turns the ESP32 into a real object that senses something, decides what it means,
-    and reacts in the physical world.
+  story: 'ESP32 Smart Thermostat turns the ESP32 into a real object that senses room temperature, decides whether the value is above or below the thermostat thresholds, and commands a low-voltage relay fan output.
 
 
     The important lesson is not only the finished thermostat controller. You learn how to separate input, decision
@@ -223,12 +244,13 @@ project:
   - Identify power, wiring, and timing faults using a repeatable test checklist.
   circuit_explanation: The DHT22 side is a low-current digital sensor input on GPIO4 using 3.3 V logic. Many 3-pin
     DHT22 modules already include the DATA pull-up resistor; a bare 4-pin DHT22 normally needs about a 10 k ohm
-    pull-up from DATA to 3.3 V. The ESP32 drives the relay module control input on GPIO26. The relay contacts switch
-    the separate low-voltage fan or indicator load, and the ESP32 must not power the fan directly from a GPIO.
+    pull-up from DATA to 3.3 V. The relay input side is a low-voltage control signal on GPIO26. The relay contacts are
+    a separate load-switching side for a low-voltage fan or indicator load, and the ESP32 must not power the fan or relay
+    load directly from a GPIO.
   engineering_explanation: |
     Why a thermostat needs hysteresis: a fan should not rapidly switch on and off when the room temperature hovers near one setpoint. This sketch uses FAN_ON_C = 27.0 and FAN_OFF_C = 25.5 so the relay has a quiet middle band.
 
-    Below 25.5 C the fan state becomes OFF. From 25.5 C to below 27.0 C the code keeps the previous fan state. At or above 27.0 C the fan state becomes ON. Those separate ON and OFF thresholds prevent relay chatter near the setpoint.
+    Below 25.5 C the fan command becomes OFF. From 25.5 C to below 27.0 C the code keeps the previous fan state. At or above 27.0 C the fan command becomes ON. Those separate ON and OFF thresholds prevent relay chatter near the setpoint.
 
     Place the DHT22 where it can measure room air, not local heat. Keep it away from the ESP32 regulator, relay coil/module heat, fan exhaust, heating elements, and direct sunlight. The DHT22 is a good learning thermostat sensor, but it is not a precision HVAC-grade sensor. Its response is relatively slow, so the current 2-second read interval is appropriate and you should not poll it excessively fast.
   code_explanation: |

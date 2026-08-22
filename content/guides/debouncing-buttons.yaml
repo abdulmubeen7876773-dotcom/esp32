@@ -9,13 +9,13 @@
   "track_order": 5,
   "title": "ESP32 Button Debouncing Tutorial | ESP32 Engine",
   "headline": "Button Debouncing",
-  "meta_description": "Mission 05 - learn why one ESP32 button press can trigger many times, what switch bounce is, and how to debounce buttons in Arduino code.",
-  "lead": "Your button now has a stable default state. The next problem is speed: the ESP32 can see tiny mechanical bounces that your finger cannot feel.",
+  "meta_description": "Learn ESP32 button debounce with INPUT_PULLUP wiring on GPIO27, millis() software debounce code, Serial Monitor symptoms, and common bounce fixes.",
+  "lead": "ESP32 button debounce means waiting until a bouncing mechanical button input stays stable before counting it. This mission wires a button from GPIO27 to GND with INPUT_PULLUP, then uses millis() so one press counts once.",
   "keywords": "ESP32 button debounce, ESP32 debouncing tutorial, Arduino debounce ESP32, switch bounce explained, ESP32 button multiple presses",
   "proficiency_level": "Beginner",
   "reading_time": "20-25 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-07-01",
+  "date_modified": "2026-08-22",
   "academy": {
     "mission_id": "Mission 05",
     "level": "Foundation",
@@ -85,6 +85,11 @@
     ],
     "future_paths": [
       {
+        "title": "ESP32 Basics Learning Path",
+        "href": "/learning.html#esp32-basics",
+        "description": "Review the beginner sequence from button wiring to clean button events."
+      },
+      {
         "slug": "button-led-control",
         "title": "Button Controls LED with ESP32",
         "description": "Review the original button mission and notice what debounce improves."
@@ -150,7 +155,7 @@
     "badge": "Mission 05",
     "icon": "BTN",
     "title": "Count One Clean Button Press",
-    "story": "Mission 04 gave your button a reliable default state. Released is HIGH, pressed is LOW, and the input no longer floats.\n\nBut one more real-world problem remains. A mechanical button does not move from open to closed in one perfect instant. Inside the switch, tiny metal contacts hit each other, bounce apart, and settle. Your finger feels one press. The ESP32 may see many.",
+    "story": "Mission 04 gave your button a reliable default state. Released is HIGH, pressed is LOW, and the input no longer floats.\n\nButton debounce fixes the next problem: one physical press can create several fast HIGH/LOW transitions before the contacts settle. The practical software fix is to notice the first raw change, wait for the reading to stay unchanged for a short debounce window, then count only the stable pressed state.\n\nThat is why this mission uses INPUT_PULLUP wiring on GPIO27 and a millis() timer instead of delay(). Your finger feels one press. The ESP32 may see many raw changes, but your program will accept one clean event.",
     "eli12": "Pressing a button feels simple because your finger is slow compared with electronics. To the ESP32, that same press can look like a rapid burst: pressed, released, pressed, released, pressed.\n\nDebouncing means the ESP32 waits a short moment before trusting the final answer. It is like saying, 'I saw the first change. Now I will ignore the tiny shaking and count this as one real press.'",
     "mission_goal": "Build a button counter that increases by exactly one count for each intentional button press, even though the physical button contacts bounce for a few milliseconds.",
     "learning_objectives": [
@@ -206,7 +211,7 @@
       "illustration_alt": "ESP32 GPIO27 connected to a button to GND, showing one physical press producing several fast electrical transitions before settling",
       "body": "A button is a mechanical part. Inside it, two small metal contacts touch when you press down. They do not always land perfectly on the first try.\n\nFor a few milliseconds, the contacts can chatter: touch, separate, touch again, separate again, then finally settle. That chatter is switch bounce.\n\nHumans cannot feel these tiny movements, but the ESP32 can read GPIO pins thousands of times per second. If your code trusts every change immediately, one press can look like many presses."
     },
-    "engineering_explanation": "A pull-up resistor gives the input a default HIGH state. Pressing the button connects the GPIO to GND, so the intended pressed state is LOW. That solves floating, but it does not solve bounce.\n\nDuring a real press, the raw input may jump LOW-HIGH-LOW-HIGH-LOW before settling LOW. During release, it may jump HIGH-LOW-HIGH before settling HIGH. Each jump is real electricity, not a software mistake.\n\nSoftware debounce uses time as a filter. When the raw reading changes, the code starts a timer. Only if the new reading remains stable for the debounce window does the program accept it as the real button state. This lets the ESP32 ignore contact chatter while still responding quickly to normal button presses.\n\nProfessional firmware does this because physical switches are never perfect. Any button that controls a lock, menu, relay, alarm, counter, or robot mode should be debounced before the action is trusted.",
+    "engineering_explanation": "A pull-up resistor gives the input a default HIGH state. Pressing the button connects the GPIO to GND, so the intended pressed state is LOW. That solves floating, but it does not solve bounce.\n\nDuring a real press, the raw input may jump LOW-HIGH-LOW-HIGH-LOW before settling LOW. During release, it may jump HIGH-LOW-HIGH before settling HIGH. Each jump is real electricity, not a software mistake.\n\nSoftware debounce uses time as a filter. When the raw reading changes, the code starts a timer. Only if the new reading remains stable for the debounce window does the program accept it as the real button state. This lets the ESP32 ignore contact chatter while still responding quickly to normal button presses.\n\nHardware debounce can also reduce bounce with an RC filter or dedicated debounce circuit, but this mission keeps the wiring simple and teaches the firmware method first. Professional firmware still debounces physical switches because any button that controls a lock, menu, relay, alarm, counter, or robot mode should trigger once per intentional press.",
     "real_life_analogy": "Drop a basketball on the floor. You dropped it once, but it touches the floor several times before it stops bouncing. A button contact behaves the same way electrically: one press can create several tiny touches before the final stable touch.\n\nA light switch can do something similar. When metal contacts close, they may flicker for a split second before staying connected. Your eyes may not notice, but a microcontroller can.\n\nA car going over a speed bump is another version of the same idea. The bump is one event, but the car suspension moves up and down before settling. Debounce waits for the settling before making a decision.",
     "wiring": {
       "illustration_alt": "ESP32 GPIO27 connected to one side of a push button, the other side of the button connected to GND, using internal INPUT_PULLUP",
@@ -251,7 +256,7 @@
         "text": "BUTTON_PIN is GPIO27, the same safe button input used in earlier missions."
       },
       {
-        "text": "DEBOUNCE_DELAY is the waiting window. 50 ms is a reliable beginner starting point."
+        "text": "DEBOUNCE_DELAY is the waiting window. 50 ms is a reliable beginner starting point for many tactile buttons."
       },
       {
         "text": "lastRawReading stores the most recent immediate reading from digitalRead()."
@@ -305,6 +310,11 @@
         "problem": "Counter still jumps by 2 or 3",
         "cause": "The debounce delay may be too short or the wiring may be loose.",
         "fix": "Increase DEBOUNCE_DELAY to 80 ms, press the button firmly, and check GPIO27/GND wiring."
+      },
+      {
+        "problem": "The button reads backwards",
+        "cause": "INPUT_PULLUP logic is active LOW: released is HIGH and pressed is LOW.",
+        "fix": "Keep the button wired between GPIO27 and GND, and count the press when the debounced stable state becomes LOW."
       },
       {
         "problem": "Counter never increases",
