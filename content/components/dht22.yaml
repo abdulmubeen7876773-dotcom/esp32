@@ -1,10 +1,11 @@
 slug: dht22
-name: DHT22 Temperature & Humidity Sensor
+name: DHT22 Sensor with ESP32
 category: Sensors
 difficulty: Beginner
 icon: 🌡
 image: https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg
-summary: Digital temperature and humidity sensor for ESP32 weather stations, room monitors, greenhouse controllers, and climate automation projects.
+summary: DHT22 ESP32 wiring and code reference for temperature and humidity projects, with GPIO4 DATA wiring, 3.3 V power, pull-up resistor guidance, Arduino setup, and common read-failure fixes.
+date_modified: '2026-08-22'
 experience_required: Basic Arduino upload, breadboard wiring, and Serial Monitor
 applications:
   - Room comfort monitor
@@ -103,9 +104,29 @@ pinout:
 wiring:
   illustration_alt: DHT22 VCC to ESP32 3.3 V, GND to ESP32 GND, DATA to ESP32 GPIO4, optional 10 k ohm pull-up from DATA to 3.3 V
   summary: |
-    A DHT22 module is the easiest version for beginners because it usually includes the pull-up resistor. A bare 4-pin DHT22 needs one extra resistor from DATA to 3.3 V.
+    A DHT22 module is the easiest version for beginners because it usually includes the pull-up resistor. A bare 4-pin DHT22 needs one extra resistor from DATA to 3.3 V. Module labels and pin order vary, so follow the labels printed on your board instead of copying another module's left-to-right order.
 
     Keep the wires short on a breadboard. Long jumper wires can add noise and capacitance, which makes the timed digital pulses harder for the ESP32 to read.
+  table_columns:
+    - DHT22 Pin
+    - ESP32 Connection
+    - Purpose / Notes
+  table_rows:
+    - component_pin: VCC / +
+      esp32_pin: 3.3 V
+      notes: Power for the sensor. Use 3.3 V for direct ESP32 wiring so the DATA pull-up stays ESP32-safe.
+    - component_pin: DATA / OUT
+      esp32_pin: GPIO4
+      notes: One-wire digital signal. Needs a pull-up to 3.3 V; many modules include it, bare sensors usually do not.
+    - component_pin: NC
+      esp32_pin: Leave disconnected
+      notes: No connection on the bare 4-pin DHT22 package; many 3-pin modules do not expose this pin.
+    - component_pin: GND / -
+      esp32_pin: GND
+      notes: Shared ground reference for the ESP32 and sensor.
+    - component_pin: Pull-up resistor
+      esp32_pin: DATA to 3.3 V
+      notes: Use 10 k ohm for short breadboard wiring on a bare sensor; 4.7 k ohm may help longer wiring.
   steps:
     - Unplug the ESP32 USB cable before wiring.
     - Put the DHT22 module on the breadboard with each pin in a separate row.
@@ -237,9 +258,15 @@ troubleshooting:
     cause: The one-wire timing signal is degraded by cable capacitance and electrical noise.
     fix: Use shorter cable, twisted ground/data pairing, a stronger pull-up such as 4.7 k ohm, or choose an I2C sensor for longer wiring.
 related_guides:
+  - title: ESP32 Sensors Learning Path
+    href: /learning.html#sensor-basics
+    description: Follow the beginner sequence from sensor basics to DHT22 readings and environmental projects.
   - title: Read Temperature with DHT22
     href: /guides/read-temperature-dht22.html
     description: Full beginner mission with wiring, code, quiz, and troubleshooting.
+  - title: Digital Inputs and Floating Pins
+    href: /guides/digital-inputs-floating-pins.html
+    description: Understand why the DHT22 DATA line needs a defined HIGH idle state instead of floating.
   - title: ESP32 OLED Display Tutorial
     href: /guides/oled-display-esp32.html
     description: Show live temperature and humidity on a small SSD1306 display.
@@ -247,15 +274,18 @@ related_guides:
     href: /guides/what-is-esp32.html
     description: Learn the board, GPIO pins, power, and project workflow.
 related_projects:
+  - title: ESP32 Smart Thermostat
+    href: /projects/esp32-smart-thermostat.html
+    description: Use temperature readings to guide heating, cooling, display, and relay decisions.
   - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
     description: Use DHT22 readings in a complete weather project.
   - title: ESP32 Home Climate Automation
     href: /projects/esp32-home-climate-automation.html
     description: Turn room readings into fan, relay, or alert decisions.
-  - title: ESP32 Smart Thermostat
-    href: /projects/esp32-smart-thermostat.html
-    description: Learn how sensor data can guide heating and cooling logic.
+  - title: ESP32 MQTT Sensor Dashboard
+    href: /projects/esp32-mqtt-sensor-dashboard.html
+    description: Publish room temperature and humidity readings to an MQTT dashboard after the local test works.
 related_components:
   - title: BME280 Environmental Sensor
     href: /components/bme280.html
