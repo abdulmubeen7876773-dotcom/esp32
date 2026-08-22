@@ -1,11 +1,12 @@
 {
   "slug": "ssd1306-oled",
-  "name": "SSD1306 OLED Display",
+  "name": "SSD1306 OLED Display with ESP32",
   "category": "Displays",
   "difficulty": "Beginner",
   "icon": "📺",
   "image": "https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg",
-  "summary": "Small monochrome I2C OLED display for showing ESP32 sensor readings, menus, status messages, icons, and debugging information over GPIO21/GPIO22.",
+  "summary": "SSD1306 OLED ESP32 wiring reference for I2C displays, with VCC, GND, SDA GPIO21, SCL GPIO22, 0x3C/0x3D address checks, Arduino libraries, and blank-screen fixes.",
+  "date_modified": "2026-08-22",
   "applications": [
     "Sensor dashboard",
     "Weather display",
@@ -41,7 +42,7 @@
     {
       "label": "ESP32 pins",
       "value": "GPIO21 SDA, GPIO22 SCL",
-      "why": "Matches default ESP32 I2C wiring."
+      "why": "Matches this site's common ESP32 I2C examples."
     },
     {
       "label": "Best use",
@@ -49,7 +50,7 @@
       "why": "Shows values when Serial Monitor is not available."
     }
   ],
-  "how_it_works": "The SSD1306 is a display controller chip. Your ESP32 does not control every OLED segment directly. Instead, it sends commands and screen data to the SSD1306 over I2C.\n\nThe display memory is like a tiny black-and-white image buffer. Libraries such as Adafruit SSD1306 let your code draw text, lines, rectangles, and pixels into a RAM buffer on the ESP32. Nothing appears until display.display() transfers that buffer to the screen.\n\nOLED pixels emit light directly, unlike LCD pixels that need a backlight. This makes the display readable and high-contrast, but it also means static images can cause burn-in over very long periods. For learning projects, this is rarely a problem, but production devices should avoid leaving the same bright screen forever.\n\nBecause the screen shares I2C, it can live on the same SDA/SCL wires as sensors like the BME280. Each device just needs a unique address.",
+  "how_it_works": "The SSD1306 is a display controller chip. Your ESP32 does not control every OLED segment directly. Instead, it sends commands and screen data to the SSD1306 over I2C on the four-pin modules used in this site's beginner examples.\n\nSSD1306 modules also exist in SPI versions with more signal pins and different code. This reference focuses on I2C modules labeled VCC, GND, SDA, and SCL. Do not copy I2C wiring onto an SPI display unless the module documentation says it supports I2C.\n\nThe display memory is like a tiny black-and-white image buffer. Libraries such as Adafruit SSD1306 let your code draw text, lines, rectangles, and pixels into a RAM buffer on the ESP32. Nothing appears until display.display() transfers that buffer to the screen.\n\nOLED pixels emit light directly, unlike LCD pixels that need a backlight. This makes the display readable and high-contrast, but it also means static images can cause burn-in over very long periods. For learning projects, this is rarely a problem, but production devices should avoid leaving the same bright screen forever.\n\nBecause the screen shares I2C, it can live on the same SDA/SCL wires as sensors like the BME280. Each device just needs a unique address.",
   "specs": [
     {
       "name": "Resolution",
@@ -135,7 +136,39 @@
   ],
   "wiring": {
     "illustration_alt": "SSD1306 OLED VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22 on ESP32",
-    "summary": "Most SSD1306 beginner modules use four pins: VCC, GND, SDA, and SCL. The display can share the same I2C bus as a BME280 sensor because each device has its own address.\n\nKeep wires short while learning. If the screen is blank, run an I2C scanner before changing code randomly.",
+    "summary": "Most SSD1306 beginner I2C modules use four pins: VCC, GND, SDA, and SCL. The display can share the same I2C bus as a BME280 sensor because each device has its own address.\n\nPin order, voltage regulators, and address selection vary by module. Follow the labels printed on your OLED board, use 3.3 V for this ESP32 beginner wiring, and scan the bus if the address is uncertain.\n\nKeep wires short while learning. If the screen is blank, run an I2C scanner before changing code randomly.",
+    "table_columns": [
+      "SSD1306 Pin",
+      "ESP32 Connection",
+      "Purpose / Notes"
+    ],
+    "table_rows": [
+      {
+        "component_pin": "VCC",
+        "esp32_pin": "3.3 V",
+        "notes": "Power for the OLED module in this beginner ESP32 wiring. Some modules allow 5 V, but do not assume that without module documentation."
+      },
+      {
+        "component_pin": "GND",
+        "esp32_pin": "GND",
+        "notes": "Shared ground reference for the ESP32 and display."
+      },
+      {
+        "component_pin": "SDA",
+        "esp32_pin": "GPIO21",
+        "notes": "I2C data line used by this site's ESP32 examples; match Wire.begin(21, 22)."
+      },
+      {
+        "component_pin": "SCL",
+        "esp32_pin": "GPIO22",
+        "notes": "I2C clock line used by this site's ESP32 examples; match Wire.begin(21, 22)."
+      },
+      {
+        "component_pin": "Address",
+        "esp32_pin": "0x3C or 0x3D",
+        "notes": "Most modules use 0x3C and some use 0x3D. Run an I2C scanner if display.begin() fails."
+      }
+    ],
     "steps": [
       "Unplug USB before wiring.",
       "Connect OLED VCC to ESP32 3.3 V.",
@@ -150,7 +183,7 @@
   "library": "Adafruit SSD1306 plus Adafruit GFX",
   "code": {
     "filename": "ssd1306_esp32_hello_status.ino",
-    "notes": "Wire.begin() starts I2C on the ESP32 default pins. The display object defines the screen size and reset behavior.\n\nsetup() initializes the display and prints a clear startup screen. loop() updates a counter once per second so you can prove the screen is refreshing, not just showing a static image.",
+    "notes": "Wire.begin(21, 22) starts I2C on the same GPIO21/GPIO22 pins used in this site's ESP32 examples. The display object defines the screen size and reset behavior.\n\nsetup() initializes the display and prints a clear startup screen. loop() updates a counter once per second so you can prove the screen is refreshing, not just showing a static image.",
     "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define SCREEN_WIDTH 128\n#define SCREEN_HEIGHT 64\n#define OLED_RESET -1\n#define OLED_ADDRESS 0x3C\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\nunsigned long counter = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {\n    Serial.println(\"SSD1306 not found. Check address, SDA, SCL, power, and ground.\");\n    while (true) delay(1000);\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n  Serial.println(\"OLED initialized\");\n}\n\nvoid loop() {\n  display.clearDisplay();\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"SSD1306 OLED\");\n  display.println(\"Status: running\");\n  display.print(\"Seconds: \");\n  display.println(counter++);\n  display.display();\n  delay(1000);\n}"
   },
   "output": "The OLED first shows ESP32 Engine and OLED ready. Then it refreshes once per second with a running seconds counter. Serial Monitor prints OLED initialized. If the display is blank and Serial Monitor reports not found, the address or I2C wiring is wrong.",
@@ -265,6 +298,11 @@
   ],
   "related_guides": [
     {
+      "title": "ESP32 Displays Learning Path",
+      "href": "/learning.html#display-basics",
+      "description": "Follow the display path from SSD1306 basics to I2C scanning, OLED text, sensor values, and a weather-clock project."
+    },
+    {
       "title": "ESP32 OLED Display Tutorial",
       "href": "/guides/oled-display-esp32.html",
       "description": "Wire SSD1306 SDA/SCL and display live values with Arduino code."
@@ -304,7 +342,7 @@
       "description": "The controller that sends display data."
     },
     {
-      "title": "BME280 Environmental Sensor",
+      "title": "BME280 Sensor with ESP32",
       "href": "/components/bme280.html",
       "description": "Share the same I2C bus with an environmental sensor."
     },
@@ -331,7 +369,7 @@
     },
     {
       "question": "Which ESP32 pins should I use?",
-      "answer": "Use GPIO21 for SDA and GPIO22 for SCL for standard examples."
+      "answer": "This site's ESP32 examples use GPIO21 for SDA and GPIO22 for SCL. ESP32 I2C pins can be changed when wiring and Wire.begin(SDA, SCL) match."
     },
     {
       "question": "Can it share I2C with BME280?",
