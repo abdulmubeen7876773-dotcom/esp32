@@ -48,7 +48,7 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 | esp32-greenhouse-automation-controller | golden | 100/100 | LOW | 0 |
 | Build Your Home Climate Automation | golden | 100/100 | LOW | 0 |
 | Build Your IoT Weather Station | golden | 100/100 | LOW | 0 |
-| Build an ESP32 IR Learning Remote Demo | golden | 100/100 | LOW | 0 |
+| Build an ESP32 IR Remote Control Demo | golden | 100/100 | LOW | 0 |
 | Build a Classroom ESP32 Trainer | golden | 100/100 | LOW | 0 |
 | esp32-lightning-detector | golden | 100/100 | LOW | 0 |
 | Build Your Line Following Robot | golden | 100/100 | LOW | 0 |
@@ -664,7 +664,7 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 
 - Minor polish only — align with Mini Weather Station depth where applicable.
 
-## Build an ESP32 IR Learning Remote Demo (`esp32-ir-remote-control`)
+## Build an ESP32 IR Remote Control Demo (`esp32-ir-remote-control`)
 
 **Type:** golden · **Overall score:** 100/100 · **Priority:** LOW
 
