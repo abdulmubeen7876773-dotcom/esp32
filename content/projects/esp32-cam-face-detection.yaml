@@ -1,25 +1,25 @@
 slug: esp32-cam-face-detection
 title: Build an ESP32-CAM Face Detection Privacy Demo
 category: ESP32-CAM
-description: Use the ESP32-CAM local CameraWebServer face-detection example carefully, learning detection limits,
-  power needs, and privacy boundaries.
+description: Build a local ESP32-CAM face detection demo with the Arduino CameraWebServer example, AI-Thinker OV2640
+  setup, stable 5 V power, and clear detection-not-recognition limits.
 meta_description: Build a local ESP32-CAM face detection demo that distinguishes detection from recognition, with
   privacy, lighting, memory, and power limits.
 source_base: esp32-cam-face-detection-legacy-import
 sensor: OV2640 camera bus
-output: IO0 upload strap
+output: Local CameraWebServer face detection page
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
   sensor_pin: AI-Thinker fixed camera pins
-  output_pin: GPIO0
+  output_pin: Local web page
   sensor_name: OV2640 camera bus
-  output_name: IO0 upload strap
+  output_name: Local CameraWebServer face detection page
   wiring:
   - component: OV2640 camera bus
     pin: AI-Thinker fixed camera pins
@@ -120,8 +120,9 @@ project:
   - Lower frame size and observe stability.
   - Test a printed face-like image with consented classroom rules.
   next_challenge: Add authentication or keep the camera on an isolated local network before any longer demo.
-  what_you_build: A local-network ESP32-CAM face detection demo based on the Arduino ESP32 CameraWebServer example
-    and the AI-Thinker pin map.
+  what_you_build: A local-network AI-Thinker ESP32-CAM demo based on the Arduino ESP32 CameraWebServer example.
+    The OV2640 stream stays on the local network, the example server performs face detection, and the page must
+    not be described as face recognition because it does not identify people or enroll identities.
   story: 'Face detection needs careful wording. This project only locates face-like regions; it does not identify
     people or provide security. The Golden version keeps the implementation narrow and testable: code constants,
     wiring, GPIO notes, expected output, limitations, and troubleshooting all describe the same educational prototype.'
@@ -185,8 +186,9 @@ project:
     notes: Ground only while flashing.
   circuit_explanation: The ESP32-CAM board already connects OV2640 signals to fixed ESP32 pins. The external wiring
     is for programming, power, and boot mode.
-  engineering_explanation: Face detection uses memory and CPU. Lower frame sizes are more stable. Lighting, angle,
-    distance, and background can cause missed or false detections.
+  engineering_explanation: Face detection processing happens in the local ESP32-CAM CameraWebServer example files,
+    not in a cloud API. It uses memory and CPU, so lower frame sizes are more stable. Lighting, angle, distance,
+    and background can cause missed or false detections.
   libraries:
   - name: Arduino ESP32 core CameraWebServer example
     note: Use the bundled CameraWebServer app_httpd.cpp with face detection enabled.
@@ -211,10 +213,11 @@ project:
       \ WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  startCameraServer();\n  Serial.print(\"\
       Open local camera page: http://\");\n  Serial.println(WiFi.localIP());\n}\n\nvoid loop() {\n  delay(1000);\n\
       }\n"
-  code_explanation: The sketch initializes the AI-Thinker camera pin map and starts the local CameraWebServer example.
-    Face detection support lives in the example server files.
-  expected_output: Serial Monitor prints a local IP address. Open it on the same network and test detection only
-    with consented or printed face-like targets.
+  code_explanation: The sketch initializes the AI-Thinker OV2640 camera pin map, connects to Wi-Fi, starts the local
+    CameraWebServer example, and prints the board IP address. Face detection support lives in the example server
+    files; this starter sketch does not implement identity recognition.
+  expected_output: Serial Monitor prints a local IP address. Open it on the same network and enable/test detection
+    in the CameraWebServer page only with consented or printed face-like targets.
   common_mistakes:
   - text: Calling detection recognition.
   - text: Publishing the stream on the public internet.
@@ -224,9 +227,15 @@ project:
   - problem: Brownout reset
     fix: Use a stronger 5 V supply and shorter wires.
   - problem: Camera init failed
-    fix: Check board profile and ribbon cable.
+    fix: Check the AI-Thinker ESP32-CAM board profile, stable 5 V power, common ground with the FTDI adapter, and
+      the OV2640 ribbon cable.
   - problem: No faces detected
     fix: Lower frame size, improve lighting, and check that face detection is enabled in CameraWebServer.
+  - problem: Browser cannot open the stream
+    fix: Confirm the computer or phone is on the same local Wi-Fi network as the ESP32-CAM and use the IP printed
+      in Serial Monitor.
+  - problem: Project is described as face recognition
+    fix: Rename the claim in your notes. This build detects face-like regions only; it does not recognize identities.
   testing_checklist:
   - Boot with the IO0 jumper removed.
   - Confirm the local IP appears.
@@ -246,6 +255,12 @@ project:
     href: /guides/reading-analog-sensors.html
     description: Practice ADC readings, thresholds, and serial evidence before advanced projects.
   related_projects:
+  - title: ESP32-CAM Local Network Camera Demo
+    href: /projects/esp32-security-camera-system.html
+    description: Start with a privacy-bounded local snapshot page before enabling face detection.
+  - title: ESP32-CAM Color Object Detector Demo
+    href: /projects/esp32-ai-object-detector.html
+    description: Compare face detection with a simpler local color-thresholding camera project.
   - title: ESP32 Camera Capture Server
     href: /projects/esp32-camera-capture-server.html
     description: Start with capture before enabling detection.

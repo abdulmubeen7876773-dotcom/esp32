@@ -1,14 +1,16 @@
 slug: esp32-ai-object-detector
 title: ESP32-CAM Color Object Detector Demo
 category: AI Projects
-description: Use ESP32-CAM image processing to detect an orange color target locally, with clear privacy notes and no unsupported AI claims.
-meta_description: Build a bounded ESP32-CAM color object presence demo with OV2640 RGB565 frames, privacy notes, and clear limits between image processing and AI.
+description: Build an ESP32-CAM color object presence detector that scans OV2640 RGB565 frames locally, lights the
+  onboard LED for an orange target, and avoids unsupported AI claims.
+meta_description: Build an ESP32-CAM color object detector demo with AI-Thinker OV2640 wiring, RGB565 thresholding
+  on the ESP32, LED output, privacy notes, and no ML model claims.
 source_base: esp32-ai-object-detector-legacy-import
 sensor: OV2640 camera bus
 output: Onboard LED
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 3
@@ -120,9 +122,10 @@ project:
   - Change DETECT_THRESHOLD and observe false triggers.
   - Test the same object under two lighting conditions.
   - Change the RGB thresholds to look for another color.
-  next_challenge: Move to an ESP32-S3 plus a real bundled model before claiming on-device AI detection.
-  what_you_build: A local ESP32-CAM color-object presence demo that scans RGB565 frames and lights the onboard LED
-    when enough orange pixels are present.
+  next_challenge: Move to an ESP32-S3 plus a documented model before claiming on-device AI object detection.
+  what_you_build: A local AI-Thinker ESP32-CAM demo that captures OV2640 RGB565 frames, counts orange-like pixels
+    on the ESP32, and lights the onboard LED when the color target fills enough of the frame. There is no neural
+    network, Edge Impulse model, cloud API, browser inference, or object-class list in this starter build.
   story: 'The slug says AI object detector, but this repository evidence supports a color-image-processing starter.
     The page names the boundary honestly. The Golden version keeps the implementation narrow and testable: code
     constants, wiring, GPIO notes, expected output, limitations, and troubleshooting all describe the same educational
@@ -181,8 +184,9 @@ project:
     notes: Detection indicator; active level varies by board.
   circuit_explanation: The OV2640 is already wired to fixed ESP32-CAM pins. The sketch captures RGB565 frames and
     counts pixels in a color range.
-  engineering_explanation: This is color thresholding, not bounding-box object detection. It is sensitive to lighting,
-    camera angle, background colors, and exposure.
+  engineering_explanation: Processing happens on the ESP32 as simple RGB565 color thresholding. This is not bounding-box
+    object detection and not trained ML inference. It is sensitive to lighting, camera angle, background colors,
+    exposure, and the chosen threshold constants.
   libraries:
   - name: Arduino ESP32 core
     note: Includes esp_camera support for ESP32-CAM boards.
@@ -211,8 +215,9 @@ project:
       \  bool detected = fraction > DETECT_THRESHOLD;\n  digitalWrite(LED_PIN, detected ? LOW : HIGH); // AI-Thinker\
       \ flash LED is often active LOW\n  Serial.printf(\"orange_fraction=%.3f detected=%s\\n\", fraction, detected\
       \ ? \"YES\" : \"no\");\n  delay(1000);\n}\n"
-  code_explanation: The sketch initializes the AI-Thinker pin map, captures QQVGA RGB565 frames, counts orange-like
-    pixels, and compares the fraction with 0.05.
+  code_explanation: The sketch initializes the AI-Thinker OV2640 pin map, captures QQVGA RGB565 frames, counts pixels
+    that fit a fixed orange threshold, compares the matching fraction with 0.05, and drives the onboard LED. It does
+    not load a model or return object labels.
   expected_output: Serial Monitor prints orange_fraction and detected state once per second. The indicator changes
     when the colored target fills enough of the frame.
   common_mistakes:
@@ -222,11 +227,15 @@ project:
   - text: Testing with private scenes or people without consent.
   troubleshooting:
   - problem: Camera init failed
-    fix: Check AI-Thinker board selection, stable 5 V power, and ribbon cable.
+    fix: Check AI-Thinker board selection, stable 5 V power, common ground with the programmer, and the OV2640 ribbon
+      cable.
   - problem: Always detected
-    fix: Raise the threshold or reduce matching background colors.
+    fix: Raise DETECT_THRESHOLD, remove orange or warm-colored background objects, and retest under steady lighting.
   - problem: Never detected
-    fix: Improve lighting or adjust RGB threshold values.
+    fix: Improve lighting, move the colored target closer, and adjust RGB threshold values only after confirming
+      camera capture works.
+  - problem: Upload works but the sketch will not run
+    fix: Remove the IO0-to-GND upload jumper, reset the ESP32-CAM, and reopen Serial Monitor.
   testing_checklist:
   - Upload with IO0 grounded, then remove IO0 jumper.
   - Point at a neutral background and record baseline fraction.
@@ -245,7 +254,13 @@ project:
   - title: Installing Arduino IDE for ESP32
     href: /guides/installing-arduino-ide-esp32.html
     description: Set up board support before flashing ESP32-CAM sketches.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue from local camera processing toward connected ESP32 projects.
   related_projects:
+  - title: ESP32-CAM Local Network Camera Demo
+    href: /projects/esp32-security-camera-system.html
+    description: Verify stable camera capture and local browser access before adding processing logic.
   - title: ESP32 Camera Capture Server
     href: /projects/esp32-camera-capture-server.html
     description: Learn stable camera capture before image processing.

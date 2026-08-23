@@ -1,26 +1,25 @@
 slug: esp32-rfid-inventory-tracker
 title: ESP32 RFID Inventory Tracker
 category: Industrial Automation
-description: Track assets and inventory with the ESP32 and RC522 RFID reader. Scan MIFARE tags to log check-in and check-out
-  events, maintain a stock count database on an SD card, and view real-time inventory status on a web dashboard — no cloud
-  subscription required.
-meta_description: Build an ESP32 RFID inventory tracker using the RC522 module. Scan asset tags, log check-in and check-out
-  events to SD card, and monitor stock levels from a live web dashboard.
+description: Build an ESP32 RFID inventory tracker with an RC522 reader, SPI wiring, known UID mapping, microSD CSV
+  scan logging, and clear limits before adding Wi-Fi or database features.
+meta_description: Build an ESP32 RC522 RFID inventory tracker with 3.3 V wiring, SPI pins, UID-to-asset mapping,
+  SD card CSV logging, duplicate-scan delay, and prototype limits.
 source_base: esp32-rfid-inventory-tracker-legacy-import
-sensor: 'TODO: sensor'
-output: RC522 RST
+sensor: RC522 RFID reader
+output: SD card CSV log and LED feedback
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: GPIO 22
-  sensor_name: 'TODO: sensor'
-  output_name: RC522 RST
+  sensor_pin: RC522 SPI bus
+  output_pin: GPIO26/GPIO27 LEDs and SD CS GPIO4
+  sensor_name: RC522 RFID reader
+  output_name: SD card CSV log and LED feedback
   wiring:
   - component: RC522 SDA/SCK/MOSI/MISO
     pin: GPIO 5/18/23/19
@@ -270,8 +269,10 @@ project:
   age: Ages 13+
   estimated_time: 90-120 min
   budget: Under 30 USD
-  what_you_build: An RFID tracker that scans RC522 tags over SPI, logs events to a microSD card, and uses red and green LEDs
-    for known or unknown tags.
+  what_you_build: An ESP32 DevKit inventory logger that scans MIFARE-compatible tags with an RC522 RFID reader over
+    SPI, maps known UID strings to asset names in the sketch, appends each scan to a microSD CSV file, and flashes
+    green or red LEDs for known or unknown tags. The beginner build is local SD logging, not a live database or
+    cloud inventory system.
   story: Inventory systems work because every scan becomes a reliable event. RC522 and SD share the SPI bus, while GPIO5 and
     GPIO4 keep separate chip-select signals so the ESP32 can talk to one module at a time. The component list, wiring table,
     GPIO map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build so a learner can
@@ -354,8 +355,9 @@ project:
     notes: Scan feedback.
   circuit_explanation: RC522 and SD share SCK, MOSI, and MISO. Separate chip-select pins prevent both modules from answering
     at once.
-  engineering_explanation: SPI sharing works only when chip-select wiring and code agree. The RC522 is powered from 3.3 V
-    in this tutorial.
+  engineering_explanation: SPI sharing works only when chip-select wiring and code agree. The RC522 is powered from
+    3.3 V in this tutorial. UID matching is useful for a classroom prototype, but UID-only RFID is not cryptographic
+    security and does not prove ownership or prevent cloned tags.
   libraries:
   - name: Arduino ESP32 core
     note: Install ESP32 board support in Arduino IDE.
@@ -378,8 +380,10 @@ project:
       \ %sn\",uid.c_str(),name);\n  logScan(uid,name);\n  flashLED(known?LED_GREEN:LED_RED);\n  rfid.PICC_HaltA();\n  rfid.PCD_StopCrypto1();\n\
       \  delay(1000);\n}"
   code_explanation: The sketch defines RC522_SS on GPIO5, RC522_RST on GPIO22, SD_CS on GPIO4, and LEDs on GPIO26/GPIO27.
-  expected_output: Serial Monitor reports scans and SD logging status. Known UIDs flash green, unknown UIDs flash red, and
-    the SD card receives CSV rows.
+    It starts SPI, reads each tag UID with MFRC522, compares the UID against the hardcoded KNOWN_UIDS array, appends
+    millis, UID, and asset name to /inventory.csv, halts the card, and waits before accepting another scan.
+  expected_output: Serial Monitor prints each UID and matched asset name. Known UIDs flash green, unknown UIDs flash
+    red, and the SD card receives CSV rows such as timestamp, UID, and asset name.
   common_mistakes:
   - text: Powering RC522 from 5 V.
   - text: Using the same chip-select pin for RC522 and SD.
@@ -391,6 +395,12 @@ project:
     fix: Check SD format, GPIO4 CS, and shared SPI wiring.
   - problem: Known tag shows unknown
     fix: Copy the UID from Serial Monitor into KNOWN_UIDS.
+  - problem: Same tag logs repeatedly
+    fix: Keep the existing delay, call PICC_HaltA() and PCD_StopCrypto1(), and move the tag away between intentional
+      scans.
+  - problem: Inventory state does not update on a web page
+    fix: The beginner build does not serve a dashboard. Use the SD CSV log first, then add the intermediate Wi-Fi
+      dashboard only after local scans are reliable.
   testing_checklist:
   - Upload the sketch with only the documented circuit attached.
   - Open Serial Monitor and confirm the expected messages.
@@ -415,10 +425,16 @@ project:
   - title: Mission 01 - Blink LED
     href: /guides/blink-led-esp32.html
     description: Confirm uploads and simple GPIO behavior before adding sensors, storage, or displays.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Add networked dashboards only after the local RFID scan log works.
   related_projects:
   - title: ESP32 RFID Access Control System
     href: /projects/esp32-rfid-access-control-system.html
     description: Use related RFID ideas for a controlled access build.
+  - title: ESP32 Smart Door Lock
+    href: /projects/esp32-smart-door-lock.html
+    description: Compare inventory UID logging with an RFID-controlled actuator project.
   faqs:
   - question: Why do RC522 and SD share SPI?
     answer: SPI supports multiple devices when each has its own chip-select pin.
