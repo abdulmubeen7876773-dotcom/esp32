@@ -1,17 +1,17 @@
 slug: esp32-security-camera-system
 title: ESP32-CAM Local Network Camera Demo
 category: ESP32-CAM
-description: Build a local-network ESP32-CAM snapshot demo using the real AI-Thinker pin map, stable 5 V power,
-  and clear privacy limits.
+description: Build a local-network AI-Thinker ESP32-CAM OV2640 snapshot demo with stable 5 V power, FTDI upload
+  setup, browser IP testing, and privacy limits.
 meta_title: ESP32-CAM Local Network Camera Demo
-meta_description: Build a local ESP32-CAM camera page with AI-Thinker pin mapping, stable 5 V power, placeholder
-  Wi-Fi credentials, and privacy-first limits.
+meta_description: Build an ESP32-CAM local network snapshot page with AI-Thinker OV2640 pin map, stable 5 V power,
+  FTDI upload steps, Wi-Fi IP testing, and privacy limits.
 source_base: esp32-security-camera-system-golden-batch-6
 sensor: OV2640 camera
 output: Local browser snapshot
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-10'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
@@ -56,8 +56,8 @@ project:
   - Move lighting and compare exposure.
   - Restart Wi-Fi and confirm reconnection.
   next_challenge: Add local-only authentication before using the demo outside a supervised lab.
-  what_you_build: A local ESP32-CAM snapshot page that serves a live captured JPEG to a browser on the same Wi-Fi
-    network.
+  what_you_build: A local ESP32-CAM snapshot page that serves a captured JPEG from /capture to a browser on the
+    same Wi-Fi network. It is a supervised local demo, not motion detection, cloud storage, or production surveillance.
   story: The ESP32-CAM is a tiny board that can capture real images, but the Golden version avoids pretending it
     is a professional security product. You build a compact local-network camera demo with the real AI-Thinker pin
     map, stable 5 V power, and clear privacy limits.
@@ -111,6 +111,7 @@ project:
     - Connect FTDI 5 V or a separate stable 5 V supply to ESP32-CAM 5V.
     - Connect FTDI TX to ESP32-CAM U0R and FTDI RX to U0T for programming.
     - Pull GPIO0 to GND only while uploading, then remove it and reset the board.
+    - After reset, open Serial Monitor at 115200 baud and copy the printed local IP address.
     - Open the printed local IP address from a browser on the same Wi-Fi network.
   gpio_map:
   - signal: PWDN
@@ -172,8 +173,9 @@ project:
       \  startCamera();\n  connectWiFi();\n  server.on(\"/\", handleRoot);\n  server.on(\"/capture\", handleCapture);\n\
       \  server.begin();\n}\n\nvoid loop() {\n  if (WiFi.status() != WL_CONNECTED) connectWiFi();\n  server.handleClient();\n\
       }\n"
-  code_explanation: The sketch initializes the AI-Thinker pin map, connects to Wi-Fi with placeholder credentials,
-    serves a small local HTML page, and captures a JPEG when /capture is requested.
+  code_explanation: The sketch initializes the AI-Thinker OV2640 pin map, connects to Wi-Fi with placeholder credentials,
+    prints the local IP address, serves a small HTML page at /, and captures one JPEG snapshot whenever /capture
+    is requested.
   expected_output: Serial Monitor prints a local URL such as http://192.168.x.x. Opening that address from the same
     Wi-Fi network shows a compact page with a refreshed camera snapshot.
   common_mistakes:
@@ -184,10 +186,14 @@ project:
   troubleshooting:
   - problem: Camera init failed
     fix: Check that the board is AI-Thinker ESP32-CAM and that the code uses the matching pin map.
+  - problem: Upload fails or stays at connecting
+    fix: Ground GPIO0 only for upload, reset the board into bootloader mode, and confirm FTDI TX goes to U0R while
+      FTDI RX goes to U0T.
   - problem: Board resets when Wi-Fi starts
     fix: Use a stronger stable 5 V supply and short power wires.
   - problem: Browser cannot open the page
-    fix: Confirm the phone or computer is on the same local network as the ESP32-CAM.
+    fix: Confirm the phone or computer is on the same local network as the ESP32-CAM and that the printed IP address
+      matches the current Wi-Fi connection.
   testing_checklist:
   - Verify 5 V stability.
   - Upload with GPIO0 grounded, then remove it.
@@ -212,10 +218,16 @@ project:
   - title: Digital Inputs and Floating Pins
     href: /guides/digital-inputs-floating-pins.html
     description: Review boot-pin behavior and why GPIO0 matters during upload.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Place this local web camera demo in the wider beginner IoT sequence.
   related_projects:
   - title: Build a Camera Capture Server
     href: /projects/esp32-camera-capture-server.html
     description: A related local camera project with the same ESP32-CAM safety boundaries.
+  - title: ESP32-CAM QR Code Scanner
+    href: /projects/esp32-cam-qr-scanner.html
+    description: Reuse the same AI-Thinker camera board and upload flow for on-device QR decoding.
   - title: Build a Local Face Detection Demo
     href: /projects/esp32-cam-face-detection.html
     description: Compare a local-only computer vision demo without cloud surveillance claims.

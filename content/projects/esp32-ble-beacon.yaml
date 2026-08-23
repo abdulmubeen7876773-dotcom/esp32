@@ -1,8 +1,8 @@
 slug: esp32-ble-beacon
 title: ESP32 BLE Beacon and iBeacon Tutorial
 category: IoT Projects
-description: Turn the ESP32 into a Bluetooth Low Energy beacon that broadcasts iBeacon or Eddystone-URL packets,
-  enabling proximity detection, indoor positioning, and smart location-based automation triggers.
+description: Build an ESP32 BLE iBeacon advertiser with no external hardware, UUID/major/minor fields, phone scanner
+  testing, RSSI behavior, and clear BLE advertising limits.
 meta_description: Build an ESP32 BLE beacon and iBeacon demo with phone scanner testing, UUID, major/minor fields,
   RSSI behavior, and no extra hardware.
 source_base: esp32-ble-beacon-legacy-import
@@ -10,7 +10,7 @@ sensor: ESP32 built-in BLE radio
 output: BLE advertising packet
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
@@ -72,7 +72,7 @@ levels:
     upgrades: &id001
     - Add Eddystone-URL broadcasting to push a web URL to nearby phones without an app
     - Add a button to cycle between multiple beacon profiles stored in NVS
-    - Add deep sleep between advertising bursts to reduce power to under 10 uA average
+    - Add deep sleep between advertising bursts for measured battery experiments
     - Add an LED that blinks on each advertising interval as a visual status indicator
     code: "// ESP32 BLE Beacon - Beginner\n// Broadcasts a standard iBeacon advertisement packet\n#include <BLEDevice.h>\n\
       #include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n\n// iBeacon\
@@ -280,9 +280,6 @@ project:
   - item: 1× Smartphone with BLE scanner app
     note: nRF Connect (iOS/Android) for testing
     icon: PART
-  - item: Breadboard and jumper wires
-    note: For safe low-voltage prototyping
-    icon: PART
   bom:
   - part: 1× ESP32 DevKit V1
     qty: '1'
@@ -296,18 +293,16 @@ project:
     qty: '1'
     estimated_cost: Varies
     notes: nRF Connect (iOS/Android) for testing
-  - part: Breadboard and jumper wires
-    qty: 1 set
-    estimated_cost: Varies
-    notes: For safe low-voltage prototyping
   wiring:
     illustration_alt: ESP32 BLE Beacon wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      No external wiring is required because the ESP32 includes a Bluetooth radio and PCB antenna.
+    summary: No external wiring is required. USB powers and programs the ESP32 DevKit, and the built-in BLE radio
+      broadcasts the iBeacon advertisement through the board antenna.
     steps:
-    - Unplug USB before changing wires.
-    - Connect No external wiring required to Built-in BLE antenna (ESP32 BLE runs on-chip without extra hardware).
-    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+    - Unplug USB before changing anything; no external wiring is required for this beacon build.
+    - Connect the ESP32 DevKit to your computer with USB.
+    - Upload the sketch and open Serial Monitor at 115200 baud.
+    - Open a BLE scanner app on a phone and scan for the ESP32-Beacon/iBeacon UUID.
+    - Keep the ESP32 antenna area clear of metal and your hand while comparing RSSI.
   gpio_map:
   - signal: No external wiring required
     esp32_pin: Built-in BLE antenna
@@ -338,12 +333,11 @@ project:
       \  BLEDevice::startAdvertising();\n  Serial.println(\"iBeacon advertising — UUID: \" BEACON_UUID);\n  Serial.printf(\"\
       Major: %d  Minor: %d  TX Power: %d dBmn\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon\
       \ advertises continuously in background\n}"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). The BLE setup creates an advertiser,
-    sets the beacon identity, and starts broadcasting. The loop can stay light because advertising continues in
-    the BLE stack.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 ble beacon is reached.
+  code_explanation: The sketch initializes BLE as ESP32-Beacon, builds a standard iBeacon manufacturer-data payload,
+    sets the UUID, major, minor, and calibrated TX power fields, disables scan response, and starts non-connectable
+    BLE advertising. No pairing, Bluetooth Classic connection, or GATT service is used.
+  expected_output: Serial Monitor prints the iBeacon UUID plus major, minor, and TX power values. A phone BLE scanner
+    should show the advertisement and changing RSSI while the ESP32 continues advertising in the background.
   common_mistakes:
   - text: Expecting RSSI to behave like a tape measure.
   - text: Holding the ESP32 antenna while testing signal strength.
@@ -352,20 +346,21 @@ project:
   - text: Using the same UUID for every test beacon.
   troubleshooting:
   - problem: Phone cannot see the beacon
-    fix: Reset the ESP32, restart the BLE scanner app, and confirm Bluetooth permission is enabled on the phone.
+    fix: Use a BLE scanner rather than a Bluetooth Classic device list, reset the ESP32, restart the scanner app,
+      and confirm Bluetooth/location permission is enabled on the phone.
   - problem: RSSI jumps a lot
-    fix: Move away from metal objects and test with the board still on a table.
+    fix: Treat RSSI as a rough near/far clue, not exact distance. Move away from metal objects and test with the
+      board still on a table.
   - problem: Upload fails
     fix: Hold BOOT during upload if your ESP32 board requires manual boot mode.
   - problem: Beacon name does not update
     fix: Forget the device or restart the scanner app because BLE scan results can be cached.
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
-  - Power-cycle the project and confirm it starts in a safe state.
+  - Upload the beacon sketch and confirm Serial Monitor prints the UUID, major, minor, and TX power.
+  - Scan from a phone BLE scanner app while the board is on a table.
+  - Move the phone slowly closer and farther away and watch RSSI change without expecting exact distance.
+  - Power-cycle the ESP32 and confirm the beacon appears again without pairing.
   engineer_tips:
   - Use unique UUIDs for different beacon projects.
   - Keep the antenna end of the ESP32 away from metal enclosures.
@@ -374,7 +369,7 @@ project:
   - Record RSSI at fixed distances to understand your environment.
   performance_tips:
   - Increase advertising interval to reduce power use.
-  - Use deep sleep between advertising windows for battery beacons.
+  - Add deep sleep between advertising windows for measured battery experiments.
   - Avoid running Wi-Fi unless the project really needs both radios.
   - Keep advertisement payload short.
   upgrade_ideas: *id001
@@ -395,16 +390,19 @@ project:
   - title: What is ESP32?
     href: /guides/what-is-esp32.html
     description: Review the ESP32 board, wireless features, and why it works well for embedded projects.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue from local wireless advertising toward Wi-Fi and connected ESP32 projects.
   related_projects:
-  - title: ESP32 Gps Tracker
-    href: /projects/esp32-gps-tracker.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Rfid Access Control System
+  - title: ESP32 MQTT Sensor Dashboard
+    href: /projects/esp32-mqtt-sensor-dashboard.html
+    description: Compare local BLE advertising with a networked MQTT telemetry project.
+  - title: ESP32 RFID Access Control System
     href: /projects/esp32-rfid-access-control-system.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Rfid Inventory Tracker
+    description: Compare proximity-style identification with an explicit RFID access workflow.
+  - title: ESP32 RFID Inventory Tracker
     href: /projects/esp32-rfid-inventory-tracker.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Explore another short-range identification project after testing beacon broadcasts.
   faqs:
   - question: Why does RSSI change when the beacon is not moving?
     answer: BLE signal strength changes with walls, metal objects, phone position, antenna direction, and people near
@@ -423,8 +421,9 @@ project:
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32 BLE Beacon as a real ESP32 engineering build, not just a wiring demo. You now know
-      how to test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed an ESP32 BLE iBeacon advertiser as a real ESP32 wireless build. You now know how to
+      identify the beacon payload, test it with a phone scanner, interpret RSSI cautiously, and improve the project
+      safely.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins

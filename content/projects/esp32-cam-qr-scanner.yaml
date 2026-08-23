@@ -1,25 +1,25 @@
 slug: esp32-cam-qr-scanner
 title: ESP32-CAM QR Code Scanner
 category: ESP32-CAM
-description: Use the ESP32-CAM camera and the Quirc QR decoding library to scan and decode QR codes in real time,
-  displaying results on a web page, logging them to an SD card, and publishing them as MQTT access-control events.
-meta_description: An ESP32-CAM scanner that captures frames and decodes QR codes for access demos, inventory labels,
-  or classroom identification projects. Includes wiring, c
+description: Build an ESP32-CAM QR scanner that captures grayscale OV2640 frames and decodes QR payloads on the
+  ESP32 with Quirc before adding optional web, SD, or MQTT workflows.
+meta_description: Build an ESP32-CAM QR code scanner with AI-Thinker wiring, OV2640 grayscale capture, on-device
+  Quirc decoding, Serial output, lighting tips, and safe access-control limits.
 source_base: esp32-cam-qr-scanner-legacy-import
-sensor: 'TODO: sensor'
-output: 'TODO: output'
+sensor: OV2640 camera frame
+output: Decoded QR payload
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
-  output_pin: 'TODO: output_pin'
-  sensor_name: 'TODO: sensor'
-  output_name: 'TODO: output'
+  sensor_pin: AI-Thinker OV2640 fixed pins
+  output_pin: Serial Monitor
+  sensor_name: OV2640 camera frame
+  output_name: Decoded QR payload
   wiring:
   - component: FTDI TX/RX/GND/5V
     pin: U0R/U0T/GND/5V
@@ -276,8 +276,9 @@ project:
   age: Ages 12+
   estimated_time: 90-130 min
   budget: Under 25 USD
-  what_you_build: An ESP32-CAM scanner that captures frames and decodes QR codes for access demos, inventory labels,
-    or classroom identification projects.
+  what_you_build: An ESP32-CAM scanner that captures grayscale frames from the onboard OV2640 camera and decodes
+    QR payloads on the ESP32 with Quirc. The beginner build prints decoded text to Serial before any lock, relay,
+    web page, or network validation is added.
   story: 'ESP32-CAM QR Code Scanner solves a real beginner problem: turning an ESP32 reading into a useful physical
     or networked result. Build this after the basic camera server because QR scanning adds focus, lighting, decoding,
     and serial debugging challenges.
@@ -386,12 +387,11 @@ project:
       \  data;\n    quirc_extract(qr, i, &code);\n    if (quirc_decode(&code, &data) == QUIRC_SUCCESS) {\n     \
       \ Serial.print(\"QR Decoded: \");\n      Serial.println((char*)data.payload);\n    }\n  }\n  delay(200);\n\
       }"
-  code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct
-    ESP32-CAM pin map, initializes the OV2640, then captures frames. Keep the first test simple: prove the camera
-    initializes before adding storage, scanning, or network actions.'
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32-cam qr code scanner is reached.
+  code_explanation: The sketch selects the AI-Thinker OV2640 pin map, captures QVGA grayscale frames, copies each
+    frame into Quirc's pixel buffer, runs Quirc detection/decoding on the ESP32, and prints successful UTF-8 QR
+    payloads to Serial Monitor. The beginner code does not send frames to a browser, server, API, or cloud decoder.
+  expected_output: Serial Monitor prints "QR Scanner ready" after camera and Quirc setup. When a readable QR code
+    is in view, it prints "QR Decoded:" followed by the decoded payload text.
   common_mistakes:
   - text: Testing with a tiny QR code too close to the camera.
   - text: Using glossy phone screens with glare.
@@ -400,20 +400,23 @@ project:
   - text: Adding door-lock hardware before QR decoding is reliable.
   troubleshooting:
   - problem: QR code is never decoded
-    fix: Use a larger printed QR code, improve lighting, and test at 10-20 cm distance.
+    fix: Use a larger printed QR code, improve lighting, reduce glare, hold the code square to the camera, and test
+      at 10-20 cm before changing the code.
   - problem: Camera init fails
     fix: Check board selection, camera model, ribbon cable, and power supply.
   - problem: Decoded text is inconsistent
-    fix: Hold the code still and reduce glare.
+    fix: Hold the code still, avoid glossy screens, and keep the QR code large enough that the finder squares are
+      sharp in the QVGA frame.
   - problem: Board resets during scanning
     fix: Use a stable 5 V supply with enough current.
+  - problem: Upload works but the sketch will not run
+    fix: Remove the IO0-to-GND jumper after uploading, then reset the ESP32-CAM for normal run mode.
   testing_checklist:
-  - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
-  - Power-cycle the project and confirm it starts in a safe state.
+  - Verify the AI-Thinker ESP32-CAM upload wiring with GPIO0 grounded only during upload.
+  - Remove GPIO0 from GND, reset the board, and confirm "QR Scanner ready" appears in Serial Monitor.
+  - Test one large printed QR code under steady lighting before using phone screens or small labels.
+  - Confirm the payload prints to Serial before adding web UI, SD logging, MQTT, locks, relays, or buzzers.
+  - Power-cycle the board and confirm it starts scanning again.
   engineer_tips:
   - Prove camera capture before QR decoding.
   - Use matte printed codes for testing.
@@ -443,16 +446,22 @@ project:
   - title: What is ESP32?
     href: /guides/what-is-esp32.html
     description: Review the ESP32 board, wireless features, and why it works well for embedded projects.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue from local QR decoding toward connected validation and MQTT workflows.
   related_projects:
-  - title: ESP32 CAMera Capture Server
+  - title: ESP32-CAM Local Network Camera Demo
+    href: /projects/esp32-security-camera-system.html
+    description: Start with the same AI-Thinker camera board and local snapshot flow before QR decoding.
+  - title: ESP32 Camera Capture Server
     href: /projects/esp32-camera-capture-server.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Rfid Access Control System
+    description: Compare QR decoding with a simpler ESP32-CAM capture server using the same camera hardware.
+  - title: ESP32 RFID Access Control System
     href: /projects/esp32-rfid-access-control-system.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Rfid Inventory Tracker
+    description: Compare camera-based QR identification with RFID access decisions.
+  - title: ESP32 RFID Inventory Tracker
     href: /projects/esp32-rfid-inventory-tracker.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Compare QR labels with RFID inventory tags for classroom tracking demos.
   faqs:
   - question: Why does QR scanning fail in low light?
     answer: The decoder needs a sharp, high-contrast camera frame. Improve lighting, reduce glare, and hold the QR
