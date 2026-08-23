@@ -1,16 +1,16 @@
 slug: esp32-fire-alarm-system
 title: ESP32 Fire Alarm System
 category: Smart City
-description: Combine an MQ-2 smoke sensor and DHT22 temperature sensor with the ESP32 to build a fire alarm that sounds locally,
-  displays alerts on an OLED, and publishes MQTT notifications to a smart-home hub.
-meta_description: Build an ESP32 fire alarm with MQ-2 smoke sensor and DHT22 temperature sensor. Covers local buzzer alerts,
-  OLED display, and MQTT smart-home integration.
+description: Build an educational ESP32 smoke/gas alert demo with an MQ-2 analog output divided into GPIO34, red/green
+  LEDs on GPIO25/GPIO26, buzzer on GPIO27, warmup, and threshold tuning.
+meta_description: Build an educational ESP32 fire alarm demo with MQ-2 AOUT through a 10 kOhm / 20 kOhm divider to
+  GPIO34, buzzer GPIO27, LEDs, warmup, and safety limits.
 source_base: esp32-fire-alarm-system-legacy-import
 sensor: MQ-2 AOUT divided
 output: Buzzer
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-08-23'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
@@ -68,23 +68,23 @@ levels:
     - 'Alarm Logic: An alarm triggers when either the analog reading exceeds SMOKE_THRESHOLD or the digital pin goes LOW.
       Using both ensures detection even if the analog potentiometer or threshold is miscalibrated.'
     apps:
-    - Home smoke detector with local siren
-    - Kitchen gas leak alert for LPG and propane
-    - Workshop fire safety monitor with audible alarm
-    - Server room early smoke detection system
+    - Classroom MQ-2 threshold demo with local buzzer
+    - Bench smoke/gas sensor reading experiment
+    - Safety-boundary discussion for sensor false positives
+    - Local alert prototype before certified safety hardware
     troubleshooting:
     - - Alarm triggers immediately after power-on
       - The sensor needs 30 seconds to stabilise. Add the preheat delay and avoid testing during warmup. Also check that the
         MQ-2 AOUT is not connected to the ESP32 ADC directly from the 5 V output; use a voltage divider to scale to 3.3 V.
-    - - No alarm even with lighter smoke near sensor
-      - Lower the SMOKE_THRESHOLD constant. Read the baseline value in clean air from the Serial Monitor, then set the threshold
-        20-30 percent above that value. Also trim the onboard potentiometer for the digital output.
+    - - No alarm during safe bench checks
+      - Lower the SMOKE_THRESHOLD constant only after reading the baseline value in clean air from the Serial Monitor.
+        Do not use an open flame or uncontrolled smoke source for testing.
     - - ESP32 ADC reads maximum 4095 always
       - The MQ-2 AOUT is a 5 V signal. Connect it to the ESP32 ADC through a voltage divider (10 kohm + 20 kohm) to scale
         to 3.3 V maximum, preventing ADC input damage.
     - - Buzzer sounds continuously in clean air
       - The baseline gas concentration in the environment (paint fumes, cooking oil vapour) may be above the threshold. Increase
-        SMOKE_THRESHOLD until the alarm is silent in normal conditions, then retest with a smoke source.
+        SMOKE_THRESHOLD until the alarm is silent in normal conditions, then retest only with safe, supervised bench conditions.
     upgrades:
     - Add a DHT22 temperature sensor and alarm if temperature exceeds 60 C
     - Add an OLED display showing gas level bar graph and current reading
@@ -149,10 +149,10 @@ levels:
     - 'OLED Status Display: The OLED shows live smoke ADC value, temperature, humidity, current status, and total alarm event
       count. During an alarm the status line changes to "*** ALARM ***" in a single large text row for visibility at a distance.'
     apps:
-    - Home fire and gas leak detector with audit log
-    - Restaurant kitchen safety monitor with chef temperature alert
-    - Office building fire panel node with multi-sensor fusion
-    - Industrial boiler room overheat and smoke monitor
+    - Classroom multi-sensor alert logger
+    - Bench DHT22 plus MQ-2 threshold comparison
+    - Smart-home notification prototype with clear safety limits
+    - Sensor false-positive and event-log experiment
     troubleshooting:
     - - DHT22 reads NaN
       - The DHT22 requires a 10 kohm pull-up resistor between DATA and 3.3 V. Check the resistor is present. DHT22 also needs
@@ -220,10 +220,10 @@ levels:
       Automations then trigger TTS announcements on smart speakers, send push notifications to phones, and activate Z-Wave
       or Zigbee sirens throughout the building.'
     apps:
-    - Whole-home fire and gas alarm network with central monitoring
-    - Commercial building fire panel replacement with IoT connectivity
-    - Multi-unit apartment block with per-unit alarms and central dashboard
-    - School classroom fire safety network with office admin alert
+    - Multi-room classroom alert-network simulation
+    - MQTT alarm-message routing demonstration
+    - Home Assistant dashboard prototype with clear non-certified limits
+    - ESP32 networking lesson for sensor alerts
     troubleshooting:
     - - Global alarm does not clear when fire/alarm receives CLEAR
       - Check that the CLEAR message is published with the retain flag set to false so it does not persist in the broker.
@@ -270,7 +270,7 @@ project:
   recommended_age: Ages 13+
   estimated_time: 75-90 min
   budget: Under 25 USD
-  adult_supervision: Adult supervision required for sensor warmup, buzzer noise, and any smoke/gas test source.
+  adult_supervision: Adult supervision required for sensor warmup, buzzer noise, and safe non-flame bench testing.
   classroom_use: Use as a sensor-threshold and safety-boundary discussion, not as a life-safety demonstration.
   parent_prompt: Ask what makes this different from a certified smoke detector.
   screen_free_activity: 'Draw the alert decision tree: clean air, rising reading, alert output, reset.'
@@ -289,8 +289,9 @@ project:
   - Change SMOKE_THRESHOLD and observe when the alert starts.
   - Cover and uncover the sensor area without using flame.
   next_challenge: Add an OLED that shows raw sensor readings before adding any network notification.
-  what_you_build: A low-voltage educational smoke/gas sensor demo using MQ-2 AOUT on GPIO34 through a divider, red/green LEDs,
-    and a buzzer.
+  what_you_build: A low-voltage educational smoke/gas alert demo using an MQ-2 module powered from 5 V/VIN, its
+    AOUT signal reduced by a 10 kOhm / 20 kOhm divider into GPIO34, a red alert LED on GPIO25, a green normal LED
+    on GPIO26, and a buzzer on GPIO27.
   story: 'Fire-alarm wording can be dangerous if it sounds like building-compliance hardware. This project is intentionally
     a bench demo for learning sensor thresholds and local alerts. This Golden version keeps the promise narrow: the parts
     list, code constants, GPIO table, expected output, safety notes, and troubleshooting all describe the same low-voltage
@@ -298,9 +299,9 @@ project:
   eli12: 'The MQ-2 module gives the ESP32 a number that tends to rise when the sensor reacts to smoke or gas around it. The
     ESP32 is the decision maker: it reads one signal, compares it with simple rules, then changes an output you can see or
     hear.'
-  parent_safety: This is not a certified fire alarm, smoke detector, or life-safety system. Do not test with open flame. Unplug
-    USB and any external supply before rewiring. Keep the build low-voltage on the bench and do not treat it as certified
-    equipment.
+  parent_safety: This is not a certified fire alarm, smoke detector, gas detector, or life-safety system. Do not test
+    with open flame or uncontrolled smoke. Unplug USB and any external supply before rewiring. Keep the build low-voltage
+    on the bench and do not treat it as certified equipment.
   learning_objectives: *id001
   components:
   - item: ESP32 DevKit board
@@ -343,7 +344,8 @@ project:
     notes: GPIO27 alert output; use a driver if the buzzer module needs more current.
   wiring:
     illustration_alt: ESP32 Fire Alarm System wiring diagram
-    summary: MQ-2 AOUT goes to GPIO34 through a 10 kOhm / 20 kOhm divider. LEDs use GPIO25 and GPIO26; buzzer uses GPIO27.
+    summary: MQ-2 AOUT goes to GPIO34 through a 10 kOhm / 20 kOhm divider because the ESP32 ADC pin must not receive
+      a 5 V signal. LEDs use GPIO25 and GPIO26; the buzzer uses GPIO27.
     steps:
     - Unplug USB before changing sensor, LED, or buzzer wiring.
     - Power MQ-2 VCC from 5 V/VIN and connect MQ-2 GND to ESP32 GND.
@@ -351,11 +353,20 @@ project:
     - Connect red LED through a resistor to GPIO25 and green LED through a resistor to GPIO26.
     - Connect the buzzer module signal to GPIO27 and its ground to GND.
     - Reconnect USB, wait for sensor warmup, and watch Serial Monitor.
+    - Use safe bench checks such as observing warmup and changing threshold values; do not create an open flame for testing.
   gpio_map:
+  - signal: MQ-2 VCC
+    esp32_pin: 5 V / VIN
+    direction: Power
+    notes: Powers the heater module; keep signal voltage out of ESP32 GPIO until divided.
+  - signal: MQ-2 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Shared ground with ESP32.
   - signal: MQ-2 AOUT divided
     esp32_pin: GPIO34
     direction: Input
-    notes: ADC1 input-only pin; do not drive it as output.
+    notes: ADC1 input-only pin; AOUT must pass through the 10 kOhm / 20 kOhm divider.
   - signal: Red LED
     esp32_pin: GPIO25
     direction: Output
@@ -370,8 +381,8 @@ project:
     notes: Local alert output.
   circuit_explanation: The ESP32 reads the MQ-2 analog voltage after the divider. The code compares the 12-bit ADC value to
     SMOKE_THRESHOLD and switches the LEDs and buzzer.
-  engineering_explanation: The threshold is a learning value, not a calibrated smoke limit. MQ sensors need warmup and can
-    react to many gases, so false positives and missed conditions are possible.
+  engineering_explanation: The threshold is a learning value, not a calibrated smoke limit. MQ sensors need warmup
+    and can react to many gases, vapors, and environmental conditions, so false positives and missed conditions are possible.
   libraries:
   - name: Arduino ESP32 core
     note: No extra libraries required.
@@ -388,8 +399,9 @@ project:
       }\n"
   code_explanation: MQ2_AOUT is GPIO34. The sketch waits for warmup, reads the ADC value, compares it with 1800, and drives
     GPIO25, GPIO26, and GPIO27.
-  expected_output: Serial Monitor prints MQ2 raw values once per second. Values over 1800 turn the red LED and buzzer on while
-    the green LED turns off.
+  expected_output: Serial Monitor first prints that this is an educational demo and waits through MQ-2 warmup. After
+    warmup it prints MQ2 raw values once per second. Values over SMOKE_THRESHOLD turn the red LED and buzzer on while
+    the green LED turns off; lower values keep the green LED on.
   common_mistakes:
   - text: Calling the prototype a certified fire alarm.
   - text: Connecting MQ-2 AOUT directly to ESP32 when the module output can exceed 3.3 V.
@@ -399,7 +411,9 @@ project:
   - problem: Reading is stuck near 0
     fix: Check MQ-2 power, common ground, and the divided AOUT node to GPIO34.
   - problem: Buzzer is always on
-    fix: Raise the threshold after recording clean-air readings.
+    fix: Wait for warmup, record clean-air readings, then raise SMOKE_THRESHOLD above the stable baseline.
+  - problem: Reading is stuck near 4095
+    fix: Recheck the 10 kOhm / 20 kOhm divider and confirm raw MQ-2 AOUT is not connected directly to GPIO34.
   - problem: Board resets
     fix: Use a stable USB supply and avoid powering high-current buzzers from GPIO.
   testing_checklist:
@@ -426,10 +440,19 @@ project:
   - title: PWM Fundamentals
     href: /guides/pwm-fundamentals.html
     description: Learn how ESP32 output timing controls buzzers, LEDs, and other signals.
+  - title: ESP32 Sensors Learning Path
+    href: /learning.html#sensor-basics
+    description: Review sensor readings, thresholds, and safe beginner sequencing.
+  - title: ESP32 IoT Learning Path
+    href: /learning.html#iot-basics
+    description: Continue to connected alerts only after the local alarm behavior is understood.
   related_projects:
   - title: ESP32 Air Quality Monitor
     href: /projects/esp32-air-quality-monitor.html
     description: Compare this threshold demo with an air-quality monitoring build.
+  - title: ESP32 Motion Security Alert
+    href: /projects/esp32-motion-security-alert.html
+    description: Compare another local alert project with a different sensor type.
   faqs:
   - question: Can this replace a smoke detector?
     answer: No. It is only an educational prototype.
