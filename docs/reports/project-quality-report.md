@@ -1,6 +1,6 @@
 # Project Quality Report
 
-Generated: 2026-08-22T21:08:59Z
+Generated: 2026-08-25T19:23:47Z
 
 Benchmark: **ESP32 Mini Weather Station** is the golden standard (`content/projects/esp32-iot-weather-station.yaml`).
 
@@ -104,9 +104,9 @@ Run `py tools/validate_project_quality.py` to refresh this report.
 ### Scores
 
 - Child Experience: 100/100
-- Parent Experience: 100/100
+- Parent Experience: 90/100
 - Teacher Experience: 100/100
-- Engineering: 87/100
+- Engineering: 100/100
 - SEO: 100/100
 - Accessibility: 88/100
 
