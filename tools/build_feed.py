@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from parent_registry import PARENTS
-from project_text import project_meta_description, project_title
+from project_text import project_meta_description, project_title, public_projects
 from site_layout import SITE_DOMAIN, SITE_NAME, esc
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -52,7 +52,7 @@ def feed_item(parent: dict) -> str:
 
 
 def main():
-    ordered = sorted(PARENTS, key=lambda p: p.get("slug", ""))
+    ordered = sorted(public_projects(PARENTS), key=lambda p: p.get("slug", ""))
     last_build = max((project_pub_date(p) for p in ordered), default=FALLBACK_DATE)
     items = "\n".join(feed_item(p) for p in ordered)
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
