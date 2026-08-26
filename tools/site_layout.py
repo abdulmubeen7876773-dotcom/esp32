@@ -975,7 +975,7 @@ def home_parents_section() -> str:
     <div class="audience-content">
       <p class="section-eyebrow">For Parents</p>
       <h2>Safe, Simple Learning for Young Makers</h2>
-      <p>ESP32 Engine helps children learn electronics through guided projects, safety notes, and simple explanations parents can trust.</p>
+      <p>ESP32 Engine helps students and young makers learn electronics through guided projects, safety notes, and simple explanations parents can trust.</p>
       <a class="btn btn-primary" href="{site_href('parents.html')}">Guide for Parents</a>
     </div>
   </div>
@@ -1874,7 +1874,7 @@ def footer_html(base: str = "") -> str:
     <div class="footer-brand">
       <strong>{SITE_NAME}</strong>
       <p class="footer-tagline">{esc(SITE_TAGLINE)}</p>
-      <p>The world's friendliest ESP32 learning platform — built for kids, trusted by parents, loved by makers.</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
       <div class="footer-social">
         <a href="{esc(GITHUB_URL)}" rel="noopener noreferrer" target="_blank" aria-label="GitHub">{ICON_GITHUB}</a>
         <a href="{esc(YOUTUBE_URL)}" rel="noopener noreferrer" target="_blank" aria-label="YouTube">{ICON_YOUTUBE}</a>

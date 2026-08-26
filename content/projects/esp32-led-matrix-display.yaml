@@ -4,23 +4,23 @@ category: LED Projects
 description: Chain MAX7219 8x8 LED matrix modules with the ESP32 to create a scrolling text display. Control the
   message and brightness from a web interface, animate custom patterns, and display live MQTT data as a real-time
   ticker board.
-meta_description: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring
-  and brightness control. Includes wiring, code, troublesho
+meta_description: Build an ESP32 MAX7219 LED matrix display with SPI wiring on GPIO23, GPIO5, GPIO18, 5 V matrix
+  power, MD_Parola scrolling text code, brightness control, and troubleshooting.
 source_base: esp32-led-matrix-display-legacy-import
-sensor: 'TODO: sensor'
-output: MAX7219 DIN (MOSI)
+sensor: Message text in firmware
+output: MAX7219 LED matrix display
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-26'
 quality_status: golden_tutorial
 status: published
 import_tier: 3
 import_source: batch-php
 hardware:
-  sensor_pin: 'TODO: sensor_pin'
+  sensor_pin: Firmware message text
   output_pin: GPIO 23
-  sensor_name: 'TODO: sensor'
-  output_name: MAX7219 DIN (MOSI)
+  sensor_name: Firmware message text
+  output_name: MAX7219 LED matrix display
   wiring:
   - component: MAX7219 DIN (MOSI)
     pin: GPIO 23
@@ -268,9 +268,9 @@ project:
   budget: Under 25 USD
   what_you_build: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring
     and brightness control.
-  story: 'ESP32 LED Matrix Display solves a real beginner problem: turning an ESP32 reading into a useful physical
-    or networked result. Build this if you want to move beyond single LEDs and learn how display driver chips control
-    many LEDs with only a few ESP32 pins.
+  story: 'ESP32 LED Matrix Display solves a real beginner problem: showing readable output without wiring dozens
+    of LED pins. Build this if you want to move beyond single LEDs and learn how a MAX7219 driver chip controls
+    many LEDs through only DIN, CS, and CLK.
 
 
     The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
@@ -319,8 +319,8 @@ project:
     notes: Programming and bench power
   wiring:
     illustration_alt: ESP32 LED Matrix Display wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      The ESP32 sends serial data to the MAX7219 through DIN, CLK, and CS.
+    summary: The ESP32 sends serial data to the MAX7219 through DIN, CS, and CLK. Power the matrix module from 5
+      V for usable brightness, keep GND common, and start with one module before chaining displays.
     steps:
     - Unplug USB before changing wires.
     - Connect MAX7219 DIN (MOSI) to GPIO 23 (SPI MOSI).
@@ -371,12 +371,11 @@ project:
       \ PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);\n  Serial.println(\"LED matrix display ready.\");\n}\n\nvoid loop()\
       \ {\n  if (display.displayAnimate()) {\n    // Animation complete — restart scroll\n    display.displayReset();\n\
       \  }\n}"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). The display library converts text
-    into matrix patterns while the ESP32 sends data through the MAX7219 control pins. Brightness and update speed
-    are intentionally separated from the message text.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 led matrix display is reached.
+  code_explanation: The sketch selects the common FC16 hardware type, sets one MAX7219 device on CS GPIO5, starts
+    MD_Parola, sets brightness, and scrolls "Hello ESP32!" across the 8x8 matrix. loop() keeps calling displayAnimate()
+    so the non-blocking scroll can advance and restart.
+  expected_output: Serial Monitor prints "LED matrix display ready." The matrix should scroll "Hello ESP32!" from
+    right to left at the configured speed and brightness.
   common_mistakes:
   - text: Powering several matrix modules from the ESP32 3.3 V pin.
   - text: Mixing up DIN and DOUT when chaining modules.
@@ -394,10 +393,10 @@ project:
     fix: Check DOUT of one module goes to DIN of the next.
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
+  - Wire VCC and GND first, then confirm the ESP32 still boots.
+  - Add DIN GPIO23, CS GPIO5, and CLK GPIO18 exactly as the sketch expects.
+  - Upload the matrix sketch and confirm Serial Monitor prints the ready message.
+  - Verify one module scrolls correctly before chaining more modules.
   - Power-cycle the project and confirm it starts in a safe state.
   engineer_tips:
   - Start with one module before chaining four or more.
@@ -432,15 +431,15 @@ project:
     href: /guides/pwm-fundamentals.html
     description: Learn brightness and output control concepts.
   related_projects:
-  - title: ESP32 Oled Weather Clock
+  - title: ESP32 OLED Weather Clock
     href: /projects/esp32-oled-weather-clock.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Rgb Led Pattern Controller
+    description: Compare LED matrix text output with a compact OLED sensor-and-time display.
+  - title: ESP32 RGB LED Pattern Controller
     href: /projects/esp32-rgb-led-pattern-controller.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Learn another LED output project focused on PWM color mixing and patterns.
   - title: ESP32 Smart Street Light
     href: /projects/esp32-smart-street-light.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Continue with a light-output project that uses sensor thresholds and safe switching.
   faqs:
   - question: Why is the MAX7219 matrix blank?
     answer: Check 5 V, GND, DIN, CS, and CLK first, then confirm the library hardware type matches your module. The
@@ -457,8 +456,8 @@ project:
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32 LED Matrix Display as a real ESP32 engineering build, not just a wiring demo. You
-      now know how to test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed ESP32 LED Matrix Display as a real ESP32 display build. You now know how to wire MAX7219
+      SPI-style control pins, power the matrix safely, tune brightness, and debug scrolling text.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins

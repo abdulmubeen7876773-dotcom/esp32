@@ -10,7 +10,7 @@ sensor: Sensor AOUT
 output: Green LED (+ 220 Ω)
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-26'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
@@ -396,8 +396,8 @@ project:
     notes: Optional alert sound
   wiring:
     illustration_alt: ESP32 Soil Moisture Monitor wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      The capacitive probe produces an analog voltage that changes with the moisture around the sensor.
+    summary: Wire the capacitive probe to GPIO34 first, print raw ADC values, and calibrate dry/wet readings before
+      trusting the LED or buzzer thresholds.
     steps:
     - Unplug USB before changing wires.
     - Connect Sensor AOUT to GPIO 34 (ADC1 channel — input only, do not drive HIGH).
@@ -471,12 +471,10 @@ project:
       \ HIGH);\n    // Pulse buzzer 3 times for critical alert\n    for (int i = 0; i < 3; i++) {\n      digitalWrite(BUZZER,\
       \ HIGH); delay(200);\n      digitalWrite(BUZZER, LOW);  delay(200);\n    }\n    Serial.println(\"Status: DRY\
       \ — water the plant now!\");\n  }\n\n  delay(10000);   // Read every 10 seconds\n}"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading
-    first, compares it with a threshold, then changes the output. Printing before controlling the output makes debugging
-    much easier because you can see what the ESP32 believes is happening.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 soil moisture monitor is reached.
+  code_explanation: The sketch averages 10 ADC readings from GPIO34, maps the raw value between AIR_VALUE and WATER_VALUE,
+    constrains the result to 0-100 percent, and then lights green, yellow, or red LEDs. The buzzer only pulses in
+    the dry branch.
+  expected_output: 'Serial Monitor prints the calibration values and repeated "Moisture: NN%" lines. Green indicates moist soil, yellow indicates moderate moisture, and red plus buzzer means the calibrated reading is dry.'
   common_mistakes:
   - text: Using a resistive fork-style sensor for a long-term outdoor build; those probes corrode quickly.
   - text: Copying calibration values without measuring your own dry and wet readings.
@@ -497,10 +495,10 @@ project:
     fix: Raise the dry threshold or require several dry readings in a row before sounding the buzzer.
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
+  - Wire only the sensor first and print raw GPIO34 readings.
+  - Record dry-air and wet-test readings, then update AIR_VALUE and WATER_VALUE.
+  - Add LEDs with 220 ohm resistors only after the percentage makes sense.
+  - Add the buzzer last and confirm it sounds only for dry readings.
   - Power-cycle the project and confirm it starts in a safe state.
   engineer_tips:
   - Use GPIO34, GPIO35, GPIO36, or GPIO39 for analog-only sensor inputs.
@@ -537,13 +535,13 @@ project:
   related_projects:
   - title: ESP32 Smart Irrigation System
     href: /projects/esp32-smart-irrigation-system.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Move from moisture indication to controlled watering after calibration is reliable.
   - title: ESP32 Greenhouse Automation Controller
     href: /projects/esp32-greenhouse-automation-controller.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Compare single-plant monitoring with a broader environmental controller.
   - title: ESP32 Water Leak Detector
     href: /projects/esp32-water-leak-detector.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Learn another water-related sensor project with different safety and placement concerns.
   faqs:
   - question: Why should I avoid resistive probes for long-term soil monitoring?
     answer: Resistive fork probes corrode quickly in wet soil. This project uses a capacitive soil moisture sensor

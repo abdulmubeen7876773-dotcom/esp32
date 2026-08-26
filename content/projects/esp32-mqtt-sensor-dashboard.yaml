@@ -9,7 +9,7 @@ sensor: DHT22 DATA
 output: MQTT topics and dashboard subscribers
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-26'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
@@ -360,8 +360,8 @@ project:
     notes: For safe low-voltage prototyping
   wiring:
     illustration_alt: ESP32 MQTT Sensor Dashboard wiring diagram
-    summary: Wire the input hardware first, confirm readings in Serial Monitor, then connect the output hardware.
-      The DHT22 data pin uses a pull-up resistor so the signal idles HIGH.
+    summary: Wire the DHT22 first and prove temperature/humidity readings in Serial Monitor before connecting the
+      Wi-Fi and MQTT pieces. The DHT22 data pin uses a 10 kOhm pull-up resistor so the signal idles HIGH.
     steps:
     - Unplug USB before changing wires.
     - Connect DHT22 VCC to 3.3 V.
@@ -415,12 +415,10 @@ project:
       \    float h = dht.readHumidity();\n    float t = dht.readTemperature();\n    if (!isnan(h) && !isnan(t))\
       \ {\n      mqtt.publish(TOPIC_TEMP, String(t, 2).c_str(), true);\n      mqtt.publish(TOPIC_HUM,  String(h,\
       \ 2).c_str(), true);\n      Serial.printf(\"Published: temp=%.2f  hum=%.2fn\", t, h);\n    }\n  }\n}"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). After Wi-Fi and MQTT connect, the
-    ESP32 reads the sensor at a controlled interval and publishes values to a topic. The important habit is to keep
-    publishing rate reasonable and print connection state while debugging.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 mqtt sensor dashboard is reached.
+  code_explanation: The sketch starts the DHT22 on GPIO4, connects to Wi-Fi, connects to the MQTT broker on port
+    1883, publishes an online availability message, and sends retained temperature and humidity values every 30
+    seconds. Serial output separates Wi-Fi, MQTT, and sensor failures while debugging.
+  expected_output: 'Serial Monitor prints Wi-Fi connection progress, MQTT connection status, and lines such as "Published: temp=24.50 hum=52.10". A subscriber should see values on the temperature and humidity topics.'
   common_mistakes:
   - text: Publishing every loop cycle and flooding the broker.
   - text: Hardcoding wrong Wi-Fi credentials and not printing connection status.
@@ -438,10 +436,10 @@ project:
     fix: Add reconnect logic and publish a heartbeat or timestamp.
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
+  - Wire the DHT22 with its 10 kOhm pull-up and confirm readings locally first.
+  - Start the MQTT broker and verify its IP address from another MQTT client.
+  - Upload the full sketch and watch Wi-Fi and MQTT connection messages.
+  - Subscribe to the exact topic names before building a dashboard widget.
   - Power-cycle the project and confirm it starts in a safe state.
   engineer_tips:
   - Use readable topics such as esp32/room1/temperature.
@@ -479,12 +477,12 @@ project:
     href: /guides/i2c-communication.html
     description: Use structured communication thinking before connecting multiple modules.
   related_projects:
-  - title: ESP32 Iot Weather Station
+  - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Compare MQTT publishing with a local BME280 weather-station display.
   - title: ESP32 Home Climate Automation
     href: /projects/esp32-home-climate-automation.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Turn environmental readings into safe low-voltage control logic after telemetry works.
   - title: ESP32 Smart Thermostat
     href: /projects/esp32-smart-thermostat.html
     description: Turn measured room conditions into a safe low-voltage control decision.

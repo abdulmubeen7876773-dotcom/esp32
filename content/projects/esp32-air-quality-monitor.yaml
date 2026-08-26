@@ -1,14 +1,14 @@
 slug: esp32-air-quality-monitor
 title: ESP32 Air Quality Monitor
 category: Environmental
-description: Monitor indoor air quality with an ESP32, gas sensor, and fan or relay control — from a simple threshold
-  alarm to a connected dashboard.
+description: Monitor indoor air trends with an ESP32, MQ135 analog gas sensor, GPIO34 ADC readings, and a low-voltage
+  fan or relay output on GPIO26 after warm-up and baseline testing.
 source_base: esp32-air-quality-monitor-for-low-power-use
 sensor: MQ135 gas sensor
 output: fan relay
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-26'
 hardware:
   sensor_pin: GPIO34
   output_pin: GPIO26
@@ -23,8 +23,8 @@ hardware:
     pin: 3.3V/5V
   - component: GND
     pin: GND
-meta_description: An ESP32 monitor that reads an MQ135 gas sensor, prints live raw values, and drives an alert output
-  or fan relay when air quality crosses a tested threshol
+meta_description: Build an ESP32 MQ135 air quality monitor with GPIO34 analog readings, warm-up and baseline testing,
+  GPIO26 fan or relay output, raw Serial data, and safety limits.
 meta_title: ESP32 Air Quality Monitor Tutorial with ESP32
 levels:
   beginner:
@@ -200,12 +200,10 @@ project:
       \  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Mq135 Gas Sensor signal: \");\n  Serial.println(reading);\n\
       \  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n\
       }"
-  code_explanation: The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). The loop prints the live reading
-    first, compares it with a threshold, then changes the output. Printing before controlling the output makes debugging
-    much easier because you can see what the ESP32 believes is happening.
-  expected_output: Serial Monitor should print live readings or status messages. The output should change only when
-    the tested condition for esp32 air quality monitor is reached.
+  code_explanation: The sketch reads the MQ135 analog output on GPIO34 every 300 ms, prints the raw ADC value, compares
+    it with THRESHOLD, and drives GPIO26 for a low-voltage fan or relay input. The threshold is a classroom test
+    value, not a calibrated ppm limit.
+  expected_output: 'Serial Monitor prints "Starting: air quality monitor for indoor air", the threshold, and repeated "Mq135 Gas Sensor signal" raw ADC values. GPIO26 changes only when the reading crosses the tested threshold.'
   common_mistakes:
   - text: Expecting accurate ppm values from an uncalibrated MQ135 module.
   - text: Powering a fan or relay coil directly from an ESP32 GPIO.
@@ -224,10 +222,10 @@ project:
     fix: Move the sensor away from solder fumes, cleaners, smoke, or direct airflow and create a new baseline.
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only power and ground, then confirm the board still boots.
-  - Connect the input signal and print raw readings before using thresholds.
-  - Trigger the real-world condition slowly and watch Serial Monitor.
-  - Connect the output only after the input reading is believable.
+  - Power the MQ135 and wait for warm-up before judging readings.
+  - Connect the GPIO34 signal and record a fresh-air baseline in Serial Monitor.
+  - Adjust THRESHOLD from your own baseline before connecting a fan or relay.
+  - Connect the GPIO26 output only after the raw readings look believable.
   - Power-cycle the project and confirm it starts in a safe state.
   engineer_tips:
   - Use the raw ADC number until you have a real calibration method.
@@ -261,13 +259,13 @@ project:
   related_projects:
   - title: ESP32 Home Climate Automation
     href: /projects/esp32-home-climate-automation.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Compare raw air trend monitoring with a broader room climate controller.
   - title: ESP32 Greenhouse Automation Controller
     href: /projects/esp32-greenhouse-automation-controller.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 Iot Weather Station
+    description: See another environmental project that separates sensor readings from actuator control.
+  - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Use calibrated BME280 environmental readings when temperature, humidity, and pressure are the goal.
   faqs:
   - question: Does the MQ135 sensor need warm-up time?
     answer: Yes. The project troubleshooting already expects the raw value to settle after power-up, so wait several

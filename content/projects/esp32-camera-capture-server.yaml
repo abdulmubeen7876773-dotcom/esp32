@@ -1,14 +1,14 @@
 slug: esp32-camera-capture-server
 title: ESP32 Camera Capture Server
 category: ESP32-CAM
-description: Capture and stream images with ESP32-CAM — start with a local snapshot sketch, then add OTA updates
-  and a web dashboard.
+description: Capture local JPEG snapshots with an AI-Thinker ESP32-CAM and OV2640 camera, using stable 5 V power,
+  FTDI upload wiring, GPIO0 boot mode, and a browser /capture route.
 source_base: esp32-camera-capture-server-with-ota-update
 sensor: camera module
 output: web snapshot
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-05'
+date_modified: '2026-08-26'
 hardware:
   sensor_pin: Built-in OV2640
   output_pin: Built-in Wi-Fi
@@ -25,8 +25,8 @@ hardware:
     pin: 5V
   - component: GND
     pin: GND
-meta_description: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for
-  inspection, timelapse, or simple monitoring. Includes wiring
+meta_description: Build an ESP32-CAM capture server with AI-Thinker OV2640 pin mapping, FTDI upload wiring, stable
+  5 V power, local /capture JPEG output, and camera troubleshooting.
 meta_title: ESP32 Camera Capture Server Tutorial with ESP32
 levels:
   beginner:
@@ -110,8 +110,8 @@ project:
   age: Ages 12+
   estimated_time: 90-120 min
   budget: Under 20 USD
-  what_you_build: An ESP32-CAM project that captures images from the OV2640 camera and serves or stores them for
-    inspection, timelapse, or simple monitoring.
+  what_you_build: A local ESP32-CAM snapshot server that initializes the AI-Thinker OV2640 camera, joins Wi-Fi,
+    and returns one JPEG image from /capture when a browser requests it.
   story: 'ESP32 Camera Capture Server solves a real beginner problem: turning an ESP32 reading into a useful physical
     or networked result. Build this when you are ready to combine camera hardware, Wi-Fi, memory limits, and power
     stability in one project.
@@ -258,10 +258,9 @@ project:
       \  while (WiFi.status() != WL_CONNECTED) delay(300);\n  server.on(\"/capture\", HTTP_GET, handleCapture);\n\
       \  server.begin();\n  Serial.print(\"Open http://\");\n  Serial.print(WiFi.localIP());\n  Serial.println(\"\
       /capture\");\n}\n\nvoid loop() {\n  server.handleClient();\n}"
-  code_explanation: 'The sketch starts Serial Monitor, defines readable pin constants, configures input and output
-    pins in setup(), then repeats the measurement and decision logic in loop(). Camera setup selects the correct
-    ESP32-CAM pin map, initializes the OV2640, then captures frames. Keep the first test simple: prove the camera
-    initializes before adding storage, scanning, or network actions.'
+  code_explanation: The sketch fills camera_config_t with the AI-Thinker OV2640 pin map, starts QVGA JPEG capture,
+    connects to Wi-Fi, registers /capture, and returns each frame buffer as image/jpeg before releasing it with
+    esp_camera_fb_return().
   expected_output: Serial Monitor should print the ESP32-CAM IP address. Opening /capture in a browser on the same
     network should return a JPEG snapshot from the OV2640 camera.
   common_mistakes:
@@ -316,15 +315,15 @@ project:
     href: /guides/what-is-esp32.html
     description: Review the ESP32 board, wireless features, and why it works well for embedded projects.
   related_projects:
-  - title: ESP32 Security CAMera System
+  - title: ESP32-CAM Local Network Camera Demo
     href: /projects/esp32-security-camera-system.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 CAM Qr Scanner
+    description: Compare this direct /capture route with the fuller local camera demo and privacy boundaries.
+  - title: ESP32-CAM QR Code Scanner
     href: /projects/esp32-cam-qr-scanner.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
-  - title: ESP32 CAM Face Detection
+    description: Reuse the same camera hardware after basic capture works.
+  - title: ESP32-CAM Face Detection
     href: /projects/esp32-cam-face-detection.html
-    description: Continue with a related ESP32 build that uses the same engineering idea.
+    description: Add local face-like region detection only after stable camera capture is proven.
   faqs:
   - question: Why does the ESP32-CAM show a brownout reset?
     answer: Camera capture plus Wi-Fi can exceed what a weak USB serial adapter can supply. Power the board from a
@@ -341,8 +340,8 @@ project:
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
   complete:
-    summary: You completed ESP32 Camera Capture Server as a real ESP32 engineering build, not just a wiring demo.
-      You now know how to test the input, protect the circuit, explain the code, and improve the project safely.
+    summary: You completed ESP32 Camera Capture Server as a real ESP32-CAM snapshot build. You now know how to upload
+      with GPIO0, power the camera board, serve /capture locally, and troubleshoot camera initialization.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins
