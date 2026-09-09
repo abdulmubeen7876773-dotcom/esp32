@@ -35,6 +35,8 @@ from site_layout import (
     home_v2_proof,
     home_v2_invitation,
     home_v2_showcase_js,
+    home_primary_paths,
+    home_project_discovery,
     home_learning_adventure,
     home_start_here,
     home_popular_paths,
@@ -49,6 +51,7 @@ from site_layout import (
     home_v3_academy,
     home_v3_mission_feature,
     home_v3_top_picks,
+    home_v3_component_feature,
     home_v3_why,
     home_v3_progress,
     PROJECTS_PAGE_SIZE,
@@ -317,18 +320,16 @@ def home_html(projects):
 <main>
 {header_html("home", project_count=project_count)}
 {home_v2_declaration()}
-{home_v2_proof()}
+{home_primary_paths()}
+{home_project_discovery(source_projects)}
 {home_learning_adventure(source_projects)}
-{home_start_here(source_projects)}
-{home_popular_paths(source_projects)}
-{home_build_experiment_upgrade(source_projects)}
-{home_parent_teacher_split()}
-{home_v3_journey()}
 {home_v3_roadmap(guides)}
-{home_v3_academy()}
 {home_v3_top_picks(catalog, guides, components)}
+{home_v3_component_feature()}
+{home_v2_proof()}
 {home_v3_mission_feature(guides)}
 {home_v3_why()}
+{home_parent_teacher_split()}
 {home_v3_progress(counts)}
 {home_discovery_links(counts)}
 {home_v2_invitation()}

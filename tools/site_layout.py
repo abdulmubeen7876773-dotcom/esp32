@@ -130,14 +130,11 @@ HERO_FLOAT_CARDS = """<div class="hero-float-stack" aria-hidden="true">
 
 NAV_ITEMS = [
     ("home", "Home", ""),
-    ("learning", "Learning", "learning.html"),
     ("guides", "Guides", "guides.html"),
-    ("components", "Components", "components.html"),
     ("projects", "Projects", "projects.html"),
-    ("parents", "Parents", "parents.html"),
-    ("teachers", "Teachers", "teachers.html"),
-    ("tools", "Tools", "tools.html"),
-    ("about", "About", "about.html"),
+    ("advanced", "Advanced Projects", "index.html#advanced-projects"),
+    ("components", "Components", "components.html"),
+    ("learning", "Learning", "learning.html"),
 ]
 
 
@@ -624,6 +621,11 @@ def header_html(active: str = "home", base: str = "", project_count: int | None 
   <nav class="top-nav" aria-label="Main">
     {"".join(nav_links)}
   </nav>
+  <form class="header-search" action="{site_href('search.html')}" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search">{ICON_SEARCH}</button>
+  </form>
   <div class="header-actions">
     <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode">{ICON_THEME}</button>
     <button type="button" class="icon-btn" id="search-open" aria-label="Search">{ICON_SEARCH}</button>
@@ -1112,13 +1114,23 @@ def home_v2_declaration() -> str:
     return f"""<section class="v2-declaration" aria-labelledby="v2-hero-heading">
   <div class="wrap v2-declaration-inner">
     <div class="v2-declaration-content">
-      <p class="v2-eyebrow">ESP32 Engine</p>
-      <h1 id="v2-hero-heading" class="v2-declaration-headline">Learn ESP32 by building real projects.</h1>
-      <p class="v2-declaration-sub">Start with safe breadboard builds, clear wiring, working code, and project paths for students, parents, teachers, and makers.</p>
-      <div class="home-hero-actions">
-        <a class="v2-btn-hero" href="{site_href('learning.html#esp32-basics')}">Start With ESP32 Basics {_V2_ARROW_ICON}</a>
-        <a class="home-btn-secondary" href="#learning-adventure">Find a Project for Me</a>
+      <p class="v2-eyebrow">GPIO, sensors, displays, code</p>
+      <h1 id="v2-hero-heading" class="v2-declaration-headline">Learn ESP32. Build real projects.</h1>
+      <p class="v2-declaration-sub">Follow step-by-step guides with exact wiring, practical Arduino code, troubleshooting notes, and real electronics projects you can test on a breadboard.</p>
+      <div class="home-hero-path-rail" aria-label="Primary ESP32 Engine paths">
+        <a href="{site_href('guides.html')}"><span>Guides</span><strong>Setup, GPIO, sensors</strong></a>
+        <a href="{site_href('projects.html')}"><span>Projects</span><strong>Wiring, code, results</strong></a>
+        <a href="{site_href('index.html#advanced-projects')}"><span>Advanced Projects</span><strong>Robotics, IoT, automation</strong></a>
       </div>
+      <div class="home-hero-actions">
+        <a class="v2-btn-hero" href="{site_href('guides.html')}">Start With Guides {_V2_ARROW_ICON}</a>
+        <a class="home-btn-secondary" href="{site_href('projects.html')}">Browse Projects</a>
+      </div>
+      <form class="home-hero-search" action="{site_href('search.html')}" method="get" role="search">
+        <label class="visually-hidden" for="home-hero-search-input">Search ESP32 Engine</label>
+        <input id="home-hero-search-input" name="q" type="search" placeholder="Search OLED, BME280, Wi-Fi, robot..." autocomplete="off">
+        <button type="submit">Search</button>
+      </form>
     </div>
     <div class="v2-declaration-visual">
       <div class="v2-hero-visual-frame">
@@ -1126,6 +1138,142 @@ def home_v2_declaration() -> str:
         {_V2_HERO_FLOAT_CARDS}
       </div>
     </div>
+  </div>
+</section>"""
+
+
+def home_primary_paths() -> str:
+    """Top homepage decision cards: guides, projects, and advanced projects."""
+    arrow = _V2_ARROW_ICON
+    paths = [
+        {
+            "cls": "guides",
+            "label": "Guides",
+            "href": "guides.html",
+            "title": "Understand ESP32 from the ground up.",
+            "desc": "Setup, GPIO, sensors, displays, communication, and troubleshooting in a beginner-friendly order.",
+            "benefits": ["Setup basics", "GPIO fundamentals", "Sensor and display skills"],
+            "cta": "Open guides",
+            "code": "GPIO2 -> LED",
+        },
+        {
+            "cls": "projects",
+            "label": "Projects",
+            "href": "projects.html",
+            "title": "Build practical ESP32 systems.",
+            "desc": "Hands-on builds with wiring tables, Arduino code, expected results, and fixes for common mistakes.",
+            "benefits": ["Real outcomes", "Exact wiring", "Beginner and intermediate builds"],
+            "cta": "Browse projects",
+            "code": "SDA 21 / SCL 22",
+        },
+        {
+            "cls": "advanced",
+            "label": "Advanced Projects",
+            "href": "index.html#advanced-projects",
+            "title": "Combine sensors, networking, and motion.",
+            "desc": "Move into robotics, automation, camera systems, MQTT dashboards, and multi-sensor monitoring.",
+            "benefits": ["Robotics", "Automation", "Networking and monitoring"],
+            "cta": "See advanced picks",
+            "code": "MQTT -> dashboard",
+        },
+    ]
+    cards = []
+    for item in paths:
+        benefits = "".join(f"<li>{esc(b)}</li>" for b in item["benefits"])
+        cards.append(
+            f"""<a class="home-primary-card home-primary-card-{esc(item["cls"])}" href="{site_href(item["href"])}">
+  <span class="home-primary-signal" aria-hidden="true"></span>
+  <span class="home-primary-code">{esc(item["code"])}</span>
+  <h2>{esc(item["label"])}</h2>
+  <p>{esc(item["title"])}</p>
+  <ul>{benefits}</ul>
+  <span class="home-primary-cta">{esc(item["cta"])} {arrow}</span>
+</a>"""
+        )
+    return f"""<section class="home-primary-paths" aria-labelledby="home-primary-paths-heading">
+  <div class="wrap">
+    <p class="home-section-eyebrow">Choose your bench path</p>
+    <h2 id="home-primary-paths-heading">Guides, projects, or advanced builds.</h2>
+    <div class="home-primary-grid">{"".join(cards)}</div>
+  </div>
+</section>"""
+
+
+def _home_discovery_project_rows(projects: list[dict], slugs: list[str]) -> str:
+    by_slug = _home_project_map(projects)
+    rows = []
+    for slug in slugs:
+        project = by_slug.get(slug)
+        if not project:
+            continue
+        proj = project.get("project") or {}
+        components = proj.get("components") or project.get("components") or []
+        hardware_items = [
+            str(c.get("item") or c.get("name") or c.get("title") or "")
+            if isinstance(c, dict)
+            else str(c)
+            for c in components[:2]
+        ]
+        hardware = ", ".join(item for item in hardware_items if item) or short_category(project.get("category", "ESP32"))
+        rows.append(
+            f"""<a class="home-discovery-project" href="{site_href(f'projects/{slug}.html')}">
+  <span class="home-discovery-media">{card_media_html(project.get("category", "ESP32"), slug, project.get("featured_image") or project.get("image") or "")}</span>
+  <span class="home-discovery-body">
+    <span class="home-discovery-kicker">{esc(proj.get("difficulty") or project.get("difficulty") or "Project")}</span>
+    <strong>{esc(project_title(project))}</strong>
+    <span>{esc(card_description(project, 104))}</span>
+    <em>{esc(hardware)}</em>
+  </span>
+</a>"""
+        )
+    return "".join(rows)
+
+
+def home_project_discovery(projects: list[dict]) -> str:
+    """Compact project discovery blocks using existing public project pages."""
+    blocks = [
+        (
+            "Featured Projects",
+            "Working builds with sensors, displays, and connected outputs.",
+            ["esp32-iot-weather-station", "esp32-oled-weather-clock", "esp32-smart-thermostat"],
+            "featured-projects",
+        ),
+        (
+            "Popular Starting Points",
+            "Good first builds when you want quick wiring, visible output, and a clear result.",
+            ["esp32-learning-trainer", "esp32-distance-monitoring-system", "esp32-soil-moisture-monitor"],
+            "popular-projects",
+        ),
+        (
+            "Beginner Projects",
+            "Low-risk projects that teach one circuit idea at a time.",
+            ["esp32-rgb-led-pattern-controller", "esp32-water-leak-detector", "esp32-smart-parking-sensor"],
+            "beginner-projects",
+        ),
+        (
+            "Advanced Projects",
+            "Robotics, automation, camera systems, networking, and multi-sensor builds.",
+            ["esp32-line-following-robot", "esp32-wifi-robot-controller", "esp32-mqtt-sensor-dashboard"],
+            "advanced-projects",
+        ),
+    ]
+    html_blocks = []
+    for title, desc, slugs, section_id in blocks:
+        html_blocks.append(
+            f"""<section class="home-discovery-block" id="{esc(section_id)}" aria-labelledby="{esc(section_id)}-heading">
+  <div class="home-discovery-head">
+    <h3 id="{esc(section_id)}-heading">{esc(title)}</h3>
+    <p>{esc(desc)}</p>
+  </div>
+  <div class="home-discovery-list">{_home_discovery_project_rows(projects, slugs)}</div>
+</section>"""
+        )
+    return f"""<section class="home-project-discovery" aria-labelledby="home-project-discovery-heading">
+  <div class="wrap">
+    <p class="home-section-eyebrow">Project discovery</p>
+    <h2 id="home-project-discovery-heading">Find a real ESP32 build faster.</h2>
+    <div class="home-project-discovery-grid">{"".join(html_blocks)}</div>
+    <p class="home-discovery-note">Need something specific? Try the header search for OLED, BME280, DHT22, Wi-Fi, Bluetooth, GPIO, relay, RFID, camera, robot, or sensor.</p>
   </div>
 </section>"""
 
