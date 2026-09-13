@@ -37,6 +37,8 @@ SOCIAL_IMAGE_BY_PATH = {
     "/components.html": "/assets/images/og/esp32-component-encyclopedia.webp",
     "/parents.html": "/assets/images/og/esp32-for-parents.webp",
     "/teachers.html": "/assets/images/og/esp32-for-teachers.webp",
+    "/guides/blink-led-esp32.html": "/assets/images/generated/esp32-blink-led-guide.webp",
+    "/guides/connect-oled-esp32.html": "/assets/images/generated/esp32-connect-oled-guide.webp",
 }
 DIRECTORY_ALIAS_PAGES = {
     "projects",

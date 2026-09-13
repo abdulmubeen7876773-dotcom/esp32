@@ -3,7 +3,7 @@ GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 GUIDE_IMAGE_BY_SLUG = {
     "what-is-esp32": "/assets/images/guides/generated/what-is-esp32-overview-1024.webp",
     "installing-arduino-ide-esp32": "/assets/images/guides/generated/arduino-ide-esp32-setup-1024.webp",
-    "blink-led-esp32": "/assets/images/guides/generated/blink-led-breadboard-1024.webp",
+    "blink-led-esp32": "/assets/images/generated/esp32-blink-led-guide.webp",
     "button-led-control": "/assets/images/academy/academy-mission-04.webp",
     "digital-inputs-floating-pins": "/assets/images/academy/academy-mission-05.webp",
     "pull-up-vs-pull-down-resistors": "/assets/images/academy/academy-mission-06.webp",
@@ -14,7 +14,7 @@ GUIDE_IMAGE_BY_SLUG = {
     "oled-display-esp32": "/assets/images/academy/academy-mission-11.webp",
     "i2c-communication": "/assets/images/academy/academy-mission-12.webp",
     "analog-inputs-reading-real-world": "/assets/images/guides/generated/analog-input-serial-monitor-1024.webp",
-    "connect-oled-esp32": "/assets/images/guides/guide-i2c-communication.webp",
+    "connect-oled-esp32": "/assets/images/generated/esp32-connect-oled-guide.webp",
     "environmental-sensors": "/assets/images/guides/generated/environmental-sensor-modules-1024.webp",
     "reading-analog-sensors": "/assets/images/guides/generated/analog-sensor-bench-1024.webp",
     "read-temperature-dht22": "/assets/images/guides/generated/temperature-sensor-serial-output-1024.webp",
@@ -24,7 +24,6 @@ GUIDE_IMAGE_BY_SLUG = {
 GUIDE_IMAGE_BASE_BY_SLUG = {
     "what-is-esp32": "/assets/images/guides/generated/what-is-esp32-overview",
     "installing-arduino-ide-esp32": "/assets/images/guides/generated/arduino-ide-esp32-setup",
-    "blink-led-esp32": "/assets/images/guides/generated/blink-led-breadboard",
     "analog-inputs-reading-real-world": "/assets/images/guides/generated/analog-input-serial-monitor",
     "environmental-sensors": "/assets/images/guides/generated/environmental-sensor-modules",
     "reading-analog-sensors": "/assets/images/guides/generated/analog-sensor-bench",
