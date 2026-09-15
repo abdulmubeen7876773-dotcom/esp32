@@ -43,13 +43,13 @@ def normalize_body(body: str) -> str:
 def guide_hero_image_html(guide: dict) -> str:
     slug = guide["slug"]
     image = guide_image_path(slug)
-    srcset = guide_image_srcset(slug, (640, 1024))
+    srcset = guide_image_srcset(slug, (640, 1024, 1200))
     srcset_attr = f' srcset="{esc(srcset)}" sizes="(max-width: 900px) 100vw, 76vw"' if srcset else ""
     loading_attr = ' loading="eager" fetchpriority="high"' if srcset else ""
     alt = guide_image_alt(guide)
     return (
         f'<figure class="guide-hero-image" style="margin:1.5rem 0 0;">'
-        f'<img src="{esc(image)}"{srcset_attr} alt="{esc(alt)}" width="1024" height="576"{loading_attr} decoding="async" '
+        f'<img src="{esc(image)}"{srcset_attr} alt="{esc(alt)}" width="1200" height="675"{loading_attr} decoding="async" '
         f'style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);">'
         f"</figure>"
     )

@@ -1,34 +1,45 @@
 GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 
 GUIDE_IMAGE_BY_SLUG = {
-    "what-is-esp32": "/assets/images/guides/generated/what-is-esp32-overview-1024.webp",
-    "installing-arduino-ide-esp32": "/assets/images/guides/generated/arduino-ide-esp32-setup-1024.webp",
-    "blink-led-esp32": "/assets/images/generated/esp32-blink-led-guide.webp",
-    "button-led-control": "/assets/images/academy/academy-mission-04.webp",
-    "digital-inputs-floating-pins": "/assets/images/academy/academy-mission-05.webp",
-    "pull-up-vs-pull-down-resistors": "/assets/images/academy/academy-mission-06.webp",
-    "debouncing-buttons": "/assets/images/academy/academy-mission-07.webp",
-    "multiple-buttons-state-detection": "/assets/images/academy/academy-mission-08.webp",
-    "pwm-fundamentals": "/assets/images/academy/academy-mission-09.webp",
-    "analog-inputs": "/assets/images/academy/academy-mission-10.webp",
-    "oled-display-esp32": "/assets/images/academy/academy-mission-11.webp",
-    "i2c-communication": "/assets/images/academy/academy-mission-12.webp",
-    "analog-inputs-reading-real-world": "/assets/images/guides/generated/analog-input-serial-monitor-1024.webp",
-    "connect-oled-esp32": "/assets/images/generated/esp32-connect-oled-guide.webp",
-    "environmental-sensors": "/assets/images/guides/generated/environmental-sensor-modules-1024.webp",
-    "reading-analog-sensors": "/assets/images/guides/generated/analog-sensor-bench-1024.webp",
-    "read-temperature-dht22": "/assets/images/guides/generated/temperature-sensor-serial-output-1024.webp",
-    "smart-environment-monitor-capstone": "/assets/images/guides/generated/smart-environment-dashboard-1024.webp",
+    "analog-inputs": "/assets/images/generated/guides/analog-inputs-1200.webp",
+    "analog-inputs-reading-real-world": "/assets/images/generated/guides/analog-inputs-reading-real-world-1200.webp",
+    "blink-led-esp32": "/assets/images/generated/guides/blink-led-esp32-1200.webp",
+    "button-led-control": "/assets/images/generated/guides/button-led-control-1200.webp",
+    "connect-oled-esp32": "/assets/images/generated/guides/connect-oled-esp32-1200.webp",
+    "debouncing-buttons": "/assets/images/generated/guides/debouncing-buttons-1200.webp",
+    "digital-inputs-floating-pins": "/assets/images/generated/guides/digital-inputs-floating-pins-1200.webp",
+    "environmental-sensors": "/assets/images/generated/guides/environmental-sensors-1200.webp",
+    "i2c-communication": "/assets/images/generated/guides/i2c-communication-1200.webp",
+    "installing-arduino-ide-esp32": "/assets/images/generated/guides/installing-arduino-ide-esp32-1200.webp",
+    "multiple-buttons-state-detection": "/assets/images/generated/guides/multiple-buttons-state-detection-1200.webp",
+    "oled-display-esp32": "/assets/images/generated/guides/oled-display-esp32-1200.webp",
+    "pull-up-vs-pull-down-resistors": "/assets/images/generated/guides/pull-up-vs-pull-down-resistors-1200.webp",
+    "pwm-fundamentals": "/assets/images/generated/guides/pwm-fundamentals-1200.webp",
+    "read-temperature-dht22": "/assets/images/generated/guides/read-temperature-dht22-1200.webp",
+    "reading-analog-sensors": "/assets/images/generated/guides/reading-analog-sensors-1200.webp",
+    "smart-environment-monitor-capstone": "/assets/images/generated/guides/smart-environment-monitor-capstone-1200.webp",
+    "what-is-esp32": "/assets/images/generated/guides/what-is-esp32-1200.webp",
 }
 
 GUIDE_IMAGE_BASE_BY_SLUG = {
-    "what-is-esp32": "/assets/images/guides/generated/what-is-esp32-overview",
-    "installing-arduino-ide-esp32": "/assets/images/guides/generated/arduino-ide-esp32-setup",
-    "analog-inputs-reading-real-world": "/assets/images/guides/generated/analog-input-serial-monitor",
-    "environmental-sensors": "/assets/images/guides/generated/environmental-sensor-modules",
-    "reading-analog-sensors": "/assets/images/guides/generated/analog-sensor-bench",
-    "read-temperature-dht22": "/assets/images/guides/generated/temperature-sensor-serial-output",
-    "smart-environment-monitor-capstone": "/assets/images/guides/generated/smart-environment-dashboard",
+    "analog-inputs": "/assets/images/generated/guides/analog-inputs",
+    "analog-inputs-reading-real-world": "/assets/images/generated/guides/analog-inputs-reading-real-world",
+    "blink-led-esp32": "/assets/images/generated/guides/blink-led-esp32",
+    "button-led-control": "/assets/images/generated/guides/button-led-control",
+    "connect-oled-esp32": "/assets/images/generated/guides/connect-oled-esp32",
+    "debouncing-buttons": "/assets/images/generated/guides/debouncing-buttons",
+    "digital-inputs-floating-pins": "/assets/images/generated/guides/digital-inputs-floating-pins",
+    "environmental-sensors": "/assets/images/generated/guides/environmental-sensors",
+    "i2c-communication": "/assets/images/generated/guides/i2c-communication",
+    "installing-arduino-ide-esp32": "/assets/images/generated/guides/installing-arduino-ide-esp32",
+    "multiple-buttons-state-detection": "/assets/images/generated/guides/multiple-buttons-state-detection",
+    "oled-display-esp32": "/assets/images/generated/guides/oled-display-esp32",
+    "pull-up-vs-pull-down-resistors": "/assets/images/generated/guides/pull-up-vs-pull-down-resistors",
+    "pwm-fundamentals": "/assets/images/generated/guides/pwm-fundamentals",
+    "read-temperature-dht22": "/assets/images/generated/guides/read-temperature-dht22",
+    "reading-analog-sensors": "/assets/images/generated/guides/reading-analog-sensors",
+    "smart-environment-monitor-capstone": "/assets/images/generated/guides/smart-environment-monitor-capstone",
+    "what-is-esp32": "/assets/images/generated/guides/what-is-esp32",
 }
 
 
@@ -50,7 +61,7 @@ def guide_image_variant_path(slug: str, width: int) -> str:
     return f"{base}-{width}.webp"
 
 
-def guide_image_srcset(slug: str, widths: tuple[int, ...] = (480, 640, 1024)) -> str:
+def guide_image_srcset(slug: str, widths: tuple[int, ...] = (640, 1024, 1200)) -> str:
     base = GUIDE_IMAGE_BASE_BY_SLUG.get(slug)
     if not base:
         return ""
@@ -58,5 +69,9 @@ def guide_image_srcset(slug: str, widths: tuple[int, ...] = (480, 640, 1024)) ->
 
 
 def guide_image_alt(guide: dict) -> str:
+    slug = guide.get("slug", "")
+    custom = {'button-led-control': 'Button Led Control guide illustration', 'read-temperature-dht22': 'Read Temperature Dht22 guide illustration', 'digital-inputs-floating-pins': 'Digital Inputs Floating Pins guide illustration', 'pull-up-vs-pull-down-resistors': 'Pull Up Vs Pull Down Resistors guide illustration', 'debouncing-buttons': 'Debouncing Buttons guide illustration', 'multiple-buttons-state-detection': 'Multiple Buttons State Detection guide illustration', 'pwm-fundamentals': 'Pwm Fundamentals guide illustration', 'analog-inputs': 'Analog Inputs guide illustration', 'analog-inputs-reading-real-world': 'Analog Inputs Reading Real World guide illustration', 'oled-display-esp32': 'Oled Display Esp32 guide illustration', 'reading-analog-sensors': 'Reading Analog Sensors guide illustration', 'i2c-communication': 'I2C Communication guide illustration', 'environmental-sensors': 'ESP32 environmental sensors guide with sensor modules on a workbench', 'smart-environment-monitor-capstone': 'ESP32 smart environment monitor capstone with sensor readings and display dashboard', 'what-is-esp32': 'ESP32 board overview workspace for a beginner guide', 'installing-arduino-ide-esp32': 'Arduino IDE setup screen with ESP32 board and USB cable', 'blink-led-esp32': 'ESP32 blink LED guide with LED circuit on a breadboard', 'connect-oled-esp32': 'ESP32 OLED display guide with SSD1306 screen and I2C wiring'}.get(slug)
+    if custom:
+        return custom
     headline = guide.get("headline") or guide.get("title", "").split("|")[0].strip() or "ESP32 guide"
     return f"{headline} guide illustration"

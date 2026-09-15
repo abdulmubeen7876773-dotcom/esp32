@@ -31,14 +31,79 @@ OG_IMAGE_HEIGHT = int(_cfg.get("og_image_height", 630))
 DEFAULT_SOCIAL_IMAGE = "/assets/images/og/esp32-engine-home.webp"
 SOCIAL_IMAGE_BY_PATH = {
     "/": "/assets/images/og/esp32-engine-home.webp",
-    "/index.html": "/assets/images/og/esp32-engine-home.webp",
-    "/projects.html": "/assets/images/og/esp32-project-library.webp",
-    "/guides.html": "/assets/images/og/esp32-learning-guides.webp",
     "/components.html": "/assets/images/og/esp32-component-encyclopedia.webp",
+    "/guides.html": "/assets/images/og/esp32-learning-guides.webp",
+    "/guides/analog-inputs-reading-real-world.html": "/assets/images/og/analog-inputs-reading-real-world.webp",
+    "/guides/analog-inputs.html": "/assets/images/og/analog-inputs.webp",
+    "/guides/blink-led-esp32.html": "/assets/images/og/blink-led-esp32.webp",
+    "/guides/button-led-control.html": "/assets/images/og/button-led-control.webp",
+    "/guides/connect-oled-esp32.html": "/assets/images/og/connect-oled-esp32.webp",
+    "/guides/debouncing-buttons.html": "/assets/images/og/debouncing-buttons.webp",
+    "/guides/digital-inputs-floating-pins.html": "/assets/images/og/digital-inputs-floating-pins.webp",
+    "/guides/environmental-sensors.html": "/assets/images/og/environmental-sensors.webp",
+    "/guides/i2c-communication.html": "/assets/images/og/i2c-communication.webp",
+    "/guides/installing-arduino-ide-esp32.html": "/assets/images/og/installing-arduino-ide-esp32.webp",
+    "/guides/multiple-buttons-state-detection.html": "/assets/images/og/multiple-buttons-state-detection.webp",
+    "/guides/oled-display-esp32.html": "/assets/images/og/oled-display-esp32.webp",
+    "/guides/pull-up-vs-pull-down-resistors.html": "/assets/images/og/pull-up-vs-pull-down-resistors.webp",
+    "/guides/pwm-fundamentals.html": "/assets/images/og/pwm-fundamentals.webp",
+    "/guides/read-temperature-dht22.html": "/assets/images/og/read-temperature-dht22.webp",
+    "/guides/reading-analog-sensors.html": "/assets/images/og/reading-analog-sensors.webp",
+    "/guides/smart-environment-monitor-capstone.html": "/assets/images/og/smart-environment-monitor-capstone.webp",
+    "/guides/what-is-esp32.html": "/assets/images/og/what-is-esp32.webp",
+    "/index.html": "/assets/images/og/esp32-engine-home.webp",
     "/parents.html": "/assets/images/og/esp32-for-parents.webp",
+    "/projects.html": "/assets/images/og/esp32-project-library.webp",
+    "/projects/esp32-ac-power-monitor.html": "/assets/images/og/esp32-ac-power-monitor.webp",
+    "/projects/esp32-ai-object-detector.html": "/assets/images/og/esp32-ai-object-detector.webp",
+    "/projects/esp32-air-quality-monitor.html": "/assets/images/og/esp32-air-quality-monitor.webp",
+    "/projects/esp32-ble-beacon.html": "/assets/images/og/esp32-ble-beacon.webp",
+    "/projects/esp32-cam-face-detection.html": "/assets/images/og/esp32-cam-face-detection.webp",
+    "/projects/esp32-cam-qr-scanner.html": "/assets/images/og/esp32-cam-qr-scanner.webp",
+    "/projects/esp32-camera-capture-server.html": "/assets/images/og/esp32-camera-capture-server.webp",
+    "/projects/esp32-cnc-controller.html": "/assets/images/og/esp32-cnc-controller.webp",
+    "/projects/esp32-digital-piano.html": "/assets/images/og/esp32-digital-piano.webp",
+    "/projects/esp32-distance-monitoring-system.html": "/assets/images/og/esp32-distance-monitoring-system.webp",
+    "/projects/esp32-ecg-monitor.html": "/assets/images/og/esp32-ecg-monitor.webp",
+    "/projects/esp32-fire-alarm-system.html": "/assets/images/og/esp32-fire-alarm-system.webp",
+    "/projects/esp32-gesture-recognition.html": "/assets/images/og/esp32-gesture-recognition.webp",
+    "/projects/esp32-gps-tracker.html": "/assets/images/og/esp32-gps-tracker.webp",
+    "/projects/esp32-greenhouse-automation-controller.html": "/assets/images/og/esp32-greenhouse-automation-controller.webp",
+    "/projects/esp32-home-climate-automation.html": "/assets/images/og/esp32-home-climate-automation.webp",
+    "/projects/esp32-iot-weather-station.html": "/assets/images/og/esp32-iot-weather-station.webp",
+    "/projects/esp32-ir-remote-control.html": "/assets/images/og/esp32-ir-remote-control.webp",
+    "/projects/esp32-learning-trainer.html": "/assets/images/og/esp32-learning-trainer.webp",
+    "/projects/esp32-led-matrix-display.html": "/assets/images/og/esp32-led-matrix-display.webp",
+    "/projects/esp32-lightning-detector.html": "/assets/images/og/esp32-lightning-detector.webp",
+    "/projects/esp32-line-following-robot.html": "/assets/images/og/esp32-line-following-robot.webp",
+    "/projects/esp32-lora-remote-sensor-node.html": "/assets/images/og/esp32-lora-remote-sensor-node.webp",
+    "/projects/esp32-machine-monitoring-node.html": "/assets/images/og/esp32-machine-monitoring-node.webp",
+    "/projects/esp32-motion-security-alert.html": "/assets/images/og/esp32-motion-security-alert.webp",
+    "/projects/esp32-mqtt-sensor-dashboard.html": "/assets/images/og/esp32-mqtt-sensor-dashboard.webp",
+    "/projects/esp32-neopixel-music-visualizer.html": "/assets/images/og/esp32-neopixel-music-visualizer.webp",
+    "/projects/esp32-oled-weather-clock.html": "/assets/images/og/esp32-oled-weather-clock.webp",
+    "/projects/esp32-pulse-oximeter-logger.html": "/assets/images/og/esp32-pulse-oximeter-logger.webp",
+    "/projects/esp32-rfid-access-control-system.html": "/assets/images/og/esp32-rfid-access-control-system.webp",
+    "/projects/esp32-rfid-inventory-tracker.html": "/assets/images/og/esp32-rfid-inventory-tracker.webp",
+    "/projects/esp32-rgb-led-pattern-controller.html": "/assets/images/og/esp32-rgb-led-pattern-controller.webp",
+    "/projects/esp32-robot-arm-controller.html": "/assets/images/og/esp32-robot-arm-controller.webp",
+    "/projects/esp32-security-camera-system.html": "/assets/images/og/esp32-security-camera-system.webp",
+    "/projects/esp32-smart-door-lock.html": "/assets/images/og/esp32-smart-door-lock.webp",
+    "/projects/esp32-smart-energy-meter.html": "/assets/images/og/esp32-smart-energy-meter.webp",
+    "/projects/esp32-smart-irrigation-system.html": "/assets/images/og/esp32-smart-irrigation-system.webp",
+    "/projects/esp32-smart-mailbox.html": "/assets/images/og/esp32-smart-mailbox.webp",
+    "/projects/esp32-smart-parking-sensor.html": "/assets/images/og/esp32-smart-parking-sensor.webp",
+    "/projects/esp32-smart-power-strip.html": "/assets/images/og/esp32-smart-power-strip.webp",
+    "/projects/esp32-smart-street-light.html": "/assets/images/og/esp32-smart-street-light.webp",
+    "/projects/esp32-smart-thermostat.html": "/assets/images/og/esp32-smart-thermostat.webp",
+    "/projects/esp32-soil-moisture-monitor.html": "/assets/images/og/esp32-soil-moisture-monitor.webp",
+    "/projects/esp32-soil-ph-monitor.html": "/assets/images/og/esp32-soil-ph-monitor.webp",
+    "/projects/esp32-uv-index-monitor.html": "/assets/images/og/esp32-uv-index-monitor.webp",
+    "/projects/esp32-vibration-monitor.html": "/assets/images/og/esp32-vibration-monitor.webp",
+    "/projects/esp32-voice-controlled-relay.html": "/assets/images/og/esp32-voice-controlled-relay.webp",
+    "/projects/esp32-water-leak-detector.html": "/assets/images/og/esp32-water-leak-detector.webp",
+    "/projects/esp32-wifi-robot-controller.html": "/assets/images/og/esp32-wifi-robot-controller.webp",
     "/teachers.html": "/assets/images/og/esp32-for-teachers.webp",
-    "/guides/blink-led-esp32.html": "/assets/images/generated/esp32-blink-led-guide.webp",
-    "/guides/connect-oled-esp32.html": "/assets/images/generated/esp32-connect-oled-guide.webp",
 }
 DIRECTORY_ALIAS_PAGES = {
     "projects",
@@ -205,7 +270,7 @@ def card_media_html(
     if featured_image and not str(featured_image).startswith("TODO"):
         return (
             f'<div class="card-media card-media--has-image">'
-            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" width="1376" height="768" loading="lazy" decoding="async" '
+            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" width="1600" height="900" loading="lazy" decoding="async" '
             f'onerror="this.closest(&#39;.card-media&#39;).classList.add(&#39;is-fallback&#39;)">'
             f'<div class="card-media-fallback {tc}">{icon}</div>'
             f"</div>"
@@ -1784,7 +1849,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
             if image:
                 image_html = (
                     f'<span class="v3-pick-art" aria-hidden="true">'
-                    f'<img src="{esc(image)}" alt="" width="1376" height="768" loading="lazy" decoding="async"></span>'
+                    f'<img src="{esc(image)}" alt="" width="1600" height="900" loading="lazy" decoding="async"></span>'
                 )
             rows.append(
                 f'<a class="v3-pick-row" href="{site_href(f"projects/{p["slug"]}.html")}">'

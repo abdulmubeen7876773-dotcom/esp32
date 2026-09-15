@@ -507,7 +507,7 @@ def render_golden_parent(parent: dict) -> str:
         + json_ld_script(howto)
         + (json_ld_script(faq_schema) if faq_items else "")
     )
-    og_image = project_image_path(parent["slug"]) or parent.get("og_image") or parent.get("hero_image") or parent.get("featured_image")
+    og_image = parent.get("og_image") or project_image_path(parent["slug"]) or parent.get("hero_image") or parent.get("featured_image")
     head = head_html("", title, desc, canonical_path=path, og_type="article", extra_schema=schema, og_image=og_image)
     return render_golden_project_page(
         parent,
@@ -525,8 +525,9 @@ def render_page(parent: dict, hardware: dict, related: list) -> str:
     icon = pick_icon(cat)
     hero_image = project_image_path(parent["slug"]) or parent.get("hero_image") or parent.get("featured_image")
     if hero_image:
+        hero_alt = parent.get("image_alt") or title
         hero_media = (
-            f'<img class="project-hero-art-img" src="{esc(hero_image)}" alt="" width="1376" height="768" loading="eager" decoding="async">'
+            f'<img class="project-hero-art-img" src="{esc(hero_image)}" alt="{esc(hero_alt)}" width="1600" height="900" loading="eager" decoding="async">'
         )
     else:
         hero_media = icon

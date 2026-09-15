@@ -592,9 +592,10 @@ def project_hero_html(p: dict, category: str) -> str:
     category_slug = p.get("category_slug") or category.lower().replace("&", "and").replace(" ", "-")
     hero_art = ""
     if hero_image:
+        hero_alt = p.get("image_alt") or title
         hero_art = (
             f'\n    <div class="project-hero-art">'
-            f'<img src="{esc(hero_image)}" alt="" loading="eager" decoding="async"></div>'
+            f'<img src="{esc(hero_image)}" alt="{esc(hero_alt)}" width="1600" height="900" loading="eager" decoding="async"></div>'
         )
     return f"""<div class="project-hero-band">
   <section class="wrap project-hero">
