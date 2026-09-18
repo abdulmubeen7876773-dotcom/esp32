@@ -1,6 +1,6 @@
 # Component Quality Report
 
-Generated: 2026-09-15T19:41:54Z
+Generated: 2026-09-18T18:55:29Z
 
 Benchmark: **DHT22** is the golden standard (`content/components/dht22.yaml`).
 
