@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-09-18T20:45:52Z
+Generated: 2026-09-18T21:28:55Z
 
 ## Components
 
@@ -67,16 +67,11 @@ Missing items:
 
 ## Wiring
 
-- Complete: 12
-- Missing: 12
+- Complete: 17
+- Missing: 7
 
 Missing items:
 
-- guides/connect-oled-esp32: wiring diagram
-- guides/environmental-sensors: wiring diagram
-- guides/i2c-communication: wiring diagram
-- guides/oled-display-esp32: wiring diagram
-- guides/smart-environment-monitor-capstone: wiring diagram
 - components/dht22: wiring diagram
 - components/esp32-cam: wiring diagram
 - components/esp32-devkit: wiring diagram

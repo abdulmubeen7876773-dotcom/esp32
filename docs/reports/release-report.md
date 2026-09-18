@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-09-18T20:46:34Z
+Generated: 2026-09-18T21:29:36Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: VALIDATION
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 41
+- WARNING: 36
 - INFO: 300
-- Total findings: 341
+- Total findings: 336
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 41
+Count: 36
 
 ### missing_illustrations (16)
 
@@ -77,13 +77,8 @@ Count: 41
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
 
-### missing_wiring_diagrams (12)
+### missing_wiring_diagrams (7)
 
-- guides/connect-oled-esp32.yaml: missing wiring diagram file (guides/connect-oled-esp32.yaml)
-- guides/environmental-sensors.yaml: missing wiring diagram file (guides/environmental-sensors.yaml)
-- guides/i2c-communication.yaml: missing wiring diagram file (guides/i2c-communication.yaml)
-- guides/oled-display-esp32.yaml: missing wiring diagram file (guides/oled-display-esp32.yaml)
-- guides/smart-environment-monitor-capstone.yaml: missing wiring diagram file (guides/smart-environment-monitor-capstone.yaml)
 - components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
 - components/esp32-cam.yaml: missing wiring diagram file (components/esp32-cam.yaml)
 - components/esp32-devkit.yaml: missing wiring diagram file (components/esp32-devkit.yaml)
