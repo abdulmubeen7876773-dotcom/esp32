@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-09-18T19:55:52Z
+Generated: 2026-09-18T20:45:52Z
 
 ## Components
 
@@ -67,25 +67,15 @@ Missing items:
 
 ## Wiring
 
-- Complete: 2
-- Missing: 22
+- Complete: 12
+- Missing: 12
 
 Missing items:
 
-- guides/analog-inputs-reading-real-world: wiring diagram
-- guides/analog-inputs: wiring diagram
-- guides/button-led-control: wiring diagram
 - guides/connect-oled-esp32: wiring diagram
-- guides/debouncing-buttons: wiring diagram
-- guides/digital-inputs-floating-pins: wiring diagram
 - guides/environmental-sensors: wiring diagram
 - guides/i2c-communication: wiring diagram
-- guides/multiple-buttons-state-detection: wiring diagram
 - guides/oled-display-esp32: wiring diagram
-- guides/pull-up-vs-pull-down-resistors: wiring diagram
-- guides/pwm-fundamentals: wiring diagram
-- guides/read-temperature-dht22: wiring diagram
-- guides/reading-analog-sensors: wiring diagram
 - guides/smart-environment-monitor-capstone: wiring diagram
 - components/dht22: wiring diagram
 - components/esp32-cam: wiring diagram

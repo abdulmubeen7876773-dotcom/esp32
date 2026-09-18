@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-09-18T20:00:03Z
+Generated: 2026-09-18T20:46:34Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: VALIDATION
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 51
+- WARNING: 41
 - INFO: 300
-- Total findings: 351
+- Total findings: 341
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 51
+Count: 41
 
 ### missing_illustrations (16)
 
@@ -77,22 +77,12 @@ Count: 51
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
 
-### missing_wiring_diagrams (22)
+### missing_wiring_diagrams (12)
 
-- guides/analog-inputs-reading-real-world.yaml: missing wiring diagram file (guides/analog-inputs-reading-real-world.yaml)
-- guides/analog-inputs.yaml: missing wiring diagram file (guides/analog-inputs.yaml)
-- guides/button-led-control.yaml: missing wiring diagram file (guides/button-led-control.yaml)
 - guides/connect-oled-esp32.yaml: missing wiring diagram file (guides/connect-oled-esp32.yaml)
-- guides/debouncing-buttons.yaml: missing wiring diagram file (guides/debouncing-buttons.yaml)
-- guides/digital-inputs-floating-pins.yaml: missing wiring diagram file (guides/digital-inputs-floating-pins.yaml)
 - guides/environmental-sensors.yaml: missing wiring diagram file (guides/environmental-sensors.yaml)
 - guides/i2c-communication.yaml: missing wiring diagram file (guides/i2c-communication.yaml)
-- guides/multiple-buttons-state-detection.yaml: missing wiring diagram file (guides/multiple-buttons-state-detection.yaml)
 - guides/oled-display-esp32.yaml: missing wiring diagram file (guides/oled-display-esp32.yaml)
-- guides/pull-up-vs-pull-down-resistors.yaml: missing wiring diagram file (guides/pull-up-vs-pull-down-resistors.yaml)
-- guides/pwm-fundamentals.yaml: missing wiring diagram file (guides/pwm-fundamentals.yaml)
-- guides/read-temperature-dht22.yaml: missing wiring diagram file (guides/read-temperature-dht22.yaml)
-- guides/reading-analog-sensors.yaml: missing wiring diagram file (guides/reading-analog-sensors.yaml)
 - guides/smart-environment-monitor-capstone.yaml: missing wiring diagram file (guides/smart-environment-monitor-capstone.yaml)
 - components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
 - components/esp32-cam.yaml: missing wiring diagram file (components/esp32-cam.yaml)

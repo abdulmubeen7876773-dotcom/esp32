@@ -1,6 +1,6 @@
 # Project Quality Report
 
-Generated: 2026-09-18T19:59:45Z
+Generated: 2026-09-18T20:46:17Z
 
 Benchmark: **ESP32 Mini Weather Station** is the golden standard (`content/projects/esp32-iot-weather-station.yaml`).
 

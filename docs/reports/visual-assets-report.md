@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-09-18T19:59:58Z
+Generated: 2026-09-18T20:46:28Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
@@ -9,10 +9,10 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 ## Summary
 
 - Total assets required: **326**
-- Completed: **67**
+- Completed: **77**
 - Missing: **0**
-- Placeholder: **259**
-- Completion: **20.6%**
+- Placeholder: **249**
+- Completion: **23.6%**
 
 ## By type
 
@@ -29,7 +29,7 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 | project_illustration | 73 | 24 | 0 | 49 |
 | project_output | 49 | 0 | 0 | 49 |
 | project_wiring | 49 | 28 | 0 | 21 |
-| wiring_diagram | 16 | 1 | 0 | 15 |
+| wiring_diagram | 16 | 11 | 0 | 5 |
 
 ## Validation
 
@@ -71,4 +71,4 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 - `components/ssd1306-oled:wiring` — component_wiring (/components/ssd1306-oled.html)
 - `guides/analog-inputs-reading-real-world:concept` — concept_illustration (/guides/analog-inputs-reading-real-world.html)
 - `guides/analog-inputs-reading-real-world:output` — guide_output (/guides/analog-inputs-reading-real-world.html)
-- … and 229 more
+- … and 219 more
