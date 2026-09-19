@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-09-19T04:52:31Z
+Generated: 2026-09-19T05:38:22Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: VALIDATION
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 20
+- WARNING: 13
 - INFO: 300
-- Total findings: 320
+- Total findings: 313
 
 ## Severity Rules
 
@@ -46,7 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 20
+Count: 13
 
 ### missing_photos (7)
 
@@ -57,16 +57,6 @@ Count: 20
 - components/pir-sensor.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/0/3/1/0/101-10627-01.jpg)
 - components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
 - components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
-
-### missing_wiring_diagrams (7)
-
-- components/dht22.yaml: missing wiring diagram file (components/dht22.yaml)
-- components/esp32-cam.yaml: missing wiring diagram file (components/esp32-cam.yaml)
-- components/esp32-devkit.yaml: missing wiring diagram file (components/esp32-devkit.yaml)
-- components/hc-sr04.yaml: missing wiring diagram file (components/hc-sr04.yaml)
-- components/pir-sensor.yaml: missing wiring diagram file (components/pir-sensor.yaml)
-- components/relay-module.yaml: missing wiring diagram file (components/relay-module.yaml)
-- components/ssd1306-oled.yaml: missing wiring diagram file (components/ssd1306-oled.yaml)
 
 ### placeholder_images (6)
 

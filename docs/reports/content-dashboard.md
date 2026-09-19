@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-09-19T04:51:20Z
+Generated: 2026-09-19T05:36:59Z
 
 ## Components
 
@@ -48,15 +48,5 @@ Missing items:
 
 ## Wiring
 
-- Complete: 17
-- Missing: 7
-
-Missing items:
-
-- components/dht22: wiring diagram
-- components/esp32-cam: wiring diagram
-- components/esp32-devkit: wiring diagram
-- components/hc-sr04: wiring diagram
-- components/pir-sensor: wiring diagram
-- components/relay-module: wiring diagram
-- components/ssd1306-oled: wiring diagram
+- Complete: 24
+- Missing: 0
