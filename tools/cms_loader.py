@@ -21,7 +21,7 @@ DEFAULT_SITE = {
     "indexnow_key": "esp32engineindex20260618",
     "css_version": "20260627-brand-v3",
     "site_tagline": "Learn · Build · Explore",
-    "youtube_url": "https://www.youtube.com/@ESP32Engine",
+    "youtube_url": "https://www.youtube.com/@esp32-engine-projects",
     "projects_page_size": 50,
     "og_image_width": 1200,
     "og_image_height": 630,
