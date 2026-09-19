@@ -445,12 +445,17 @@ def build_photos_section(items: list) -> str:
         return ""
     rows = []
     for item in items:
+        image = item.get("image") or item.get("src") or item.get("href") if isinstance(item, dict) else ""
+        if not image:
+            continue
         title = item.get("title", "") if isinstance(item, dict) else str(item)
         note = item.get("note", "") if isinstance(item, dict) else ""
         rows.append(
             f"""<li class="project-part-item"><span class="project-part-icon" aria-hidden="true">Photo</span>
 <span class="project-part-body"><span class="project-part-name">{esc(title)}</span><span class="project-part-note">{esc(note)}</span></span></li>"""
         )
+    if not rows:
+        return ""
     return f"""<section class="project-section" id="build-photos" aria-labelledby="build-photos-heading">
   {project_section_heading("build-photos", "Photos", "Build Photos")}
   <ul class="project-parts-list">{"".join(rows)}</ul>
