@@ -869,6 +869,15 @@ def render_mission_guide(guide: dict) -> str:
 
     concept = m.get("concept") or {}
     concept_body = (concept.get("body") or "").strip()
+    concept_image = (concept.get("image") or "").strip()
+    concept_html = ""
+    if concept_image:
+        concept_title = (concept.get("title") or "Concept").strip()
+        concept_html = f"""<section class="mission-section" id="concept" aria-labelledby="concept-heading">
+  {section_heading("concept", "Concept", concept_title)}
+  {illustration_block(concept.get("illustration_alt", concept_title), concept_title, "Concept", concept_image)}
+  <div class="mission-prose">{_rich_content(concept_body)}</div>
+</section>"""
     engineering_text = m.get("engineering_explanation", "") or concept_body
     engineering_html = mission_prose_section("engineering", "Engineering", "Engineering Explanation", engineering_text)
     analogy_html = mission_prose_section("analogy", "Real World", "Real-World Analogy", m.get("real_life_analogy", "") or m.get("eli12", ""))
@@ -938,6 +947,7 @@ def render_mission_guide(guide: dict) -> str:
 {prerequisites_html}
 {skills_html}
 {components_required_html}
+{concept_html}
 {engineering_html}
 {analogy_html}
 {floating_recap_html}

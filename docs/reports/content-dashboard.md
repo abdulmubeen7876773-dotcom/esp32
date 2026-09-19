@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-09-18T21:28:55Z
+Generated: 2026-09-19T04:51:20Z
 
 ## Components
 
@@ -23,27 +23,8 @@ Generated: 2026-09-18T21:28:55Z
 
 ## Illustrations
 
-- Complete: 0
-- Missing: 16
-
-Missing items:
-
-- guides/analog-inputs-reading-real-world: concept
-- guides/analog-inputs: concept
-- guides/blink-led-esp32: concept
-- guides/button-led-control: concept
-- guides/connect-oled-esp32: concept
-- guides/debouncing-buttons: concept
-- guides/digital-inputs-floating-pins: concept
-- guides/environmental-sensors: concept
-- guides/i2c-communication: concept
-- guides/multiple-buttons-state-detection: concept
-- guides/oled-display-esp32: concept
-- guides/pull-up-vs-pull-down-resistors: concept
-- guides/pwm-fundamentals: concept
-- guides/read-temperature-dht22: concept
-- guides/reading-analog-sensors: concept
-- guides/smart-environment-monitor-capstone: concept
+- Complete: 16
+- Missing: 0
 
 ## Photos
 

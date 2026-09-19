@@ -1,6 +1,6 @@
 # Release Report
 
-Generated: 2026-09-18T21:29:36Z
+Generated: 2026-09-19T04:52:31Z
 
 ## Release Status
 
@@ -11,9 +11,9 @@ Build status: VALIDATION
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 36
+- WARNING: 20
 - INFO: 300
-- Total findings: 336
+- Total findings: 320
 
 ## Severity Rules
 
@@ -46,26 +46,7 @@ Count: 0
 
 ## WARNING
 
-Count: 36
-
-### missing_illustrations (16)
-
-- guides/analog-inputs-reading-real-world.yaml: missing concept illustration (guides/analog-inputs-reading-real-world.yaml)
-- guides/analog-inputs.yaml: missing concept illustration (guides/analog-inputs.yaml)
-- guides/blink-led-esp32.yaml: missing concept illustration (guides/blink-led-esp32.yaml)
-- guides/button-led-control.yaml: missing concept illustration (guides/button-led-control.yaml)
-- guides/connect-oled-esp32.yaml: missing concept illustration (guides/connect-oled-esp32.yaml)
-- guides/debouncing-buttons.yaml: missing concept illustration (guides/debouncing-buttons.yaml)
-- guides/digital-inputs-floating-pins.yaml: missing concept illustration (guides/digital-inputs-floating-pins.yaml)
-- guides/environmental-sensors.yaml: missing concept illustration (guides/environmental-sensors.yaml)
-- guides/i2c-communication.yaml: missing concept illustration (guides/i2c-communication.yaml)
-- guides/multiple-buttons-state-detection.yaml: missing concept illustration (guides/multiple-buttons-state-detection.yaml)
-- guides/oled-display-esp32.yaml: missing concept illustration (guides/oled-display-esp32.yaml)
-- guides/pull-up-vs-pull-down-resistors.yaml: missing concept illustration (guides/pull-up-vs-pull-down-resistors.yaml)
-- guides/pwm-fundamentals.yaml: missing concept illustration (guides/pwm-fundamentals.yaml)
-- guides/read-temperature-dht22.yaml: missing concept illustration (guides/read-temperature-dht22.yaml)
-- guides/reading-analog-sensors.yaml: missing concept illustration (guides/reading-analog-sensors.yaml)
-- guides/smart-environment-monitor-capstone.yaml: missing concept illustration (guides/smart-environment-monitor-capstone.yaml)
+Count: 20
 
 ### missing_photos (7)
 
