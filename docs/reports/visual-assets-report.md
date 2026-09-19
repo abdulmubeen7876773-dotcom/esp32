@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-09-19T05:38:12Z
+Generated: 2026-09-19T06:04:08Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
@@ -9,17 +9,17 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 ## Summary
 
 - Total assets required: **326**
-- Completed: **105**
+- Completed: **112**
 - Missing: **0**
-- Placeholder: **221**
-- Completion: **32.2%**
+- Placeholder: **214**
+- Completion: **34.4%**
 
 ## By type
 
 | Type | Total | Complete | Missing | Placeholder |
 |------|-------|----------|---------|-------------|
 | component_illustration | 8 | 1 | 0 | 7 |
-| component_photo | 8 | 1 | 0 | 7 |
+| component_photo | 8 | 8 | 0 | 0 |
 | component_pinout | 8 | 1 | 0 | 7 |
 | component_wiring | 8 | 8 | 0 | 0 |
 | concept_illustration | 16 | 16 | 0 | 0 |
@@ -42,25 +42,18 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 ## Placeholder assets
 
 - `components/dht22:illustration` — component_illustration (/components/dht22.html)
-- `components/dht22:photo` — component_photo (/components/dht22.html)
 - `components/dht22:pinout` — component_pinout (/components/dht22.html)
 - `components/esp32-cam:illustration` — component_illustration (/components/esp32-cam.html)
-- `components/esp32-cam:photo` — component_photo (/components/esp32-cam.html)
 - `components/esp32-cam:pinout` — component_pinout (/components/esp32-cam.html)
 - `components/esp32-devkit:illustration` — component_illustration (/components/esp32-devkit.html)
-- `components/esp32-devkit:photo` — component_photo (/components/esp32-devkit.html)
 - `components/esp32-devkit:pinout` — component_pinout (/components/esp32-devkit.html)
 - `components/hc-sr04:illustration` — component_illustration (/components/hc-sr04.html)
-- `components/hc-sr04:photo` — component_photo (/components/hc-sr04.html)
 - `components/hc-sr04:pinout` — component_pinout (/components/hc-sr04.html)
 - `components/pir-sensor:illustration` — component_illustration (/components/pir-sensor.html)
-- `components/pir-sensor:photo` — component_photo (/components/pir-sensor.html)
 - `components/pir-sensor:pinout` — component_pinout (/components/pir-sensor.html)
 - `components/relay-module:illustration` — component_illustration (/components/relay-module.html)
-- `components/relay-module:photo` — component_photo (/components/relay-module.html)
 - `components/relay-module:pinout` — component_pinout (/components/relay-module.html)
 - `components/ssd1306-oled:illustration` — component_illustration (/components/ssd1306-oled.html)
-- `components/ssd1306-oled:photo` — component_photo (/components/ssd1306-oled.html)
 - `components/ssd1306-oled:pinout` — component_pinout (/components/ssd1306-oled.html)
 - `guides/analog-inputs-reading-real-world:output` — guide_output (/guides/analog-inputs-reading-real-world.html)
 - `guides/analog-inputs:output` — guide_output (/guides/analog-inputs.html)
@@ -71,4 +64,11 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 - `guides/digital-inputs-floating-pins:output` — guide_output (/guides/digital-inputs-floating-pins.html)
 - `guides/environmental-sensors:output` — guide_output (/guides/environmental-sensors.html)
 - `guides/i2c-communication:output` — guide_output (/guides/i2c-communication.html)
-- … and 191 more
+- `guides/multiple-buttons-state-detection:output` — guide_output (/guides/multiple-buttons-state-detection.html)
+- `guides/oled-display-esp32:output` — guide_output (/guides/oled-display-esp32.html)
+- `guides/pull-up-vs-pull-down-resistors:output` — guide_output (/guides/pull-up-vs-pull-down-resistors.html)
+- `guides/pwm-fundamentals:output` — guide_output (/guides/pwm-fundamentals.html)
+- `guides/read-temperature-dht22:output` — guide_output (/guides/read-temperature-dht22.html)
+- `guides/reading-analog-sensors:output` — guide_output (/guides/reading-analog-sensors.html)
+- `guides/smart-environment-monitor-capstone:output` — guide_output (/guides/smart-environment-monitor-capstone.html)
+- … and 184 more

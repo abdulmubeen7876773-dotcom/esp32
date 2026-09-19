@@ -1,19 +1,19 @@
 # Release Report
 
-Generated: 2026-09-19T05:38:22Z
+Generated: 2026-09-19T06:04:15Z
 
 ## Release Status
 
-WARN
+PASS
 
 Build status: VALIDATION
 
 ## Severity Summary
 
 - BLOCKER: 0
-- WARNING: 13
+- WARNING: 0
 - INFO: 300
-- Total findings: 313
+- Total findings: 300
 
 ## Severity Rules
 
@@ -46,26 +46,9 @@ Count: 0
 
 ## WARNING
 
-Count: 13
+Count: 0
 
-### missing_photos (7)
-
-- components/dht22.yaml: no local component photo in /assets/visuals/ (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
-- components/esp32-cam.yaml: no local component photo in /assets/visuals/ (components/esp32-cam.yaml)
-- components/esp32-devkit.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
-- components/hc-sr04.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg)
-- components/pir-sensor.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/0/3/1/0/101-10627-01.jpg)
-- components/relay-module.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
-- components/ssd1306-oled.yaml: no local component photo in /assets/visuals/ (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
-
-### placeholder_images (6)
-
-- components/dht22.yaml: external CDN URL (https://cdn.shopify.com/s/files/1/1062/6660/files/DHT22.jpg)
-- components/esp32-devkit.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/ESP32-WROOM-DevKit-v4-01.jpg)
-- components/hc-sr04.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/7/6/HC-SR04_Ultrasonic_Distance_Sensor-01.jpg)
-- components/pir-sensor.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/0/3/1/0/101-10627-01.jpg)
-- components/relay-module.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/1/3/4/9/101-10274-01-1.jpg)
-- components/ssd1306-oled.yaml: external CDN URL (https://cdn.sparkfun.com/assets/parts/1/2/2/2/4/1.3in_OLED_128x64-01.jpg)
+- None
 
 ## INFO
 

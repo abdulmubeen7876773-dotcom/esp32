@@ -1,6 +1,6 @@
 # Content Dashboard
 
-Generated: 2026-09-19T05:36:59Z
+Generated: 2026-09-19T06:02:37Z
 
 ## Components
 
@@ -28,18 +28,8 @@ Generated: 2026-09-19T05:36:59Z
 
 ## Photos
 
-- Complete: 1
-- Missing: 7
-
-Missing items:
-
-- components/dht22: photo
-- components/esp32-cam: photo
-- components/esp32-devkit: photo
-- components/hc-sr04: photo
-- components/pir-sensor: photo
-- components/relay-module: photo
-- components/ssd1306-oled: photo
+- Complete: 8
+- Missing: 0
 
 ## Pinouts
 
