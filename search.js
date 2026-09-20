@@ -1,9 +1,15 @@
 (function () {
   var index = null;
-  var loading = fetch('/search-index.json')
-    .then(function (r) { return r.json(); })
-    .then(function (data) { index = data; return data; })
-    .catch(function () { index = []; return []; });
+  var loading = null;
+
+  function loadIndex() {
+    if (loading) return loading;
+    loading = fetch('/search-index.json')
+      .then(function (r) { return r.json(); })
+      .then(function (data) { index = data; return data; })
+      .catch(function () { index = []; return []; });
+    return loading;
+  }
 
   function normalize(s) {
     if (Array.isArray(s)) return s.map(normalize).join(' ');
@@ -68,7 +74,7 @@
     input.addEventListener('input', function () {
       clearTimeout(timer);
       timer = setTimeout(function () {
-        loading.then(function () {
+        loadIndex().then(function () {
           renderResults(resultsEl, search(input.value, 6));
         });
       }, 200);
@@ -76,22 +82,22 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    loading.then(function () {
-      setupLiveSearch(
-        document.getElementById('global-search'),
-        document.getElementById('search-results-live')
-      );
-      var pageInput = document.getElementById('search-page-input');
-      var pageResults = document.getElementById('search-page-results');
-      if (pageInput && pageResults) {
-        var params = new URLSearchParams(window.location.search);
-        var q = params.get('q');
-        if (q) {
-          pageInput.value = q;
+    setupLiveSearch(
+      document.getElementById('global-search'),
+      document.getElementById('search-results-live')
+    );
+    var pageInput = document.getElementById('search-page-input');
+    var pageResults = document.getElementById('search-page-results');
+    if (pageInput && pageResults) {
+      var params = new URLSearchParams(window.location.search);
+      var q = params.get('q');
+      if (q) {
+        pageInput.value = q;
+        loadIndex().then(function () {
           renderResults(pageResults, search(q, 20));
-        }
-        setupLiveSearch(pageInput, pageResults);
+        });
       }
-    });
+      setupLiveSearch(pageInput, pageResults);
+    }
   });
 })();

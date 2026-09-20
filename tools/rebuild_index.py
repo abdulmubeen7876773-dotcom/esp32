@@ -313,7 +313,7 @@ def home_html(projects):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-{head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True)}
+{head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True, homepage_perf=True)}
 <link rel="preload" as="image" href="/assets/images/heroes/home-hero.webp" type="image/webp" fetchpriority="high">
 </head>
 <body class="home-page">

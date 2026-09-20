@@ -163,8 +163,30 @@ GOOGLE_TAG_HTML = f"""<!-- Google tag (gtag.js) -->
 }})();
 </script>"""
 
-ADSENSE_SITE_VERIFICATION_HTML = f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUBLISHER_ID}"
-     crossorigin="anonymous"></script>"""
+ADSENSE_SITE_VERIFICATION_HTML = f"""<script>
+(function(){{
+  var productionHosts = {{ "esp32engine.com": true, "www.esp32engine.com": true }};
+  var publisherId = "{ADSENSE_PUBLISHER_ID}";
+  var scriptId = "adsbygoogle-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineAdsenseInitialized) return;
+  window.__esp32EngineAdsenseInitialized = true;
+  function loadAdsense(){{
+    if (document.getElementById(scriptId)) return;
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(publisherId);
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+  }}
+  if ("requestIdleCallback" in window) {{
+    window.addEventListener("load", function(){{ requestIdleCallback(loadAdsense, {{ timeout: 3500 }}); }}, {{ once: true }});
+  }} else {{
+    window.addEventListener("load", function(){{ setTimeout(loadAdsense, 1200); }}, {{ once: true }});
+  }}
+}})();
+</script>"""
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#1488A6"/><stop offset="1" stop-color="#081D3A"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(20,136,166,.08)" stroke="rgba(20,136,166,.26)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#1488A6" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="140" cy="130" r="10" fill="#1488A6"/><circle cx="140" cy="130" r="20" stroke="#1488A6" stroke-width="1.5" opacity=".35"/><text x="140" y="136" text-anchor="middle" fill="#081D3A" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#F59E0B" opacity=".86"/><circle cx="70" cy="220" r="5" fill="#EF4444" opacity=".68"/><path d="M200 220l20-16 12 20" stroke="#1488A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>"""
 
@@ -263,6 +285,8 @@ def card_media_html(
     category: str,
     slug: str = "",
     featured_image: str = "",
+    width: int = 1600,
+    height: int = 900,
 ) -> str:
     tc = thumb_class(category)
     icon = pick_icon(category)
@@ -270,7 +294,7 @@ def card_media_html(
     if featured_image and not str(featured_image).startswith("TODO"):
         return (
             f'<div class="card-media card-media--has-image">'
-            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" width="1600" height="900" loading="lazy" decoding="async" '
+            f'<img class="card-media-img" src="{esc(featured_image)}" alt="" width="{width}" height="{height}" loading="lazy" decoding="async" '
             f'onerror="this.closest(&#39;.card-media&#39;).classList.add(&#39;is-fallback&#39;)">'
             f'<div class="card-media-fallback {tc}">{icon}</div>'
             f"</div>"
@@ -291,6 +315,13 @@ TOP_PROJECT_SLUGS = [
 TOP_GUIDE_SLUGS = ["blink-led-esp32", "button-led-control", "digital-inputs-floating-pins"]
 FOUNDATION_HOME_MISSION_SLUGS = ["blink-led-esp32", "button-led-control", "digital-inputs-floating-pins"]
 TOP_COMPONENT_SLUGS = ["dht22", "bme280", "esp32-devkit"]
+HOME_PROJECT_THUMB_DIR = "/assets/images/generated/home-thumbs"
+
+
+def home_project_thumb_path(slug: str, fallback: str = "") -> str:
+    if not slug:
+        return fallback
+    return f"{HOME_PROJECT_THUMB_DIR}/{slug}.webp"
 
 
 def _pick_by_slug(items: list, slugs: list[str], key: str = "slug") -> list:
@@ -502,7 +533,6 @@ FONT_CSS = (
 def font_links_html() -> str:
     return f"""<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="{FONT_CSS}">
 <link rel="stylesheet" href="{FONT_CSS}" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="{FONT_CSS}"></noscript>"""
 
@@ -1284,7 +1314,7 @@ def _home_discovery_project_rows(projects: list[dict], slugs: list[str]) -> str:
         hardware = ", ".join(item for item in hardware_items if item) or short_category(project.get("category", "ESP32"))
         rows.append(
             f"""<a class="home-discovery-project" href="{site_href(f'projects/{slug}.html')}">
-  <span class="home-discovery-media">{card_media_html(project.get("category", "ESP32"), slug, project.get("featured_image") or project.get("image") or "")}</span>
+  <span class="home-discovery-media">{card_media_html(project.get("category", "ESP32"), slug, home_project_thumb_path(slug, project.get("featured_image") or project.get("image") or ""), 320, 180)}</span>
   <span class="home-discovery-body">
     <span class="home-discovery-kicker">{esc(proj.get("difficulty") or project.get("difficulty") or "Project")}</span>
     <strong>{esc(project_title(project))}</strong>
@@ -1849,7 +1879,7 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
             if image:
                 image_html = (
                     f'<span class="v3-pick-art" aria-hidden="true">'
-                    f'<img src="{esc(image)}" alt="" width="1600" height="900" loading="lazy" decoding="async"></span>'
+                    f'<img src="{esc(home_project_thumb_path(p.get("slug", ""), image))}" alt="" width="320" height="180" loading="lazy" decoding="async"></span>'
                 )
             rows.append(
                 f'<a class="v3-pick-row" href="{site_href(f"projects/{p["slug"]}.html")}">'
