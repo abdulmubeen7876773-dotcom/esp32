@@ -526,7 +526,7 @@ def analytics_config_script() -> str:
 
 FONT_CSS = (
     "https://fonts.googleapis.com/css2?"
-    "family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=swap"
+    "family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"
 )
 
 
@@ -1387,7 +1387,7 @@ def home_v2_proof() -> str:
     for cls, svg, slug, tag in panels:
         href = site_href(f"projects/{slug}.html")
         panel_html += (
-            f'<a class="{cls} v2-showcase-panel v2-showcase-link" href="{esc(href)}" aria-label="{esc(tag)}">'
+            f'<a class="{cls} v2-showcase-panel v2-showcase-link" href="{esc(href)}">'
             f'<div class="v2-showcase-glow" aria-hidden="true"></div>'
             f'<div class="v2-showcase-illustration" aria-hidden="true">{svg}</div>'
             f'<div class="v2-showcase-info"><span class="v2-showcase-tag">{esc(tag)}</span></div>'
