@@ -120,7 +120,7 @@ def beginner_next_steps_html(guide: dict) -> str:
     if guide.get("slug") != "what-is-esp32":
         return ""
     links = [
-        ("Install Arduino IDE for ESP32", "/guides/installing-arduino-ide-esp32.html", "Set up the software before your first upload."),
+        ("ESP32 with Arduino IDE", "/guides/esp32-arduino-ide.html", "Set up Arduino IDE, upload your first sketch, and open Serial Monitor."),
         ("Blink an LED with ESP32", "/guides/blink-led-esp32.html", "Build the first hardware test with one LED."),
         ("ESP32 DevKit component guide", "/components/esp32-devkit.html", "Learn board pins, power notes, and beginner-safe wiring habits."),
         ("ESP32 project library", "/projects.html", "Choose a complete project once the basics make sense."),
@@ -372,7 +372,7 @@ def render_guides_index(guides: list[dict]) -> str:
   <h1>ESP32 Learning Guides</h1>
   <p class="article-lead">Start with Mission Journeys — fun step-by-step builds for kids and beginners. Reference Guides are here when you want extra background.</p>
   <p class="guide-count-summary meta">{len(missions)} mission journeys · {len(legacy)} reference guides</p>
-  <p class="meta">New to ESP32? Read <a href="{site_href('guides/what-is-esp32.html')}">What Is ESP32?</a>, set up the <a href="{site_href('guides/installing-arduino-ide-esp32.html')}">Arduino IDE</a>, then build <a href="{site_href('guides/blink-led-esp32.html')}">Blink an LED</a>.</p>
+  <p class="meta">New to ESP32? Read <a href="{site_href('guides/what-is-esp32.html')}">What Is ESP32?</a>, set up the <a href="{site_href('guides/esp32-arduino-ide.html')}">Arduino IDE</a>, then build <a href="{site_href('guides/blink-led-esp32.html')}">Blink an LED</a>.</p>
     </div>
     <div class="premium-page-visual"><img src="/assets/images/heroes/guides-hero.webp" alt="ESP32 guide workspace with development board, laptop, and printed wiring notes" width="1024" height="576" loading="eager" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;"></div>
   </section>

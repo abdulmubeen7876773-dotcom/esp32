@@ -41,6 +41,7 @@ SOCIAL_IMAGE_BY_PATH = {
     "/guides/debouncing-buttons.html": "/assets/images/og/debouncing-buttons.webp",
     "/guides/digital-inputs-floating-pins.html": "/assets/images/og/digital-inputs-floating-pins.webp",
     "/guides/environmental-sensors.html": "/assets/images/og/environmental-sensors.webp",
+    "/guides/esp32-arduino-ide.html": "/assets/images/og/installing-arduino-ide-esp32.webp",
     "/guides/i2c-communication.html": "/assets/images/og/i2c-communication.webp",
     "/guides/installing-arduino-ide-esp32.html": "/assets/images/og/installing-arduino-ide-esp32.webp",
     "/guides/multiple-buttons-state-detection.html": "/assets/images/og/multiple-buttons-state-detection.webp",

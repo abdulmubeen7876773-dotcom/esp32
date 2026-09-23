@@ -9,6 +9,7 @@ GUIDE_IMAGE_BY_SLUG = {
     "debouncing-buttons": "/assets/images/generated/guides/debouncing-buttons-1200.webp",
     "digital-inputs-floating-pins": "/assets/images/generated/guides/digital-inputs-floating-pins-1200.webp",
     "environmental-sensors": "/assets/images/generated/guides/environmental-sensors-1200.webp",
+    "esp32-arduino-ide": "/assets/images/generated/guides/installing-arduino-ide-esp32-1200.webp",
     "i2c-communication": "/assets/images/generated/guides/i2c-communication-1200.webp",
     "installing-arduino-ide-esp32": "/assets/images/generated/guides/installing-arduino-ide-esp32-1200.webp",
     "multiple-buttons-state-detection": "/assets/images/generated/guides/multiple-buttons-state-detection-1200.webp",
@@ -30,6 +31,7 @@ GUIDE_IMAGE_BASE_BY_SLUG = {
     "debouncing-buttons": "/assets/images/generated/guides/debouncing-buttons",
     "digital-inputs-floating-pins": "/assets/images/generated/guides/digital-inputs-floating-pins",
     "environmental-sensors": "/assets/images/generated/guides/environmental-sensors",
+    "esp32-arduino-ide": "/assets/images/generated/guides/installing-arduino-ide-esp32",
     "i2c-communication": "/assets/images/generated/guides/i2c-communication",
     "installing-arduino-ide-esp32": "/assets/images/generated/guides/installing-arduino-ide-esp32",
     "multiple-buttons-state-detection": "/assets/images/generated/guides/multiple-buttons-state-detection",
@@ -70,7 +72,7 @@ def guide_image_srcset(slug: str, widths: tuple[int, ...] = (640, 1024, 1200)) -
 
 def guide_image_alt(guide: dict) -> str:
     slug = guide.get("slug", "")
-    custom = {'button-led-control': 'Button Led Control guide illustration', 'read-temperature-dht22': 'Read Temperature Dht22 guide illustration', 'digital-inputs-floating-pins': 'Digital Inputs Floating Pins guide illustration', 'pull-up-vs-pull-down-resistors': 'Pull Up Vs Pull Down Resistors guide illustration', 'debouncing-buttons': 'Debouncing Buttons guide illustration', 'multiple-buttons-state-detection': 'Multiple Buttons State Detection guide illustration', 'pwm-fundamentals': 'Pwm Fundamentals guide illustration', 'analog-inputs': 'Analog Inputs guide illustration', 'analog-inputs-reading-real-world': 'Analog Inputs Reading Real World guide illustration', 'oled-display-esp32': 'Oled Display Esp32 guide illustration', 'reading-analog-sensors': 'Reading Analog Sensors guide illustration', 'i2c-communication': 'I2C Communication guide illustration', 'environmental-sensors': 'ESP32 environmental sensors guide with sensor modules on a workbench', 'smart-environment-monitor-capstone': 'ESP32 smart environment monitor capstone with sensor readings and display dashboard', 'what-is-esp32': 'ESP32 board overview workspace for a beginner guide', 'installing-arduino-ide-esp32': 'Arduino IDE setup screen with ESP32 board and USB cable', 'blink-led-esp32': 'ESP32 blink LED guide with LED circuit on a breadboard', 'connect-oled-esp32': 'ESP32 OLED display guide with SSD1306 screen and I2C wiring'}.get(slug)
+    custom = {'button-led-control': 'Button Led Control guide illustration', 'read-temperature-dht22': 'Read Temperature Dht22 guide illustration', 'digital-inputs-floating-pins': 'Digital Inputs Floating Pins guide illustration', 'pull-up-vs-pull-down-resistors': 'Pull Up Vs Pull Down Resistors guide illustration', 'debouncing-buttons': 'Debouncing Buttons guide illustration', 'multiple-buttons-state-detection': 'Multiple Buttons State Detection guide illustration', 'pwm-fundamentals': 'Pwm Fundamentals guide illustration', 'analog-inputs': 'Analog Inputs guide illustration', 'analog-inputs-reading-real-world': 'Analog Inputs Reading Real World guide illustration', 'oled-display-esp32': 'Oled Display Esp32 guide illustration', 'reading-analog-sensors': 'Reading Analog Sensors guide illustration', 'i2c-communication': 'I2C Communication guide illustration', 'environmental-sensors': 'ESP32 environmental sensors guide with sensor modules on a workbench', 'smart-environment-monitor-capstone': 'ESP32 smart environment monitor capstone with sensor readings and display dashboard', 'what-is-esp32': 'ESP32 board overview workspace for a beginner guide', 'esp32-arduino-ide': 'Arduino IDE setup screen with ESP32 board and USB cable', 'installing-arduino-ide-esp32': 'Arduino IDE setup screen with ESP32 board and USB cable', 'blink-led-esp32': 'ESP32 blink LED guide with LED circuit on a breadboard', 'connect-oled-esp32': 'ESP32 OLED display guide with SSD1306 screen and I2C wiring'}.get(slug)
     if custom:
         return custom
     headline = guide.get("headline") or guide.get("title", "").split("|")[0].strip() or "ESP32 guide"
