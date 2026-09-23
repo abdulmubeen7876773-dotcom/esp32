@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<!-- Google tag (gtag.js) -->
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var measurementId = "G-WLHZKSEFP3";
+  var scriptId = "ga4-gtag-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineGa4Initialized) return;
+  window.__esp32EngineGa4Initialized = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+  if (!document.getElementById(scriptId)) {
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+    document.head.appendChild(script);
+  }
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId);
+})();
+</script>
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var publisherId = "ca-pub-1799305676376920";
+  var scriptId = "adsbygoogle-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineAdsenseInitialized) return;
+  window.__esp32EngineAdsenseInitialized = true;
+  function loadAdsense(){
+    if (document.getElementById(scriptId)) return;
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(publisherId);
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+  }
+  if ("requestIdleCallback" in window) {
+    window.addEventListener("load", function(){ requestIdleCallback(loadAdsense, { timeout: 3500 }); }, { once: true });
+  } else {
+    window.addEventListener("load", function(){ setTimeout(loadAdsense, 1200); }, { once: true });
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 PWM: Complete Guide to PWM, Pins, Frequency &amp; Duty Cycle | ESP32 Engine</title>
+<meta name="description" content="Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness control, code examples, and troubleshooting.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-pwm.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 PWM: Complete Guide to PWM, Pins, Frequency &amp; Duty Cycle | ESP32 Engine">
+<meta property="og:description" content="Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness control, code examples, and troubleshooting.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-pwm.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/pwm-fundamentals.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 PWM: Complete Guide to PWM, Pins, Frequency &amp; Duty Cycle | ESP32 Engine">
+<meta name="twitter:description" content="Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness control, code examples, and troubleshooting.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/pwm-fundamentals.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"ESP32 PWM: Complete Guide to PWM, Pins, Frequency & Duty Cycle","description":"Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness control, code examples, and troubleshooting.","datePublished":"2026-09-23","dateModified":"2026-09-23","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-pwm.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 PWM, ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LED brightness, ESP32 Arduino PWM"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP32 PWM: Complete Guide to PWM, Pins, Frequency & Duty Cycle","item":"https://esp32engine.com/guides/esp32-pwm.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does PWM mean on ESP32?","acceptedAnswer":{"@type":"Answer","text":"PWM means Pulse Width Modulation. The ESP32 switches a GPIO ON and OFF quickly and changes the ON-time percentage, called duty cycle, to create an adjustable average effect."}},{"@type":"Question","name":"Which ESP32 pins support PWM?","acceptedAnswer":{"@type":"Answer","text":"Many output-capable ESP32 GPIO pins can generate PWM through the LEDC peripheral. Avoid input-only pins such as GPIO34-GPIO39 on classic ESP32 boards, flash pins, and boot-sensitive pins unless you understand the board."}},{"@type":"Question","name":"What is an ESP32 PWM channel?","acceptedAnswer":{"@type":"Answer","text":"A PWM channel is a hardware timing resource used by the ESP32 LEDC peripheral. Current Arduino-ESP32 APIs can allocate this for you when you attach a pin, while older examples often selected channel numbers manually."}},{"@type":"Question","name":"What PWM frequency should I use for LED dimming?","acceptedAnswer":{"@type":"Answer","text":"5000 Hz is a practical beginner value for LED dimming in Arduino examples. Other loads may need different frequencies."}},{"@type":"Question","name":"What is PWM duty cycle?","acceptedAnswer":{"@type":"Answer","text":"Duty cycle is the percentage of each PWM cycle that the signal is ON. Higher duty cycle sends more average energy to the load."}},{"@type":"Question","name":"Is ESP32 PWM a real analog voltage?","acceptedAnswer":{"@type":"Answer","text":"No. The GPIO still switches between digital LOW and HIGH. PWM creates an analog-like average effect through fast switching."}},{"@type":"Question","name":"Can ESP32 PWM drive a motor directly?","acceptedAnswer":{"@type":"Answer","text":"No. Use PWM as a control signal into a motor driver, MOSFET circuit, or suitable module. Do not connect a motor directly to a GPIO pin."}},{"@type":"Question","name":"Should I use ledcAttach or ledcSetup?","acceptedAnswer":{"@type":"Answer","text":"For current Arduino-ESP32 cores, prefer ledcAttach(pin, frequency, resolution) and ledcWrite(pin, duty). Older tutorials may use ledcSetup, ledcAttachPin, and channel-based ledcWrite as legacy API context."}}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP32 PWM: Complete Guide to PWM, Pins, Frequency &amp; Duty Cycle</li></ol></nav>
+  <p class="hero-eyebrow">Background reading</p>
+  <h1>ESP32 PWM: Complete Guide to PWM, Pins, Frequency &amp; Duty Cycle</h1>
+  <p class="article-lead">ESP32 PWM lets a digital GPIO create smooth-looking LED brightness, motor-driver speed commands, buzzer tones, and other adjustable outputs. This guide explains PWM from first principles, then shows the current Arduino IDE pattern for changing duty cycle safely.</p>
+  <p class="meta guide-meta">18 min read · Updated 2026-09-23</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/images/generated/guides/pwm-fundamentals-1200.webp" srcset="/assets/images/generated/guides/pwm-fundamentals-640.webp 640w, /assets/images/generated/guides/pwm-fundamentals-1024.webp 1024w, /assets/images/generated/guides/pwm-fundamentals-1200.webp 1200w" sizes="(max-width: 900px) 100vw, 76vw" alt="ESP32 PWM guide illustration with LED brightness waveform" width="1200" height="675" loading="eager" fetchpriority="high" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+<div class="guide-friendly-intro">
+<div class="reference-intro-card">
+  <span class="reference-intro-label">Reference Guide</span>
+  <h2 class="reference-intro-title">ESP32 PWM: Complete Guide to PWM, Pins, Frequency &amp; Duty Cycle</h2>
+</div>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>A normal digital output is simple: ON or OFF. PWM is what you use when a project needs something that feels adjustable, such as dim LED light, RGB color mixing, or a speed command sent to a motor driver.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>PWM means the ESP32 switches a pin ON and OFF very quickly. More ON time looks brighter. Less ON time looks dimmer. The pin is still digital, but the average effect becomes useful.</p></div>
+  </div>
+</section>
+<section class="mission-section mission-safety-section" id="safety" aria-labelledby="safety-heading">
+  <aside class="mission-safety" aria-label="Safety first">
+    <div class="mission-safety-head">
+      <span class="mission-safety-icon" aria-hidden="true">⚠️</span>
+      <h2 id="safety-heading">Safety First</h2>
+    </div>
+    <ul><li>Use a current-limiting resistor with LEDs, even when PWM makes the LED look dim.</li><li>Do not power motors, pumps, relays, or large LED loads directly from an ESP32 GPIO pin.</li><li>ESP32 GPIO is 3.3 V logic. Choose parts and driver modules that accept 3.3 V control signals.</li></ul>
+  </aside>
+</section>
+</div>
+<section class="guide-technical-content" id="review-and-references" aria-labelledby="trust-heading">
+  <h2 id="trust-heading">Review, Testing, and References</h2>
+  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-09-23. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner. <strong>Estimated time:</strong> 18 min read.</p>
+  <p>This guide is written for learning and bench prototyping. Check the testing notes before adapting the circuit to different boards, batteries, relays, motors, or outdoor hardware.</p>
+  <ul class="guide-related-list"><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li></ul>
+</section>
+  <div class="guide-technical-content">
+  <h2 id="what-is-pwm">What PWM is</h2>
+  <p>PWM stands for <strong>Pulse Width Modulation</strong>. A pulse is the ON part of a digital signal. Width means how long that ON part lasts. Modulation means changing it.</p>
+  <p>An ESP32 GPIO pin normally has two simple output states: <code>LOW</code> and <code>HIGH</code>. PWM still uses those same two states, but repeats them quickly. If the pin is ON for most of each cycle, an LED looks bright. If the pin is ON for only a small part of each cycle, the LED looks dim.</p>
+  <p>That is the key idea: PWM does not create a true adjustable analog voltage on a GPIO pin. It creates an adjustable <em>average effect</em> by switching fast.</p>
+
+  <h2 id="pwm-vs-digital">PWM vs simple digital HIGH/LOW</h2>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Output style</th><th>What the pin does</th><th>Beginner example</th></tr></thead>
+      <tbody>
+        <tr><td>Digital LOW</td><td>Stays near 0 V.</td><td>LED off.</td></tr>
+        <tr><td>Digital HIGH</td><td>Stays near 3.3 V.</td><td>LED full brightness.</td></tr>
+        <tr><td>PWM</td><td>Switches LOW/HIGH repeatedly.</td><td>LED appears dim, medium, or bright depending on duty cycle.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>If you have not uploaded code yet, start with the <a href="/guides/esp32-arduino-ide.html">ESP32 Arduino IDE guide</a>. If you have never controlled a GPIO output, build <a href="/guides/blink-led-esp32.html">Blink an LED with ESP32</a> first.</p>
+
+  <h2 id="terms">ESP32 PWM terminology</h2>
+  <h3 id="frequency">Frequency</h3>
+  <p>PWM frequency is how many complete ON/OFF cycles happen each second. A frequency of 5000 Hz means 5000 PWM cycles per second. LED dimming usually uses a frequency high enough that your eyes do not see obvious blinking. Buzzers, motor drivers, servos, and LEDs may need different frequency ranges, so match the load instead of assuming one value fits everything.</p>
+
+  <h3 id="duty-cycle">Duty cycle</h3>
+  <p>Duty cycle is the ON-time portion of each cycle. A 25% duty cycle is ON for one quarter of the cycle and OFF for the rest. A 75% duty cycle is ON for most of the cycle. For an LED, higher duty usually looks brighter.</p>
+
+  <h3 id="resolution">Resolution</h3>
+  <p>Resolution controls how many duty steps are available. With 8-bit resolution, duty can range from 0 to 255. With 10-bit resolution, duty can range from 0 to 1023. More resolution gives finer brightness steps, but very high frequency and high resolution compete for timing resources.</p>
+
+  <h3 id="channels">Channels</h3>
+  <p>The ESP32 LEDC peripheral uses PWM channels/timers internally. Older Arduino-ESP32 examples made you choose channel numbers manually. Current Arduino-ESP32 examples can attach PWM directly to a pin with <code>ledcAttach(pin, frequency, resolution)</code>, and then write duty with <code>ledcWrite(pin, duty)</code>. The underlying channel idea still matters when you run many PWM outputs, but beginners usually start with one pin.</p>
+
+  <h2 id="pins">ESP32 PWM pins and GPIO selection</h2>
+  <p>Many output-capable ESP32 GPIO pins can generate LEDC PWM. For a first LED brightness example, use a common output-capable pin such as <strong>GPIO18</strong>. Avoid these beginner mistakes:</p>
+  <ul>
+    <li>Do not use input-only pins such as GPIO34-GPIO39 on classic ESP32 boards for PWM output.</li>
+    <li>Do not use pins connected to internal flash on classic ESP32 modules.</li>
+    <li>Be careful with boot/strapping pins if external wiring could hold them at the wrong level during reset.</li>
+    <li>Do not assume every ESP32 variant exposes the same safe pins in the same place. Check your board label and the <a href="/components/esp32-devkit.html">ESP32 DevKit guide</a>.</li>
+  </ul>
+
+  <h2 id="wiring">Simple LED brightness wiring</h2>
+  <p>This guide uses an LED because it makes PWM visible immediately. Wire it as a low-current learning circuit:</p>
+  <ul>
+    <li>ESP32 GPIO18 -> 220 ohm or 330 ohm resistor</li>
+    <li>Resistor -> LED anode, the longer leg</li>
+    <li>LED cathode, the shorter leg -> ESP32 GND</li>
+  </ul>
+  <p>The resistor is required. PWM changes average brightness, but when the pin is ON, the LED still needs current limiting.</p>
+
+  <h2 id="arduino-code">ESP32 PWM with Arduino IDE</h2>
+  <p>Current Arduino-ESP32 cores support the pin-based LEDC helpers shown below. This keeps the beginner sketch clear: attach PWM to a pin, then write duty values to that same pin.</p>
+  <pre><code>const int PWM_PIN = 18;
+  const int PWM_FREQUENCY = 5000;
+  const int PWM_RESOLUTION = 8;
+  const int DUTY_MAX = (1 &lt;&lt; PWM_RESOLUTION) - 1;
+
+  void setup() {
+    Serial.begin(115200);
+
+    bool attached = ledcAttach(PWM_PIN, PWM_FREQUENCY, PWM_RESOLUTION);
+    if (!attached) {
+      Serial.println("PWM attach failed. Check board selection and pin.");
+      while (true) {
+        delay(1000);
+      }
+    }
+
+    Serial.println("ESP32 PWM fade ready");
+  }
+
+  void loop() {
+    for (int duty = 0; duty &lt;= DUTY_MAX; duty += 5) {
+      ledcWrite(PWM_PIN, duty);
+      Serial.print("Duty: ");
+      Serial.println(duty);
+      delay(20);
+    }
+
+    for (int duty = DUTY_MAX; duty &gt;= 0; duty -= 5) {
+      ledcWrite(PWM_PIN, duty);
+      Serial.print("Duty: ");
+      Serial.println(duty);
+      delay(20);
+    }
+  }</code></pre>
+  <p>Expected behavior: the LED fades from off to bright, then bright to off. Serial Monitor prints changing duty values from 0 toward 255 and back down because this example uses 8-bit resolution.</p>
+
+  <h2 id="change-duty">How to change duty cycle</h2>
+  <p>With 8-bit resolution, these fixed duty values are easy to understand:</p>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Duty value</th><th>Approximate duty cycle</th><th>LED effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>0</code></td><td>0%</td><td>Off</td></tr>
+        <tr><td><code>64</code></td><td>25%</td><td>Dim</td></tr>
+        <tr><td><code>128</code></td><td>50%</td><td>Medium</td></tr>
+        <tr><td><code>192</code></td><td>75%</td><td>Bright</td></tr>
+        <tr><td><code>255</code></td><td>100%</td><td>Full brightness</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>To hold one brightness level, call <code>ledcWrite(PWM_PIN, 128)</code> in your code. To build a dimmer, change the duty value when a button event, analog reading, or web command changes.</p>
+
+  <h2 id="frequency-resolution-tradeoff">PWM frequency and resolution tradeoff</h2>
+  <p>Frequency and resolution are connected. A very high PWM frequency leaves less timing room for very fine duty steps. A very high resolution gives more duty steps, but may limit how high the frequency can be. For beginner LED dimming, <code>5000 Hz</code> and <code>8-bit</code> resolution are a practical starting point.</p>
+  <p>If an LED flickers, try a higher frequency or check for loose wiring. If brightness jumps feel coarse, try more resolution or smaller duty changes. If a motor driver behaves strangely, read that driver module's documentation before changing random PWM values.</p>
+
+  <h2 id="legacy-api">Legacy Arduino-ESP32 PWM examples</h2>
+  <p>You will still see older tutorials using code like this:</p>
+  <pre><code>ledcSetup(channel, frequency, resolution);
+  ledcAttachPin(pin, channel);
+  ledcWrite(channel, duty);</code></pre>
+  <p>That style is common in older Arduino-ESP32 core examples and in some existing learning material. For new code on current Arduino-ESP32 cores, prefer the pin-based style:</p>
+  <pre><code>ledcAttach(pin, frequency, resolution);
+  ledcWrite(pin, duty);</code></pre>
+  <p>If old code fails with an error such as <code>ledcAttachPin was not declared</code>, check your installed ESP32 board package version and update the PWM API style.</p>
+
+  <h2 id="mistakes">Common PWM mistakes</h2>
+  <ul>
+    <li><strong>Using PWM without a resistor:</strong> an LED still needs current limiting.</li>
+    <li><strong>Expecting true analog voltage:</strong> PWM is fast switching, not a DAC output.</li>
+    <li><strong>Driving motors directly:</strong> GPIO pins send control signals, not motor power.</li>
+    <li><strong>Choosing input-only GPIO:</strong> input-only pins cannot drive PWM output.</li>
+    <li><strong>Confusing frequency with brightness:</strong> duty cycle controls average brightness; frequency controls switching speed.</li>
+    <li><strong>Mixing old and new LEDC APIs:</strong> keep code style consistent for your ESP32 Arduino core version.</li>
+  </ul>
+
+  <h2 id="troubleshooting">Troubleshooting ESP32 PWM</h2>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Problem</th><th>Likely cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>LED never turns on</td><td>Wrong GPIO, reversed LED, missing ground, or resistor not in series.</td><td>Use GPIO18, check LED polarity, and trace GPIO18 -> resistor -> LED -> GND.</td></tr>
+        <tr><td>LED is always full bright</td><td>LED may be wired to 3.3 V instead of the PWM pin.</td><td>Move the circuit so GPIO18 drives the resistor/LED path.</td></tr>
+        <tr><td>Compile error for ledcAttach</td><td>Wrong board selected or older ESP32 board package.</td><td>Select an ESP32 board in Arduino IDE and update the ESP32 board package if needed.</td></tr>
+        <tr><td>Compile error for ledcSetup or ledcAttachPin</td><td>Old channel-based code on a newer Arduino-ESP32 core.</td><td>Convert to <code>ledcAttach(pin, freq, resolution)</code> and <code>ledcWrite(pin, duty)</code>.</td></tr>
+        <tr><td>Visible flicker</td><td>Low frequency, slow duty changes, weak connection, or unsuitable load.</td><td>Return to 5000 Hz for the LED example and inspect wiring.</td></tr>
+        <tr><td>Motor does not respond</td><td>GPIO connected directly to motor or no shared ground with driver.</td><td>Use a motor driver with separate motor power and common ground.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="next-steps">Practical next steps</h2>
+  <p>Use the idea here in real ESP32 Engine builds:</p>
+  <ul>
+    <li><a href="/guides/pwm-fundamentals.html">PWM Fundamentals</a> - hands-on LED fade mission with wiring details.</li>
+    <li><a href="/guides/analog-inputs.html">Analog Inputs</a> - read a changing value that can later control PWM brightness.</li>
+    <li><a href="/guides/button-led-control.html">Button Controls LED</a> - use button events to step through duty levels.</li>
+    <li><a href="/projects/esp32-rgb-led-pattern-controller.html">ESP32 RGB LED Pattern Controller</a> - PWM-style brightness mixing for color effects.</li>
+    <li><a href="/projects/esp32-wifi-robot-controller.html">ESP32 WiFi Robot Controller</a> - motor-driver control concepts with separate motor power.</li>
+    <li><a href="/projects/esp32-line-following-robot.html">ESP32 Line Following Robot</a> - robot outputs and sensor decisions.</li>
+    <li><a href="/projects/esp32-smart-street-light.html">ESP32 Smart Street Light</a> - practical lighting automation where dimming concepts matter.</li>
+  </ul>
+  </div>
+  <h2 id="faqs">Frequently Asked Questions</h2>
+  <div class="faq-list guide-faq"><div class="faq-item"><button type="button" class="faq-q">What does PWM mean on ESP32?<span class="plus">+</span></button><div class="faq-a"><p>PWM means Pulse Width Modulation. The ESP32 switches a GPIO ON and OFF quickly and changes the ON-time percentage, called duty cycle, to create an adjustable average effect.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which ESP32 pins support PWM?<span class="plus">+</span></button><div class="faq-a"><p>Many output-capable ESP32 GPIO pins can generate PWM through the LEDC peripheral. Avoid input-only pins such as GPIO34-GPIO39 on classic ESP32 boards, flash pins, and boot-sensitive pins unless you understand the board.</p></div></div><div class="faq-item"><button type="button" class="faq-q">What is an ESP32 PWM channel?<span class="plus">+</span></button><div class="faq-a"><p>A PWM channel is a hardware timing resource used by the ESP32 LEDC peripheral. Current Arduino-ESP32 APIs can allocate this for you when you attach a pin, while older examples often selected channel numbers manually.</p></div></div><div class="faq-item"><button type="button" class="faq-q">What PWM frequency should I use for LED dimming?<span class="plus">+</span></button><div class="faq-a"><p>5000 Hz is a practical beginner value for LED dimming in Arduino examples. Other loads may need different frequencies.</p></div></div><div class="faq-item"><button type="button" class="faq-q">What is PWM duty cycle?<span class="plus">+</span></button><div class="faq-a"><p>Duty cycle is the percentage of each PWM cycle that the signal is ON. Higher duty cycle sends more average energy to the load.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Is ESP32 PWM a real analog voltage?<span class="plus">+</span></button><div class="faq-a"><p>No. The GPIO still switches between digital LOW and HIGH. PWM creates an analog-like average effect through fast switching.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Can ESP32 PWM drive a motor directly?<span class="plus">+</span></button><div class="faq-a"><p>No. Use PWM as a control signal into a motor driver, MOSFET circuit, or suitable module. Do not connect a motor directly to a GPIO pin.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Should I use ledcAttach or ledcSetup?<span class="plus">+</span></button><div class="faq-a"><p>For current Arduino-ESP32 cores, prefer ledcAttach(pin, frequency, resolution) and ledcWrite(pin, duty). Older tutorials may use ledcSetup, ledcAttachPin, and channel-based ledcWrite as legacy API context.</p></div></div></div>
+
+  <h2 id="conclusion">Conclusion</h2>
+  <p>ESP32 PWM is fast digital switching with a controlled duty cycle. Use duty cycle to change average output energy, choose frequency based on the load, choose resolution based on the duty steps you need, and use output-capable GPIO pins with suitable external drivers for anything larger than a small LED. Start with LED brightness, then apply the same idea to RGB projects, motor drivers, buzzers, and automation outputs.</p>
+  <h2 id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/esp32-arduino-ide.html"><strong>ESP32 with Arduino IDE</strong></a> <span class="meta">Set up Arduino IDE and upload sketches before trying PWM code.</span></li><li><a href="/guides/pwm-fundamentals.html"><strong>PWM Fundamentals</strong></a> <span class="meta">Hands-on mission that fades an LED and introduces duty cycle visually.</span></li><li><a href="/guides/blink-led-esp32.html"><strong>Blink an LED with ESP32</strong></a> <span class="meta">Start with simple digital HIGH and LOW before comparing PWM.</span></li><li><a href="/guides/button-led-control.html"><strong>Button Controls LED</strong></a> <span class="meta">Use input events later to switch brightness levels.</span></li><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">Review GPIO, 3.3 V logic, input-only pins, and beginner pin choices.</span></li></ul>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script>
+document.querySelectorAll(".guide-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.open").forEach(function(el) {
+      el.classList.remove("open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.style.display = "none";
+    });
+    item.classList.toggle("open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.style.display = open ? "none" : "block";
+  });
+});
+</script>
+</body>
+</html>

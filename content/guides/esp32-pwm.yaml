@@ -1,0 +1,212 @@
+phase: 1
+sort_order: 8
+slug: esp32-pwm
+guide_type: reference
+title: 'ESP32 PWM: Complete Guide to PWM, Pins, Frequency & Duty Cycle | ESP32 Engine'
+headline: 'ESP32 PWM: Complete Guide to PWM, Pins, Frequency & Duty Cycle'
+meta_description: 'Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness control, code examples, and troubleshooting.'
+lead: ESP32 PWM lets a digital GPIO create smooth-looking LED brightness, motor-driver speed commands, buzzer tones, and other adjustable outputs. This guide explains PWM from first principles, then shows the current Arduino IDE pattern for changing duty cycle safely.
+intro:
+  story: 'A normal digital output is simple: ON or OFF. PWM is what you use when a project needs something that feels adjustable, such as dim LED light, RGB color mixing, or a speed command sent to a motor driver.'
+  eli12: 'PWM means the ESP32 switches a pin ON and OFF very quickly. More ON time looks brighter. Less ON time looks dimmer. The pin is still digital, but the average effect becomes useful.'
+  safety:
+  - text: Use a current-limiting resistor with LEDs, even when PWM makes the LED look dim.
+  - text: Do not power motors, pumps, relays, or large LED loads directly from an ESP32 GPIO pin.
+  - text: ESP32 GPIO is 3.3 V logic. Choose parts and driver modules that accept 3.3 V control signals.
+keywords: ESP32 PWM, ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LED brightness, ESP32 Arduino PWM
+primary_keyword: ESP32 PWM
+secondary_keywords: ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LEDC, ESP32 Arduino PWM, ESP32 LED brightness
+proficiency_level: Beginner
+reading_time: 18 min read
+date_published: '2026-09-23'
+date_modified: '2026-09-23'
+conclusion: 'ESP32 PWM is fast digital switching with a controlled duty cycle. Use duty cycle to change average output energy, choose frequency based on the load, choose resolution based on the duty steps you need, and use output-capable GPIO pins with suitable external drivers for anything larger than a small LED. Start with LED brightness, then apply the same idea to RGB projects, motor drivers, buzzers, and automation outputs.'
+faqs:
+- question: What does PWM mean on ESP32?
+  answer: PWM means Pulse Width Modulation. The ESP32 switches a GPIO ON and OFF quickly and changes the ON-time percentage, called duty cycle, to create an adjustable average effect.
+- question: Which ESP32 pins support PWM?
+  answer: Many output-capable ESP32 GPIO pins can generate PWM through the LEDC peripheral. Avoid input-only pins such as GPIO34-GPIO39 on classic ESP32 boards, flash pins, and boot-sensitive pins unless you understand the board.
+- question: What is an ESP32 PWM channel?
+  answer: A PWM channel is a hardware timing resource used by the ESP32 LEDC peripheral. Current Arduino-ESP32 APIs can allocate this for you when you attach a pin, while older examples often selected channel numbers manually.
+- question: What PWM frequency should I use for LED dimming?
+  answer: 5000 Hz is a practical beginner value for LED dimming in Arduino examples. Other loads may need different frequencies.
+- question: What is PWM duty cycle?
+  answer: Duty cycle is the percentage of each PWM cycle that the signal is ON. Higher duty cycle sends more average energy to the load.
+- question: Is ESP32 PWM a real analog voltage?
+  answer: No. The GPIO still switches between digital LOW and HIGH. PWM creates an analog-like average effect through fast switching.
+- question: Can ESP32 PWM drive a motor directly?
+  answer: No. Use PWM as a control signal into a motor driver, MOSFET circuit, or suitable module. Do not connect a motor directly to a GPIO pin.
+- question: Should I use ledcAttach or ledcSetup?
+  answer: For current Arduino-ESP32 cores, prefer ledcAttach(pin, frequency, resolution) and ledcWrite(pin, duty). Older tutorials may use ledcSetup, ledcAttachPin, and channel-based ledcWrite as legacy API context.
+related_guides:
+- title: ESP32 with Arduino IDE
+  href: /guides/esp32-arduino-ide.html
+  description: Set up Arduino IDE and upload sketches before trying PWM code.
+- title: PWM Fundamentals
+  href: /guides/pwm-fundamentals.html
+  description: Hands-on mission that fades an LED and introduces duty cycle visually.
+- title: Blink an LED with ESP32
+  href: /guides/blink-led-esp32.html
+  description: Start with simple digital HIGH and LOW before comparing PWM.
+- title: Button Controls LED
+  href: /guides/button-led-control.html
+  description: Use input events later to switch brightness levels.
+- title: ESP32 DevKit Board
+  href: /components/esp32-devkit.html
+  description: Review GPIO, 3.3 V logic, input-only pins, and beginner pin choices.
+body_html: |
+  <h2 id="what-is-pwm">What PWM is</h2>
+  <p>PWM stands for <strong>Pulse Width Modulation</strong>. A pulse is the ON part of a digital signal. Width means how long that ON part lasts. Modulation means changing it.</p>
+  <p>An ESP32 GPIO pin normally has two simple output states: <code>LOW</code> and <code>HIGH</code>. PWM still uses those same two states, but repeats them quickly. If the pin is ON for most of each cycle, an LED looks bright. If the pin is ON for only a small part of each cycle, the LED looks dim.</p>
+  <p>That is the key idea: PWM does not create a true adjustable analog voltage on a GPIO pin. It creates an adjustable <em>average effect</em> by switching fast.</p>
+
+  <h2 id="pwm-vs-digital">PWM vs simple digital HIGH/LOW</h2>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Output style</th><th>What the pin does</th><th>Beginner example</th></tr></thead>
+      <tbody>
+        <tr><td>Digital LOW</td><td>Stays near 0 V.</td><td>LED off.</td></tr>
+        <tr><td>Digital HIGH</td><td>Stays near 3.3 V.</td><td>LED full brightness.</td></tr>
+        <tr><td>PWM</td><td>Switches LOW/HIGH repeatedly.</td><td>LED appears dim, medium, or bright depending on duty cycle.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>If you have not uploaded code yet, start with the <a href="/guides/esp32-arduino-ide.html">ESP32 Arduino IDE guide</a>. If you have never controlled a GPIO output, build <a href="/guides/blink-led-esp32.html">Blink an LED with ESP32</a> first.</p>
+
+  <h2 id="terms">ESP32 PWM terminology</h2>
+  <h3 id="frequency">Frequency</h3>
+  <p>PWM frequency is how many complete ON/OFF cycles happen each second. A frequency of 5000 Hz means 5000 PWM cycles per second. LED dimming usually uses a frequency high enough that your eyes do not see obvious blinking. Buzzers, motor drivers, servos, and LEDs may need different frequency ranges, so match the load instead of assuming one value fits everything.</p>
+
+  <h3 id="duty-cycle">Duty cycle</h3>
+  <p>Duty cycle is the ON-time portion of each cycle. A 25% duty cycle is ON for one quarter of the cycle and OFF for the rest. A 75% duty cycle is ON for most of the cycle. For an LED, higher duty usually looks brighter.</p>
+
+  <h3 id="resolution">Resolution</h3>
+  <p>Resolution controls how many duty steps are available. With 8-bit resolution, duty can range from 0 to 255. With 10-bit resolution, duty can range from 0 to 1023. More resolution gives finer brightness steps, but very high frequency and high resolution compete for timing resources.</p>
+
+  <h3 id="channels">Channels</h3>
+  <p>The ESP32 LEDC peripheral uses PWM channels/timers internally. Older Arduino-ESP32 examples made you choose channel numbers manually. Current Arduino-ESP32 examples can attach PWM directly to a pin with <code>ledcAttach(pin, frequency, resolution)</code>, and then write duty with <code>ledcWrite(pin, duty)</code>. The underlying channel idea still matters when you run many PWM outputs, but beginners usually start with one pin.</p>
+
+  <h2 id="pins">ESP32 PWM pins and GPIO selection</h2>
+  <p>Many output-capable ESP32 GPIO pins can generate LEDC PWM. For a first LED brightness example, use a common output-capable pin such as <strong>GPIO18</strong>. Avoid these beginner mistakes:</p>
+  <ul>
+    <li>Do not use input-only pins such as GPIO34-GPIO39 on classic ESP32 boards for PWM output.</li>
+    <li>Do not use pins connected to internal flash on classic ESP32 modules.</li>
+    <li>Be careful with boot/strapping pins if external wiring could hold them at the wrong level during reset.</li>
+    <li>Do not assume every ESP32 variant exposes the same safe pins in the same place. Check your board label and the <a href="/components/esp32-devkit.html">ESP32 DevKit guide</a>.</li>
+  </ul>
+
+  <h2 id="wiring">Simple LED brightness wiring</h2>
+  <p>This guide uses an LED because it makes PWM visible immediately. Wire it as a low-current learning circuit:</p>
+  <ul>
+    <li>ESP32 GPIO18 -> 220 ohm or 330 ohm resistor</li>
+    <li>Resistor -> LED anode, the longer leg</li>
+    <li>LED cathode, the shorter leg -> ESP32 GND</li>
+  </ul>
+  <p>The resistor is required. PWM changes average brightness, but when the pin is ON, the LED still needs current limiting.</p>
+
+  <h2 id="arduino-code">ESP32 PWM with Arduino IDE</h2>
+  <p>Current Arduino-ESP32 cores support the pin-based LEDC helpers shown below. This keeps the beginner sketch clear: attach PWM to a pin, then write duty values to that same pin.</p>
+  <pre><code>const int PWM_PIN = 18;
+  const int PWM_FREQUENCY = 5000;
+  const int PWM_RESOLUTION = 8;
+  const int DUTY_MAX = (1 &lt;&lt; PWM_RESOLUTION) - 1;
+
+  void setup() {
+    Serial.begin(115200);
+
+    bool attached = ledcAttach(PWM_PIN, PWM_FREQUENCY, PWM_RESOLUTION);
+    if (!attached) {
+      Serial.println("PWM attach failed. Check board selection and pin.");
+      while (true) {
+        delay(1000);
+      }
+    }
+
+    Serial.println("ESP32 PWM fade ready");
+  }
+
+  void loop() {
+    for (int duty = 0; duty &lt;= DUTY_MAX; duty += 5) {
+      ledcWrite(PWM_PIN, duty);
+      Serial.print("Duty: ");
+      Serial.println(duty);
+      delay(20);
+    }
+
+    for (int duty = DUTY_MAX; duty &gt;= 0; duty -= 5) {
+      ledcWrite(PWM_PIN, duty);
+      Serial.print("Duty: ");
+      Serial.println(duty);
+      delay(20);
+    }
+  }</code></pre>
+  <p>Expected behavior: the LED fades from off to bright, then bright to off. Serial Monitor prints changing duty values from 0 toward 255 and back down because this example uses 8-bit resolution.</p>
+
+  <h2 id="change-duty">How to change duty cycle</h2>
+  <p>With 8-bit resolution, these fixed duty values are easy to understand:</p>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Duty value</th><th>Approximate duty cycle</th><th>LED effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>0</code></td><td>0%</td><td>Off</td></tr>
+        <tr><td><code>64</code></td><td>25%</td><td>Dim</td></tr>
+        <tr><td><code>128</code></td><td>50%</td><td>Medium</td></tr>
+        <tr><td><code>192</code></td><td>75%</td><td>Bright</td></tr>
+        <tr><td><code>255</code></td><td>100%</td><td>Full brightness</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>To hold one brightness level, call <code>ledcWrite(PWM_PIN, 128)</code> in your code. To build a dimmer, change the duty value when a button event, analog reading, or web command changes.</p>
+
+  <h2 id="frequency-resolution-tradeoff">PWM frequency and resolution tradeoff</h2>
+  <p>Frequency and resolution are connected. A very high PWM frequency leaves less timing room for very fine duty steps. A very high resolution gives more duty steps, but may limit how high the frequency can be. For beginner LED dimming, <code>5000 Hz</code> and <code>8-bit</code> resolution are a practical starting point.</p>
+  <p>If an LED flickers, try a higher frequency or check for loose wiring. If brightness jumps feel coarse, try more resolution or smaller duty changes. If a motor driver behaves strangely, read that driver module's documentation before changing random PWM values.</p>
+
+  <h2 id="legacy-api">Legacy Arduino-ESP32 PWM examples</h2>
+  <p>You will still see older tutorials using code like this:</p>
+  <pre><code>ledcSetup(channel, frequency, resolution);
+  ledcAttachPin(pin, channel);
+  ledcWrite(channel, duty);</code></pre>
+  <p>That style is common in older Arduino-ESP32 core examples and in some existing learning material. For new code on current Arduino-ESP32 cores, prefer the pin-based style:</p>
+  <pre><code>ledcAttach(pin, frequency, resolution);
+  ledcWrite(pin, duty);</code></pre>
+  <p>If old code fails with an error such as <code>ledcAttachPin was not declared</code>, check your installed ESP32 board package version and update the PWM API style.</p>
+
+  <h2 id="mistakes">Common PWM mistakes</h2>
+  <ul>
+    <li><strong>Using PWM without a resistor:</strong> an LED still needs current limiting.</li>
+    <li><strong>Expecting true analog voltage:</strong> PWM is fast switching, not a DAC output.</li>
+    <li><strong>Driving motors directly:</strong> GPIO pins send control signals, not motor power.</li>
+    <li><strong>Choosing input-only GPIO:</strong> input-only pins cannot drive PWM output.</li>
+    <li><strong>Confusing frequency with brightness:</strong> duty cycle controls average brightness; frequency controls switching speed.</li>
+    <li><strong>Mixing old and new LEDC APIs:</strong> keep code style consistent for your ESP32 Arduino core version.</li>
+  </ul>
+
+  <h2 id="troubleshooting">Troubleshooting ESP32 PWM</h2>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Problem</th><th>Likely cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>LED never turns on</td><td>Wrong GPIO, reversed LED, missing ground, or resistor not in series.</td><td>Use GPIO18, check LED polarity, and trace GPIO18 -> resistor -> LED -> GND.</td></tr>
+        <tr><td>LED is always full bright</td><td>LED may be wired to 3.3 V instead of the PWM pin.</td><td>Move the circuit so GPIO18 drives the resistor/LED path.</td></tr>
+        <tr><td>Compile error for ledcAttach</td><td>Wrong board selected or older ESP32 board package.</td><td>Select an ESP32 board in Arduino IDE and update the ESP32 board package if needed.</td></tr>
+        <tr><td>Compile error for ledcSetup or ledcAttachPin</td><td>Old channel-based code on a newer Arduino-ESP32 core.</td><td>Convert to <code>ledcAttach(pin, freq, resolution)</code> and <code>ledcWrite(pin, duty)</code>.</td></tr>
+        <tr><td>Visible flicker</td><td>Low frequency, slow duty changes, weak connection, or unsuitable load.</td><td>Return to 5000 Hz for the LED example and inspect wiring.</td></tr>
+        <tr><td>Motor does not respond</td><td>GPIO connected directly to motor or no shared ground with driver.</td><td>Use a motor driver with separate motor power and common ground.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="next-steps">Practical next steps</h2>
+  <p>Use the idea here in real ESP32 Engine builds:</p>
+  <ul>
+    <li><a href="/guides/pwm-fundamentals.html">PWM Fundamentals</a> - hands-on LED fade mission with wiring details.</li>
+    <li><a href="/guides/analog-inputs.html">Analog Inputs</a> - read a changing value that can later control PWM brightness.</li>
+    <li><a href="/guides/button-led-control.html">Button Controls LED</a> - use button events to step through duty levels.</li>
+    <li><a href="/projects/esp32-rgb-led-pattern-controller.html">ESP32 RGB LED Pattern Controller</a> - PWM-style brightness mixing for color effects.</li>
+    <li><a href="/projects/esp32-wifi-robot-controller.html">ESP32 WiFi Robot Controller</a> - motor-driver control concepts with separate motor power.</li>
+    <li><a href="/projects/esp32-line-following-robot.html">ESP32 Line Following Robot</a> - robot outputs and sensor decisions.</li>
+    <li><a href="/projects/esp32-smart-street-light.html">ESP32 Smart Street Light</a> - practical lighting automation where dimming concepts matter.</li>
+  </ul>
+quality_status: golden
+status: complete

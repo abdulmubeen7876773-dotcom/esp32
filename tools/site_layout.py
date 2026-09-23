@@ -47,6 +47,7 @@ SOCIAL_IMAGE_BY_PATH = {
     "/guides/multiple-buttons-state-detection.html": "/assets/images/og/multiple-buttons-state-detection.webp",
     "/guides/oled-display-esp32.html": "/assets/images/og/oled-display-esp32.webp",
     "/guides/pull-up-vs-pull-down-resistors.html": "/assets/images/og/pull-up-vs-pull-down-resistors.webp",
+    "/guides/esp32-pwm.html": "/assets/images/og/pwm-fundamentals.webp",
     "/guides/pwm-fundamentals.html": "/assets/images/og/pwm-fundamentals.webp",
     "/guides/read-temperature-dht22.html": "/assets/images/og/read-temperature-dht22.webp",
     "/guides/reading-analog-sensors.html": "/assets/images/og/reading-analog-sensors.webp",
