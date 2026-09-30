@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<!-- Google tag (gtag.js) -->
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var measurementId = "G-WLHZKSEFP3";
+  var scriptId = "ga4-gtag-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineGa4Initialized) return;
+  window.__esp32EngineGa4Initialized = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+  if (!document.getElementById(scriptId)) {
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+    document.head.appendChild(script);
+  }
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId);
+})();
+</script>
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var publisherId = "ca-pub-1799305676376920";
+  var scriptId = "adsbygoogle-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineAdsenseInitialized) return;
+  window.__esp32EngineAdsenseInitialized = true;
+  function loadAdsense(){
+    if (document.getElementById(scriptId)) return;
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(publisherId);
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+  }
+  if ("requestIdleCallback" in window) {
+    window.addEventListener("load", function(){ requestIdleCallback(loadAdsense, { timeout: 3500 }); }, { once: true });
+  } else {
+    window.addEventListener("load", function(){ setTimeout(loadAdsense, 1200); }, { once: true });
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 BME280: Complete Guide to Wiring, Code &amp; Sensor Data | ESP32 Engine</title>
+<meta name="description" content="Learn ESP32 BME280 wiring and Arduino setup, then use a complete sketch to read temperature, humidity, pressure, and approximate altitude.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-bme280.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 BME280: Complete Guide to Wiring, Code &amp; Sensor Data | ESP32 Engine">
+<meta property="og:description" content="Learn ESP32 BME280 wiring and Arduino setup, then use a complete sketch to read temperature, humidity, pressure, and approximate altitude.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-bme280.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 BME280: Complete Guide to Wiring, Code &amp; Sensor Data | ESP32 Engine">
+<meta name="twitter:description" content="Learn ESP32 BME280 wiring and Arduino setup, then use a complete sketch to read temperature, humidity, pressure, and approximate altitude.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"ESP32 BME280: Complete Guide to Wiring, Code & Sensor Data","description":"Learn ESP32 BME280 wiring and Arduino setup, then use a complete sketch to read temperature, humidity, pressure, and approximate altitude.","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-bme280.html"},"proficiencyLevel":"Beginner to Intermediate","keywords":"ESP32 BME280, BME280 ESP32 wiring, BME280 Arduino, ESP32 temperature humidity pressure, BME280 I2C address, ESP32 weather station"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP32 BME280: Complete Guide to Wiring, Code & Sensor Data","item":"https://esp32engine.com/guides/esp32-bme280.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does a BME280 measure?","acceptedAnswer":{"@type":"Answer","text":"The BME280 measures temperature, relative humidity, and barometric pressure. Altitude is estimated from pressure and a sea-level pressure reference; the sensor does not measure altitude directly."}},{"@type":"Question","name":"What I2C address should I use for an ESP32 BME280?","acceptedAnswer":{"@type":"Answer","text":"Common BME280 breakout configurations use 0x76 or 0x77. The address depends on the sensor board's SDO pin or address-jumper configuration, so check its documentation or scan the I2C bus instead of assuming one address for every board."}},{"@type":"Question","name":"Which ESP32 pins connect to BME280 SDA and SCL?","acceptedAnswer":{"@type":"Answer","text":"For a common original ESP32 DevKit, this example uses GPIO21 for SDA and GPIO22 for SCL. Other ESP32 boards may have different defaults; choose available pins for your board and set them in Wire.begin()."}},{"@type":"Question","name":"Is a BME280 better than a DHT22?","acceptedAnswer":{"@type":"Answer","text":"They both measure temperature and relative humidity. The BME280 also measures barometric pressure, which supports pressure trends and approximate pressure-based altitude. Choose based on the readings and interface your project needs."}},{"@type":"Question","name":"Why does my BME280 show pressure but not humidity?","acceptedAnswer":{"@type":"Answer","text":"Check that the module actually contains a BME280 and that the library initialized the expected device. Some visually similar pressure-sensor modules, such as BMP280 modules, do not provide humidity readings."}},{"@type":"Question","name":"Does the example altitude match GPS altitude?","acceptedAnswer":{"@type":"Answer","text":"Not necessarily. The library estimates altitude from pressure and the sea-level pressure value supplied to the sketch. Local weather changes, elevation, and the reference pressure affect the result, so treat it as approximate."}}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP32 BME280: Complete Guide to Wiring, Code &amp; Sensor Data</li></ol></nav>
+  <p class="hero-eyebrow">Background reading</p>
+  <h1>ESP32 BME280: Complete Guide to Wiring, Code &amp; Sensor Data</h1>
+  <p class="article-lead">Connect a BME280 to an ESP32 over I2C, install the Arduino library, and run a complete sketch that prints temperature, relative humidity, barometric pressure, and an approximate altitude estimate.</p>
+  <p class="meta guide-meta">12 min read · Updated 2026-09-28</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/components/photos/bme280-photo.svg" alt="BME280 environmental sensor breakout module" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+<div class="guide-friendly-intro">
+<div class="reference-intro-card">
+  <span class="reference-intro-label">Reference Guide</span>
+  <h2 class="reference-intro-title">ESP32 BME280: Complete Guide to Wiring, Code &amp; Sensor Data</h2>
+</div>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>A small sensor can turn an ESP32 into a useful room monitor. Start by getting one dependable reading over USB, then add a screen or network connection once you know the sensor and wiring are working.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>The BME280 is a tiny chip that checks how warm, humid, and pressurized the air is. The ESP32 asks it for these numbers over two signal wires and can print them on your computer.</p></div>
+  </div>
+</section>
+<section class="mission-section mission-safety-section" id="safety" aria-labelledby="safety-heading">
+  <aside class="mission-safety" aria-label="Safety first">
+    <div class="mission-safety-head">
+      <span class="mission-safety-icon" aria-hidden="true">⚠️</span>
+      <h2 id="safety-heading">Safety First</h2>
+    </div>
+    <ul><li>Disconnect USB before changing jumper wires, and check your breakout board&#x27;s power and signal-level requirements before connecting it.</li><li>Keep exposed wiring clear of conductive objects and reconnect power only after checking for shorts and misplaced wires.</li></ul>
+  </aside>
+</section>
+</div>
+<section class="guide-technical-content" id="review-and-references" aria-labelledby="trust-heading">
+  <h2 id="trust-heading">Review, Testing, and References</h2>
+  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-09-28. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner to Intermediate. <strong>Estimated time:</strong> 12 min read.</p>
+  <p>This guide is written for learning and bench prototyping. Check the testing notes before adapting the circuit to different boards, batteries, relays, motors, or outdoor hardware.</p>
+  <ul class="guide-related-list"><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li></ul>
+</section>
+  <div class="guide-technical-content">
+  <h2 id="what-bme280-measures">What the BME280 measures</h2>
+  <p>The BME280 is a digital environmental sensor that reports three measurements:</p>
+  <ul>
+    <li><strong>Temperature:</strong> ambient temperature in degrees Celsius or Fahrenheit after conversion in your code.</li>
+    <li><strong>Relative humidity:</strong> how much water vapor is in the air relative to saturation, reported as a percentage.</li>
+    <li><strong>Barometric pressure:</strong> air pressure, commonly displayed in hectopascals (hPa).</li>
+  </ul>
+  <p>Altitude is not a fourth direct measurement. A library can estimate it from pressure and a sea-level pressure reference. The estimate shifts with weather and with the reference value, so it is useful for a rough elevation or trend rather than a GPS replacement. The <a href="/components/bme280.html">BME280 component reference</a> covers the module as a component; this page focuses on connecting it to an ESP32 and using its readings.</p>
+
+  <h3 id="bme280-vs-dht22">BME280 vs DHT22</h3>
+  <p>Both can report temperature and relative humidity. The BME280 adds barometric pressure, which enables pressure tracking and approximate pressure-based altitude. A DHT22 is a reasonable fit when temperature and humidity are all you need; choose a BME280 when pressure is useful. See the <a href="/components/dht22.html">DHT22 reference</a> for its component details.</p>
+
+  <h2 id="interfaces">I2C or SPI?</h2>
+  <p>The BME280 chip supports both <strong>I2C</strong> and <strong>SPI</strong>. I2C is the simplest starting point for an ESP32: connect power and ground plus SDA and SCL, and the same two signal wires can be shared with other I2C devices when their addresses do not conflict. SPI uses clock, data-in, data-out, and chip-select signals; it can be useful when a project already uses SPI or needs that interface. This guide uses I2C. For a bus introduction, see <a href="/guides/i2c-communication.html">I2C communication with ESP32</a>.</p>
+
+  <h2 id="pins">BME280 pins and wiring</h2>
+  <p>Breakout boards do not all use identical labels or power circuitry. The BME280 integrated circuit itself has a 1.71–3.6 V supply range, but the voltage accepted by a breakout's VIN/VCC pin depends on that board's design. Check the documentation for your exact module, and make sure its I2C logic levels are compatible with the ESP32. Do not assume an unspecified breakout is 5 V tolerant.</p>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>BME280 breakout pin</th><th>Connect for I2C</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>VIN or VCC</td><td>ESP32 3V3 when the breakout documentation permits it</td><td>Use the module's documented supply range. A bare sensor and a breakout board can have different electrical requirements.</td></tr>
+        <tr><td>GND</td><td>ESP32 GND</td><td>Both devices need a common ground.</td></tr>
+        <tr><td>SDA or SDI</td><td>ESP32 SDA</td><td>Some breakouts label the I2C data pin SDI; connect SDA/SDI to ESP32 SDA. This example uses GPIO21 on a common original ESP32 DevKit.</td></tr>
+        <tr><td>SCL or SCK</td><td>ESP32 SCL</td><td>Some breakouts label the I2C clock pin SCK; connect SCL/SCK to ESP32 SCL. This example uses GPIO22 on a common original ESP32 DevKit.</td></tr>
+        <tr><td>CS or CSB</td><td>Not used for this I2C example</td><td>Chip-select is used for SPI. Board instructions may specify how to hold/configure it for I2C.</td></tr>
+        <tr><td>SDO</td><td>Not used as data for this I2C example</td><td>On many designs this pin selects the I2C address; see the board documentation. In SPI mode it is data-out.</td></tr>
+      
+      </tbody>
+    </table>
+  </div>
+  <p>In I2C mode, some boards label the shared pins by their SPI names, such as SCK for SCL and SDI for SDA. Use the markings and pinout for your exact breakout. The <a href="/assets/visuals/components/illustrations/bme280-pinout.svg">BME280 pinout illustration</a> is a visual reference; the board manufacturer's documentation remains authoritative for electrical details.</p>
+
+  <h2 id="esp32-i2c-wiring">ESP32 BME280 I2C wiring example</h2>
+  <p>For the common original ESP32 DevKit pin mapping used by the sketch below, wire the BME280 breakout as follows. If you have a different ESP32 family board, confirm its usable I2C pins and change the two constants in the code.</p>
+  <figure style="margin:1rem auto;max-width:900px"><img src="/assets/visuals/components/wiring/bme280-wiring.svg" alt="ESP32 DevKit connected to a BME280 breakout using I2C: 3.3 V-compatible power, ground, SDA on GPIO21, and SCL on GPIO22" width="1280" height="760" loading="lazy" decoding="async" style="display:block;width:100%;height:auto"><figcaption>Example I2C wiring for a common original ESP32 DevKit. Confirm the power input and signal-level compatibility for your breakout.</figcaption></figure>
+  <ol>
+    <li>Disconnect USB power while wiring.</li>
+    <li>Connect breakout GND to ESP32 GND.</li>
+    <li>Connect SDA to GPIO21 and SCL to GPIO22 for the board mapping used in this example.</li>
+    <li>Connect VIN/VCC to a supply allowed by the breakout documentation. The module must also present ESP32-safe I2C logic levels.</li>
+    <li>Reconnect USB only after checking the wiring and power requirements.</li>
+  </ol>
+  <p>For ESP32 boards where default I2C pins differ, the Arduino-ESP32 <code>Wire.begin(sda, scl)</code> call in this example sets the pins explicitly. Choose appropriate pins for your exact board.</p>
+
+  <h2 id="arduino-ide-setup">Arduino IDE setup and library</h2>
+  <ol>
+    <li>Install the ESP32 board support package and confirm you can upload a basic sketch. Follow the <a href="/guides/esp32-arduino-ide.html">ESP32 Arduino IDE setup guide</a> if needed.</li>
+    <li>In Arduino IDE, open <strong>Sketch → Include Library → Manage Libraries</strong>.</li>
+    <li>Search for and install <strong>Adafruit BME280 Library</strong>. Accept installation of its required dependencies, including Adafruit Unified Sensor and Adafruit BusIO if the Library Manager prompts you.</li>
+    <li>Select the correct ESP32 board and port, upload the sketch below, then open Serial Monitor at <strong>115200 baud</strong>.</li>
+  </ol>
+  <p>The sketch creates an Adafruit BME280 object, starts I2C on the selected pins, and calls <code>begin()</code> with each common address in turn. If initialization succeeds, it reads the four displayed values once per second.</p>
+
+  <h2 id="complete-code">Complete ESP32 + BME280 code</h2>
+  <pre><code>
+    #include &lt;Wire.h&gt;
+    #include &lt;Adafruit_BME280.h&gt;
+  
+    // Example pins for a common original ESP32 DevKit. Adjust for your board.
+    const int I2C_SDA = 21;
+    const int I2C_SCL = 22;
+  
+    // Replace with a suitable local sea-level pressure reference for better altitude estimates.
+    const float SEA_LEVEL_PRESSURE_HPA = 1013.25F;
+  
+    Adafruit_BME280 bme;
+  
+    void setup() {
+      Serial.begin(115200);
+      delay(100);
+  
+      Wire.begin(I2C_SDA, I2C_SCL);
+  
+      bool sensorFound = bme.begin(0x76, &amp;Wire);
+      if (!sensorFound) {
+        sensorFound = bme.begin(0x77, &amp;Wire);
+      }
+  
+      if (!sensorFound) {
+        Serial.println("BME280 not found. Check wiring and I2C address.");
+        while (true) {
+          delay(1000);
+        }
+      }
+  
+      Serial.println("BME280 ready");
+    }
+  
+    void loop() {
+      const float temperatureC = bme.readTemperature();
+      const float humidityPercent = bme.readHumidity();
+      const float pressureHpa = bme.readPressure() / 100.0F;
+      const float altitudeMeters = bme.readAltitude(SEA_LEVEL_PRESSURE_HPA);
+  
+      Serial.print("Temperature: ");
+      Serial.print(temperatureC, 2);
+      Serial.println(" °C");
+  
+      Serial.print("Humidity: ");
+      Serial.print(humidityPercent, 2);
+      Serial.println(" %");
+  
+      Serial.print("Pressure: ");
+      Serial.print(pressureHpa, 2);
+      Serial.println(" hPa");
+  
+      Serial.print("Approx. altitude: ");
+      Serial.print(altitudeMeters, 1);
+      Serial.println(" m");
+      Serial.println();
+  
+      delay(1000);
+    }</code></pre>
+
+  <h2 id="code-explained">What the important code does</h2>
+  <ul>
+    <li><strong>Pin constants and <code>Wire.begin()</code>:</strong> select SDA and SCL for the board mapping in this example. If using a different ESP32, set pins appropriate to that board.</li>
+    <li><strong>Two <code>begin()</code> attempts:</strong> the sketch checks 0x76, then 0x77. It stops with a clear serial message if neither initializes.</li>
+    <li><strong>Temperature and humidity:</strong> <code>readTemperature()</code> returns degrees Celsius and <code>readHumidity()</code> returns relative humidity percent.</li>
+    <li><strong>Pressure conversion:</strong> <code>readPressure()</code> returns pascals; dividing by 100 converts the value to hPa.</li>
+    <li><strong>Altitude estimate:</strong> <code>readAltitude()</code> uses the pressure reading and the supplied sea-level reference. The example's 1013.25 hPa is a standard reference starting point, not a live local weather reading.</li>
+    <li><strong>Serial output:</strong> Serial Monitor at 115200 baud displays each value. The one-second delay makes the example easy to read; use a deliberate sampling interval in a larger project.</li>
+  </ul>
+
+  <h2 id="understanding-readings">Reading and interpreting the output</h2>
+  <p>Temperature appears in °C, humidity in percent, pressure in hPa, and altitude in meters. Pressure is the sensor's local barometric pressure. Weather services often report pressure adjusted to sea level, so those numbers may differ. Change <code>SEA_LEVEL_PRESSURE_HPA</code> to a suitable local sea-level pressure reference when you want the altitude estimate to better match a known elevation.</p>
+  <p>For steadier room measurements, let the sensor settle and keep it away from heat produced by the ESP32 regulator, USB interface, sunlight, or your breath. Compare trends under similar conditions rather than expecting two uncalibrated devices in different locations to match exactly.</p>
+
+  <h2 id="i2c-address">BME280 I2C address</h2>
+  <p>Two common BME280 I2C addresses are <code>0x76</code> and <code>0x77</code>. The address is selected by the sensor's SDO pin or a breakout-specific address pad/jumper. The exact jumper behavior depends on the board, so consult its documentation. This sketch tries both addresses, but it cannot fix a wiring, power, or device-identification problem.</p>
+  <p>If neither address responds, run an I2C scanner with the same SDA and SCL pins, check the board's address setting, and verify that the module is actually a BME280. A BMP280-shaped breakout may look similar but does not include humidity sensing.</p>
+
+  <h2 id="troubleshooting">Troubleshooting</h2>
+  <h3 id="not-detected">Sensor not detected</h3>
+  <ul>
+    <li>Check that SDA and SCL are not swapped, the ground is shared, and each jumper is seated in the intended breadboard row.</li>
+    <li>Confirm the selected I2C pins match the board and the <code>Wire.begin()</code> values.</li>
+    <li>Verify the breakout's supply and logic-level requirements against its documentation; do not infer them from the BME280 chip alone.</li>
+    <li>Scan the bus and check both 0x76 and 0x77. Confirm any address jumper or SDO wiring for that board.</li>
+    <li>Check Arduino IDE's selected ESP32 board, installed Adafruit library and dependencies, and compiler output for missing-library errors.</li>
+  </ul>
+  <h3 id="incorrect-readings">Readings seem incorrect</h3>
+  <ul>
+    <li>Confirm the board is a BME280, rather than a similar pressure-only BMP280 module.</li>
+    <li>Check that the code prints pressure in hPa after dividing the library's pascal value by 100.</li>
+    <li>Remember that the altitude estimate depends on the supplied sea-level pressure. The reference affects altitude, not the raw pressure reading.</li>
+    <li>Move the sensor away from warm ESP32 components, direct sunlight, drafts, and breath; allow readings to stabilize.</li>
+    <li>Review the breakout's pin labels and wiring diagram. Shared SPI/I2C labels can make SDA, SCL, SDI, and SCK easy to confuse.</li>
+  </ul>
+
+  <h2 id="next-steps">Practical next steps</h2>
+  <ul>
+    <li><strong>OLED weather display:</strong> show temperature, humidity, and pressure on an I2C display. Start with <a href="/guides/connect-oled-esp32.html">connecting an OLED to ESP32</a>; confirm each device's address before sharing the bus.</li>
+    <li><strong>Weather station:</strong> build on the <a href="/projects/esp32-iot-weather-station.html">ESP32 IoT weather station project</a> after the sensor works over Serial Monitor.</li>
+    <li><strong>Data logging:</strong> add a timed record of readings to a file or database, and include timestamps so you can compare trends later.</li>
+    <li><strong>MQTT and IoT:</strong> adapt the sensor publishing pattern in the <a href="/projects/esp32-mqtt-sensor-dashboard.html">ESP32 MQTT sensor dashboard project</a> to send BME280 readings to a broker.</li>
+  </ul>
+  </div>
+  <h2 id="faqs">Frequently Asked Questions</h2>
+  <div class="faq-list guide-faq"><div class="faq-item"><button type="button" class="faq-q">What does a BME280 measure?<span class="plus">+</span></button><div class="faq-a"><p>The BME280 measures temperature, relative humidity, and barometric pressure. Altitude is estimated from pressure and a sea-level pressure reference; the sensor does not measure altitude directly.</p></div></div><div class="faq-item"><button type="button" class="faq-q">What I2C address should I use for an ESP32 BME280?<span class="plus">+</span></button><div class="faq-a"><p>Common BME280 breakout configurations use 0x76 or 0x77. The address depends on the sensor board&#x27;s SDO pin or address-jumper configuration, so check its documentation or scan the I2C bus instead of assuming one address for every board.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which ESP32 pins connect to BME280 SDA and SCL?<span class="plus">+</span></button><div class="faq-a"><p>For a common original ESP32 DevKit, this example uses GPIO21 for SDA and GPIO22 for SCL. Other ESP32 boards may have different defaults; choose available pins for your board and set them in Wire.begin().</p></div></div><div class="faq-item"><button type="button" class="faq-q">Is a BME280 better than a DHT22?<span class="plus">+</span></button><div class="faq-a"><p>They both measure temperature and relative humidity. The BME280 also measures barometric pressure, which supports pressure trends and approximate pressure-based altitude. Choose based on the readings and interface your project needs.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Why does my BME280 show pressure but not humidity?<span class="plus">+</span></button><div class="faq-a"><p>Check that the module actually contains a BME280 and that the library initialized the expected device. Some visually similar pressure-sensor modules, such as BMP280 modules, do not provide humidity readings.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does the example altitude match GPS altitude?<span class="plus">+</span></button><div class="faq-a"><p>Not necessarily. The library estimates altitude from pressure and the sea-level pressure value supplied to the sketch. Local weather changes, elevation, and the reference pressure affect the result, so treat it as approximate.</p></div></div></div>
+
+  <h2 id="conclusion">Conclusion</h2>
+  <p>Start with the I2C wiring and Serial Monitor sketch, confirm that the address and readings are sensible, and only then add a display, logging, or network publishing. The BME280 reference page has the concise component details; this guide is the practical ESP32 build path.</p>
+  <h2 id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/esp32-arduino-ide.html"><strong>ESP32 with Arduino IDE</strong></a> <span class="meta">Set up the board package and upload sketches before wiring the sensor.</span></li><li><a href="/components/bme280.html"><strong>BME280 Sensor Reference</strong></a> <span class="meta">Component-focused pinout and reference details for the sensor module.</span></li><li><a href="/components/dht22.html"><strong>DHT22 Sensor Reference</strong></a> <span class="meta">See the simpler temperature-and-humidity sensor mentioned in this guide.</span></li><li><a href="/guides/i2c-communication.html"><strong>I2C Communication with ESP32</strong></a> <span class="meta">Learn the shared two-wire bus used by the BME280 and many displays.</span></li><li><a href="/guides/connect-oled-esp32.html"><strong>Connect an OLED to ESP32</strong></a> <span class="meta">Add a small I2C display after the sensor works over Serial Monitor.</span></li><li><a href="/projects/esp32-iot-weather-station.html"><strong>ESP32 IoT Weather Station</strong></a> <span class="meta">Expand sensor readings into a weather station project.</span></li><li><a href="/projects/esp32-mqtt-sensor-dashboard.html"><strong>ESP32 MQTT Sensor Dashboard</strong></a> <span class="meta">Explore network publishing and a live sensor dashboard.</span></li></ul>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script>
+document.querySelectorAll(".guide-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.open").forEach(function(el) {
+      el.classList.remove("open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.style.display = "none";
+    });
+    item.classList.toggle("open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.style.display = open ? "none" : "block";
+  });
+});
+</script>
+</body>
+</html>

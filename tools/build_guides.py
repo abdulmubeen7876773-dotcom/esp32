@@ -150,7 +150,7 @@ def guide_schema(guide: dict, faqs: list[dict]) -> str:
     article = {
         "@context": "https://schema.org",
         "@type": "LearningResource",
-        "learningResourceType": "Mission",
+        "learningResourceType": guide.get("learning_resource_type", "Mission"),
         "headline": title,
         "description": desc,
         "datePublished": guide.get("date_published", "2026-06-26"),
