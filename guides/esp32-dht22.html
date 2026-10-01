@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<!-- Google tag (gtag.js) -->
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var measurementId = "G-WLHZKSEFP3";
+  var scriptId = "ga4-gtag-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineGa4Initialized) return;
+  window.__esp32EngineGa4Initialized = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+  if (!document.getElementById(scriptId)) {
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+    document.head.appendChild(script);
+  }
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId);
+})();
+</script>
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var publisherId = "ca-pub-1799305676376920";
+  var scriptId = "adsbygoogle-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineAdsenseInitialized) return;
+  window.__esp32EngineAdsenseInitialized = true;
+  function loadAdsense(){
+    if (document.getElementById(scriptId)) return;
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(publisherId);
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+  }
+  if ("requestIdleCallback" in window) {
+    window.addEventListener("load", function(){ requestIdleCallback(loadAdsense, { timeout: 3500 }); }, { once: true });
+  } else {
+    window.addEventListener("load", function(){ setTimeout(loadAdsense, 1200); }, { once: true });
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 DHT22: Complete Guide to Wiring, Arduino Code &amp; Troubleshooting | ESP32 Engine</title>
+<meta name="description" content="Learn how to wire a DHT22 to ESP32, install the Arduino library, read temperature and humidity, and troubleshoot common sensor errors.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-dht22.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 DHT22: Complete Guide to Wiring, Arduino Code &amp; Troubleshooting | ESP32 Engine">
+<meta property="og:description" content="Learn how to wire a DHT22 to ESP32, install the Arduino library, read temperature and humidity, and troubleshoot common sensor errors.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-dht22.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 DHT22: Complete Guide to Wiring, Arduino Code &amp; Troubleshooting | ESP32 Engine">
+<meta name="twitter:description" content="Learn how to wire a DHT22 to ESP32, install the Arduino library, read temperature and humidity, and troubleshoot common sensor errors.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"ESP32 DHT22: Complete Guide to Wiring, Arduino Code & Troubleshooting","description":"Learn how to wire a DHT22 to ESP32, install the Arduino library, read temperature and humidity, and troubleshoot common sensor errors.","datePublished":"2026-10-01","dateModified":"2026-10-01","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-dht22.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 DHT22, DHT22 ESP32 wiring, DHT22 pinout ESP32, DHT22 Arduino code, ESP32 temperature humidity sensor, DHT22 troubleshooting"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP32 DHT22: Complete Guide to Wiring, Arduino Code & Troubleshooting","item":"https://esp32engine.com/guides/esp32-dht22.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is DHT22 the same sensor as AM2302?","acceptedAnswer":{"@type":"Answer","text":"DHT22 and AM2302 are commonly used names for the same temperature-and-humidity sensor family. Physical packaging and breakout boards vary, so check the markings and documentation for the exact part you have."}},{"@type":"Question","name":"Does every DHT22 module need an external pull-up resistor?","acceptedAnswer":{"@type":"Answer","text":"A bare four-pin sensor needs a pull-up on DATA. Many three-pin modules include one, but module designs vary; check its documentation or circuit before adding another resistor."}},{"@type":"Question","name":"Which GPIO should I use for ESP32 DHT22 DATA?","acceptedAnswer":{"@type":"Answer","text":"This example uses GPIO4 on a common original ESP32 DevKit. GPIO availability varies across ESP32 boards, so confirm the pinout for your board and update DHT_PIN to match the wire."}},{"@type":"Question","name":"Why does the DHT22 return NaN?","acceptedAnswer":{"@type":"Answer","text":"NaN means the library did not get a valid reading. Check the selected GPIO, VCC and GND, the DATA pull-up, the DHTTYPE setting, library installation, and the interval between reads."}},{"@type":"Question","name":"How often should I read a DHT22?","acceptedAnswer":{"@type":"Answer","text":"Allow at least two seconds between measurements. The sensor updates slowly, and requesting readings more frequently can return an old value or cause a failed read."}},{"@type":"Question","name":"Can the DHT22 measure air pressure?","acceptedAnswer":{"@type":"Answer","text":"No. It measures temperature and relative humidity. For pressure readings or pressure-based altitude estimates, use a sensor such as the BME280 instead."}}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP32 DHT22: Complete Guide to Wiring, Arduino Code &amp; Troubleshooting</li></ol></nav>
+  <p class="hero-eyebrow">Background reading</p>
+  <h1>ESP32 DHT22: Complete Guide to Wiring, Arduino Code &amp; Troubleshooting</h1>
+  <p class="article-lead">Build a dependable ESP32 temperature-and-humidity reader with the DHT22. Identify the sensor pins, wire a bare sensor or module safely, install the Arduino library, and understand the complete sketch before extending it.</p>
+  <p class="meta guide-meta">12 min read · Updated 2026-10-01</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/images/generated/guides/read-temperature-dht22-1200.webp" alt="DHT22 temperature and humidity sensor connected to an ESP32" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+<div class="guide-friendly-intro">
+<div class="reference-intro-card">
+  <span class="reference-intro-label">Reference Guide</span>
+  <h2 class="reference-intro-title">ESP32 DHT22: Complete Guide to Wiring, Arduino Code &amp; Troubleshooting</h2>
+</div>
+<section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
+  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>A room sensor is a useful first step toward a climate monitor. The DHT22 gives your ESP32 two simple readings, but a reliable build depends on identifying the right pins and letting the sensor work at its own pace.</p></div>
+</section>
+<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
+  <div class="eli12-box mission-eli12">
+    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
+    <div class="eli12-content"><p>The DHT22 is a small digital sensor that reports how warm and humid the air is. The ESP32 asks it over one data wire, then prints the two readings on your computer.</p></div>
+  </div>
+</section>
+<section class="mission-section mission-safety-section" id="safety" aria-labelledby="safety-heading">
+  <aside class="mission-safety" aria-label="Safety first">
+    <div class="mission-safety-head">
+      <span class="mission-safety-icon" aria-hidden="true">⚠️</span>
+      <h2 id="safety-heading">Safety First</h2>
+    </div>
+    <ul><li>Unplug the ESP32 before moving wires and check the pin labels on your exact sensor or module.</li><li>Keep the data pull-up at 3.3 V when it connects directly to an ESP32 GPIO; do not connect a 5 V pulled-up data line to the ESP32.</li></ul>
+  </aside>
+</section>
+</div>
+<section class="guide-technical-content" id="review-and-references" aria-labelledby="trust-heading">
+  <h2 id="trust-heading">Review, Testing, and References</h2>
+  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-10-01. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner. <strong>Estimated time:</strong> 12 min read.</p>
+  <p>This guide is written for learning and bench prototyping. Check the testing notes before adapting the circuit to different boards, batteries, relays, motors, or outdoor hardware.</p>
+  <ul class="guide-related-list"><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li></ul>
+</section>
+  <div class="guide-technical-content">
+  <h2 id="what-dht22-measures">What the DHT22 measures</h2>
+  <p>The DHT22 is a digital sensor for <strong>air temperature</strong> and <strong>relative humidity</strong>. Its controller sends the measurements as a timed digital signal on one bidirectional data line. The ESP32 library decodes that signal; this is not an analog sensor and it does not use the I2C bus.</p>
+  <p>A DHT22 does not measure barometric pressure, air quality, or altitude. It is useful for basic room, greenhouse, or classroom monitoring, but its update rate is slow and readings depend on placement and the sensor's documented operating conditions. Do not treat it as a precision instrument or as a fast feedback sensor. The <a href="/components/dht22.html">DHT22 component reference</a> has concise component details; this guide focuses on wiring and using it with an ESP32.</p>
+
+  <h2 id="dht22-am2302">DHT22 and AM2302 names</h2>
+  <p><strong>DHT22</strong> and <strong>AM2302</strong> are commonly used names for this sensor family. You may find a bare four-pin sensor, a wired probe, or a small three-pin breakout module. The sensing function is similar, but the package, pin order, connector labels, power circuitry, and presence of a pull-up resistor can differ. Use the datasheet and markings for the exact part instead of assuming every board is wired the same way.</p>
+
+  <h2 id="identify-pins">Identify the sensor pins</h2>
+  <p>A common bare DHT22 package has four pins: <strong>VDD/VCC</strong>, <strong>DATA</strong> (sometimes marked SDA), <strong>NC</strong> (no connection), and <strong>GND</strong>. On the usual front view with the grille toward you and pins pointing down, those pins are arranged left to right in that order. Check the datasheet for your exact sensor before wiring because package drawings and clone markings can differ.</p>
+  <p>Three-pin breakout boards typically label the connections with some combination of <strong>VCC/+ </strong>, <strong>DATA/S/OUT</strong>, and <strong>GND/-</strong>. A module's physical pin order is board-specific; follow its silkscreen or wiring diagram rather than copying the bare sensor's left-to-right order. The <a href="/assets/visuals/guides/wiring/read-temperature-dht22-wiring.svg">DHT22 wiring diagram</a> shows one example connection.</p>
+  <div class="pin-table-wrap">
+    <table class="pin-table pin-table-3">
+      <thead><tr><th>Sensor connection</th><th>ESP32 example</th><th>What to check</th></tr></thead>
+      <tbody>
+        <tr><td>VDD, VCC, or +</td><td>3V3</td><td>Use a bare sensor or module documented to operate from 3.3 V for this direct-connection example.</td></tr>
+        <tr><td>DATA, SDA, S, OUT</td><td>GPIO4</td><td>The code uses GPIO4 on a common original ESP32 DevKit; change DHT_PIN if your board or wiring uses another suitable GPIO.</td></tr>
+        <tr><td>GND or -</td><td>GND</td><td>Sensor and ESP32 need a common ground.</td></tr>
+        <tr><td>NC on a bare four-pin sensor</td><td>Leave unconnected</td><td>NC means no connection. Do not use this pin as a second data line.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="wiring">ESP32 DHT22 wiring</h2>
+  <ol>
+    <li>Disconnect USB before wiring.</li>
+    <li>Connect the sensor's VDD/VCC to ESP32 3V3, but only if the exact sensor or module documentation allows a 3.3 V supply.</li>
+    <li>Connect GND to ESP32 GND.</li>
+    <li>Connect DATA to GPIO4 for the example code below. Confirm GPIO4 is available on your board; otherwise select a board-appropriate digital GPIO and change <code>DHT_PIN</code>.</li>
+    <li>Leave the bare sensor's NC pin unconnected.</li>
+    <li>Check whether DATA already has a pull-up resistor before adding one. Keep the pull-up voltage at 3.3 V for a direct ESP32 connection.</li>
+  </ol>
+  <figure style="margin:1rem auto;max-width:900px"><img src="/assets/visuals/guides/wiring/read-temperature-dht22-wiring.svg" alt="DHT22 connected to an ESP32: VCC to 3.3 volts, ground to ground, and data to GPIO4 with a pull-up to 3.3 volts" width="1280" height="760" loading="lazy" decoding="async" style="display:block;width:100%;height:auto"><figcaption>Example wiring for a short bench connection. Follow your board's pinout and the documentation for your exact sensor or module.</figcaption></figure>
+
+  <h3 id="pullup">Why the DATA pull-up matters</h3>
+  <p>The DHT22's one-wire data line is released between signals, so it needs a pull-up to return to a HIGH level. A bare sensor normally needs an external resistor between DATA and its supply. The manufacturer shows 5.1 kΩ as a typical pull-up for short connections; Adafruit's example uses 10 kΩ. For this ESP32 example, connect the pull-up to <strong>3.3 V</strong>, not 5 V.</p>
+  <p>Many three-pin modules include a pull-up on the small board, but this is not guaranteed. Check the module documentation or circuit. If a pull-up is already present, an additional resistor may be unnecessary. Never allow a 5 V pull-up to drive an ESP32 GPIO directly. The exact bare-sensor electrical limits and timing are in the <a href="https://www.aosong.com/uploadfiles/2025/04/20250417105409216.pdf" target="_blank" rel="noopener noreferrer">manufacturer's AM2302 technical manual</a>.</p>
+
+  <h2 id="arduino-setup">Arduino IDE and library setup</h2>
+  <ol>
+    <li>Install the ESP32 board package and verify you can upload a simple sketch. Follow the <a href="/guides/esp32-arduino-ide.html">ESP32 Arduino IDE setup guide</a> if you have not configured the IDE.</li>
+    <li>Open <strong>Sketch → Include Library → Manage Libraries</strong>.</li>
+    <li>Search for <strong>DHT sensor library</strong> by Adafruit and install it. Also install <strong>Adafruit Unified Sensor</strong> if Library Manager does not install it as a dependency.</li>
+    <li>Select your ESP32 board and port. Match <code>DHT_PIN</code> to the GPIO connected to DATA and keep <code>DHT_TYPE</code> set to <code>DHT22</code>.</li>
+    <li>Upload the sketch, then open Serial Monitor at <strong>115200 baud</strong>.</li>
+  </ol>
+  <p>The library and its current dependencies are documented in the <a href="https://github.com/adafruit/DHT-sensor-library" target="_blank" rel="noopener noreferrer">Adafruit DHT sensor library repository</a>. Avoid installing multiple libraries that provide a different <code>DHT.h</code> header; that can cause compile errors or inconsistent behavior.</p>
+
+  <h2 id="complete-code">Complete ESP32 DHT22 Arduino code</h2>
+  <pre><code>
+    #include &lt;DHT.h&gt;
+
+    // Example for a common original ESP32 DevKit. Match this to your wiring.
+    const uint8_t DHT_PIN = 4;
+    #define DHT_TYPE DHT22
+
+    DHT dht(DHT_PIN, DHT_TYPE);
+
+    void setup() {
+      Serial.begin(115200);
+      dht.begin();
+
+      // Let the sensor settle before the first measurement.
+      delay(2100);
+      Serial.println("ESP32 DHT22 reader ready");
+    }
+
+    void loop() {
+      const float humidity = dht.readHumidity();
+      const float temperatureC = dht.readTemperature();
+
+      if (isnan(humidity) || isnan(temperatureC)) {
+        Serial.println("Failed to read from DHT sensor; check wiring and settings.");
+      } else {
+        Serial.print("Temperature: ");
+        Serial.print(temperatureC, 1);
+        Serial.println(" °C");
+
+        Serial.print("Humidity: ");
+        Serial.print(humidity, 1);
+        Serial.println(" %");
+      }
+
+      // The DHT22 should not be sampled more often than every 2 seconds.
+      delay(2000);
+    }</code></pre>
+
+  <h2 id="code-explained">How the code works</h2>
+  <ul>
+    <li><strong><code>DHT_PIN</code>:</strong> the ESP32 GPIO connected to the sensor's DATA line. If you change the wire, update this constant too.</li>
+    <li><strong><code>DHT_TYPE</code>:</strong> tells the library to use DHT22 timing rather than another DHT model.</li>
+    <li><strong><code>dht.begin()</code>:</strong> initializes the library for the selected sensor and pin.</li>
+    <li><strong>First-read wait and loop delay:</strong> allow the sensor to settle after power-up and keep measurements at least two seconds apart. The sensor is slow, and readings can represent its previous measurement.</li>
+    <li><strong><code>readTemperature()</code>:</strong> returns Celsius by default. <code>readTemperature(true)</code> requests Fahrenheit if you need it.</li>
+    <li><strong><code>readHumidity()</code>:</strong> returns relative humidity as a percentage.</li>
+    <li><strong><code>isnan()</code>:</strong> detects an invalid reading so the sketch can report an error instead of printing a misleading number.</li>
+  </ul>
+
+  <h2 id="serial-output">Serial Monitor output</h2>
+  <p>Choose <strong>115200 baud</strong> in Serial Monitor to match <code>Serial.begin(115200)</code>. A working sensor should print output in this general format; your room's values will differ:</p>
+  <pre><code>ESP32 DHT22 reader ready
+  </div>
+  <h2 id="faqs">Frequently Asked Questions</h2>
+  <div class="faq-list guide-faq"><div class="faq-item"><button type="button" class="faq-q">Is DHT22 the same sensor as AM2302?<span class="plus">+</span></button><div class="faq-a"><p>DHT22 and AM2302 are commonly used names for the same temperature-and-humidity sensor family. Physical packaging and breakout boards vary, so check the markings and documentation for the exact part you have.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does every DHT22 module need an external pull-up resistor?<span class="plus">+</span></button><div class="faq-a"><p>A bare four-pin sensor needs a pull-up on DATA. Many three-pin modules include one, but module designs vary; check its documentation or circuit before adding another resistor.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which GPIO should I use for ESP32 DHT22 DATA?<span class="plus">+</span></button><div class="faq-a"><p>This example uses GPIO4 on a common original ESP32 DevKit. GPIO availability varies across ESP32 boards, so confirm the pinout for your board and update DHT_PIN to match the wire.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Why does the DHT22 return NaN?<span class="plus">+</span></button><div class="faq-a"><p>NaN means the library did not get a valid reading. Check the selected GPIO, VCC and GND, the DATA pull-up, the DHTTYPE setting, library installation, and the interval between reads.</p></div></div><div class="faq-item"><button type="button" class="faq-q">How often should I read a DHT22?<span class="plus">+</span></button><div class="faq-a"><p>Allow at least two seconds between measurements. The sensor updates slowly, and requesting readings more frequently can return an old value or cause a failed read.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Can the DHT22 measure air pressure?<span class="plus">+</span></button><div class="faq-a"><p>No. It measures temperature and relative humidity. For pressure readings or pressure-based altitude estimates, use a sensor such as the BME280 instead.</p></div></div></div>
+
+  <h2 id="conclusion">Conclusion</h2>
+  <p>Start with the 3.3 V wiring, a suitable DATA pull-up, and a two-second sampling interval. Once the Serial Monitor readings are stable, continue to the guided DHT22 mission or adapt the sensor for a climate-control or MQTT project. Use a different sensor when your project needs pressure, faster updates, or tighter documented performance.</p>
+  <h2 id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/components/dht22.html"><strong>DHT22 Sensor Reference</strong></a> <span class="meta">Consult the component page for a concise reference and module details.</span></li><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT22</strong></a> <span class="meta">Follow the existing hands-on mission to build and test a room sensor.</span></li><li><a href="/guides/esp32-arduino-ide.html"><strong>ESP32 with Arduino IDE</strong></a> <span class="meta">Set up the board package and upload sketches before adding a sensor.</span></li><li><a href="/guides/digital-inputs-floating-pins.html"><strong>Digital Inputs and Floating Pins</strong></a> <span class="meta">Review ESP32 GPIO input behavior when choosing a data pin.</span></li><li><a href="/projects/esp32-home-climate-automation.html"><strong>ESP32 Home Climate Automation</strong></a> <span class="meta">See a DHT22 used as part of a broader climate-control project.</span></li><li><a href="/projects/esp32-mqtt-sensor-dashboard.html"><strong>ESP32 MQTT Sensor Dashboard</strong></a> <span class="meta">Explore sending temperature and humidity readings to an IoT dashboard.</span></li><li><a href="/guides/esp32-bme280.html"><strong>ESP32 BME280 Complete Guide</strong></a> <span class="meta">Choose a pressure-capable sensor when temperature and humidity are not enough.</span></li></ul>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script>
+document.querySelectorAll(".guide-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.open").forEach(function(el) {
+      el.classList.remove("open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.style.display = "none";
+    });
+    item.classList.toggle("open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.style.display = open ? "none" : "block";
+  });
+});
+</script>
+</body>
+</html>
