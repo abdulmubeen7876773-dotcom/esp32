@@ -18,6 +18,7 @@ GUIDE_IMAGE_BY_SLUG = {
     "esp32-pwm": "/assets/images/generated/guides/pwm-fundamentals-1200.webp",
     "esp32-bme280": "/assets/visuals/components/photos/bme280-photo.svg",
     "esp32-dht22": "/assets/images/generated/guides/read-temperature-dht22-1200.webp",
+    "esp32-dht22-vs-bme280": "/assets/images/generated/guides/read-temperature-dht22-1200.webp",
     "pwm-fundamentals": "/assets/images/generated/guides/pwm-fundamentals-1200.webp",
     "read-temperature-dht22": "/assets/images/generated/guides/read-temperature-dht22-1200.webp",
     "reading-analog-sensors": "/assets/images/generated/guides/reading-analog-sensors-1200.webp",
@@ -81,6 +82,8 @@ def guide_image_alt(guide: dict) -> str:
         return "BME280 environmental sensor breakout module"
     if slug == "esp32-dht22":
         return "DHT22 temperature and humidity sensor connected to an ESP32"
+    if slug == "esp32-dht22-vs-bme280":
+        return "DHT22 sensor used with an ESP32 in a DHT22 and BME280 comparison guide"
     if custom:
         return custom
     headline = guide.get("headline") or guide.get("title", "").split("|")[0].strip() or "ESP32 guide"

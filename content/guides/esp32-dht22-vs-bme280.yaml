@@ -1,0 +1,134 @@
+phase: 2
+sort_order: 11
+slug: esp32-dht22-vs-bme280
+guide_type: reference
+learning_resource_type: Guide
+title: 'DHT22 vs BME280 with ESP32: Differences, Wiring, Accuracy & Which Sensor to Choose | ESP32 Engine'
+headline: 'DHT22 vs BME280 with ESP32: Differences, Wiring, Accuracy & Which Sensor to Choose'
+meta_description: 'Compare DHT22 and BME280 for ESP32 projects: measurements, qualified accuracy, wiring, interfaces, libraries, limitations, and which sensor fits your build.'
+lead: 'Choose by the measurements your project needs: DHT22 is a simpler temperature-and-humidity sensor, while BME280 adds barometric pressure and supports I2C or SPI. Compare practical wiring, library setup, documented limits, and project fit before you build.'
+intro:
+  story: 'Both sensors can give an ESP32 useful environmental readings, but they connect differently and answer different questions. Knowing what each one measures makes it easier to choose without paying for features your project will not use.'
+  eli12: 'DHT22 tells the ESP32 how warm and humid the air is. BME280 measures those too, and also measures air pressure, which can help estimate changes in altitude.'
+  safety:
+    - text: Check the pin labels and voltage requirements for your exact breakout board; board connectors and onboard parts vary by manufacturer.
+    - text: Keep ESP32 signal lines at logic levels supported by your specific board, and disconnect USB power before changing wiring.
+keywords: DHT22 vs BME280, ESP32 temperature humidity sensor comparison, BME280 vs DHT22, ESP32 weather station sensor
+primary_keyword: DHT22 vs BME280
+secondary_keywords: DHT22 or BME280 for ESP32, ESP32 pressure sensor, ESP32 weather station sensor, BME280 compared with DHT22
+proficiency_level: Beginner
+reading_time: 10 min read
+date_published: '2026-10-02'
+date_modified: '2026-10-02'
+conclusion: 'For temperature and humidity alone, a DHT22 can be a straightforward starting point. Choose a BME280 when your project needs pressure as well, or when I2C/SPI integration suits the rest of the build. Use the exact module documentation for pin and power details, then follow the matching ESP32 guide for a complete setup.'
+faqs:
+  - question: Does a BME280 measure humidity as well as pressure?
+    answer: Yes. The BME280 measures temperature, relative humidity, and barometric pressure. Some similar-looking Bosch sensors, such as the BMP280, do not measure humidity, so check the exact chip marking or module documentation.
+  - question: Can the DHT22 estimate altitude?
+    answer: No. The DHT22 does not measure pressure. Pressure-based altitude estimates require a barometric sensor such as the BME280, and the result depends on the reference pressure and conditions.
+  - question: Which sensor is more accurate?
+    answer: There is no single answer across every measurement and condition. Published tolerances depend on the specific sensor, operating range, and test conditions; the breakout board, placement, airflow, and self-heating also affect real readings. Compare the datasheets for the exact parts and intended conditions.
+  - question: Are DHT22 and BME280 wiring interchangeable?
+    answer: No. A DHT22 uses a timed single-wire digital data line, while a BME280 normally uses I2C or SPI. Their power and pin labels also differ, so follow the wiring example and board documentation for the specific sensor.
+  - question: Can I use both sensors with one ESP32?
+    answer: Yes, if your wiring and libraries support both and you have suitable GPIO and bus connections. The BME280 uses I2C or SPI, while the DHT22 has its own data GPIO; make sure the chosen pins do not conflict with other hardware.
+related_guides:
+  - title: DHT22 Sensor Reference
+    href: /components/dht22.html
+    description: Check the concise DHT22 component reference and sensor details.
+  - title: BME280 Sensor Reference
+    href: /components/bme280.html
+    description: Check BME280 pin, interface, and component details.
+  - title: ESP32 DHT22 Complete Guide
+    href: /guides/esp32-dht22.html
+    description: Follow the complete DHT22 wiring, Arduino setup, code, and troubleshooting guide.
+  - title: ESP32 BME280 Complete Guide
+    href: /guides/esp32-bme280.html
+    description: Follow the complete BME280 wiring, Arduino setup, code, and troubleshooting guide.
+  - title: ESP32 IoT Weather Station
+    href: /projects/esp32-iot-weather-station.html
+    description: Continue to a weather station project after choosing and testing a sensor.
+body_html: |
+  <h2 id="short-answer">Short answer: what is the difference?</h2>
+  <p>The <strong>DHT22</strong> (also commonly called AM2302) measures air temperature and relative humidity over a timed single-wire digital connection. The <strong>BME280</strong> measures temperature, relative humidity, and barometric pressure, and communicates using I2C or SPI. Choose based on the readings and interface your project needs; neither is the universal winner.</p>
+  <p>For a room monitor that only needs temperature and humidity, DHT22 may be enough. For a weather-station experiment, pressure trend, or pressure-based altitude estimate, the extra BME280 pressure measurement is useful. Both still need sensible placement and realistic expectations about sensor tolerance.</p>
+
+  <h2 id="measurements">What each sensor measures</h2>
+  <p>DHT22 reports temperature and <strong>relative humidity</strong>. It does not measure air pressure, altitude, air quality, or wind. Its comparatively slow measurement cycle makes it suitable for room and greenhouse monitoring, not rapid control loops.</p>
+  <p>BME280 reports temperature, relative humidity, and <strong>barometric pressure</strong>. Software can use pressure and a reference pressure to estimate altitude, but that is an estimate: weather changes and local pressure must be considered. Neither sensor measures wind, rainfall, or the full set of quantities needed for a calibrated outdoor weather station.</p>
+
+  <h2 id="comparison-table">DHT22 vs BME280 comparison</h2>
+  <div class="pin-table-wrap"><table class="pin-table pin-table-3">
+    <thead><tr><th>Category</th><th>DHT22 / AM2302</th><th>BME280</th></tr></thead>
+    <tbody>
+      <tr><td>Measurements</td><td>Temperature and relative humidity</td><td>Temperature, relative humidity, and pressure</td></tr>
+      <tr><td>Published sensor accuracy examples</td><td>Common AM2302 documentation lists about ±0.5 °C temperature and ±2% RH at 25 °C (maximum humidity deviation can be larger)</td><td>Bosch datasheet specifies about ±0.5 °C temperature, ±3% RH humidity, and pressure accuracy around ±1 hPa over stated conditions</td></tr>
+      <tr><td>ESP32 interface</td><td>One timed digital data wire plus power and ground; not I2C</td><td>I2C or SPI; I2C uses SDA and SCL, SPI uses clock, data, and chip-select signals</td></tr>
+      <tr><td>Update pace</td><td>Slow; allow about two seconds between readings</td><td>Configurable measurement and standby settings; faster sampling is possible, depending on settings and power mode</td></tr>
+      <tr><td>Pressure / altitude</td><td>No pressure measurement, so no pressure-based altitude estimate</td><td>Measures pressure; software can estimate altitude from pressure and a reference</td></tr>
+      <tr><td>Pull-up needs</td><td>DATA needs a pull-up; bare sensors generally need an external resistor, while many modules include one</td><td>I2C lines need pull-ups; many breakouts include them, but check the exact board. SPI does not use I2C pull-ups</td></tr>
+      <tr><td>Setup</td><td>Simple wiring, but timing and pull-up matter</td><td>More interface and configuration choices; confirm I2C address or SPI pin setup</td></tr>
+      <tr><td>Best fit</td><td>Basic, low-rate temperature and humidity projects</td><td>Projects that need pressure too, or prefer I2C/SPI bus integration</td></tr>
+    </tbody>
+  </table></div>
+  <p>These published figures are examples, not a simple head-to-head score. AM2302 documentation lists ±0.5 °C temperature accuracy and ±2% RH at 25 °C, with maximum humidity deviation that can reach ±5% RH. Bosch specifies BME280 temperature accuracy around ±0.5 °C, humidity accuracy around ±3% RH, and pressure accuracy around ±1 hPa under stated conditions. Conditions and test methods differ, so do not treat the numbers as a direct winner comparison. Exact revision, temperature and humidity range, pressure conditions, breakout design, mounting, airflow, and self-heating all matter; check the datasheet for your part.</p>
+
+  <h2 id="accuracy-limitations">Accuracy and operating limitations</h2>
+  <p>The BME280 chip's datasheet gives temperature, humidity, and pressure error figures under particular test conditions. Pressure-based altitude can be sensitive to local weather and the reference pressure; it is useful for relative changes and learning, but is not automatically a surveyed elevation measurement. The sensor package and breakout board can also warm up from the ESP32 or nearby electronics.</p>
+  <p>DHT22 readings update slowly and should not be requested more often than the sensor supports; the manufacturer recommends a two-second measurement interval. Humidity response and readings are affected by placement, condensation, airflow, contamination, and exposure to conditions outside the documented range. Keep either sensor away from direct sunlight, warm regulators, and heat-producing components when measuring ambient air.</p>
+
+  <h2 id="interfaces">Communication interface</h2>
+  <h3>DHT22: a timed single-wire signal</h3>
+  <p>DHT22 uses one bidirectional data connection with a device-specific timing protocol. Arduino libraries handle the pulse timing and decoding. Despite some boards marking a signal pin SDA, it is not an I2C sensor and does not share the ESP32 I2C bus in the normal way.</p>
+  <h3>BME280: I2C or SPI</h3>
+  <p>I2C uses two shared signal lines, SDA and SCL, and typically only a few wires overall. A BME280 is commonly found at I2C address <code>0x76</code> or <code>0x77</code>, depending on the SDO/address selection and breakout implementation. SPI uses separate clock, data-in, data-out, and chip-select signals, with some signal names varying by board. The ESP32 can map these peripherals to supported GPIOs, but use a pinout and library example for your specific board.</p>
+
+  <h2 id="wiring">ESP32 wiring differences</h2>
+  <p>These existing diagrams are examples only. Module pin order, labeling, pull-ups, regulators, and level shifting differ, so read the silkscreen and documentation for your exact breakout.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem;align-items:start">
+    <figure style="margin:1rem auto;max-width:640px"><img src="/assets/visuals/components/wiring/dht22-wiring.svg" alt="Existing DHT22 wiring diagram showing its data, power, and ground connections to an ESP32" width="800" height="500" loading="lazy" decoding="async" style="display:block;width:100%;height:auto"><figcaption>DHT22 example: connect DATA to one suitable ESP32 GPIO; add or verify a pull-up to 3.3 V.</figcaption></figure>
+    <figure style="margin:1rem auto;max-width:640px"><img src="/assets/visuals/components/wiring/bme280-wiring.svg" alt="Existing BME280 wiring diagram showing a breakout connected to ESP32 I2C" width="800" height="500" loading="lazy" decoding="async" style="display:block;width:100%;height:auto"><figcaption>BME280 example: connect the breakout's I2C SDA and SCL pins to the ESP32 I2C pins shown for your board.</figcaption></figure>
+  </div>
+  <h3>DHT22 wiring and pull-up</h3>
+  <p>Connect VCC, DATA, and GND according to the sensor's pinout, with a common ground. A bare four-pin DHT22 normally needs a pull-up resistor between DATA and a suitable logic supply. For direct connection to an ESP32 GPIO, keep DATA pulled up to 3.3 V. Many three-pin modules include a pull-up, but board designs vary; inspect its schematic or documentation before adding another. A DHT22 module that accepts 5 V at VCC may still pull DATA up to 5 V, which is not safe to assume for an ESP32 input.</p>
+  <h3>BME280 wiring, voltage, and breakout boards</h3>
+  <p>For I2C, wire the breakout's GND, SDA, and SCL to the matching ESP32 connections. For SPI, follow the module's labels and library example for SCK, MOSI/SDI, MISO/SDO, and CS. The BME280 chip itself is a low-voltage device; a breakout marked VIN may add a regulator or level shifting, while another board may expose chip-level connections directly. Never infer safe 5 V operation from the BME280 name alone. Check the exact board's permitted supply and signal voltage. Pull-up resistors may already be fitted to I2C breakouts; several modules on one bus can result in overly strong combined pull-ups, so check board documentation if the bus behaves unreliably.</p>
+
+  <h2 id="arduino-setup">Arduino IDE and library setup</h2>
+  <p>Both sensors work with Arduino libraries, but the code and library are different. For DHT22, install the commonly used DHT sensor library and its stated dependency through Library Manager, then select the DHT22 sensor type in code. For BME280, choose a library that explicitly supports BME280 and install its required dependencies; the Adafruit BME280 library, for example, lists Adafruit Unified Sensor and Adafruit BusIO dependencies. Avoid similarly named libraries or BMP280-only drivers, which do not support every BME280 feature.</p>
+  <p>The ESP32 board package and upload setup are shared. Follow the <a href="/guides/esp32-arduino-ide.html">ESP32 Arduino IDE setup guide</a> if you have not yet selected a board and port. Then use the matching <a href="/guides/esp32-dht22.html">DHT22 complete guide</a> or <a href="/guides/esp32-bme280.html">BME280 complete guide</a> for verified end-to-end sketches. This comparison intentionally focuses on the differences instead of duplicating both tutorials.</p>
+
+  <h2 id="practical-code-differences">What changes in the code?</h2>
+  <p>A DHT22 sketch configures a data GPIO and the DHT22 type, initializes the DHT library, and reads temperature and humidity. It should wait long enough between measurements; the complete DHT22 guide uses a two-second interval and checks for invalid readings.</p>
+  <p>A BME280 sketch initializes the I2C or SPI bus, starts the sensor at its selected address or chip-select pin, and reads temperature, humidity, and pressure. An I2C sketch may try the address used by the module, commonly <code>0x76</code> or <code>0x77</code>; SPI setup instead requires the correct wiring and chip-select pin. Use the complete BME280 guide for its working code and address troubleshooting. These are not interchangeable drop-in libraries or pin configurations.</p>
+
+  <h2 id="choose-sensor">Which sensor should you choose?</h2>
+  <ul>
+    <li><strong>Basic temperature and humidity monitor:</strong> DHT22 can be a reasonable choice if its measurement pace and documented tolerance fit your needs. Consider other modern humidity sensors too when size, power, or responsiveness matter.</li>
+    <li><strong>Weather-station learning project:</strong> BME280 is the more useful of these two when you want pressure readings as well as temperature and humidity. A complete station needs other measurements and outdoor-appropriate placement too.</li>
+    <li><strong>Pressure and altitude experiments:</strong> Choose BME280. Treat altitude as an estimate that depends on reference pressure and changing weather.</li>
+    <li><strong>First sensor lesson:</strong> DHT22 has a direct, easy-to-see reading flow, though the pull-up and slow sampling still need care. BME280 is also beginner-friendly when you are ready to learn I2C.</li>
+    <li><strong>Cost-sensitive build:</strong> Compare the actual local prices and features of complete modules, including shipping and required components. Price and board quality vary; do not choose from the sensor name alone.</li>
+  </ul>
+  <p>For outdoor forecasts, calibrated records, or robust industrial monitoring, neither hobby breakout automatically provides a complete solution. Enclosure, radiation shielding, ventilation, calibration, logging, and sensor environmental rating can matter as much as the chip.</p>
+
+  <h2 id="common-mistakes">Common beginner mistakes</h2>
+  <ul>
+    <li>Expecting a DHT22 to provide pressure or altitude data.</li>
+    <li>Assuming a DHT22 signal pin labeled SDA is an I2C connection.</li>
+    <li>Assuming every BME280 breakout accepts 5 V or includes level shifting and pull-ups.</li>
+    <li>Using the wrong BME280 I2C address, or confusing a BME280 with a BMP280 that lacks humidity measurement.</li>
+    <li>Copying pin order from a different module or ESP32 board without checking labels and pinout.</li>
+    <li>Reading DHT22 too frequently, or treating one failed/invalid read as proof that the sensor is defective.</li>
+    <li>Placing either sensor next to a warm ESP32 regulator, in direct sun, or where condensation can form.</li>
+  </ul>
+
+  <h2 id="next-steps">Next steps</h2>
+  <p>Check the concise <a href="/components/dht22.html">DHT22 component reference</a> and <a href="/components/bme280.html">BME280 component reference</a> for the specific module details. Then follow the <a href="/guides/esp32-dht22.html">complete ESP32 DHT22 guide</a> or <a href="/guides/esp32-bme280.html">complete ESP32 BME280 guide</a> to wire the sensor, install the library, and run working code. To combine pressure, temperature, and humidity readings into a build, continue to the <a href="/projects/esp32-iot-weather-station.html">ESP32 IoT Weather Station project</a>.</p>
+
+  <h2 id="faq">Frequently asked questions</h2>
+  <h3>Does a BME280 measure humidity as well as pressure?</h3><p>Yes. BME280 measures temperature, relative humidity, and pressure. Check the exact chip: BMP280 is a similar part without humidity measurement.</p>
+  <h3>Can the DHT22 estimate altitude?</h3><p>No. DHT22 has no pressure measurement; a BME280 can support a pressure-based altitude estimate when supplied with a suitable reference pressure.</p>
+  <h3>Which sensor is more accurate?</h3><p>Accuracy depends on the measurement, specified operating conditions, exact part and breakout, and how it is installed. Compare the appropriate datasheet specifications rather than declaring an all-purpose winner.</p>
+  <h3>Are their ESP32 wires interchangeable?</h3><p>No. DHT22 uses its timed data connection; BME280 uses I2C or SPI. Match the pins, voltage, and library to the exact sensor module.</p>
+  <h3>Can one ESP32 read both?</h3><p>Yes. Connect the BME280 to I2C or SPI and the DHT22 data line to a separate suitable GPIO, then avoid pin conflicts in code and wiring.</p>
