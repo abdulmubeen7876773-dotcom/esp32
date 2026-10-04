@@ -1,0 +1,145 @@
+phase: 1
+sort_order: 3
+slug: esp32-gpio-button
+guide_type: reference
+learning_resource_type: Guide
+title: 'ESP32 GPIO and Push Button Guide: Wiring, Arduino Code, Pull-Up & Debouncing | ESP32 Engine'
+headline: 'ESP32 GPIO and Push Button Guide: Wiring, Arduino Code, Pull-Up & Debouncing'
+meta_description: 'Wire a push button to ESP32 GPIO, use INPUT_PULLUP and active-low logic, run a complete Arduino debounce example, and troubleshoot unstable readings.'
+lead: 'Connect a push button between a suitable ESP32 GPIO and GND, then use INPUT_PULLUP to get a stable released state. This guide explains the wiring, HIGH/LOW logic, a complete debounce sketch, and the board-specific pin details to check.'
+intro:
+  story: 'A push button is one of the simplest ways to let a project listen to a person. The small trick is giving the GPIO a known resting state, then translating the electrical HIGH and LOW into the everyday meanings released and pressed.'
+  eli12: 'A GPIO input is like a tiny listener that can report HIGH or LOW. A button changes the signal, and a pull-up resistor makes sure the signal does not wander when nobody is pressing it.'
+  safety:
+    - text: Disconnect USB power before moving button wires, and check your exact ESP32 board pinout before choosing a GPIO.
+    - text: This example connects the button only between a GPIO and GND; do not wire a button so it shorts 3.3 V directly to GND.
+keywords: ESP32 button wiring, ESP32 GPIO input, ESP32 push button Arduino code, INPUT_PULLUP ESP32, ESP32 button debounce
+primary_keyword: ESP32 GPIO button
+secondary_keywords: ESP32 push button wiring, ESP32 INPUT_PULLUP, ESP32 floating input, Arduino button debounce ESP32
+proficiency_level: Beginner
+reading_time: 10 min read
+date_published: '2026-10-03'
+date_modified: '2026-10-03'
+conclusion: 'Start with a button between a suitable GPIO and GND, enable INPUT_PULLUP, and interpret LOW as pressed. The millis()-based debounce example turns noisy mechanical transitions into one stable state change. Once it works in Serial Monitor, continue to the pull-up, floating-pin, debouncing, and button-controlled LED lessons.'
+faqs:
+  - question: Why does INPUT_PULLUP read HIGH when the button is released?
+    answer: The internal pull-up weakly connects the input to the ESP32 logic supply, so the open button rests at HIGH. Pressing the button connects the input to GND, making it LOW.
+  - question: Do I need an external resistor with INPUT_PULLUP?
+    answer: For this simple button-to-GND circuit, the internal pull-up provides the bias resistor, so a separate pull-up is usually unnecessary. Some GPIOs or board variants may not provide the requested internal pull-up; check the exact board documentation.
+  - question: Which ESP32 GPIO is safe for a button?
+    answer: GPIO27 is used here as an example on a common original ESP32 DevKit. GPIO availability and boot-strapping behavior vary across ESP32 families and boards, so verify the exact pinout before choosing a pin.
+  - question: Why does one press print several times?
+    answer: Mechanical contacts can rapidly switch between open and closed for a short time when pressed or released. Debouncing waits for the reading to stay stable before reporting a state change.
+  - question: Why is my button reading random values?
+    answer: The GPIO may be floating because no pull-up or pull-down sets its idle state. Enable INPUT_PULLUP with the button connected to GND, or use a correctly wired external bias resistor.
+related_guides:
+  - title: Button Controls LED with ESP32
+    href: /guides/button-led-control.html
+    description: Build the button-to-GND INPUT_PULLUP circuit and use its state to control an LED.
+  - title: Pull-Up vs Pull-Down Resistors
+    href: /guides/pull-up-vs-pull-down-resistors.html
+    description: Compare the two resistor arrangements and their HIGH/LOW behavior.
+  - title: Understanding Digital Inputs and Floating Pins
+    href: /guides/digital-inputs-floating-pins.html
+    description: Learn why an input without a defined idle state changes unpredictably.
+  - title: Button Debouncing
+    href: /guides/debouncing-buttons.html
+    description: Explore switch bounce and millis()-based input handling in depth.
+  - title: Multiple Buttons and State Detection
+    href: /guides/multiple-buttons-state-detection.html
+    description: Extend one reliable button input to multiple controls.
+  - title: Blink LED with ESP32
+    href: /guides/blink-led-esp32.html
+    description: Review GPIO output basics before connecting an input to an LED project.
+body_html: |
+  <h2 id="gpio-input">What is a digital input?</h2>
+  <p>A GPIO is a general-purpose input/output pin. In input mode, the ESP32 samples the voltage on the pin and reports a digital state: <strong>HIGH</strong> when the signal is interpreted as a logic-high voltage and <strong>LOW</strong> when it is interpreted as logic-low. The input is not measuring a precise voltage like an analog input; it answers a yes-or-no question.</p>
+  <p>A bare input wire that is not connected to a definite high or low signal can <strong>float</strong>. Electrical noise and nearby wires may then push its reading back and forth. A pull-up gently biases the input HIGH; a pull-down gently biases it LOW. These resistors provide a quiet default without preventing a button from changing the state.</p>
+  <h3>Internal pull-up and pull-down options</h3>
+  <p>On GPIOs supported by the selected ESP32 board and Arduino core, <code>pinMode(pin, INPUT_PULLUP)</code> enables a weak internal resistor that biases an open input HIGH; a button from GPIO to GND then reads HIGH when released and LOW when pressed. The opposite arrangement uses <code>pinMode(pin, INPUT_PULLDOWN)</code>: the internal resistor biases the open input LOW, and the button connects GPIO to <strong>3.3 V</strong>, so released reads LOW and pressed reads HIGH. These are alternate circuits; use the wiring and active logic that match the selected mode.</p>
+  <p>Internal pulls are not available on every pin or board. For example, classic ESP32 GPIO34–GPIO39 are input-only and have no internal pull-up or pull-down; check the selected board/core documentation and use an external bias resistor when needed. This guide's complete sketch uses the pull-up pattern.</p>
+  <pre><code>pinMode(BUTTON_PIN, INPUT_PULLDOWN);  // only on a pin/core that supports it
+  bool pressed = (digitalRead(BUTTON_PIN) == HIGH);  // button connects GPIO to 3.3 V</code></pre>
+
+  <h2 id="button-wiring">ESP32 push-button wiring with INPUT_PULLUP</h2>
+  <p>This example uses <strong>GPIO27</strong> on a common original ESP32 DevKit. Connect one button terminal to GPIO27 and the opposite terminal to GND. In code, <code>INPUT_PULLUP</code> enables the GPIO's internal pull-up, so a separate resistor is not normally needed for this simple circuit.</p>
+  <figure style="margin:1rem auto;max-width:900px"><img src="/assets/visuals/guides/wiring/debouncing-buttons-wiring.svg" alt="ESP32 DevKit GPIO27 connected to one side of a push button, with the opposite button terminal connected to GND and INPUT_PULLUP enabled" width="1600" height="900" loading="lazy" decoding="async" style="display:block;width:100%;height:auto"><figcaption>Button-to-GND example for a common original ESP32 DevKit. The internal pull-up makes the released state HIGH.</figcaption></figure>
+  <div class="pin-table-wrap"><table class="pin-table pin-table-3"><thead><tr><th>Button connection</th><th>ESP32 example</th><th>Notes</th></tr></thead><tbody>
+    <tr><td>One terminal</td><td>GPIO27</td><td>Example input pin; confirm your board pinout and update the code if needed.</td></tr>
+    <tr><td>Opposite terminal</td><td>GND</td><td>Pressing the button connects GPIO27 to ground.</td></tr>
+    <tr><td>Power / resistor</td><td>None for this circuit</td><td>INPUT_PULLUP supplies the internal bias; do not connect 3.3 V to the button in this wiring pattern.</td></tr>
+  </tbody></table></div>
+  <p>With <code>INPUT_PULLUP</code>, logic is intentionally inverted from a common first guess:</p>
+  <ul><li><strong>Released:</strong> the button is open, the pull-up holds the input HIGH.</li><li><strong>Pressed:</strong> the button connects GPIO to GND, so the input reads LOW.</li></ul>
+  <p>Small tactile switches often have pairs of internally connected legs. Orient a four-leg switch across the breadboard's center gap so pressing it joins the two sides. Package layouts vary: if unsure, use the switch datasheet or continuity mode on a multimeter to identify which terminals connect only when pressed.</p>
+
+  <h2 id="gpio-selection">Choose a suitable ESP32 GPIO</h2>
+  <p>GPIO27 is a convenient example on many original ESP32 DevKit boards, but ESP32-C3, S2, S3, and other boards do not share an identical pinout. Check the documentation for your exact board before wiring. Some pins have boot-strapping roles; on the classic ESP32, GPIO0, GPIO2, GPIO5, GPIO12, and GPIO15 are strapping pins whose level during reset can affect boot behavior. Avoid using such a pin for a beginner button unless you understand the board's constraints.</p>
+  <p>On the classic ESP32, GPIO34–GPIO39 are input-only and do not provide the internal pull-up/pull-down resistors. A button circuit using one of these pins needs an external bias resistor instead of relying on <code>INPUT_PULLUP</code>. Capabilities differ across chip families, so do not copy that pin rule blindly to every ESP32 variant.</p>
+
+  <h2 id="arduino-code">Complete Arduino IDE example with debouncing</h2>
+  <p>No extra sensor or button library is required. In Arduino IDE, select the correct ESP32 board and port, then upload this sketch. It reports only stable transitions, so the Serial Monitor does not print a stream of duplicate events while the button is held.</p>
+  <pre><code>const int BUTTON_PIN = 27;  // GPIO27 on a common original ESP32 DevKit
+  const unsigned long DEBOUNCE_MS = 35;
+  
+  int lastRawState = HIGH;
+  int stableButtonState = HIGH;
+  unsigned long lastChangeTime = 0;
+  
+  void setup() {
+    Serial.begin(115200);
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    Serial.println("Button ready. Press the button to test.");
+    Serial.println("Released = HIGH; pressed = LOW.");
+  }
+  
+  void loop() {
+    int rawState = digitalRead(BUTTON_PIN);
+  
+    if (rawState != lastRawState) {
+      lastRawState = rawState;
+      lastChangeTime = millis();
+    }
+  
+    if ((millis() - lastChangeTime) &gt;= DEBOUNCE_MS &amp;&amp;
+        rawState != stableButtonState) {
+      stableButtonState = rawState;
+  
+      if (stableButtonState == LOW) {
+        Serial.println("Button pressed");
+      } else {
+        Serial.println("Button released");
+      }
+    }
+  }</code></pre>
+
+  <h2 id="code-explained">How the code works</h2>
+  <ul>
+    <li><code>BUTTON_PIN</code> keeps the selected input in one place. If your wiring uses another suitable pin, change this constant to match.</li>
+    <li><code>pinMode(BUTTON_PIN, INPUT_PULLUP)</code> makes the pin an input and enables its internal weak pull-up.</li>
+    <li><code>digitalRead()</code> returns HIGH for the released button and LOW while it connects the GPIO to GND.</li>
+    <li><code>lastRawState</code> tracks the latest electrical sample. Each raw transition restarts the debounce timer.</li>
+    <li><code>stableButtonState</code> changes only after the raw reading has stayed unchanged for <code>DEBOUNCE_MS</code>.</li>
+    <li><code>millis()</code> keeps checking without pausing the whole program with <code>delay()</code>. A 35 ms debounce interval is a practical starting value, not a universal value for every switch.</li>
+  </ul>
+
+  <h2 id="serial-monitor">Test with Serial Monitor</h2>
+  <p>Upload the sketch, open <strong>Serial Monitor</strong>, and set its baud rate to <strong>115200</strong>. The initial message explains the active-low logic. Each clean press should print one <code>Button pressed</code> line; releasing it should print one <code>Button released</code> line. Holding the button should not generate repeated messages.</p>
+
+  <h2 id="troubleshooting">Common mistakes and troubleshooting</h2>
+  <h3>Reading changes randomly while untouched</h3><p>The input may be floating, or the pull-up is not enabled. Confirm <code>INPUT_PULLUP</code>, use a GPIO that supports an internal pull-up on your board, and check for a loose jumper.</p>
+  <h3>HIGH means pressed in my project</h3><p>For this button-to-GND INPUT_PULLUP circuit, LOW means pressed and HIGH means released. Reverse the software test only if your wiring intentionally uses a different bias arrangement.</p>
+  <h3>The button always reads pressed or never changes</h3><p>Confirm the code pin matches the wire. Check that the other button terminal reaches ESP32 GND and that the legs are not placed in the same breadboard-connected group. Rotate a four-leg tactile switch or move it across the breadboard center trench.</p>
+  <h3>The ESP32 will not boot reliably</h3><p>Move the button to a suitable non-strapping pin recommended by your board documentation. Some GPIOs affect boot mode when held at reset, and available pins vary by ESP32 family and board.</p>
+  <h3>Input-only pins and INPUT_PULLUP</h3><p>On the classic ESP32, GPIO34–GPIO39 are input-only and lack internal pull resistors. Choose another suitable GPIO or add a correctly wired external pull-up; check the exact ESP32 variant's datasheet.</p>
+  <h3>Serial Monitor shows unreadable characters</h3><p>Set the monitor baud rate to 115200 to match <code>Serial.begin(115200)</code>, and select the correct serial port after upload.</p>
+
+  <h2 id="next-learning">What to learn next</h2>
+  <p>For the basic circuit controlling an LED, continue to <a href="/guides/button-led-control.html">Button Controls LED with ESP32</a>. To understand the electrical default state, read <a href="/guides/pull-up-vs-pull-down-resistors.html">Pull-Up vs Pull-Down Resistors</a> and <a href="/guides/digital-inputs-floating-pins.html">Understanding Digital Inputs and Floating Pins</a>. The dedicated <a href="/guides/debouncing-buttons.html">Button Debouncing lesson</a> goes deeper into timing and press counting. Then try <a href="/guides/multiple-buttons-state-detection.html">Multiple Buttons and State Detection</a>, explore the <a href="/projects/esp32-rgb-led-pattern-controller.html">ESP32 RGB LED Pattern Controller project</a>, or begin with <a href="/guides/blink-led-esp32.html">Blink LED with ESP32</a> before extending the input circuit.</p>
+
+  <h2 id="faq">Frequently asked questions</h2>
+  <h3>Why does INPUT_PULLUP read HIGH when the button is released?</h3><p>The internal pull-up weakly biases the input toward the logic supply. When the button is open, the input reads HIGH; pressing connects it to ground and reads LOW.</p>
+  <h3>Do I need an external resistor?</h3><p>Usually not for a GPIO with a working internal pull-up and a short button wire. Some pins lack internal pulls, and a long or noisy wire may need a circuit designed for that environment.</p>
+  <h3>Which GPIO should I use?</h3><p>GPIO27 is the example for a common original ESP32 DevKit. Check your board's pinout and avoid pins with boot or peripheral constraints you have not accounted for.</p>
+  <h3>Why does one press create multiple readings?</h3><p>A mechanical switch can bounce briefly between electrical states. The debounce timer waits for a stable reading before printing the transition.</p>
+  <h3>Why does the GPIO change when the button is disconnected?</h3><p>An un-biased input can float and respond to electrical noise. Enable a supported internal pull-up/down or add a correctly wired external resistor.</p>
