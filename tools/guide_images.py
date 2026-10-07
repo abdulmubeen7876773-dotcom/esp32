@@ -9,6 +9,7 @@ GUIDE_IMAGE_BY_SLUG = {
     "debouncing-buttons": "/assets/images/generated/guides/debouncing-buttons-1200.webp",
     "digital-inputs-floating-pins": "/assets/images/generated/guides/digital-inputs-floating-pins-1200.webp",
     "environmental-sensors": "/assets/images/generated/guides/environmental-sensors-1200.webp",
+    "esp32-gpio-button": "/assets/images/generated/guides/button-led-control-1200.webp",
     "esp32-arduino-ide": "/assets/images/generated/guides/installing-arduino-ide-esp32-1200.webp",
     "i2c-communication": "/assets/images/generated/guides/i2c-communication-1200.webp",
     "installing-arduino-ide-esp32": "/assets/images/generated/guides/installing-arduino-ide-esp32-1200.webp",
@@ -35,6 +36,7 @@ GUIDE_IMAGE_BASE_BY_SLUG = {
     "debouncing-buttons": "/assets/images/generated/guides/debouncing-buttons",
     "digital-inputs-floating-pins": "/assets/images/generated/guides/digital-inputs-floating-pins",
     "environmental-sensors": "/assets/images/generated/guides/environmental-sensors",
+    "esp32-gpio-button": "/assets/images/generated/guides/button-led-control",
     "esp32-arduino-ide": "/assets/images/generated/guides/installing-arduino-ide-esp32",
     "i2c-communication": "/assets/images/generated/guides/i2c-communication",
     "installing-arduino-ide-esp32": "/assets/images/generated/guides/installing-arduino-ide-esp32",
@@ -82,6 +84,8 @@ def guide_image_alt(guide: dict) -> str:
         return "BME280 environmental sensor breakout module"
     if slug == "esp32-dht22":
         return "DHT22 temperature and humidity sensor connected to an ESP32"
+    if slug == "esp32-gpio-button":
+        return "ESP32 push button on a GPIO input using INPUT_PULLUP"
     if slug == "esp32-dht22-vs-bme280":
         return "DHT22 sensor used with an ESP32 in a DHT22 and BME280 comparison guide"
     if custom:
