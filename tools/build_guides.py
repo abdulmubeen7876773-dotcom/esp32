@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_store import get_content_store
 from guide_images import guide_image_alt, guide_image_path, guide_image_srcset, guide_image_variant_path
-from guide_mission import mission_index_card, mission_meta_badges_html, render_friendly_intro, render_mission_guide
+from guide_mission import mission_index_card, mission_meta_badges_html, render_friendly_intro, render_mission_guide, tutorial_video_section
 from site_layout import (
     OG_IMAGE,
     ORG_NAME,
@@ -259,6 +259,7 @@ def render_legacy_guide(guide: dict) -> str:
   <p class="meta guide-meta">{esc(guide.get("reading_time", "14 min read"))} · Updated {esc(guide.get("date_modified", "2026-06-26"))}</p>
 {guide_hero_image_html(guide)}
 {intro}
+{tutorial_video_section(guide)}
 {guide_trust_block(guide, mission=False)}
   <div class="guide-technical-content">
 {body}
@@ -399,7 +400,18 @@ def render_guides_index(guides: list[dict]) -> str:
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Build guide pages from YAML.")
+    parser.add_argument("--slug", action="append", help="Build only this guide (repeatable); leave the guide index untouched.")
+    args = parser.parse_args()
     guides = get_content_store().guides()
+    if args.slug:
+        requested = set(args.slug)
+        missing = requested - {guide["slug"] for guide in guides}
+        if missing:
+            parser.error("Unknown guide slug(s): " + ", ".join(sorted(missing)))
+        guides = [guide for guide in guides if guide["slug"] in requested]
     if not guides:
         print("No guides found in content/guides/")
         return
@@ -410,8 +422,9 @@ def main():
         out.write_text(render_guide(guide), encoding="utf-8")
         kind = "mission" if is_mission_guide(guide) else "legacy"
         print(f"Wrote guides/{slug}.html ({kind})")
-    GUIDES_INDEX.write_text(render_guides_index(guides), encoding="utf-8")
-    print(f"Wrote guides.html ({len(guides)} guides)")
+    if not args.slug:
+        GUIDES_INDEX.write_text(render_guides_index(guides), encoding="utf-8")
+        print(f"Wrote guides.html ({len(guides)} guides)")
 
 
 if __name__ == "__main__":

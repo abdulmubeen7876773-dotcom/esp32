@@ -709,6 +709,27 @@ def wiring_steps_html(steps: list) -> str:
     return f'<ol class="mission-steps-list">{"".join(items)}</ol>'
 
 
+def tutorial_video_section(guide: dict) -> str:
+    """Render an optional YAML-backed tutorial for mission and reference guides."""
+    video = guide.get("tutorial_video") or {}
+    if not video:
+        return ""
+    video_id = str(video.get("youtube_id", ""))
+    if not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+        raise ValueError(f"Invalid tutorial YouTube ID for {guide.get('slug', 'guide')}")
+    title = video.get("title") or f"{guide.get('headline', 'ESP32')} video tutorial"
+    note = video.get("note", "")
+    note_html = f'<p class="mission-section-lead">{esc(note)}</p>' if note else ""
+    return f"""<section class="mission-section guide-tutorial-video" id="watch-tutorial" aria-labelledby="watch-tutorial-heading">
+  <h2 id="watch-tutorial-heading">Watch the tutorial</h2>
+  {note_html}
+  <div class="guide-video-frame" style="position:relative;aspect-ratio:16 / 9;width:100%;overflow:hidden;border-radius:var(--radius-lg);background:var(--surface);outline:1px solid var(--border);outline-offset:-1px;">
+    <iframe src="https://www.youtube-nocookie.com/embed/{video_id}" title="{esc(title)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" width="560" height="315" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>
+  </div>
+  <p><a href="https://www.youtube.com/watch?v={video_id}" target="_blank" rel="noopener noreferrer" aria-label="Open on YouTube: {esc(title)} (opens in a new tab)">Open on YouTube</a></p>
+</section>"""
+
+
 def render_friendly_intro(guide: dict, *, is_mission: bool) -> str:
     m = guide.get("mission") or {}
     intro = guide.get("intro") or {}
@@ -941,6 +962,7 @@ def render_mission_guide(guide: dict) -> str:
 
     return f"""<article class="mission-journey">
 {intro_html}
+{tutorial_video_section(guide)}
 {goal_html}
 {estimated_time_html}
 {difficulty_html}
