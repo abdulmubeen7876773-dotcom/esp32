@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TEXT_EXTS = {".html", ".xml", ".json", ".js", ".css", ".py", ".yaml", ".yml", ".md", ".bat"}
 SKIP_PARTS = {".git", ".venv", "node_modules", "__pycache__", "playwright-report", "test-results"}
 MOJIBAKE = [
+    "\u00ce\u00a9",  # UTF-8 ohm symbol decoded as Latin-1
     "\ufffd",
     "\u00c2",
     "\u00c3",

@@ -553,6 +553,8 @@ def component_card_html(c: dict) -> str:
     facts = derive_quick_facts(c)
     first_fact = facts[0].get("value", "") if facts and isinstance(facts[0], dict) else "ESP32 ready"
     summary = c.get("summary", "")
+    electrical = c.get("electrical") or {}
+    voltage_facts = "".join(f'<span>{esc(label)}: {esc(electrical.get(key, "Verify module documentation"))}</span>' for key, label in (("supply", "Supply"), ("signal", "Signal"), ("protection", "Protection")))
     return (
         f'<a class="component-card" href="{site_href(f"components/{c["slug"]}.html")}" data-category="{esc(c.get("category", ""))}" data-name="{esc(c["name"].lower())}" data-summary="{esc(summary.lower())}">'
         f'<div class="component-card-img">{img_html}</div>'
@@ -561,7 +563,7 @@ def component_card_html(c: dict) -> str:
         f'<span class="badge {badge_class(c.get("difficulty", "Beginner"))}">{esc(c.get("difficulty", "Beginner"))}</span></div>'
         f'<h3>{esc(c["name"])}</h3>'
         f'<p>{esc(summary)}</p>'
-        f'<div class="component-card-specs"><span>{esc(first_fact)}</span><span>3.3 V friendly</span></div>'
+        f'<div class="component-card-specs"><span>{esc(first_fact)}</span>{voltage_facts}</div>'
         f'<span class="btn btn-card">View Guide<span aria-hidden="true">-></span></span>'
         f"</div></a>"
     )
@@ -581,12 +583,14 @@ def derive_wiring(component: dict) -> dict:
 
 def render_component_body(component: dict) -> str:
     library = component.get("library", "")
+    electrical = component.get("electrical") or {}
+    electrical_specs = [{"name": label, "value": electrical[key], "why": electrical.get("basis", "Check exact module documentation.")} for key, label in (("supply", "Supply in this build"), ("signal", "GPIO signal level"), ("protection", "Protection / level shifting")) if key in electrical]
     return f"""<article class="component-journey">
 {eli12_html(component.get("eli12", ""))}
 {list_panel_html("applications", "A", "Where You Use It", component.get("applications", []), "component-applications")}
 {quick_facts_html(derive_quick_facts(component))}
 {text_section_html("how-it-works", "H", "How It Works", component.get("how_it_works", ""))}
-{specs_html(component.get("specs", []), library)}
+{specs_html(component.get("specs", []) + electrical_specs, library)}
 {pinout_html(component)}
 {wiring_html(derive_wiring(component))}
 {code_section_html(component)}

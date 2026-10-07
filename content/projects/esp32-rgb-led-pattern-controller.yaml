@@ -74,21 +74,71 @@ levels:
     - Add adjustable fade speed.
     - Add a potentiometer color mixer.
     - Save last pattern in preferences.
-    code: "// ESP32 common-cathode RGB LED pattern controller\n// Single low-power RGB LED, not an addressable strip.\nconst\
-      \ int RED_PIN = 25;\nconst int GREEN_PIN = 26;\nconst int BLUE_PIN = 27;\nconst int BUTTON_PIN = 14;\n\nconst int RED_CH\
-      \ = 0;\nconst int GREEN_CH = 1;\nconst int BLUE_CH = 2;\nconst int PWM_FREQ = 5000;\nconst int PWM_RES = 8;\n\nint pattern\
-      \ = 0;\nbool lastButton = HIGH;\nunsigned long lastDebounceMs = 0;\nunsigned long frameMs = 0;\n\nvoid writeRgb(uint8_t\
-      \ r, uint8_t g, uint8_t b) {\n  ledcWrite(RED_CH, r);\n  ledcWrite(GREEN_CH, g);\n  ledcWrite(BLUE_CH, b);\n}\n\nvoid\
-      \ setupPwm() {\n  ledcSetup(RED_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(GREEN_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(BLUE_CH,\
-      \ PWM_FREQ, PWM_RES);\n  ledcAttachPin(RED_PIN, RED_CH);\n  ledcAttachPin(GREEN_PIN, GREEN_CH);\n  ledcAttachPin(BLUE_PIN,\
-      \ BLUE_CH);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupPwm();\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  writeRgb(255,\
-      \ 0, 0);\n}\n\nvoid loop() {\n  bool button = digitalRead(BUTTON_PIN);\n  if (button != lastButton && millis() - lastDebounceMs\
-      \ > 40) {\n    lastDebounceMs = millis();\n    lastButton = button;\n    if (button == LOW) {\n      pattern = (pattern\
-      \ + 1) % 3;\n      Serial.printf(\"Pattern %d\\n\", pattern);\n    }\n  }\n\n  unsigned long now = millis();\n  if (now\
-      \ - frameMs < 20) return;\n  frameMs = now;\n\n  uint8_t phase = (now / 8) & 0xFF;\n  if (pattern == 0) {\n    writeRgb(255,\
-      \ 0, 0);\n  } else if (pattern == 1) {\n    writeRgb(phase, 255 - phase, 128);\n  } else {\n    int step = (now / 500)\
-      \ % 6;\n    const uint8_t colors[6][3] = {{255,0,0},{255,80,0},{0,255,0},{0,255,255},{0,0,255},{160,0,255}};\n    writeRgb(colors[step][0],\
-      \ colors[step][1], colors[step][2]);\n  }\n}\n"
+    code: |-
+      // Classic ESP32 Dev Module; Arduino-ESP32 3.x (>= 3.0.0)
+      // ESP32 common-cathode RGB LED pattern controller
+      // Single low-power RGB LED, not an addressable strip.
+      const int RED_PIN = 25;
+      const int GREEN_PIN = 26;
+      const int BLUE_PIN = 27;
+      const int BUTTON_PIN = 14;
+
+      const int PWM_FREQ = 5000;
+      const int PWM_RES = 8;
+
+      int pattern = 0;
+      bool lastButton = HIGH;
+      unsigned long lastDebounceMs = 0;
+      unsigned long frameMs = 0;
+
+      void writeRgb(uint8_t r, uint8_t g, uint8_t b) {
+        ledcWrite(RED_PIN, r);
+        ledcWrite(GREEN_PIN, g);
+        ledcWrite(BLUE_PIN, b);
+      }
+
+      void setupPwm() {
+        if (!ledcAttach(RED_PIN, PWM_FREQ, PWM_RES) ||
+            !ledcAttach(GREEN_PIN, PWM_FREQ, PWM_RES) ||
+            !ledcAttach(BLUE_PIN, PWM_FREQ, PWM_RES)) {
+          Serial.println("RGB PWM attachment failed");
+          while (true) delay(1000);
+        }
+      }
+
+      void setup() {
+        Serial.begin(115200);
+        setupPwm();
+        pinMode(BUTTON_PIN, INPUT_PULLUP);
+        writeRgb(255, 0, 0);
+      }
+
+      void loop() {
+        bool button = digitalRead(BUTTON_PIN);
+        if (button != lastButton && millis() - lastDebounceMs > 40) {
+          lastDebounceMs = millis();
+          lastButton = button;
+          if (button == LOW) {
+            pattern = (pattern + 1) % 3;
+            Serial.printf("Pattern %d\n", pattern);
+          }
+        }
+
+        unsigned long now = millis();
+        if (now - frameMs < 20) return;
+        frameMs = now;
+
+        uint8_t phase = (now / 8) & 0xFF;
+        if (pattern == 0) {
+          writeRgb(255, 0, 0);
+        } else if (pattern == 1) {
+          writeRgb(phase, 255 - phase, 128);
+        } else {
+          int step = (now / 500) % 6;
+          const uint8_t colors[6][3] = {{255,0,0},{255,80,0},{0,255,0},{0,255,255},{0,0,255},{160,0,255}};
+          writeRgb(colors[step][0], colors[step][1], colors[step][2]);
+        }
+      }
     code_filename: esp32-rgb-led-pattern-controller-beginner.ino
 quality_status: golden_tutorial
 status: needs_polish
@@ -196,26 +246,75 @@ project:
     inverted PWM and are not used here.
   libraries:
   - name: Arduino ESP32 core
-    note: Uses built-in LEDC PWM functions only.
+    note: "Classic ESP32-WROOM DevKit (Arduino board: ESP32 Dev Module), Arduino-ESP32 3.x (3.0.0 or later). Uses the 3.x pin-based LEDC API; Arduino-ESP32 2.x requires the separately labeled legacy reference. Documentation reviewed; this sketch has not been compiled or hardware-tested in this batch. No external library is needed."
   code:
     filename: esp32-rgb-led-pattern-controller.ino
-    content: "// ESP32 common-cathode RGB LED pattern controller\n// Single low-power RGB LED, not an addressable strip.\n\
-      const int RED_PIN = 25;\nconst int GREEN_PIN = 26;\nconst int BLUE_PIN = 27;\nconst int BUTTON_PIN = 14;\n\nconst int\
-      \ RED_CH = 0;\nconst int GREEN_CH = 1;\nconst int BLUE_CH = 2;\nconst int PWM_FREQ = 5000;\nconst int PWM_RES = 8;\n\
-      \nint pattern = 0;\nbool lastButton = HIGH;\nunsigned long lastDebounceMs = 0;\nunsigned long frameMs = 0;\n\nvoid writeRgb(uint8_t\
-      \ r, uint8_t g, uint8_t b) {\n  ledcWrite(RED_CH, r);\n  ledcWrite(GREEN_CH, g);\n  ledcWrite(BLUE_CH, b);\n}\n\nvoid\
-      \ setupPwm() {\n  ledcSetup(RED_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(GREEN_CH, PWM_FREQ, PWM_RES);\n  ledcSetup(BLUE_CH,\
-      \ PWM_FREQ, PWM_RES);\n  ledcAttachPin(RED_PIN, RED_CH);\n  ledcAttachPin(GREEN_PIN, GREEN_CH);\n  ledcAttachPin(BLUE_PIN,\
-      \ BLUE_CH);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  setupPwm();\n  pinMode(BUTTON_PIN, INPUT_PULLUP);\n  writeRgb(255,\
-      \ 0, 0);\n}\n\nvoid loop() {\n  bool button = digitalRead(BUTTON_PIN);\n  if (button != lastButton && millis() - lastDebounceMs\
-      \ > 40) {\n    lastDebounceMs = millis();\n    lastButton = button;\n    if (button == LOW) {\n      pattern = (pattern\
-      \ + 1) % 3;\n      Serial.printf(\"Pattern %d\\n\", pattern);\n    }\n  }\n\n  unsigned long now = millis();\n  if (now\
-      \ - frameMs < 20) return;\n  frameMs = now;\n\n  uint8_t phase = (now / 8) & 0xFF;\n  if (pattern == 0) {\n    writeRgb(255,\
-      \ 0, 0);\n  } else if (pattern == 1) {\n    writeRgb(phase, 255 - phase, 128);\n  } else {\n    int step = (now / 500)\
-      \ % 6;\n    const uint8_t colors[6][3] = {{255,0,0},{255,80,0},{0,255,0},{0,255,255},{0,0,255},{160,0,255}};\n    writeRgb(colors[step][0],\
-      \ colors[step][1], colors[step][2]);\n  }\n}\n"
-  code_explanation: Three LEDC channels drive RGB pins. The button is debounced with millis() and advances a non-blocking
-    pattern state.
+    content: |-
+      // Classic ESP32 Dev Module; Arduino-ESP32 3.x (>= 3.0.0)
+      // ESP32 common-cathode RGB LED pattern controller
+      // Single low-power RGB LED, not an addressable strip.
+      const int RED_PIN = 25;
+      const int GREEN_PIN = 26;
+      const int BLUE_PIN = 27;
+      const int BUTTON_PIN = 14;
+
+      const int PWM_FREQ = 5000;
+      const int PWM_RES = 8;
+
+      int pattern = 0;
+      bool lastButton = HIGH;
+      unsigned long lastDebounceMs = 0;
+      unsigned long frameMs = 0;
+
+      void writeRgb(uint8_t r, uint8_t g, uint8_t b) {
+        ledcWrite(RED_PIN, r);
+        ledcWrite(GREEN_PIN, g);
+        ledcWrite(BLUE_PIN, b);
+      }
+
+      void setupPwm() {
+        if (!ledcAttach(RED_PIN, PWM_FREQ, PWM_RES) ||
+            !ledcAttach(GREEN_PIN, PWM_FREQ, PWM_RES) ||
+            !ledcAttach(BLUE_PIN, PWM_FREQ, PWM_RES)) {
+          Serial.println("RGB PWM attachment failed");
+          while (true) delay(1000);
+        }
+      }
+
+      void setup() {
+        Serial.begin(115200);
+        setupPwm();
+        pinMode(BUTTON_PIN, INPUT_PULLUP);
+        writeRgb(255, 0, 0);
+      }
+
+      void loop() {
+        bool button = digitalRead(BUTTON_PIN);
+        if (button != lastButton && millis() - lastDebounceMs > 40) {
+          lastDebounceMs = millis();
+          lastButton = button;
+          if (button == LOW) {
+            pattern = (pattern + 1) % 3;
+            Serial.printf("Pattern %d\n", pattern);
+          }
+        }
+
+        unsigned long now = millis();
+        if (now - frameMs < 20) return;
+        frameMs = now;
+
+        uint8_t phase = (now / 8) & 0xFF;
+        if (pattern == 0) {
+          writeRgb(255, 0, 0);
+        } else if (pattern == 1) {
+          writeRgb(phase, 255 - phase, 128);
+        } else {
+          int step = (now / 500) % 6;
+          const uint8_t colors[6][3] = {{255,0,0},{255,80,0},{0,255,0},{0,255,255},{0,0,255},{160,0,255}};
+          writeRgb(colors[step][0], colors[step][1], colors[step][2]);
+        }
+      }
+  code_explanation: "ledcAttach(pin, PWM_FREQ, PWM_RES) automatically allocates a separate channel for each RGB pin at 5000 Hz and 8-bit resolution. writeRgb uses ledcWrite(RED_PIN, r), ledcWrite(GREEN_PIN, g), and ledcWrite(BLUE_PIN, b): 3.x writes take GPIO pins, not channels. With this common-cathode LED, 0 is off and 255 is full brightness; each color needs its own series resistor. The button advances a non-blocking pattern state after a 40 ms edge interval."
   expected_output: The RGB LED changes pattern on each button press without long pauses or double-triggering.
   common_mistakes:
   - text: Using a common-anode LED without changing logic.

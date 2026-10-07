@@ -263,15 +263,12 @@
     ],
     "code": {
       "filename": "pwm_led_fade.ino",
-      "notes": "- GPIO18 drives the LED through a resistor.\n- PWM resolution is 8 bits, so duty ranges from 0 to 255.\n- 0 means always OFF and 255 means almost/full ON.\n- The fade changes duty cycle gradually so you can see brightness change.",
-      "content": "const int LED_PIN = 18;\n\nconst int PWM_CHANNEL = 0;\nconst int PWM_FREQUENCY = 5000;\nconst int PWM_RESOLUTION = 8;\n\nvoid setup() {\n  Serial.begin(115200);\n\n  ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);\n  ledcAttachPin(LED_PIN, PWM_CHANNEL);\n\n  Serial.println(\"Mission 07: PWM LED fade ready\");\n}\n\nvoid loop() {\n  for (int duty = 0; duty <= 255; duty += 5) {\n    ledcWrite(PWM_CHANNEL, duty);\n    Serial.print(\"Duty value: \");\n    Serial.println(duty);\n    delay(25);\n  }\n\n  for (int duty = 255; duty >= 0; duty -= 5) {\n    ledcWrite(PWM_CHANNEL, duty);\n    Serial.print(\"Duty value: \");\n    Serial.println(duty);\n    delay(25);\n  }\n}\n"
+      "notes": "Classic ESP32-WROOM DevKit (Arduino board: ESP32 Dev Module), Arduino-ESP32 3.x (3.0.0 or later). Uses the 3.x pin-based LEDC API; Arduino-ESP32 2.x requires the separately labeled legacy reference. Documentation reviewed; this sketch has not been compiled or hardware-tested in this batch.\n\n- GPIO18 drives the LED through a resistor.\n- PWM resolution is 8 bits, so duty ranges from 0 to 255.\n- 0 means always OFF and 255 means full ON.\n- The fade changes duty cycle gradually so you can see brightness change.",
+      "content": "const int LED_PIN = 18;\n\nconst int PWM_FREQUENCY = 5000;\nconst int PWM_RESOLUTION = 8;\n\nvoid setup() {\n  Serial.begin(115200);\n\n  if (!ledcAttach(LED_PIN, PWM_FREQUENCY, PWM_RESOLUTION)) {\n    Serial.println(\"PWM attachment failed\");\n    while (true) delay(1000);\n  }\n\n  Serial.println(\"Mission 07: PWM LED fade ready\");\n}\n\nvoid loop() {\n  for (int duty = 0; duty <= 255; duty += 5) {\n    ledcWrite(LED_PIN, duty);\n    Serial.print(\"Duty value: \");\n    Serial.println(duty);\n    delay(25);\n  }\n\n  for (int duty = 255; duty >= 0; duty -= 5) {\n    ledcWrite(LED_PIN, duty);\n    Serial.print(\"Duty value: \");\n    Serial.println(duty);\n    delay(25);\n  }\n}\n"
     },
     "code_explanation": [
       {
         "text": "LED_PIN is GPIO18, the pin connected to the LED through the resistor."
-      },
-      {
-        "text": "PWM_CHANNEL chooses one ESP32 PWM channel. The channel is like a small hardware helper that creates the repeated pulses."
       },
       {
         "text": "PWM_FREQUENCY is 5000 Hz, which means the PWM cycle repeats 5000 times per second."
@@ -280,16 +277,13 @@
         "text": "PWM_RESOLUTION is 8 bits, so the duty value can range from 0 to 255."
       },
       {
-        "text": "ledcSetup() configures the PWM channel with the chosen frequency and resolution."
-      },
-      {
-        "text": "ledcAttachPin() connects GPIO18 to that PWM channel."
+        "text": "ledcAttach(LED_PIN, PWM_FREQUENCY, PWM_RESOLUTION) configures GPIO18 and automatically allocates its LEDC channel. A false return stops the sketch with an error message."
       },
       {
         "text": "The first for loop increases duty from 0 to 255, making the LED fade brighter."
       },
       {
-        "text": "ledcWrite() changes the duty cycle. It does not stop the program to blink manually."
+        "text": "ledcWrite(LED_PIN, duty) changes the duty cycle on GPIO18. In Arduino-ESP32 3.x the first argument is the pin, not a channel number; hardware keeps generating pulses."
       },
       {
         "text": "The second for loop decreases duty from 255 to 0, making the LED fade dimmer."

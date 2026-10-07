@@ -1,11 +1,8 @@
 slug: esp32-digital-piano
 title: ESP32 Digital Piano
 category: Education
-description: Turn the ESP32 into a musical instrument using its built-in capacitive touch sensor pins as piano keys. Generate
-  tones through a buzzer, then upgrade to I2S audio with a DAC for high-quality sine-wave sound, and finally add polyphony
-  and MIDI output for a full synthesiser experience.
-meta_description: Build an ESP32 digital piano with capacitive touch keys, I2S audio output, and MIDI over USB. From a simple
-  buzzer piano to a full polyphonic synthesiser with waveform selection.
+description: "Build a one-note-at-a-time ESP32 piano with classic ESP32 capacitive touch keys and a passive piezo. I2S audio, polyphony, and MIDI are later upgrade ideas, not features of the displayed sketch."
+meta_description: "Build a classic ESP32 touch piano with eight capacitive pads and a passive piezo using Arduino-ESP32 3.x pin-based LEDC APIs. Plays one note at a time."
 source_base: esp32-digital-piano-legacy-import
 sensor: Touch keys C4-D4-E4-F4
 output: Passive piezo
@@ -56,19 +53,20 @@ levels:
       - GPIO25
       - LEDC square-wave output.
     how:
-    - 'ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped to specific GPIO numbers).
-      touchRead() measures the capacitance of the pad: in air, values are typically 60-80; touching a conductive pad lowers
-      the reading to 10-30. A threshold of 40 reliably distinguishes touch from no-touch with copper foil pads.'
-    - 'LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching the desired audio
-      frequency. ledcChangeFrequency() changes the LEDC channel frequency without reconfiguring the timer, enabling fast frequency
-      changes between notes. A 50 percent duty cycle (128/256) maximises acoustic output.'
-    - 'Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive capacitive touch
-      keys. Cut strips approximately 5x2 cm, arrange them in piano key layout on cardboard or wood, and connect each to a
-      touch GPIO pin with a short wire. The human finger''s capacitance coupled through the foil is sufficient to trigger
-      touchRead() reliably.'
-    - 'Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch, ignoring subsequent
-      touches. This gives the lowest key (leftmost copper pad) priority in a monophonic instrument. For a two-finger chord,
-      the lower key wins. This is the same monophonic priority scheme used in early analogue synthesisers.'
+      - 'ESP32 Capacitive Touch Sensing: The ESP32 has 10 capacitive touch-sensitive pins (T0-T9, mapped to specific GPIO
+        numbers). touchRead() measures the capacitance of the pad: in air, values are typically 60-80; touching a conductive
+        pad lowers the reading to 10-30. The example threshold is 40; calibrate it for the actual pads on a classic ESP32.'
+      - 'LEDC PWM Tone Generation: The passive buzzer produces sound when driven by a PWM signal matching the desired
+        audio frequency. ledcChangeFrequency() changes the PWM frequency for BUZZER_PIN using the Arduino-ESP32 3.x pin-based
+        API, enabling fast frequency changes between notes. A 50 percent duty cycle (128/256) maximises acoustic output.'
+      - 'Copper Foil Touch Keys: Copper foil tape (available from electronics suppliers) makes inexpensive capacitive
+        touch keys. Cut strips approximately 5x2 cm, arrange them in piano key layout on cardboard or wood, and connect
+        each to a touch GPIO pin with a short wire. The human finger''s capacitance coupled through the foil is sufficient
+        to trigger touchRead() reliably.'
+      - 'Monophonic Note Priority: The loop scans touch pins in order and plays the first detected touch, ignoring subsequent
+        touches. This gives the lowest key (leftmost copper pad) priority in a monophonic instrument. For a two-finger
+        chord, the lower key wins. This is the same monophonic priority scheme used in early analogue synthesisers.'
+
     apps:
     - Educational musical instrument for learning note positions and ear training
     - Interactive exhibit keyboard for science museum displays
@@ -92,15 +90,42 @@ levels:
     - Add a second octave using T0-T8 on a second ESP32 connected via I2C to the first
     - Add NeoPixel LEDs under each key that light up when the key is pressed
     - Add note-name labels displayed on an OLED when each key is touched
-    code: "// ESP32 Digital Piano - capacitive touch keys and passive piezo\nconst int NOTES[8] = {262, 294, 330, 349, 392,\
-      \ 440, 494, 523};\nconst char* NAMES[8] = {\"C4\", \"D4\", \"E4\", \"F4\", \"G4\", \"A4\", \"B4\", \"C5\"};\nconst int\
-      \ TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};\nconst int BUZZER_PIN = 25;\nconst int TOUCH_THRESHOLD = 40;\nconst\
-      \ int BUZZER_CHANNEL = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  ledcSetup(BUZZER_CHANNEL, 262, 8);\n  ledcAttachPin(BUZZER_PIN,\
-      \ BUZZER_CHANNEL);\n  ledcWrite(BUZZER_CHANNEL, 0);\n  Serial.println(\"Touch one copper pad to play one note.\");\n\
-      }\n\nvoid loop() {\n  int played = -1;\n  for (int i = 0; i < 8; i++) {\n    if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD)\
-      \ {\n      played = i;\n      break;\n    }\n  }\n  if (played >= 0) {\n    ledcChangeFrequency(BUZZER_CHANNEL, NOTES[played],\
-      \ 8);\n    ledcWrite(BUZZER_CHANNEL, 128);\n    Serial.printf(\"Playing: %s (%d Hz)\\n\", NAMES[played], NOTES[played]);\n\
-      \  } else {\n    ledcWrite(BUZZER_CHANNEL, 0);\n  }\n  delay(10);\n}\n"
+    code: |-
+      // Classic ESP32 Dev Module; Arduino-ESP32 3.x (>= 3.0.0)
+      // ESP32 Digital Piano - capacitive touch keys and passive piezo
+      const int NOTES[8] = {262, 294, 330, 349, 392, 440, 494, 523};
+      const char* NAMES[8] = {"C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"};
+      const int TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};
+      const int BUZZER_PIN = 25;
+      const int TOUCH_THRESHOLD = 40;
+
+      void setup() {
+        Serial.begin(115200);
+        if (!ledcAttach(BUZZER_PIN, 262, 8)) {
+          Serial.println("LEDC attachment failed");
+          while (true) delay(1000);
+        }
+        ledcWrite(BUZZER_PIN, 0);
+        Serial.println("Touch one copper pad to play one note.");
+      }
+
+      void loop() {
+        int played = -1;
+        for (int i = 0; i < 8; i++) {
+          if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD) {
+            played = i;
+            break;
+          }
+        }
+        if (played >= 0) {
+          ledcChangeFrequency(BUZZER_PIN, NOTES[played], 8);
+          ledcWrite(BUZZER_PIN, 128);
+          Serial.printf("Playing: %s (%d Hz)\n", NAMES[played], NOTES[played]);
+        } else {
+          ledcWrite(BUZZER_PIN, 0);
+        }
+        delay(10);
+      }
     code_filename: esp32-digital-piano-beginner.ino
   intermediate:
     level: intermediate
@@ -378,20 +403,46 @@ project:
     The code plays the first touched key only.
   libraries:
   - name: Arduino ESP32 core
-    note: Uses built-in touchRead and LEDC functions.
+    note: "Classic ESP32-WROOM DevKit (Arduino board: ESP32 Dev Module), Arduino-ESP32 3.x (3.0.0 or later). Uses the 3.x pin-based LEDC API; Arduino-ESP32 2.x requires the separately labeled legacy reference. Documentation reviewed; this sketch has not been compiled or hardware-tested in this batch. The listed touch pins and threshold direction apply only to classic ESP32."
   code:
     filename: esp32-digital-piano.ino
-    content: "// ESP32 Digital Piano - capacitive touch keys and passive piezo\nconst int NOTES[8] = {262, 294, 330, 349,\
-      \ 392, 440, 494, 523};\nconst char* NAMES[8] = {\"C4\", \"D4\", \"E4\", \"F4\", \"G4\", \"A4\", \"B4\", \"C5\"};\nconst\
-      \ int TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};\nconst int BUZZER_PIN = 25;\nconst int TOUCH_THRESHOLD = 40;\n\
-      const int BUZZER_CHANNEL = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  ledcSetup(BUZZER_CHANNEL, 262, 8);\n  ledcAttachPin(BUZZER_PIN,\
-      \ BUZZER_CHANNEL);\n  ledcWrite(BUZZER_CHANNEL, 0);\n  Serial.println(\"Touch one copper pad to play one note.\");\n\
-      }\n\nvoid loop() {\n  int played = -1;\n  for (int i = 0; i < 8; i++) {\n    if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD)\
-      \ {\n      played = i;\n      break;\n    }\n  }\n  if (played >= 0) {\n    ledcChangeFrequency(BUZZER_CHANNEL, NOTES[played],\
-      \ 8);\n    ledcWrite(BUZZER_CHANNEL, 128);\n    Serial.printf(\"Playing: %s (%d Hz)\\n\", NAMES[played], NOTES[played]);\n\
-      \  } else {\n    ledcWrite(BUZZER_CHANNEL, 0);\n  }\n  delay(10);\n}\n"
-  code_explanation: TOUCH_PINS maps each copper pad to a note in NOTES. When touchRead drops below 40, LEDC changes GPIO25
-    to that note frequency.
+    content: |-
+      // Classic ESP32 Dev Module; Arduino-ESP32 3.x (>= 3.0.0)
+      // ESP32 Digital Piano - capacitive touch keys and passive piezo
+      const int NOTES[8] = {262, 294, 330, 349, 392, 440, 494, 523};
+      const char* NAMES[8] = {"C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"};
+      const int TOUCH_PINS[8] = {4, 15, 13, 12, 14, 27, 33, 32};
+      const int BUZZER_PIN = 25;
+      const int TOUCH_THRESHOLD = 40;
+
+      void setup() {
+        Serial.begin(115200);
+        if (!ledcAttach(BUZZER_PIN, 262, 8)) {
+          Serial.println("LEDC attachment failed");
+          while (true) delay(1000);
+        }
+        ledcWrite(BUZZER_PIN, 0);
+        Serial.println("Touch one copper pad to play one note.");
+      }
+
+      void loop() {
+        int played = -1;
+        for (int i = 0; i < 8; i++) {
+          if (touchRead(TOUCH_PINS[i]) < TOUCH_THRESHOLD) {
+            played = i;
+            break;
+          }
+        }
+        if (played >= 0) {
+          ledcChangeFrequency(BUZZER_PIN, NOTES[played], 8);
+          ledcWrite(BUZZER_PIN, 128);
+          Serial.printf("Playing: %s (%d Hz)\n", NAMES[played], NOTES[played]);
+        } else {
+          ledcWrite(BUZZER_PIN, 0);
+        }
+        delay(10);
+      }
+  code_explanation: "TOUCH_PINS maps each copper pad to a note in NOTES. On classic ESP32, touching a pad decreases touchRead(); calibrate the threshold for your pads instead of assuming 40 works everywhere. ledcAttach(BUZZER_PIN, 262, 8) allocates GPIO25 automatically. ledcChangeFrequency(BUZZER_PIN, NOTES[played], 8) changes its frequency; ledcWrite(BUZZER_PIN, 128) gives approximately 50% duty and 0 silences it. All LEDC arguments here are GPIO pins, not channel numbers. This build plays one note at a time. ESP32-S2/S3 have different touch behavior/pin maps; ESP32-C3 has no touch peripheral. Leave boot-strapping pads untouched during reset."
   expected_output: Serial Monitor prints the note name and frequency when a pad is touched. The passive piezo plays one square-wave
     note and becomes silent when no pad is touched.
   common_mistakes:

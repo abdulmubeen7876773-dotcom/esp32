@@ -179,6 +179,7 @@
 </section>
 
 </div>
+
 <section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
   <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">Goal</span><span class="mission-section-title">Mission Goal</span></h2>
   <div class="mission-build-panel"><p>Fade an LED with PWM and understand duty cycle well enough to explain how fast ON/OFF pulses can create brightness and speed control.</p></div>
@@ -291,29 +292,30 @@
   </div>
   <pre class="code-block"><code class="language-arduino">const <span class="tok-kw">int</span> LED_PIN = <span class="tok-num">18</span>;
 
-const <span class="tok-kw">int</span> PWM_CHANNEL = <span class="tok-num">0</span>;
 const <span class="tok-kw">int</span> PWM_FREQUENCY = <span class="tok-num">5000</span>;
 const <span class="tok-kw">int</span> PWM_RESOLUTION = <span class="tok-num">8</span>;
 
 <span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
   <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
 
-  ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
-  ledcAttachPin(LED_PIN, PWM_CHANNEL);
+  <span class="tok-kw">if</span> (!ledcAttach(LED_PIN, PWM_FREQUENCY, PWM_RESOLUTION)) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;PWM attachment failed&quot;);
+    <span class="tok-kw">while</span> (<span class="tok-kw">true</span>) <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+  }
 
   <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Mission <span class="tok-num">07</span>: PWM LED fade ready&quot;);
 }
 
 <span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
   <span class="tok-kw">for</span> (<span class="tok-kw">int</span> duty = <span class="tok-num">0</span>; duty &lt;= <span class="tok-num">255</span>; duty += <span class="tok-num">5</span>) {
-    ledcWrite(PWM_CHANNEL, duty);
+    ledcWrite(LED_PIN, duty);
     <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Duty value: &quot;);
     <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(duty);
     <span class="tok-fn">delay</span>(<span class="tok-num">25</span>);
   }
 
   <span class="tok-kw">for</span> (<span class="tok-kw">int</span> duty = <span class="tok-num">255</span>; duty &gt;= <span class="tok-num">0</span>; duty -= <span class="tok-num">5</span>) {
-    ledcWrite(PWM_CHANNEL, duty);
+    ledcWrite(LED_PIN, duty);
     <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Duty value: &quot;);
     <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(duty);
     <span class="tok-fn">delay</span>(<span class="tok-num">25</span>);
@@ -325,11 +327,11 @@ const <span class="tok-kw">int</span> PWM_RESOLUTION = <span class="tok-num">8</
   <div class="mission-code-preview-body"><p>The LED should fade smoothly from off to bright, then bright back to off. Serial Monitor should print changing duty values:</p></div>
 </aside>
   </div>
-  <div class="mission-code-notes"><ul class="mission-bullets"><li>GPIO18 drives the LED through a resistor.</li><li>PWM resolution is 8 bits, so duty ranges from 0 to 255.</li><li>0 means always OFF and 255 means almost/full ON.</li><li>The fade changes duty cycle gradually so you can see brightness change.</li></ul></div>
+  <div class="mission-code-notes"><p>Classic ESP32-WROOM DevKit (Arduino board: ESP32 Dev Module), Arduino-ESP32 3.x (3.0.0 or later). Uses the 3.x pin-based LEDC API; Arduino-ESP32 2.x requires the separately labeled legacy reference. Documentation reviewed; this sketch has not been compiled or hardware-tested in this batch.</p><ul class="mission-bullets"><li>GPIO18 drives the LED through a resistor.</li><li>PWM resolution is 8 bits, so duty ranges from 0 to 255.</li><li>0 means always OFF and 255 means full ON.</li><li>The fade changes duty cycle gradually so you can see brightness change.</li></ul></div>
 </section>
 <section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
   <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">Code</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
-  <ul class="mission-bullets"><li>LED_PIN is GPIO18, the pin connected to the LED through the resistor.</li><li>PWM_CHANNEL chooses one ESP32 PWM channel. The channel is like a small hardware helper that creates the repeated pulses.</li><li>PWM_FREQUENCY is 5000 Hz, which means the PWM cycle repeats 5000 times per second.</li><li>PWM_RESOLUTION is 8 bits, so the duty value can range from 0 to 255.</li><li>ledcSetup() configures the PWM channel with the chosen frequency and resolution.</li><li>ledcAttachPin() connects GPIO18 to that PWM channel.</li><li>The first for loop increases duty from 0 to 255, making the LED fade brighter.</li><li>ledcWrite() changes the duty cycle. It does not stop the program to blink manually.</li><li>The second for loop decreases duty from 255 to 0, making the LED fade dimmer.</li></ul>
+  <ul class="mission-bullets"><li>LED_PIN is GPIO18, the pin connected to the LED through the resistor.</li><li>PWM_FREQUENCY is 5000 Hz, which means the PWM cycle repeats 5000 times per second.</li><li>PWM_RESOLUTION is 8 bits, so the duty value can range from 0 to 255.</li><li>ledcAttach(LED_PIN, PWM_FREQUENCY, PWM_RESOLUTION) configures GPIO18 and automatically allocates its LEDC channel. A false return stops the sketch with an error message.</li><li>The first for loop increases duty from 0 to 255, making the LED fade brighter.</li><li>ledcWrite(LED_PIN, duty) changes the duty cycle on GPIO18. In Arduino-ESP32 3.x the first argument is the pin, not a channel number; hardware keeps generating pulses.</li><li>The second for loop decreases duty from 255 to 0, making the LED fade dimmer.</li></ul>
 </section>
 <section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
   <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">Output</span><span class="mission-section-title">Expected Behaviour</span></h2>

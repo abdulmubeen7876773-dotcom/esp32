@@ -69,32 +69,63 @@ levels:
     - Medicine cabinet opening monitor for elderly care
     - Gate or fence panel open alert system
     troubleshooting:
-    - - ESP32 wakes up continuously even when lid is closed
-      - 'The magnet is not close enough to the reed switch. Move the magnet close to the reed switch when the lid
-        is shut. Test with a multimeter: continuity should show closed when the magnet is adjacent.'
-    - - No deep sleep wakeup on lid open
-      - Verify the code uses GPIO33 with INPUT_PULLUP and that the reed switch can pull the pin to GND when closed.
-        Confirm GPIO33 changes state before relying on deep-sleep wake.
-    - - Buzzer produces no sound
-      - Confirm it is a passive buzzer (not active). Active buzzers sound at one fixed frequency and do not respond to PWM
-        frequency changes. ledcSetup() requires a passive buzzer that responds to the 2000 Hz square wave.
-    - - Wakeup fires multiple times for one lid opening
-      - Switch bounce can trigger multiple wakeups in rapid succession. Add a 100 nF capacitor across the reed switch terminals
-        to debounce. In firmware, record the last wakeup time in RTC memory and ignore events within 5 seconds of the previous
-        one.
+      - - ESP32 wakes up continuously even when lid is closed
+        - 'The magnet is not close enough to the reed switch. Move the magnet close to the reed switch when the lid is
+          shut. Test with a multimeter: continuity should show closed when the magnet is adjacent.'
+      - - No deep sleep wakeup on lid open
+        - Verify the code uses GPIO33 with INPUT_PULLUP and that the reed switch can pull the pin to GND when closed.
+          Confirm GPIO33 changes state before relying on deep-sleep wake.
+      - - Buzzer produces no sound
+        - Confirm it is a passive buzzer (not active). Active buzzers sound at one fixed frequency and do not respond
+          to PWM frequency changes. This sketch uses ledcAttach(BUZZER_PIN, 2000, 8) to drive a passive piezo with a 2000
+          Hz square wave.
+      - - Wakeup fires multiple times for one lid opening
+        - Switch bounce can trigger multiple wakeups in rapid succession. Add a 100 nF capacitor across the reed switch
+          terminals to debounce. In firmware, record the last wakeup time in RTC memory and ignore events within 5 seconds
+          of the previous one.
+
     upgrades:
     - Add Wi-Fi and send a Telegram message with the date and time of each delivery
     - Add a small load cell to detect parcel weight (was it a letter or a package?)
     - Add an ESP-NOW transmitter to alert an indoor receiver unit without Wi-Fi
     - Add a photoresistor inside the mailbox to detect mail even if the lid was already open
-    code: "// ESP32 Smart Mailbox - reed switch demo on RTC GPIO33\nconst int REED_PIN = 33;   // RTC-capable input for ext0\
-      \ wake\nconst int BUZZER_PIN = 25; // passive piezo alert\nconst int BUZZER_CHANNEL = 0;\n\nvoid alertTone() {\n  ledcSetup(BUZZER_CHANNEL,\
-      \ 2000, 8);\n  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);\n  for (int i = 0; i < 3; i++) {\n    ledcWrite(BUZZER_CHANNEL,\
-      \ 128);\n    delay(180);\n    ledcWrite(BUZZER_CHANNEL, 0);\n    delay(120);\n  }\n  ledcDetachPin(BUZZER_PIN);\n}\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  pinMode(REED_PIN, INPUT_PULLUP);\n  esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();\n\
-      \  if (cause == ESP_SLEEP_WAKEUP_EXT0) {\n    Serial.println(\"Mailbox lid opened.\");\n    alertTone();\n  } else {\n\
-      \    Serial.println(\"Mailbox monitor armed.\");\n  }\n  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 1);\n  Serial.println(\"\
-      Entering deep sleep.\");\n  Serial.flush();\n  esp_deep_sleep_start();\n}\n\nvoid loop() {}\n"
+    code: |-
+      // Classic ESP32 Dev Module; Arduino-ESP32 3.x (>= 3.0.0)
+      // ESP32 Smart Mailbox - reed switch demo on RTC GPIO33
+      const int REED_PIN = 33;   // RTC-capable input for ext0 wake
+      const int BUZZER_PIN = 25; // passive piezo alert
+
+      void alertTone() {
+        if (!ledcAttach(BUZZER_PIN, 2000, 8)) {
+          Serial.println("Buzzer PWM attachment failed");
+          return;
+        }
+        for (int i = 0; i < 3; i++) {
+          ledcWrite(BUZZER_PIN, 128);
+          delay(180);
+          ledcWrite(BUZZER_PIN, 0);
+          delay(120);
+        }
+        ledcDetach(BUZZER_PIN);
+      }
+
+      void setup() {
+        Serial.begin(115200);
+        pinMode(REED_PIN, INPUT_PULLUP);
+        esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
+        if (cause == ESP_SLEEP_WAKEUP_EXT0) {
+          Serial.println("Mailbox lid opened.");
+          alertTone();
+        } else {
+          Serial.println("Mailbox monitor armed.");
+        }
+        esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 1);
+        Serial.println("Entering deep sleep.");
+        Serial.flush();
+        esp_deep_sleep_start();
+      }
+
+      void loop() {}
     code_filename: esp32-smart-mailbox-beginner.ino
   intermediate:
     level: intermediate
@@ -365,19 +396,47 @@ project:
     Outdoor use needs enclosure, strain relief, and battery protection.
   libraries:
   - name: Arduino ESP32 core
-    note: Uses ESP32 deep sleep functions and LEDC PWM.
+    note: "Classic ESP32-WROOM DevKit (Arduino board: ESP32 Dev Module), Arduino-ESP32 3.x (3.0.0 or later). Uses the 3.x pin-based LEDC API; Arduino-ESP32 2.x requires the separately labeled legacy reference. Documentation reviewed; this sketch has not been compiled or hardware-tested in this batch. No external library is needed."
   code:
     filename: esp32-smart-mailbox.ino
-    content: "// ESP32 Smart Mailbox - reed switch demo on RTC GPIO33\nconst int REED_PIN = 33;   // RTC-capable input for\
-      \ ext0 wake\nconst int BUZZER_PIN = 25; // passive piezo alert\nconst int BUZZER_CHANNEL = 0;\n\nvoid alertTone() {\n\
-      \  ledcSetup(BUZZER_CHANNEL, 2000, 8);\n  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);\n  for (int i = 0; i < 3; i++)\
-      \ {\n    ledcWrite(BUZZER_CHANNEL, 128);\n    delay(180);\n    ledcWrite(BUZZER_CHANNEL, 0);\n    delay(120);\n  }\n\
-      \  ledcDetachPin(BUZZER_PIN);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(REED_PIN, INPUT_PULLUP);\n  esp_sleep_wakeup_cause_t\
-      \ cause = esp_sleep_get_wakeup_cause();\n  if (cause == ESP_SLEEP_WAKEUP_EXT0) {\n    Serial.println(\"Mailbox lid opened.\"\
-      );\n    alertTone();\n  } else {\n    Serial.println(\"Mailbox monitor armed.\");\n  }\n  esp_sleep_enable_ext0_wakeup(GPIO_NUM_33,\
-      \ 1);\n  Serial.println(\"Entering deep sleep.\");\n  Serial.flush();\n  esp_deep_sleep_start();\n}\n\nvoid loop() {}\n"
-  code_explanation: REED_PIN is GPIO33 so ext0 wake can work. After a wake event, the sketch prints a lid-open message, plays
-    the buzzer, then returns to deep sleep.
+    content: |-
+      // Classic ESP32 Dev Module; Arduino-ESP32 3.x (>= 3.0.0)
+      // ESP32 Smart Mailbox - reed switch demo on RTC GPIO33
+      const int REED_PIN = 33;   // RTC-capable input for ext0 wake
+      const int BUZZER_PIN = 25; // passive piezo alert
+
+      void alertTone() {
+        if (!ledcAttach(BUZZER_PIN, 2000, 8)) {
+          Serial.println("Buzzer PWM attachment failed");
+          return;
+        }
+        for (int i = 0; i < 3; i++) {
+          ledcWrite(BUZZER_PIN, 128);
+          delay(180);
+          ledcWrite(BUZZER_PIN, 0);
+          delay(120);
+        }
+        ledcDetach(BUZZER_PIN);
+      }
+
+      void setup() {
+        Serial.begin(115200);
+        pinMode(REED_PIN, INPUT_PULLUP);
+        esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
+        if (cause == ESP_SLEEP_WAKEUP_EXT0) {
+          Serial.println("Mailbox lid opened.");
+          alertTone();
+        } else {
+          Serial.println("Mailbox monitor armed.");
+        }
+        esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 1);
+        Serial.println("Entering deep sleep.");
+        Serial.flush();
+        esp_deep_sleep_start();
+      }
+
+      void loop() {}
+  code_explanation: "REED_PIN is RTC GPIO33 on the classic ESP32. After an ext0 wake event, the sketch prints a lid-open message and plays three 2000 Hz tones. ledcAttach(BUZZER_PIN, 2000, 8) allocates GPIO25; ledcWrite(BUZZER_PIN, 128) starts approximately 50% duty, 0 silences it, and ledcDetach(BUZZER_PIN) releases the pin before sleep. All are Arduino-ESP32 3.x pin-based calls. ext0 is level-triggered: if the lid stays open at the HIGH wake level, returning to sleep can immediately wake again. Verify the input bias during sleep and add a close/re-arm policy before relying on a single alert per opening."
   expected_output: Serial Monitor prints "Mailbox monitor armed." on first boot and "Entering deep sleep." before sleep.
     When the reed switch wake condition occurs, it prints "Mailbox lid opened.", plays three short tones, and returns
     to deep sleep.

@@ -280,7 +280,7 @@
 </section>
 <section class="project-section" id="libraries" aria-labelledby="libraries-heading">
   <h2 id="libraries-heading"><span class="project-section-title">Libraries</span></h2>
-  <ul class="project-callout-list"><li>Arduino ESP32 core<span class="project-part-note">Uses ESP32 deep sleep functions and LEDC PWM.</span></li></ul>
+  <ul class="project-callout-list"><li>Arduino ESP32 core<span class="project-part-note">Classic ESP32-WROOM DevKit (Arduino board: ESP32 Dev Module), Arduino-ESP32 3.x (3.0.0 or later). Uses the 3.x pin-based LEDC API; Arduino-ESP32 2.x requires the separately labeled legacy reference. Documentation reviewed; this sketch has not been compiled or hardware-tested in this batch. No external library is needed.</span></li></ul>
 </section>
 <section class="project-section" id="code" aria-labelledby="code-heading">
   <h2 id="code-heading"><span class="project-section-icon" aria-hidden="true">⌨️</span><span class="project-section-title">Code</span></h2>
@@ -298,21 +298,23 @@
       <span class="btn-copy-label">Copy</span>
     </button>
   </div>
-  <pre class="code-block"><code class="language-arduino"><span class="tok-com">// ESP32 Smart Mailbox - reed switch demo on RTC GPIO33</span>
+  <pre class="code-block"><code class="language-arduino"><span class="tok-com">// Classic ESP32 Dev Module; Arduino-ESP32 3.x (&gt;= 3.0.0)</span>
+<span class="tok-com">// ESP32 Smart Mailbox - reed switch demo on RTC GPIO33</span>
 const <span class="tok-kw">int</span> REED_PIN = <span class="tok-num">33</span>;   <span class="tok-com">// RTC-capable input for ext0 wake</span>
 const <span class="tok-kw">int</span> BUZZER_PIN = <span class="tok-num">25</span>; <span class="tok-com">// passive piezo alert</span>
-const <span class="tok-kw">int</span> BUZZER_CHANNEL = <span class="tok-num">0</span>;
 
 <span class="tok-kw">void</span> alertTone() {
-  ledcSetup(BUZZER_CHANNEL, <span class="tok-num">2000</span>, <span class="tok-num">8</span>);
-  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
+  <span class="tok-kw">if</span> (!ledcAttach(BUZZER_PIN, <span class="tok-num">2000</span>, <span class="tok-num">8</span>)) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Buzzer PWM attachment failed&quot;);
+    <span class="tok-kw">return</span>;
+  }
   <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">3</span>; i++) {
-    ledcWrite(BUZZER_CHANNEL, <span class="tok-num">128</span>);
+    ledcWrite(BUZZER_PIN, <span class="tok-num">128</span>);
     <span class="tok-fn">delay</span>(<span class="tok-num">180</span>);
-    ledcWrite(BUZZER_CHANNEL, <span class="tok-num">0</span>);
+    ledcWrite(BUZZER_PIN, <span class="tok-num">0</span>);
     <span class="tok-fn">delay</span>(<span class="tok-num">120</span>);
   }
-  ledcDetachPin(BUZZER_PIN);
+  ledcDetach(BUZZER_PIN);
 }
 
 <span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
@@ -336,7 +338,7 @@ const <span class="tok-kw">int</span> BUZZER_CHANNEL = <span class="tok-num">0</
 </section>
 <section class="project-section" id="code-explanation" aria-labelledby="code-explanation-heading">
   <h2 id="code-explanation-heading"><span class="project-section-title">Code Explanation</span></h2>
-  <div class="project-prose"><p>REED_PIN is GPIO33 so ext0 wake can work. After a wake event, the sketch prints a lid-open message, plays the buzzer, then returns to deep sleep.</p></div>
+  <div class="project-prose"><p>REED_PIN is RTC GPIO33 on the classic ESP32. After an ext0 wake event, the sketch prints a lid-open message and plays three 2000 Hz tones. ledcAttach(BUZZER_PIN, 2000, 8) allocates GPIO25; ledcWrite(BUZZER_PIN, 128) starts approximately 50% duty, 0 silences it, and ledcDetach(BUZZER_PIN) releases the pin before sleep. All are Arduino-ESP32 3.x pin-based calls. ext0 is level-triggered: if the lid stays open at the HIGH wake level, returning to sleep can immediately wake again. Verify the input bias during sleep and add a close/re-arm policy before relying on a single alert per opening.</p></div>
 </section>
 <section class="project-section project-output" id="output" aria-labelledby="output-heading">
   <h2 id="output-heading"><span class="project-section-icon" aria-hidden="true">✨</span><span class="project-section-title">Expected Output</span></h2>
