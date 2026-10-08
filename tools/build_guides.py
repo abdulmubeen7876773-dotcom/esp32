@@ -230,7 +230,54 @@ document.querySelectorAll(".guide-faq .faq-q").forEach(function(btn) {
 </script>"""
 
 
+def render_concise_reference(guide: dict) -> str:
+    """Opt-in structured reference layout; preserve legacy rendering by default."""
+    from article_sections import setup_section, examples_section, sources_section, prepare_article, jump_links
+    from guide_mission import _rich_content
+    from component_page import faq_section_html as accessible_faq, component_faq_script
+    sections = [setup_section(guide.get("setup", {}))]
+    for section in guide.get("sections", []):
+        section_id = esc(section["id"])
+        sections.append(f'<section class="mission-section" id="{section_id}" aria-labelledby="{section_id}-heading"><h2 id="{section_id}-heading">{esc(section["heading"])}</h2>' + _rich_content(section["text"]) + '</section>')
+        if section["id"] == "upload-steps":
+            sections.append(examples_section(guide.get("code_examples", [])))
+    sections.append('<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 id="next-steps-heading">Next steps</h2>' + _rich_content(guide.get("conclusion", "")) + '</section>')
+    sections.extend([accessible_faq(guide.get("faqs", [])), sources_section(guide.get("sources", [])), related_section_html(guide.get("related_guides", []))])
+    body = prepare_article("\n".join(sections))
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{head_html("", guide["title"], guide["meta_description"], canonical_path="guides/" + guide["slug"] + ".html", og_type="article", extra_schema=guide_schema(guide, guide.get("faqs", [])))}
+</head>
+<body class="reference-guide-page">
+<main>
+{header_html("guides")}
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">{esc(guide["headline"])}</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>{esc(guide["headline"])}</h1>
+<p class="article-lead">{esc(guide["lead"])}</p>
+<p class="meta guide-meta">{esc(guide["reading_time"])} · Updated {esc(guide["date_modified"])}</p>
+{guide_hero_image_html(guide)}
+{tutorial_video_section(guide)}
+<article class="mission-journey article-concise">
+{jump_links(body)}
+{body}
+</article>
+</section>
+</main>
+{footer_html()}
+<script src="{SEARCH_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>
+<script src="/mission-guide.js" defer></script>
+{component_faq_script(sync_aria=True)}
+</body>
+</html>"""
+
+
 def render_legacy_guide(guide: dict) -> str:
+    if guide.get("concise_layout"):
+        return render_concise_reference(guide)
     slug = guide["slug"]
     page_title = guide["title"]
     desc = guide["meta_description"]

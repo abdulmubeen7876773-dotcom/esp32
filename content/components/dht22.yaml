@@ -1,374 +1,253 @@
 slug: dht22
-name: DHT22 Sensor with ESP32
+name: 'DHT22 with ESP32: Wiring, Readings and Troubleshooting'
 category: Sensors
 difficulty: Beginner
 icon: 🌡
 image: /assets/visuals/components/photos/dht22-photo.webp
-summary: DHT22 ESP32 wiring and code reference for temperature and humidity projects, with GPIO4 DATA wiring, 3.3 V power, pull-up resistor guidance, Arduino setup, and common read-failure fixes.
-date_modified: '2026-08-22'
+summary: Read air temperature and humidity with a DHT22 on ESP32. Identify bare sensors and modules, wire a
+  3.3 V data pull-up, and diagnose failed readings.
+date_modified: '2026-10-08'
 experience_required: Basic Arduino upload, breadboard wiring, and Serial Monitor
 applications:
-  - Room comfort monitor
-  - ESP32 weather station
-  - Greenhouse humidity monitor
-  - Smart thermostat input
-  - Classroom environmental data logger
-  - Fan or ventilation trigger
-eli12: |
-  The DHT22 is a small digital sensor that reports two things about the air: temperature and humidity.
+- Room comfort monitor
+- ESP32 weather station
+- Greenhouse humidity monitor
+- Smart thermostat input
+- Classroom environmental data logger
+- Fan or ventilation trigger
+eli12: 'DHT22 measures air temperature in °C and relative humidity in % RH. It does not measure pressure. Choose
+  it for slow indoor comfort logging or a classroom sensor build. For pressure too, consider BME280. Neither
+  sensor is a weatherproof enclosure or a calibrated laboratory instrument.
 
-  Temperature tells you how warm the air is. Humidity tells you how much water vapor is in the air. The ESP32 asks the DHT22 for a reading through one data wire, and the sensor replies with numbers your code can print, display, log, or use to control another device.
 
-  Use it when you need a simple low-cost room sensor. Do not use it for fast control loops, outdoor weatherproof measurements, or scientific calibration work.
-quick_facts:
-  - label: Measures
-    value: Air temperature and relative humidity
-    why: One sensor gives the two values needed for comfort, weather, and greenhouse projects.
-  - label: Signal type
-    value: Single-wire digital data
-    why: The ESP32 receives decoded numbers instead of measuring a noisy analog voltage.
-  - label: Update speed
-    value: About one new reading every 2 seconds
-    why: Slow timing is fine for rooms and weather, but not for fast control systems.
-  - label: ESP32 voltage
-    value: 3.3 V recommended
-    why: ESP32 GPIO pins are not 5 V tolerant, so the data line should stay at 3.3 V.
-  - label: Best beginner pin
-    value: GPIO4
-    why: GPIO4 is easy to use and avoids the common boot problems of strapping pins.
-  - label: Library
-    value: Adafruit DHT sensor library
-    why: The library handles the timing-sensitive pulse decoding for you.
-how_it_works: |
-  The DHT22 is not an analog temperature sensor. Inside the package, a humidity sensing element changes electrically as it absorbs or releases water vapor from the air. A temperature sensor measures the surrounding air temperature. A tiny controller inside the DHT22 converts those measurements into a digital data frame.
+  DHT22 normally offers a wider temperature/humidity range and finer readings than the older DHT11 models described
+  by Adafruit. DHT11 is useful when you already own one and only need a basic room demonstration. Match the
+  library sensor type to the actual part; similar wiring does not make the two interchangeable in code.'
+how_it_works: 'The sensor exchanges timed pulses on DATA; this is not I2C and not the Dallas OneWire protocol.
+  The library checks the response and returns temperature and humidity. A failed checksum or timeout produces
+  NaN.
 
-  Communication happens on one DATA wire. The ESP32 briefly pulls the line low to request a measurement. The DHT22 then responds with timed HIGH and LOW pulses. Short and long pulses represent binary data. The Arduino library measures those pulse widths, checks the packet, and returns floating-point temperature and humidity values.
 
-  The pull-up resistor is important because the DATA line must normally rest at 3.3 V. The sensor transmits by pulling the line low at precise times. Without a pull-up, the line can float, noise can look like data, and the library may return NaN.
+  Adafruit describes older DHT11 parts as 0–50 °C and 20–80% RH with coarser accuracy, versus a wider range
+  for its DHT22. DHT11 revisions and modules differ, so consult the actual datasheet. Our historical /guides/read-temperature-dht22.html
+  quick build now deliberately uses DHT11 and a DHT11 video; it is labeled that way in the links below.
 
-  The sensor is slow because humidity measurement depends on the physical sensing material settling. That is why a 2 second interval is a requirement, not just a suggestion.
+
+  The library limits both sensor types to one new cached measurement per 2 seconds. Updating the screen faster
+  does not make the sensor sample faster. Avoid breathing directly on it when comparing readings; nearby heat
+  and moisture affect local air conditions.'
 specs:
-  - name: Supply voltage
-    value: 3.3 V to 5 V sensor range; use 3.3 V with ESP32
-    why: ESP32 inputs must not receive 5 V logic from a pulled-up data line.
-  - name: Temperature range
-    value: -40 C to 80 C
-    why: Wide enough for rooms, greenhouses, sheds, and many school experiments.
-  - name: Temperature accuracy
-    value: Typically +/-0.5 C
-    why: Good for learning and comfort monitoring, not for laboratory calibration.
-  - name: Humidity range
-    value: 0 to 100 percent RH
-    why: Covers dry indoor air through very humid environments.
-  - name: Humidity accuracy
-    value: Typically +/-2 percent RH to +/-5 percent RH
-    why: Enough to detect trends, but values should not be treated as precision instruments.
-  - name: Communication
-    value: Proprietary one-wire digital protocol
-    why: It uses one GPIO, but it is not Dallas OneWire and does not use I2C or SPI.
-  - name: Sampling period
-    value: 2 seconds minimum between reads
-    why: Reading faster commonly causes NaN or repeated values.
-  - name: Resolution
-    value: 0.1 C and 0.1 percent RH reported by common libraries
-    why: Displaying one decimal place is useful; extra decimals are not meaningful.
-  - name: Typical current
-    value: Around 1 mA while measuring, much lower when idle
-    why: Suitable for small USB projects, but deep-sleep battery designs need careful duty cycling.
-  - name: Pull-up resistor
-    value: 4.7 k ohm to 10 k ohm from DATA to 3.3 V
-    why: The data line must rest HIGH so the sensor can pull it LOW to transmit bits.
-  - name: Cable length
-    value: Keep breadboard wires short; long cables need stronger wiring discipline
-    why: The timing protocol is sensitive to noise and capacitance on the data line.
-  - name: Best environment
-    value: Clean air, no direct water, no condensation
-    why: Moisture on the board or sensor can corrupt readings and damage electronics.
+- name: Measurements
+  value: Temperature (°C) and relative humidity (% RH)
+  why: Relative humidity depends on temperature; keep the sensor away from ESP32/regulator heat.
+- name: Supply in this example
+  value: 3.3 V
+  why: Aosong’s linked DHT22 datasheet specifies 3.3–6 V; Adafruit’s product guidance specifies 3–5 V. Use
+    3.3 V here and verify your exact sensor/module rating.
+- name: DATA signal
+  value: Pull up to 3.3 V, never 5 V into ESP32
+  why: A module powered at 5 V may pull DATA to 5 V. This example uses 3.3 V throughout; verify module circuitry.
+- name: Pull-up
+  value: 10 kΩ from DATA to 3.3 V for short breadboard wiring
+  why: Adafruit shows 10 kΩ. A verified breakout may already have it; the weak ESP32 internal pull-up is not
+    a substitute for the specified circuit.
+- name: Sampling
+  value: 2.5 seconds in this sketch
+  why: Aosong asks for more than 2 seconds between samples. The library’s cache minimum is 2000 ms; the sketch
+    waits 2500 ms, including before its first read.
+- name: Published DHT22 range
+  value: −40 to 80 °C; 0–100% RH
+  why: Adafruit product guidance, not a promise for every module or operation under condensation.
+- name: Published accuracy
+  value: ±0.5 °C; 2–5 percentage points RH
+  why: Adafruit product guidance. Decimal resolution does not establish calibration or guaranteed accuracy
+    for your sensor.
 pinout:
-  - pin: VCC / +
-    role: Power input
-    connects: ESP32 3.3 V
-    note: Use 3.3 V for direct ESP32 wiring. Some modules accept 5 V, but 3.3 V keeps the data line safe.
-  - pin: DATA / OUT
-    role: Digital signal output/input
-    connects: ESP32 GPIO4
-    note: Needs a pull-up to 3.3 V. Many modules include it; bare sensors usually do not.
-  - pin: NC
-    role: No connection on bare 4-pin sensor
-    connects: Leave disconnected
-    note: Some 3-pin modules do not expose this pin.
-  - pin: GND / -
-    role: Ground reference
-    connects: ESP32 GND
-    note: Ground must be common with the ESP32 or the data signal has no reference.
+- pin: '1: VCC'
+  role: Bare sensor power
+  connects: 3.3 V
+  note: For the standard bare package, face the vented front toward you with leads pointing down; count left
+    to right. Verify the part datasheet before power.
+- pin: '2: DATA'
+  role: Bidirectional digital signal
+  connects: GPIO4 and 10 kΩ to 3.3 V
+  note: 'Do not use an input-only GPIO: the host must drive DATA low to start a read.'
+- pin: '3: NC'
+  role: No connection
+  connects: Leave disconnected
+  note: Bare four-pin package only; not a ground pin.
+- pin: '4: GND'
+  role: Ground
+  connects: ESP32 GND
+  note: Three-pin breakouts can reorder +, DATA/OUT/S and −. Follow printed labels, not this bare-package order.
 wiring:
-  illustration_alt: DHT22 VCC to ESP32 3.3 V, GND to ESP32 GND, DATA to ESP32 GPIO4, optional 10 k ohm pull-up from DATA to 3.3 V
+  illustration_alt: 'Logical DHT22 wiring: VCC to 3.3 V, DATA to GPIO4 with a 10 kΩ pull-up to 3.3 V, NC disconnected
+    and GND shared. Standard bare package viewed from its vented front; physical ESP32 header positions vary.'
   image: /assets/visuals/components/wiring/dht22-wiring.svg
-  summary: |
-    A DHT22 module is the easiest version for beginners because it usually includes the pull-up resistor. A bare 4-pin DHT22 needs one extra resistor from DATA to 3.3 V. Module labels and pin order vary, so follow the labels printed on your board instead of copying another module's left-to-right order.
+  summary: 'Bare sensor: vented front facing you, leads down, pins 1–4 run VCC, DATA, NC, GND from left to
+    right for the standard package. A three-pin breakout is a different assembly: follow its VCC/+/DATA/OUT/S/GND/−
+    labels.
 
-    Keep the wires short on a breadboard. Long jumper wires can add noise and capacitance, which makes the timed digital pulses harder for the ESP32 to read.
+
+    Use 3.3 V supply and a DATA pull-up to 3.3 V. Check module documentation or unpowered resistance between
+    DATA and VCC before adding a duplicate pull-up. Never assume an onboard resistor goes to a safe voltage.
+    Keep leads short and unplug USB before changing wiring.'
   table_columns:
-    - DHT22 Pin
-    - ESP32 Connection
-    - Purpose / Notes
+  - DHT22 Pin
+  - ESP32 Connection
+  - Purpose / Notes
   table_rows:
-    - component_pin: VCC / +
-      esp32_pin: 3.3 V
-      notes: Power for the sensor. Use 3.3 V for direct ESP32 wiring so the DATA pull-up stays ESP32-safe.
-    - component_pin: DATA / OUT
-      esp32_pin: GPIO4
-      notes: One-wire digital signal. Needs a pull-up to 3.3 V; many modules include it, bare sensors usually do not.
-    - component_pin: NC
-      esp32_pin: Leave disconnected
-      notes: No connection on the bare 4-pin DHT22 package; many 3-pin modules do not expose this pin.
-    - component_pin: GND / -
-      esp32_pin: GND
-      notes: Shared ground reference for the ESP32 and sensor.
-    - component_pin: Pull-up resistor
-      esp32_pin: DATA to 3.3 V
-      notes: Use 10 k ohm for short breadboard wiring on a bare sensor; 4.7 k ohm may help longer wiring.
+  - component_pin: VCC / + (bare pin 1)
+    esp32_pin: 3.3 V
+    notes: Verify module supports 3.3 V supply.
+  - component_pin: DATA / OUT / S (bare pin 2)
+    esp32_pin: GPIO4
+    notes: 10 kΩ to 3.3 V on bare sensor; verify module pull-up.
+  - component_pin: NC (bare pin 3)
+    esp32_pin: Not connected
+    notes: Not exposed on many three-pin breakouts.
+  - component_pin: GND / − (bare pin 4)
+    esp32_pin: GND
+    notes: Common signal reference.
   steps:
-    - Unplug the ESP32 USB cable before wiring.
-    - Put the DHT22 module on the breadboard with each pin in a separate row.
-    - Connect VCC or + to ESP32 3.3 V.
-    - Connect GND or - to ESP32 GND.
-    - Connect DATA or OUT to ESP32 GPIO4.
-    - If using a bare 4-pin sensor, connect a 10 k ohm resistor between DATA and 3.3 V.
-    - Leave NC disconnected on a bare DHT22.
-    - Plug in USB and make sure the code uses DHTPIN 4.
+  - Disconnect USB and identify the actual package/module labels.
+  - Wire supply, ground and DATA as listed; add the bare-sensor pull-up.
+  - Reconnect USB, install the libraries and upload the DHT22 sketch.
+  - Open Serial Monitor at 115200 baud and wait at least 2 seconds.
 library: DHT sensor library by Adafruit plus Adafruit Unified Sensor
 code:
-  filename: dht22_esp32_component_test.ino
-  notes: |
-    The library include gives Arduino access to the DHT class. DHTPIN stores the ESP32 GPIO number connected to DATA, and DHTTYPE tells the library to use DHT22 timing.
-
-    setup() starts Serial Monitor and initializes the sensor. loop() uses millis() instead of delay() so the structure is easier to expand later with displays, buttons, Wi-Fi, or relays.
-
-    readHumidity(), readTemperature(), and readTemperature(true) request values from the sensor. isnan() catches failed reads before bad values enter the rest of your program. The final Serial.print() block formats the values so beginners can compare Celsius, Fahrenheit, humidity, and heat index on one line.
-  content: |
-    #include "DHT.h"
-
-    // DHT22 DATA pin connected to ESP32 GPIO4.
-    #define DHTPIN 4
-    #define DHTTYPE DHT22
-
-    // Read slowly. The DHT22 needs about 2 seconds per fresh reading.
-    const unsigned long READ_INTERVAL_MS = 2000;
-
-    DHT dht(DHTPIN, DHTTYPE);
-    unsigned long lastReadTime = 0;
-
-    void setup() {
-      Serial.begin(115200);
-      delay(1000);
-
-      dht.begin();
-      Serial.println("DHT22 component test");
-      Serial.println("Check wiring if you see failed readings.");
-    }
-
-    void loop() {
-      if (millis() - lastReadTime < READ_INTERVAL_MS) {
-        return;
-      }
-      lastReadTime = millis();
-
-      float humidity = dht.readHumidity();
-      float temperatureC = dht.readTemperature();
-      float temperatureF = dht.readTemperature(true);
-
-      if (isnan(humidity) || isnan(temperatureC) || isnan(temperatureF)) {
-        Serial.println("Read failed: check DATA pin, pull-up resistor, power, and ground.");
-        return;
-      }
-
-      float heatIndexC = dht.computeHeatIndex(temperatureC, humidity, false);
-
-      Serial.print("Temperature: ");
-      Serial.print(temperatureC, 1);
-      Serial.print(" C / ");
-      Serial.print(temperatureF, 1);
-      Serial.print(" F  |  Humidity: ");
-      Serial.print(humidity, 1);
-      Serial.print(" %  |  Heat index: ");
-      Serial.print(heatIndexC, 1);
-      Serial.println(" C");
-    }
-output: |
-  Open Serial Monitor at 115200 baud. A healthy circuit prints one line about every 2 seconds:
-
-  Temperature: 24.3 C / 75.7 F  |  Humidity: 55.0 %  |  Heat index: 24.1 C
-
-  The value should move slowly. Breathe near the sensor from a short distance and humidity should rise. Place it near a window and temperature may drift. If the output says "Read failed", the ESP32 did not decode a valid pulse train from the sensor.
-common_mistakes:
-  - text: Powering the module from 5 V while the DATA pull-up also goes to 5 V.
-  - text: Using a bare DHT22 without the required pull-up resistor.
-  - text: Reading faster than once every 2 seconds.
-  - text: Wiring DATA to one GPIO but using a different pin number in code.
-  - text: Forgetting to install Adafruit Unified Sensor with the DHT library.
-  - text: Expecting DHT22 to behave like an analog sensor with analogRead().
-  - text: Touching the sensor grill and warming it with your fingers.
-  - text: Mounting the sensor directly above a warm ESP32 voltage regulator.
-  - text: Using long loose jumper wires during breadboard testing.
-  - text: Treating DHT22 readings as laboratory-grade measurements.
+  title: DHT22 on GPIO4
+  filename: esp32_dht22_readings.ino
+  wiring: Use the 3.3 V wiring above. This example uses DHT22, not DHT11.
+  content: "#include <DHT.h>\n\nconstexpr uint8_t DHT_PIN = 4;\nDHT dht(DHT_PIN, DHT22);\n\nvoid setup() {\n\
+    \  Serial.begin(115200);\n  dht.begin();\n}\n\nvoid loop() {\n  delay(2500);\n  float humidity = dht.readHumidity();\n\
+    \  float temperature = dht.readTemperature();\n  if (isnan(humidity) || isnan(temperature)) {\n    Serial.println(\"\
+    DHT22 read failed: check wiring, pull-up and sensor type.\");\n    return;\n  }\n  Serial.print(\"Temperature:\
+    \ \");\n  Serial.print(temperature, 1);\n  Serial.print(\" C | Humidity: \");\n  Serial.print(humidity,\
+    \ 1);\n  Serial.println(\" % RH\");\n}"
+  notes: The temperature call uses the same cached measurement as the humidity call. Do not force faster reads.
+    This blocking delay is adequate for this isolated demonstration; a larger project can schedule reads with
+    millis().
+output: 'Illustrative output, not a measured result: Temperature: 23.4 C | Humidity: 48.2 % RH. Your room determines
+  the values; they need not change on every line. NaN means an invalid read, not 0 °C. Keep the sensor away
+  from condensation and let it settle after moving it.'
 troubleshooting:
-  - problem: Serial Monitor prints "Read failed"
-    cause: DATA pin mismatch, missing pull-up resistor, bad ground, or reading too fast.
-    fix: Confirm DATA is on GPIO4, add a 10 k ohm pull-up for a bare sensor, share GND, and keep the 2 second interval.
-  - problem: Code will not compile because DHT.h is missing
-    cause: The Adafruit DHT sensor library is not installed.
-    fix: Install "DHT sensor library" by Adafruit and "Adafruit Unified Sensor" from Arduino Library Manager.
-  - problem: Upload works but no output appears
-    cause: Serial Monitor baud rate does not match the code.
-    fix: Set Serial Monitor to 115200 baud and press the ESP32 reset button.
-  - problem: Readings are stuck or always zero
-    cause: Sensor is not powered, ground is missing, or the jumper is in the wrong breadboard row.
-    fix: Check 3.3 V, GND, and breadboard rows with the board unplugged.
-  - problem: Temperature is higher than the room
-    cause: Sensor is too close to the ESP32 regulator, USB chip, laptop exhaust, or your hand.
-    fix: Move the sensor away from heat sources and wait several readings.
-  - problem: Humidity jumps when you breathe nearby
-    cause: Human breath is warm and humid.
-    fix: This is normal. For stable room readings, place the sensor away from your face and airflow.
-  - problem: Values update slowly
-    cause: DHT22 is designed for slow environmental measurements.
-    fix: Use a BME280 or SHT31 if you need faster or more stable readings.
-  - problem: ESP32 will not boot after wiring
-    cause: The sensor is connected to a boot-sensitive pin or the wiring pulls a pin into the wrong state.
-    fix: Use GPIO4 for this beginner circuit and avoid strapping pins such as GPIO0, GPIO2, GPIO12, and GPIO15 until you understand boot modes.
-  - problem: Readings work on USB but fail on battery
-    cause: Battery voltage or regulator output is unstable.
-    fix: Use a stable 3.3 V regulator and add a small decoupling capacitor near the sensor if wires are long.
-  - problem: Sensor works sometimes and fails sometimes
-    cause: Loose jumper wires or breadboard contact resistance.
-    fix: Reseat all wires, shorten the DATA wire, and avoid moving the breadboard while testing.
-  - problem: Humidity stays at 99 or 100 percent
-    cause: Condensation, water exposure, or a damaged sensing element.
-    fix: Let the sensor dry in clean room air. Replace it if readings do not recover.
-  - problem: Fahrenheit output looks wrong
-    cause: Calling readTemperature(true) was removed or mixed with Celsius math.
-    fix: Use readTemperature() for Celsius and readTemperature(true) for Fahrenheit.
-  - problem: Heat index seems close to temperature
-    cause: Heat index changes strongly only when temperature and humidity are high.
-    fix: This is normal at comfortable room conditions.
-  - problem: Library examples use another pin
-    cause: Example sketches often use Arduino Uno pin numbers.
-    fix: Change DHTPIN to the ESP32 GPIO you actually wired, such as 4.
-  - problem: Long cable gives unreliable readings
-    cause: The one-wire timing signal is degraded by cable capacitance and electrical noise.
-    fix: Use shorter cable, twisted ground/data pairing, a stronger pull-up such as 4.7 k ohm, or choose an I2C sensor for longer wiring.
+- problem: Read failed / NaN
+  cause: Incorrect wiring, missing pull-up, wrong DHT type or damaged sensor.
+  fix: Unplug USB, verify package orientation and DATA GPIO4, check 3.3 V supply/shared GND and the 10 kΩ pull-up.
+    Use DHT22 in the constructor and short leads.
+- problem: 'DHT.h: No such file'
+  cause: Adafruit DHT library is absent or installed into a different IDE environment.
+  fix: Install DHT sensor library by Adafruit in Library Manager and accept Adafruit Unified Sensor. Reopen
+    the sketch and compile again.
+- problem: Values repeat
+  cause: Read caching or slowly changing room conditions.
+  fix: Keep at least 2 seconds between samples. Repeated values are normal; do not force reads faster to seek
+    variation.
+- problem: Temperature too warm / humidity unexpected
+  cause: Nearby regulator heat, enclosure airflow, condensation or an uncalibrated part.
+  fix: Move the sensor away from heat, allow settling time and compare in the same air conditions. Do not infer
+    precision from one decimal place.
+- problem: Bare package order differs from module
+  cause: Breakout manufacturer rearranged the header.
+  fix: Follow your module labels and schematic. Do not transfer the bare four-pin left-to-right sequence to
+    a three-pin board.
 related_guides:
-  - title: ESP32 Sensors Learning Path
-    href: /learning.html#sensor-basics
-    description: Follow the beginner sequence from sensor basics to DHT22 readings and environmental projects.
-  - title: Read Temperature with DHT11
-    href: /guides/read-temperature-dht22.html
-    description: Full beginner mission with wiring, code, quiz, and troubleshooting.
-  - title: Digital Inputs and Floating Pins
-    href: /guides/digital-inputs-floating-pins.html
-    description: Understand why the DHT22 DATA line needs a defined HIGH idle state instead of floating.
-  - title: ESP32 OLED Display Tutorial
-    href: /guides/oled-display-esp32.html
-    description: Show live temperature and humidity on a small SSD1306 display.
-  - title: What Is ESP32?
-    href: /guides/what-is-esp32.html
-    description: Learn the board, GPIO pins, power, and project workflow.
+- title: DHT22 wiring tutorial
+  href: /guides/esp32-dht22.html
+  description: A separate tutorial for DHT22 hardware.
+- title: DHT11 quick build and video (historical URL retained)
+  href: /guides/read-temperature-dht22.html
+  description: Uses DHT11 and DHT11 code; the URL still contains dht22.
+- title: DHT22 versus BME280
+  href: /guides/esp32-dht22-vs-bme280.html
+  description: Choose between temperature/humidity and pressure-capable sensing.
+- title: Install Arduino IDE for ESP32
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Set up board package, port and upload before adding a sensor.
 related_projects:
-  - title: ESP32 Smart Thermostat
-    href: /projects/esp32-smart-thermostat.html
-    description: Use temperature readings to guide heating, cooling, display, and relay decisions.
-  - title: ESP32 IoT Weather Station
-    href: /projects/esp32-iot-weather-station.html
-    description: Use DHT22 readings in a complete weather project.
-  - title: ESP32 Home Climate Automation
-    href: /projects/esp32-home-climate-automation.html
-    description: Turn room readings into fan, relay, or alert decisions.
-  - title: ESP32 MQTT Sensor Dashboard
-    href: /projects/esp32-mqtt-sensor-dashboard.html
-    description: Publish room temperature and humidity readings to an MQTT dashboard after the local test works.
+- title: ESP32 Smart Thermostat
+  href: /projects/esp32-smart-thermostat.html
+  description: Use temperature readings to guide heating, cooling, display, and relay decisions.
+- title: ESP32 IoT Weather Station
+  href: /projects/esp32-iot-weather-station.html
+  description: 'BME280-based weather project: an alternative when pressure is also needed; follow its separate
+    I2C wiring and library.'
+- title: ESP32 Home Climate Automation
+  href: /projects/esp32-home-climate-automation.html
+  description: Turn room readings into fan, relay, or alert decisions.
+- title: ESP32 MQTT Sensor Dashboard
+  href: /projects/esp32-mqtt-sensor-dashboard.html
+  description: Publish room temperature and humidity readings to an MQTT dashboard after the local test works.
 related_components:
-  - title: BME280 Environmental Sensor
-    href: /components/bme280.html
-    description: More stable I2C sensor with pressure measurement.
-  - title: SSD1306 OLED Display
-    href: /components/ssd1306-oled.html
-    description: Display DHT22 readings without a computer.
-  - title: ESP32 DevKit Board
-    href: /components/esp32-devkit.html
-    description: The development board that reads this sensor.
+- title: BME280 Environmental Sensor
+  href: /components/bme280.html
+  description: More stable I2C sensor with pressure measurement.
+- title: SSD1306 OLED Display
+  href: /components/ssd1306-oled.html
+  description: Display DHT22 readings without a computer.
+- title: ESP32 DevKit Board
+  href: /components/esp32-devkit.html
+  description: The development board that reads this sensor.
 datasheet_url: https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf
-datasheet_note: DHT22 datasheet for electrical ratings, timing notes, and accuracy limits. Use it when designing classroom worksheets or production prototypes.
+datasheet_note: Aosong DHT22 manufacturer datasheet, hosted by SparkFun. Verify that your actual sensor/module
+  matches this part; this document does not establish every breakout’s pin order or pull-up placement.
 faqs:
-  - question: What does the DHT22 measure?
-    answer: It measures air temperature and relative humidity. It does not measure pressure, gas, dust, rain, soil moisture, or water temperature.
-  - question: Is DHT22 digital or analog?
-    answer: It is digital. The ESP32 reads timed HIGH and LOW pulses on one GPIO pin, so analogRead() is not used.
-  - question: Can I connect DHT22 directly to ESP32?
-    answer: Yes. Use 3.3 V, GND, and one GPIO data pin. Add a pull-up resistor if your sensor board does not already include one.
-  - question: Can I power DHT22 from 5 V?
-    answer: Avoid 5 V for direct ESP32 projects unless you are certain the DATA pull-up remains at 3.3 V. ESP32 GPIO pins are not 5 V tolerant.
-  - question: Which GPIO is best for DHT22 on ESP32?
-    answer: GPIO4 is a good beginner choice. Many normal GPIOs work, but avoid boot strapping pins until you understand ESP32 boot behavior.
-  - question: Why do I need a pull-up resistor?
-    answer: The data line must idle HIGH. The resistor pulls DATA to 3.3 V until the sensor pulls it LOW to send timed bits.
-  - question: What resistor value should I use?
-    answer: 10 k ohm works well for short breadboard wires. For longer wires, 4.7 k ohm may be more reliable.
-  - question: How often can I read DHT22?
-    answer: Read it about once every 2 seconds. Faster reads can return NaN, repeated values, or unstable output.
-  - question: What does NaN mean?
-    answer: NaN means Not a Number. The library did not receive a valid reading from the sensor.
-  - question: Is DHT22 accurate?
-    answer: It is accurate enough for beginner weather and room projects, but not for calibrated laboratory measurement.
-  - question: Is DHT22 better than DHT11?
-    answer: Yes. DHT22 has better range and accuracy. DHT11 is cheaper but less precise.
-  - question: Is BME280 better than DHT22?
-    answer: For many ESP32 projects, yes. BME280 uses I2C, is usually more stable, and also measures pressure. DHT22 is simpler for first lessons.
-  - question: Can DHT22 be used outdoors?
-    answer: Only with weather protection and airflow. Do not expose the sensor or ESP32 board directly to rain, condensation, or sunlight.
-  - question: Can it measure water temperature?
-    answer: No. Use a waterproof DS18B20 probe for water temperature.
-  - question: Can it measure soil moisture?
-    answer: No. Use a capacitive soil moisture sensor for soil.
-  - question: Why does humidity change when I breathe on it?
-    answer: Breath is warm and humid, so the sensor responds. This is a quick way to prove the sensor is alive.
-  - question: Why is the temperature too high?
-    answer: The sensor may be near your hand, the ESP32 regulator, sunlight, or another heat source. Move it away and wait.
-  - question: Do I need a capacitor?
-    answer: Usually not for short breadboard wiring. For long wires or unstable power, a small 0.1 uF capacitor across VCC and GND near the sensor can help.
-  - question: Can I use multiple DHT22 sensors?
-    answer: Yes, but each sensor needs its own GPIO data pin and its own DHT object in code.
-  - question: Does DHT22 work with MicroPython?
-    answer: Yes. MicroPython has DHT support on ESP32, but this page focuses on Arduino because it is easiest for beginners.
-  - question: Can I use interrupts with DHT22?
-    answer: Beginners do not need interrupts. Use the library read function at a slow interval and keep the rest of the loop non-blocking where possible.
-  - question: Why does Wi-Fi sometimes affect readings?
-    answer: Wi-Fi current bursts can disturb weak power setups. Use solid USB power, short wiring, and common ground.
-  - question: Glossary - What is relative humidity?
-    answer: Relative humidity is how full the air is with water vapor compared with the maximum it can hold at that temperature.
-  - question: Glossary - What is a one-wire data signal?
-    answer: It is the single DHT22 DATA line that carries timed HIGH and LOW pulses between the sensor and ESP32.
-  - question: Parent tips - What is the safest beginner setup?
-    answer: Use 3.3 V power, short jumper wires, and a 10 k ohm DATA pull-up before placing the sensor away from the ESP32 heat.
-  - question: Parent tips - How long should a first test take?
-    answer: Plan a short bench test with Serial Monitor first, then wait a few minutes before judging room temperature or humidity.
-  - question: Teacher tips - What concept does DHT22 teach well?
-    answer: It teaches digital sensor timing, pull-up resistors, sampling intervals, and why readings need sanity checks.
-  - question: Teacher tips - What should students record?
-    answer: Have students record GPIO choice, pull-up value, read interval, room conditions, and any NaN troubleshooting steps.
-  - question: Challenge yourself - How can I verify the sensor is responding?
-    answer: Breathe near the sensor briefly, then watch humidity rise and slowly settle without touching the sensing area.
-  - question: Challenge yourself - How can I make readings more useful?
-    answer: Average several valid readings, reject NaN values, and display the latest stable value on an OLED or dashboard.
-  - question: Mini quiz - Why should DHT22 reads be spaced apart?
-    answer: The sensor updates slowly, so reading too often can return repeated, invalid, or unstable values.
-  - question: Mini quiz - Why keep DATA pulled up to 3.3 V?
-    answer: The line must rest at a known HIGH level so the ESP32 can detect the sensor's timed LOW pulses.
+- question: Can I change DHT22 to DHT11 in code?
+  answer: Only when the hardware is DHT11. Choose the constructor type for the actual part and follow its voltage
+    and timing documentation.
+- question: Does every DHT22 module include a pull-up?
+  answer: No. Verify the breakout schematic or unpowered resistance. The bare sensor circuit here needs 10
+    kΩ from DATA to 3.3 V.
+- question: Can this read pressure?
+  answer: No. DHT22 reports temperature and relative humidity. Use a pressure sensor such as BME280 for pressure.
 quality_status: golden
 status: complete
 electrical:
   supply: 3.3 V in this wiring
   signal: DATA pulled up to 3.3 V
-  protection: Aosong DHT22 sensor supply range is 3.3–6 V; check module ratings. Keep DATA pull-up at 3.3 V; a module
-    pull-up to 5 V needs correction or level shifting.
+  protection: Aosong DHT22 sensor supply range is 3.3–6 V; check module ratings. Keep DATA pull-up at 3.3 V;
+    a module pull-up to 5 V needs correction or level shifting.
   basis: Aosong DHT22 datasheet; breakout pull-up placement varies.
+concise_layout: true
+curated_faqs: true
+overview_heading: What DHT22 measures and when to choose it
+explanation_heading: DHT22 versus DHT11 and reading limits
+setup:
+  items:
+  - label: Board
+    value: Classic ESP32-WROOM-32 DevKit with GPIO4 available. Select ESP32 Dev Module for an otherwise undocumented
+      generic WROOM board; use an exact supported profile when known.
+  - label: Sensor
+    value: Bare four-pin DHT22/AM2302 package or a verified 3.3 V-compatible breakout. Vendor and module pin
+      order are unspecified; follow its labels and documentation.
+  - label: Software
+    value: 'Arduino IDE 2.x; esp32 by Espressif Systems 3.x (API review baseline 3.3.2). Serial Monitor: 115200
+      baud. Install DHT sensor library by Adafruit (API reference 1.4.6) and its Adafruit Unified Sensor dependency
+      using Library Manager.'
+  - label: Parts
+    value: USB data cable, short jumper wires, breadboard and 10 kΩ DATA-to-3.3 V pull-up for a bare sensor.
+      Check whether a breakout already includes that resistor.
+  - label: Expected result
+    value: One temperature/humidity line about every 2.5 seconds, or a clear failed-read message. Documentation/API
+      reviewed; not compiled or hardware tested.
+sources:
+- title: Aosong DHT22 manufacturer datasheet
+  url: https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf
+  note: Four-pin orientation, 3.3–6 V supply, startup delay and a collecting period greater than 2 seconds.
+    Hosted by SparkFun; applies to the documented part.
+- title: Adafruit DHT wiring
+  url: https://learn.adafruit.com/dht/connecting-to-a-dhtxx-sensor
+  note: Bare-package orientation, power and 10 kΩ pull-up.
+- title: Adafruit DHT comparison
+  url: https://learn.adafruit.com/dht/overview
+  note: Product-specific ranges, accuracy and sample rate; not universal clone specifications.
+- title: Adafruit DHT library 1.4.6
+  url: https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/DHT.cpp
+  note: Constructor types, NaN handling and 2000 ms cache interval.
+- title: DHT library dependencies
+  url: https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/library.properties
+  note: Adafruit Unified Sensor dependency.
+- title: Classic ESP32 GPIO
+  url: https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html
+  note: GPIO4 supports the bidirectional sensor exchange; GPIO voltage restrictions.
