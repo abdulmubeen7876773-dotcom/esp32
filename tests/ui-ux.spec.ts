@@ -650,7 +650,9 @@ test('public counts and section headings stay consistent', async ({ page }, test
 
   await gotoOk(page, '/learning.html');
   await expect(page.locator('#builder')).toContainText('49 projects');
-  await expect(page.locator('#explorer')).toContainText('8 components');
+  const componentFiles = (await fs.readdir(path.join(process.cwd(), 'content', 'components')))
+    .filter(name => name.endsWith('.yaml') && name !== 'component-template.yaml');
+  await expect(page.locator('#explorer')).toContainText(`${componentFiles.length} components`);
   await expect(page.locator('#beginner')).toContainText('16 missions');
   await expect(page.locator('body')).not.toContainText('50 projects');
 

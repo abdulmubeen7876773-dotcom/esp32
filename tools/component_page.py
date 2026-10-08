@@ -79,11 +79,14 @@ def component_art_svg(component: dict) -> str:
 def component_meta_html(component: dict) -> str:
     difficulty = component.get("difficulty", "Beginner")
     minutes = 8 + min(len(component.get("specs", [])), 6)
+    time_estimates = (
+        f'\n  <span><strong>{minutes} min</strong><small>Reading time</small></span>'
+        '\n  <span><strong>20-35 min</strong><small>Bench time</small></span>'
+        if component.get("show_time_estimates", True) else ""
+    )
     return f"""<div class="component-meta-strip" aria-label="Guide metadata">
-  <span><strong>{esc(difficulty)}</strong><small>Difficulty</small></span>
-  <span><strong>{minutes} min</strong><small>Reading time</small></span>
-  <span><strong>20-35 min</strong><small>Bench time</small></span>
-  <span><strong>ESP32</strong><small>Compatible</small></span>
+  <span><strong>{esc(difficulty)}</strong><small>Difficulty</small></span>{time_estimates}
+  <span><strong>{esc(component.get('board_family', 'ESP32'))}</strong><small>Compatible</small></span>
 </div>"""
 
 
@@ -225,6 +228,7 @@ def wiring_html(wiring: dict) -> str:
         return ""
     alt = wiring.get("illustration_alt", "Wiring diagram")
     image = wiring.get("image", "")
+    full_size_link = (f'\n  <p><a class="btn btn-secondary" href="{esc(image)}" target="_blank" rel="noopener">Open wiring diagram at full size (new tab)</a></p>' if image and wiring.get("open_full_size") else "")
     summary = (wiring.get("summary") or "").strip()
     steps = wiring.get("steps", [])
     summary_html = _paragraphs(summary) if summary else ""
@@ -267,7 +271,7 @@ def wiring_html(wiring: dict) -> str:
     return f"""<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
   {component_section_heading("wiring", "04", "Wiring Diagram")}
   {summary_html}
-{table_block}  <div class="component-wiring-art">{local_visual_figure(image, alt, "component-visual-art component-wiring-image") or illustration_placeholder(alt, "Wiring Diagram", "Wire")}</div>
+{table_block}  <div class="component-wiring-art">{local_visual_figure(image, alt, "component-visual-art component-wiring-image") or illustration_placeholder(alt, "Wiring Diagram", "Wire")}</div>{full_size_link}
   {steps_html}
 </section>"""
 
@@ -552,7 +556,7 @@ def derive_quick_facts(component: dict) -> list:
 def component_card_html(c: dict) -> str:
     img = component_image_path(c["slug"]) or c.get("image", "")
     alt = c.get("image_alt") or c["name"]
-    img_html = f'<img src="{esc(img)}" alt="{esc(alt)}" width="1376" height="768" loading="lazy" decoding="async">' if img else component_art_svg(c)
+    img_html = f'<img src="{esc(img)}" alt="{esc(alt)}" width="{int(c.get("image_width", 1376))}" height="{int(c.get("image_height", 768))}" loading="lazy" decoding="async">' if img else component_art_svg(c)
     facts = derive_quick_facts(c)
     first_fact = facts[0].get("value", "") if facts and isinstance(facts[0], dict) else "ESP32 ready"
     summary = c.get("summary", "")
@@ -635,7 +639,7 @@ def component_hero_html(component: dict) -> str:
     img = component_image_path(component["slug"]) or component.get("image", "")
     icon = component.get("icon", "C")
     alt = component.get("image_alt") or name
-    media_img = f'<img src="{esc(img)}" alt="{esc(alt)}" loading="eager" width="320" height="240">' if img else f'<span class="component-hero-fallback" aria-hidden="true">{esc(icon)}</span>'
+    media_img = f'<img src="{esc(img)}" alt="{esc(alt)}" loading="eager" width="{int(component.get("image_width", 320))}" height="{int(component.get("image_height", 240))}">' if img else f'<span class="component-hero-fallback" aria-hidden="true">{esc(icon)}</span>'
     media = f'<div class="component-hero-photo">{media_img}</div><div class="component-hero-illustration" aria-hidden="true">{component_art_svg(component)}</div>'
     return f"""<div class="component-hero-band">
   <section class="wrap component-hero{" component-hero--concise" if component.get("concise_layout") else ""}">

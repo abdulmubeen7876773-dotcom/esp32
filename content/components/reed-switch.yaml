@@ -1,0 +1,173 @@
+slug: reed-switch
+name: 'Reed Switch: ESP32 Magnetic Input and Debouncing'
+category: Input Devices
+difficulty: Beginner
+image: /assets/visuals/components/photos/reed-switch-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Reed Switch; not a verified module pinout
+summary: Read a normally open reed switch on GPIO33 with INPUT_PULLUP. A nearby magnet closes the contact to
+  ground; stable-state code filters contact bounce.
+date_modified: '2026-10-08'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board
+      or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor:
+      115200 baud.'
+  - label: Hardware assumption
+    value: A two-terminal, normally open dry-contact reed switch plus a magnet. Exact model/contact rating
+      and operating distance are unspecified; verify your own part. Normally closed and changeover types need
+      different assumptions.
+  - label: Prerequisites and parts
+    value: First complete Arduino IDE setup and Blink. Reed switch, magnet, breadboard and short wires; a continuity
+      meter is useful for identifying contact behavior.
+  - label: Expected result
+    value: After a stable 30 ms sample window, Serial prints CLOSED when the contact closes and OPEN when it
+      opens. Magnet distance is not specified.
+  - label: Verification status
+    value: Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware
+      in this update. The approved product-style illustration identifies the family; follow documented terminal
+      labels and the logical wiring diagram, not its rendered pin positions.
+related_components:
+- title: ESP32 DevKit board assumptions
+  href: /components/esp32-devkit.html
+  description: Check classic WROOM power, pin labels and GPIO restrictions.
+code:
+  title: Stable magnetic-contact state
+  filename: reed_switch_esp32.ino
+  wiring: Normally open reed contact between GPIO33 and GND; INPUT_PULLUP defines HIGH when open. No 5 V connection
+    or additional sensor power pin.
+  content: "#include <Arduino.h>\nconstexpr uint8_t CONTACT_PIN = 33;\nconstexpr uint32_t DEBOUNCE_MS = 30;\
+    \ // Starting value; adjust for actual contacts.\nint lastRaw = HIGH;\nint stableState = -1;\nuint32_t\
+    \ changedAt = 0;\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(CONTACT_PIN, INPUT_PULLUP);\n  lastRaw\
+    \ = digitalRead(CONTACT_PIN);\n  changedAt = millis();\n}\nvoid loop() {\n  int raw = digitalRead(CONTACT_PIN);\n\
+    \  uint32_t now = millis();\n  if (raw != lastRaw) { lastRaw = raw; changedAt = now; }\n  if (now - changedAt\
+    \ >= DEBOUNCE_MS && raw != stableState) {\n    stableState = raw;\n    Serial.println(stableState == LOW\
+    \ ? \"CLOSED\" : \"OPEN\");\n  }\n  delay(1);\n}\n"
+  notes: The first reported state also waits for the stable window. Unsigned millis subtraction handles rollover.
+    This is a polling demonstration, not the mailbox deep-sleep wake algorithm.
+sources:
+- title: Littelfuse 59165 reed-switch datasheet
+  url: https://www.littelfuse.com/assetdocs/littelfuse_reed_switch_59165_datasheet.pdf?assetguid=5790fb05-694c-43c9-a75c-7a9f3464843b
+  note: Example normally open contact type; ratings belong to that product, not the unidentified illustration.
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: Pull-up mode and digital input reads.
+eli12: 'A magnet moves contacts inside a sealed reed switch. In the assumed normally open type, the contact
+  closes near a suitably aligned magnet and opens when the magnet moves away.
+
+
+  The switch does not need a sensor supply pin. Connect it between GPIO33 and GND, with INPUT_PULLUP holding
+  the open input HIGH. LOW means contact closed, not necessarily “door open”: mounting determines the meaning.'
+electrical:
+  supply: No active supply; a dry contact connects GPIO33 to GND.
+  signal: 3.3 V GPIO input held HIGH by INPUT_PULLUP; closed contact reads LOW.
+  protection: Use only a low-voltage sensing circuit; no mains or motor load. Handle glass/leads without stressing
+    the seal.
+  basis: Littelfuse reed-switch documentation plus Espressif GPIO API; unknown part ratings remain unspecified.
+specs:
+- name: Contact assumption
+  value: Two-terminal normally open
+  why: Check with a meter; other reed types exist.
+- name: GPIO
+  value: GPIO33 on classic ESP32
+  why: Has an internal pull-up; same sensing GPIO as the mailbox project.
+- name: Open / closed state
+  value: HIGH / LOW
+  why: Magnet mounting determines door/lid meaning.
+- name: Debounce
+  value: 30 ms starting window
+  why: An example software setting, not a measured bounce specification.
+- name: Contact/load rating
+  value: Unspecified
+  why: This low-current input is not authorization to switch power loads.
+pinout:
+- pin: Terminal A
+  role: Dry contact
+  connects: GPIO33
+  note: Either lead of an unpolarized bare contact can be A; do not infer behavior from artwork.
+- pin: Terminal B
+  role: Dry contact return
+  connects: ESP32 GND
+  note: Closing the contact grounds the input.
+- pin: Pull-up
+  role: Defined open state
+  connects: INPUT_PULLUP on GPIO33
+  note: For long/noisy cables use a documented external pull-up and suitable input protection; do not connect
+    a 5 V pull-up.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/reed-switch-wiring.svg
+  illustration_alt: 'Logical connections for Reed Switch: ESP32 Magnetic Input and Debouncing; see the accompanying
+    wiring table for terminal details'
+  summary: Normally open reed contact between GPIO33 and GND; INPUT_PULLUP defines HIGH when open. No 5 V connection
+    or additional sensor power pin.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Terminal A
+    esp32_pin: GPIO33
+    notes: Either lead of an unpolarized bare contact can be A; do not infer behavior from artwork.
+  - component_pin: Terminal B
+    esp32_pin: ESP32 GND
+    notes: Closing the contact grounds the input.
+  - component_pin: Pull-up
+    esp32_pin: INPUT_PULLUP on GPIO33
+    notes: For long/noisy cables use a documented external pull-up and suitable input protection; do not connect
+      a 5 V pull-up.
+  steps:
+  - Disconnect USB; check continuity with and without the magnet to confirm a normally open contact.
+  - Connect the two terminals as shown, without bending against the glass seal.
+  - Upload the sketch and move/align the magnet slowly; observe contact state rather than assuming a detection
+    distance.
+  - Mount only after deciding which physical lid position should mean open or closed.
+library: No additional library; Arduino-ESP32 GPIO and millis
+output: Serial reports OPEN or CLOSED after a state stays unchanged for 30 ms. It prints changes rather than
+  repeating every loop. For this normally open assumption, a correctly aligned nearby magnet closes the switch.
+  Do not equate CLOSED with lid-closed until the mounting is checked.
+how_it_works: Mechanical contacts may bounce. Each raw change restarts a timer; the code accepts a state only
+  after the quiet window. The starting 30 ms value can be adjusted for the actual contact/cable and response
+  requirements. Magnet alignment and switch type matter more than a guessed distance.
+applications:
+- Mailbox lid sensing
+- Magnetic cabinet contact
+- Low-voltage position experiment
+troubleshooting:
+- problem: Always OPEN
+  cause: Magnet alignment, broken lead or unsuitable contact type.
+  fix: Check continuity with power disconnected and try another magnet orientation; identify the actual switch.
+- problem: Always CLOSED
+  cause: Shorted wiring or normally closed contact.
+  fix: Remove the magnet and isolate the switch; check its type and breadboard rows.
+- problem: Repeated changes
+  cause: Contact chatter, vibration or noisy long wires.
+  fix: Check mounting, use short wires and adjust the stable window; review external pull-up/protection for
+    long cables.
+faqs:
+- question: Does a reed switch need 5 V?
+  answer: A bare dry contact does not. This example only closes a 3.3 V GPIO input to ground; electronic reed
+    modules need their own documentation.
+- question: Can it switch a motor directly?
+  answer: Do not use this unknown part as a power switch. Select contacts/driver/protection for the actual
+    load; this page covers sensing only.
+- question: Does LOW mean the mailbox is open?
+  answer: LOW means this contact is closed. Which lid position closes it depends on magnet mounting.
+related_guides:
+- title: Pull-up versus pull-down
+  href: /guides/pull-up-vs-pull-down-resistors.html
+  description: Understand why an open contact reads HIGH.
+- title: Debouncing buttons
+  href: /guides/debouncing-buttons.html
+  description: Apply stable-state filtering to mechanical contacts.
+related_projects:
+- title: ESP32 Smart Mailbox
+  href: /projects/esp32-smart-mailbox.html
+  description: Continue from GPIO33 polling to its separate deep-sleep wake design.

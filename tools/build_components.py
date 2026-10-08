@@ -77,7 +77,7 @@ def component_card(c: dict) -> str:
 
 def index_html(components: list, categories: list) -> str:
     title = f"Component Encyclopedia | {SITE_NAME}"
-    desc = "8 ESP32 components explained simply — ESP32 DevKit, ESP32-CAM, DHT22, BME280, HC-SR04, PIR sensor, relay module, and OLED display. Wiring diagrams and example code included."
+    desc = f"{len(components)} ESP32 component guides covering boards, sensors, displays and beginner parts. Find qualified power, GPIO, wiring and Arduino examples."
     crumbs = breadcrumb_schema([("Home", "/"), ("Components", "components.html")])
     schema = organization_schema() + webpage_schema(title, desc, "components.html") + crumbs
     used_categories = []

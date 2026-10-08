@@ -1,0 +1,180 @@
+slug: through-hole-resistors
+name: 'Through-Hole Resistors: Values and ESP32 LED Wiring'
+category: Power Components
+difficulty: Beginner
+image: /assets/visuals/components/photos/through-hole-resistors-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Through-Hole Resistors; not a verified module pinout
+summary: Identify four- and five-band resistor values, check resistance with power off, and choose an LED current-limiting
+  resistor. Try a 470 ohm series resistor with an external LED on GPIO25.
+date_modified: '2026-10-08'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board
+      or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor:
+      115200 baud.'
+  - label: Hardware assumption
+    value: Axial fixed resistors with manufacturer-documented resistance, tolerance and power rating. Image
+      labels and colors are illustrative, not verified measurements. The example uses a known 470 ohm, 0.25
+      W resistor and a low-current indicator LED with documented polarity/current requirements.
+  - label: Prerequisites and parts
+    value: First complete Arduino IDE setup and Blink. 470 ohm resistor, suitable LED, breadboard and wires;
+      a multimeter and part documentation for value/rating checks.
+  - label: Expected result
+    value: The external LED on GPIO25 blinks one second on, one second off; its brightness depends on the actual
+      LED and circuit.
+  - label: Verification status
+    value: Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware
+      in this update. The approved product-style illustration identifies the family; follow documented terminal
+      labels and the logical wiring diagram, not its rendered pin positions.
+related_components:
+- title: ESP32 DevKit board assumptions
+  href: /components/esp32-devkit.html
+  description: Check classic WROOM power, pin labels and GPIO restrictions.
+code:
+  title: External LED with a series resistor
+  filename: through_hole_resistors_esp32.ino
+  wiring: GPIO25 → known 470 ohm resistor → LED anode; LED cathode → GND. Use an external LED, not an assumed
+    onboard GPIO2 LED.
+  content: "#include <Arduino.h>\nconstexpr uint8_t LED_PIN = 25;\nvoid setup() {\n  pinMode(LED_PIN, OUTPUT);\n\
+    \  digitalWrite(LED_PIN, LOW);\n}\nvoid loop() {\n  digitalWrite(LED_PIN, HIGH);\n  delay(1000);\n  digitalWrite(LED_PIN,\
+    \ LOW);\n  delay(1000);\n}\n"
+  notes: Code cannot compensate for a missing or wrong resistor. The 2.0 V forward voltage is a calculation
+    assumption, not a measured specification of the pictured parts. Recalculate for another LED or driver voltage.
+sources:
+- title: Vishay resistor color chart
+  url: https://www.vishay.com/docs/49411/resistor_color_code_calculator.pdf
+  note: Four- and five-band significant digits, multipliers and tolerance.
+- title: Vishay resistor fundamentals
+  url: https://www.vishay.com/docs/28771/basics.pdf
+  note: Resistance, tolerance and power ratings; exact series ratings still need documentation.
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: GPIO output mode and digital writes.
+eli12: 'A resistor limits current or forms a divider/pull resistor with other parts. It has no preferred direction
+  and no independent supply pin. A series resistor is essential for a bare indicator LED; it does not make
+  a 5 V signal automatically safe for ESP32.
+
+
+  Read four bands as two significant digits, multiplier and tolerance; five bands add a third digit. The tolerance
+  band often has extra spacing, but confirm ambiguous bands with a meter. Body size/color and this illustration
+  do not prove wattage.'
+electrical:
+  supply: No active supply; the example resistor is in series with a GPIO-driven LED.
+  signal: GPIO25 uses 3.3 V logic; the resistor limits LED current, not logic voltage by itself.
+  protection: Use documented resistance/power rating; verify LED polarity and current. Disconnect power before
+    resistance measurements.
+  basis: Vishay resistor color chart/fundamentals; Ohm’s law and power calculation for the explicitly assumed
+    circuit.
+specs:
+- name: Four-band 220 ohm example
+  value: Red, red, brown, gold = 22 × 10, ±5%
+  why: A teaching example, not a reading of the generated artwork.
+- name: Four-band 470 ohm example
+  value: Yellow, violet, brown, gold = 47 × 10, ±5%
+  why: Verify the actual resistor with a meter.
+- name: Four-band 10 kOhm example
+  value: Brown, black, orange, gold = 10 × 1000, ±5%
+  why: Useful pull-up value in suitable circuits; not universal.
+- name: Five-band 1 kOhm example
+  value: Brown, black, black, brown, brown = 100 × 10, ±1%
+  why: Three significant digits, then multiplier and tolerance.
+- name: LED resistor selection
+  value: R ≥ (supply − LED forward voltage) / target current
+  why: Illustrative 3.3 V, 2.0 V LED and 3 mA target gives at least 433 ohm; 470 ohm gives about 2.8 mA. Actual
+    LED voltage varies.
+- name: Power rating
+  value: P = I²R = Vresistor²/R
+  why: That illustrative 470 ohm calculation dissipates about 3.6 mW. Use the documented 0.25 W part here;
+    larger loads need derating and their own calculation.
+pinout:
+- pin: Resistor lead A
+  role: Series current path
+  connects: GPIO25
+  note: An unpolarized resistor can be installed either way.
+- pin: Resistor lead B
+  role: LED feed
+  connects: LED anode
+  note: Either side of the LED may hold the series resistor; this example puts it on the anode side.
+- pin: LED cathode
+  role: Return
+  connects: ESP32 GND
+  note: Verify polarity from LED documentation/diode test, not a shortened lead.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/through-hole-resistors-wiring.svg
+  illustration_alt: 'Logical connections for Through-Hole Resistors: Values and ESP32 LED Wiring; see the accompanying
+    wiring table for terminal details'
+  summary: GPIO25 → known 470 ohm resistor → LED anode; LED cathode → GND. Use an external LED, not an assumed
+    onboard GPIO2 LED.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Resistor lead A
+    esp32_pin: GPIO25
+    notes: An unpolarized resistor can be installed either way.
+  - component_pin: Resistor lead B
+    esp32_pin: LED anode
+    notes: Either side of the LED may hold the series resistor; this example puts it on the anode side.
+  - component_pin: LED cathode
+    esp32_pin: ESP32 GND
+    notes: Verify polarity from LED documentation/diode test, not a shortened lead.
+  steps:
+  - Unplug USB. Read the actual bands and verify the resistor value; measure isolated or lift one lead to avoid
+    parallel circuit paths.
+  - Confirm documented resistor wattage and LED polarity/current limits; calculate for your actual forward
+    voltage and target current.
+  - Connect the series circuit and upload the sketch. Never connect a bare LED directly across GPIO and ground.
+  - Stop and check wiring/value if a part heats; this is only a small low-voltage indicator circuit.
+library: No additional library; Arduino GPIO output
+output: A correctly wired suitable LED should blink about once each second on/off. A dim LED may be normal
+  at the chosen low current. The resistance and calculated dissipation examples are illustrative; no meter
+  reading or hardware measurement is claimed.
+how_it_works: Ohm’s law relates voltage across the resistor to current. Choose resistance from the actual LED
+  forward voltage and desired current, then check resistor power with margin under its datasheet conditions.
+  Pull-ups define an input state; voltage dividers use two resistors and can be affected by the connected load.
+  A single series resistor is not a general 5-to-3.3 V level shifter.
+applications:
+- LED current limiting
+- Button/reed pull-up
+- Documented voltage divider
+troubleshooting:
+- problem: Meter disagrees with the bands
+  cause: Reading direction, wrong multiplier or parallel paths.
+  fix: Disconnect power, isolate the resistor and confirm four/five-band rules; check tolerance.
+- problem: LED does not light
+  cause: Polarity reversed, wrong GPIO/breadboard row or resistor too large.
+  fix: Check LED polarity and GPIO25 series path; confirm actual resistance and supply.
+- problem: Resistor gets hot
+  cause: Wrong resistance, excessive voltage/current or insufficient power rating.
+  fix: Disconnect power; recalculate dissipation and check documented rating/derating. Do not infer wattage
+    from the artwork.
+faqs:
+- question: Does a resistor have polarity?
+  answer: An ordinary fixed axial resistor does not; an LED does. Follow the LED’s documented polarity.
+- question: Does band color tell me wattage?
+  answer: The shown codes describe resistance and tolerance. Obtain power rating from the exact resistor series/part
+    documentation.
+- question: Can one resistor protect a GPIO from 5 V?
+  answer: Do not assume that. Select a documented divider or level-shifting interface for the signal; a single
+    series resistor is not a universal voltage converter.
+related_guides:
+- title: Blink LED
+  href: /guides/blink-led-esp32.html
+  description: Continue with its own pin/resistor choices.
+- title: Pull-up versus pull-down
+  href: /guides/pull-up-vs-pull-down-resistors.html
+  description: Learn a resistor’s different role in input circuits.
+related_projects:
+- title: RGB LED Pattern Controller
+  href: /projects/esp32-rgb-led-pattern-controller.html
+  description: Use individual current limiting for each channel under that project’s assumptions.

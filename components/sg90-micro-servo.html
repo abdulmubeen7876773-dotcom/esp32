@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<!-- Google tag (gtag.js) -->
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var measurementId = "G-WLHZKSEFP3";
+  var scriptId = "ga4-gtag-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineGa4Initialized) return;
+  window.__esp32EngineGa4Initialized = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+  if (!document.getElementById(scriptId)) {
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
+    document.head.appendChild(script);
+  }
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId);
+})();
+</script>
+<script>
+(function(){
+  var productionHosts = { "esp32engine.com": true, "www.esp32engine.com": true };
+  var publisherId = "ca-pub-1799305676376920";
+  var scriptId = "adsbygoogle-js";
+  if (!productionHosts[window.location.hostname]) return;
+  if (window.__esp32EngineAdsenseInitialized) return;
+  window.__esp32EngineAdsenseInitialized = true;
+  function loadAdsense(){
+    if (document.getElementById(scriptId)) return;
+    var script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(publisherId);
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+  }
+  if ("requestIdleCallback" in window) {
+    window.addEventListener("load", function(){ requestIdleCallback(loadAdsense, { timeout: 3500 }); }, { once: true });
+  } else {
+    window.addEventListener("load", function(){ setTimeout(loadAdsense, 1200); }, { once: true });
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SG90 Micro Servo: External Power and ESP32 Pulses — Component Guide | ESP32 Engine</title>
+<meta name="description" content="Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply, common ground and a buffered control signal; begin with small unloaded movements.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/components/sg90-micro-servo.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="SG90 Micro Servo: External Power and ESP32 Pulses — Component Guide | ESP32 Engine">
+<meta property="og:description" content="Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply, common ground and a buffered control signal; begin with small unloaded movements.">
+<meta property="og:url" content="https://esp32engine.com/components/sg90-micro-servo.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SG90 Micro Servo: External Power and ESP32 Pulses — Component Guide | ESP32 Engine">
+<meta name="twitter:description" content="Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply, common ground and a buffered control signal; begin with small unloaded movements.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"SG90 Micro Servo: External Power and ESP32 Pulses — Component Guide | ESP32 Engine","description":"Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply, common ground and a buffered control signal; begin with small unloaded movements.","url":"https://esp32engine.com/components/sg90-micro-servo.html","isPartOf":{"@type":"WebSite","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://esp32engine.com/components.html"},{"@type":"ListItem","position":3,"name":"SG90 Micro Servo: External Power and ESP32 Pulses","item":"https://esp32engine.com/components/sg90-micro-servo.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"SG90 Micro Servo: External Power and ESP32 Pulses","description":"Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply, common ground and a buffered control signal; begin with small unloaded movements.","dateModified":"2026-10-08","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/components/sg90-micro-servo.html"},"proficiencyLevel":"Beginner"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I power SG90 from ESP32 3.3 V?","acceptedAnswer":{"@type":"Answer","text":"No in this build. Use an external supply documented for the exact servo and sized for motor surges; share only the required ground reference."}},{"@type":"Question","name":"Are all SG90 servos rated 5–6 V?","acceptedAnswer":{"@type":"Answer","text":"No such blanket claim is made. Tower Pro’s referenced SG90 Digital page lists 4.8 V; the exact servo/revision controls your supply choice."}},{"@type":"Question","name":"Does 1500 µs mean exactly 90 degrees?","acceptedAnswer":{"@type":"Answer","text":"Not for every variant. It is a conventional starting pulse, not a verified angle; check the actual servo documentation and mechanical range."}}]}</script>
+</head>
+<body class="component-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html" class="active">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="component-hero-band">
+  <section class="wrap component-hero component-hero--concise">
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/components.html">Components</a></li><li aria-current="page">SG90 Micro Servo: External Power and ESP32 Pulses</li></ol></nav>
+    <div class="component-hero-grid">
+      <div class="component-hero-copy">
+        <p class="hero-eyebrow component-hero-eyebrow">Component Guide</p>
+        <div class="component-hero-badges">
+          <span class="badge badge-cat">Actuators</span>
+          <span class="badge badge-beginner">Beginner</span>
+        </div>
+        <h1 class="component-hero-title">SG90 Micro Servo: External Power and ESP32 Pulses</h1>
+        <p class="component-hero-summary">Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply, common ground and a buffered control signal; begin with small unloaded movements.</p>
+        <div class="component-meta-strip" aria-label="Guide metadata">
+  <span><strong>Beginner</strong><small>Difficulty</small></span>
+  <span><strong>Classic ESP32</strong><small>Compatible</small></span>
+</div>
+        <div class="component-share" aria-label="Share this component guide">
+  <a class="component-share-btn" href="https://twitter.com/intent/tweet?url=https://esp32engine.com/components/sg90-micro-servo.html&text=SG90 Micro Servo: External Power and ESP32 Pulses" rel="noopener" target="_blank">Share</a>
+  <button class="component-share-btn" type="button" data-copy-url="https://esp32engine.com/components/sg90-micro-servo.html">Copy link</button>
+</div>
+      </div>
+      <div class="component-hero-media"><div class="component-hero-photo"><img src="/assets/visuals/components/photos/sg90-micro-servo-illustration.webp" alt="Product-style illustration of SG90 Micro Servo; not a verified module pinout" loading="eager" width="1408" height="768"></div><div class="component-hero-illustration" aria-hidden="true"><svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="SG90 Micro Servo: External Power and ESP32 Pulses illustration">
+  <defs>
+    <linearGradient id="ca-board-sg90-micro-servo-1" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081D3A"/><stop offset="1" stop-color="#1488A6"/>
+    </linearGradient>
+    <radialGradient id="ca-glow-sg90-micro-servo-1" cx="50%" cy="50%" r="60%">
+      <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ca-shadow-sg90-micro-servo-1" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#081D3A" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
+  <circle cx="260" cy="178" r="168" fill="url(#ca-glow-sg90-micro-servo-1)"/>
+  <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+  <g filter="url(#ca-shadow-sg90-micro-servo-1)">
+    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#ca-board-sg90-micro-servo-1)"/>
+    <rect x="174" y="124" width="116" height="78" rx="14" fill="#081D3A" opacity=".88"/>
+    <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
+    <circle cx="327" cy="183" r="19" fill="#FBBF24"/>
+    <text x="232" y="174" text-anchor="middle" fill="#E0F2FE" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800">SM</text>
+    <text x="260" y="282" text-anchor="middle" fill="#475569" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700">Actuators</text>
+    <g stroke="#DBEAFE" stroke-width="5" stroke-linecap="round" opacity=".95">
+      <path d="M138 120h-28M138 154h-28M138 188h-28M382 120h28M382 154h28M382 188h28"/>
+    </g>
+  </g>
+</svg></div></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap component-guide-shell component-guide-shell--concise">
+
+<article class="component-journey article-concise"><details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#eli12-heading">Overview</a><a href="#specs-heading">Technical Specifications</a><a href="#pinout-heading">Pinout</a><a href="#wiring-heading">Wiring Diagram</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#output-heading">Expected Output</a><a href="#how-it-works-heading">How it works</a><a href="#troubleshooting-heading">Troubleshooting</a><a href="#applications-heading">Where you use it</a><a href="#guides-heading">Continue learning</a><a href="#projects-heading">Related projects</a><a href="#related-components-heading">Related components</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a><a href="#downloads-heading">Downloads</a></nav></details><section class="component-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Board and software</dt><dd>Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor: 115200 baud.</dd><dt>Hardware assumption</dt><dd>A positional SG90-class servo documented for 4.8 V supply and a 50 Hz RC control signal accepting 1400–1600 µs pulses. Tower Pro lists 4.8 V for its SG90 Digital; clones/different revisions are not assumed identical. Use a standard 14-pin SN74AHCT125 powered from the same regulated 4.8 V rail.</dd><dt>Prerequisites and parts</dt><dd>First complete Arduino IDE setup and Blink. Servo without mechanical load, regulated external 4.8 V supply sized for its actual starting/stall current, SN74AHCT125, 100 nF buffer decoupling and suitable supply wiring.</dd><dt>Expected result</dt><dd>The servo starts near its pulse-defined center, then alternates between two nearby positions. No angle, torque or travel is promised for an unidentified variant.</dd><dt>Verification status</dt><dd>Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware in this update. The approved product-style illustration identifies the family; follow documented terminal labels and the logical wiring diagram, not its rendered pin positions.</dd></dl></section>
+<section class="component-section" id="eli12" aria-labelledby="eli12-heading">
+  <h2 tabindex="-1" id="eli12-heading"><span class="component-section-title">Overview</span></h2>
+  <div class="component-section-prose"><p>A positional servo uses repeated control pulses to choose a position; it is not powered from the signal wire. The motor can draw a surge when starting or blocked, so its supply must be independent of the ESP32 3.3 V rail.</p><p>Tower Pro lists 4.8 V and external adapter power for its SG90 Digital. This example uses that nominal rail; do not infer a universal 5–6 V rating from the SG90 name. A 5 V supply is acceptable only if the exact servo documentation permits it. Share ground with the USB-powered ESP32, not independent positive rails.</p></div>
+</section>
+<section class="component-section" id="specs" aria-labelledby="specs-heading">
+  <h2 tabindex="-1" id="specs-heading"><span class="component-section-icon" aria-hidden="true">02</span><span class="component-section-title">Technical Specifications</span></h2>
+  <p class="component-section-lead">Arduino library: <strong>No additional servo library; Arduino-ESP32 3.x LEDC API</strong></p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Servo type</th>
+  <td>Positional SG90-class</td>
+  <td>Continuous-rotation conversions behave differently; no universal travel/torque claim.</td>
+</tr><tr>
+  <th scope="row">Power</th>
+  <td>Documented external 4.8 V supply</td>
+  <td>Size for actual peak/stall current; stop if buzzing or blocked.</td>
+</tr><tr>
+  <th scope="row">Control</th>
+  <td>50 Hz (20 ms period)</td>
+  <td>Assumed standard RC positional control; verify actual servo.</td>
+</tr><tr>
+  <th scope="row">Example pulse width</th>
+  <td>1500 µs start; 1400 / 1600 µs movement</td>
+  <td>Small initial range, not universal angles or endpoints.</td>
+</tr><tr>
+  <th scope="row">LEDC</th>
+  <td>GPIO25, 16-bit resolution on classic ESP32</td>
+  <td>Uses ledcAttach and pin-based ledcWrite in Arduino-ESP32 3.x; other families may have lower resolution limits.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section" id="pinout" aria-labelledby="pinout-heading">
+  <h2 tabindex="-1" id="pinout-heading"><span class="component-section-icon" aria-hidden="true">03</span><span class="component-section-title">Pinout</span></h2>
+  <ul class="component-pinout-list"><li class="component-pin-row">
+  <span class="component-pin-name">Servo positive</span>
+  <span class="component-pin-role">Motor/electronics supply</span>
+  <span class="component-pin-connects">External regulated 4.8 V</span>
+  <span class="component-pin-note">Common red convention is not proof: verify connector wiring.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Servo ground</span>
+  <span class="component-pin-role">Return</span>
+  <span class="component-pin-connects">Supply minus + ESP32 GND + buffer pin7</span>
+  <span class="component-pin-note">Use supply wiring sized for motor current; no motor current through GPIO.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Servo signal</span>
+  <span class="component-pin-role">RC pulse input</span>
+  <span class="component-pin-connects">GPIO25 → buffer 1A pin2 / 1Y pin3 → signal</span>
+  <span class="component-pin-note">Buffer VCC pin14 to 4.8 V; OE pin1 LOW; 100 nF between supply/ground.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Unused buffer channels</span>
+  <span class="component-pin-role">Defined unused state</span>
+  <span class="component-pin-connects">OE pins4/10/13 HIGH; A pins5/9/12 LOW</span>
+  <span class="component-pin-note">Outputs6/8/11 unconnected; verify standard 14-pin package. Do not substitute plain HC125 without checking input thresholds.</span>
+</li></ul>
+</section>
+<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 tabindex="-1" id="wiring-heading"><span class="component-section-icon" aria-hidden="true">04</span><span class="component-section-title">Wiring Diagram</span></h2>
+  <p>External regulated 4.8 V powers the documented servo and SN74AHCT125; all grounds join. GPIO25 controls buffer channel1, whose output drives the identified servo signal lead.</p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Component terminal</th><th scope="col">ESP32 / circuit connection</th><th scope="col">Purpose and qualification</th></tr></thead>
+    <tbody><tr><td>Servo positive</td><td>External regulated 4.8 V</td><td>Common red convention is not proof: verify connector wiring.</td></tr><tr><td>Servo ground</td><td>Supply minus + ESP32 GND + buffer pin7</td><td>Use supply wiring sized for motor current; no motor current through GPIO.</td></tr><tr><td>Servo signal</td><td>GPIO25 → buffer 1A pin2 / 1Y pin3 → signal</td><td>Buffer VCC pin14 to 4.8 V; OE pin1 LOW; 100 nF between supply/ground.</td></tr><tr><td>Unused buffer channels</td><td>OE pins4/10/13 HIGH; A pins5/9/12 LOW</td><td>Outputs6/8/11 unconnected; verify standard 14-pin package. Do not substitute plain HC125 without checking input thresholds.</td></tr></tbody>
+  </table>
+</div>
+  <div class="component-wiring-art"><figure class="component-visual-art component-wiring-image">
+  <img src="/assets/visuals/components/wiring/sg90-micro-servo-wiring.svg" alt="Logical connections for SG90 Micro Servo: External Power and ESP32 Pulses; see the accompanying wiring table for terminal details" loading="lazy" decoding="async">
+</figure></div>
+  <p><a class="btn btn-secondary" href="/assets/visuals/components/wiring/sg90-micro-servo-wiring.svg" target="_blank" rel="noopener">Open wiring diagram at full size (new tab)</a></p>
+  <ol class="component-steps-list"><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">1</span>
+    <p class="component-step-text">Disconnect USB and servo power. Verify the exact servo supply range, signal lead and allowed pulses. Remove the horn/load for first movement.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">2</span>
+    <p class="component-step-text">Wire buffer channel1, enables, decoupling and unused inputs as shown. Share ground but do not join external positive to USB/3V3.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">3</span>
+    <p class="component-step-text">Upload the sketch with Arduino-ESP32 3.x, then power the verified servo circuit. Keep fingers and loose wires away from motion.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">4</span>
+    <p class="component-step-text">Start with the narrow pulse range. Disconnect power if the servo strains; do not force the shaft or widen endpoints blindly.</p>
+  </div>
+</li></ol>
+</section>
+<section class="component-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Narrow-range positional pulse test</h3><p>External regulated 4.8 V powers the documented servo and SN74AHCT125; all grounds join. GPIO25 controls buffer channel1, whose output drives the identified servo signal lead.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">sg90_micro_servo_esp32.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+constexpr <span class="tok-kw">uint8_t</span> SERVO_PIN = <span class="tok-num">25</span>;
+constexpr <span class="tok-kw">uint8_t</span> RESOLUTION = <span class="tok-num">16</span>; <span class="tok-com">// Classic ESP32 supports this at 50 Hz.</span>
+constexpr <span class="tok-kw">uint32_t</span> PERIOD_US = <span class="tok-num">20000</span>;
+bool ready = <span class="tok-kw">false</span>;
+bool nextHigh = <span class="tok-kw">false</span>;
+bool writePulse(<span class="tok-kw">uint32_t</span> pulseUs) {
+  <span class="tok-kw">uint32_t</span> duty = (pulseUs * (1UL &lt;&lt; RESOLUTION) + PERIOD_US / <span class="tok-num">2</span>) / PERIOD_US;
+  <span class="tok-kw">return</span> ledcWrite(SERVO_PIN, duty); <span class="tok-com">// 3.x uses the pin, not a channel number.</span>
+}
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  ready = ledcAttach(SERVO_PIN, <span class="tok-num">50</span>, RESOLUTION);
+  <span class="tok-kw">if</span> (ready) ready = writePulse(<span class="tok-num">1500</span>);
+  <span class="tok-kw">if</span> (!ready) { <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;LEDC configuration failed.&quot;); <span class="tok-kw">return</span>; }
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Start at <span class="tok-num">1500</span> us; next pulses are <span class="tok-num">1400</span> and <span class="tok-num">1600</span> us.&quot;);
+  <span class="tok-fn">delay</span>(<span class="tok-num">2000</span>);
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (!ready) { <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>); <span class="tok-kw">return</span>; }
+  <span class="tok-kw">uint32_t</span> pulseUs = nextHigh ? <span class="tok-num">1600</span> : <span class="tok-num">1400</span>;
+  nextHigh = !nextHigh;
+  ready = writePulse(pulseUs);
+  <span class="tok-kw">if</span> (!ready) { <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;LEDC write failed.&quot;); <span class="tok-kw">return</span>; }
+  <span class="tok-fn">Serial</span>.printf(&quot;Pulse: %lu us\n&quot;, static_cast&lt;unsigned <span class="tok-kw">long</span>&gt;(pulseUs));
+  <span class="tok-fn">delay</span>(<span class="tok-num">2000</span>);
+}</code></pre>
+</div><p>Pulse duty equals pulse duration divided by the 20 ms period, scaled to 2^16. Hardware LEDC maintains pulses during delay(). This is positional control, not speed control; a successful API return does not verify a connected servo.</p></section>
+<section class="component-section component-output" id="output" aria-labelledby="output-heading">
+  <h2 tabindex="-1" id="output-heading"><span class="component-section-icon" aria-hidden="true">OK</span><span class="component-section-title">Expected Output</span></h2>
+  <div class="component-output-body"><p>After the initial 1500 µs pulse, the sketch sends 1400 and 1600 µs alternately every two seconds. A compatible unloaded positional servo should move between nearby positions. Exact angles depend on the model; continuous rotation, buzzing, hard stops or resets call for stopping and checking hardware.</p></div>
+</section>
+<section class="component-section" id="how-it-works" aria-labelledby="how-it-works-heading">
+  <h2 tabindex="-1" id="how-it-works-heading"><span class="component-section-title">How it works</span></h2>
+  <div class="component-section-prose"><p>Pulse width requests position. Increasing supply voltage does not select an angle. The buffer provides a documented logic interface instead of assuming every servo accepts ESP32 3.3 V HIGH. External supply capacity and a common reference remain necessary even when code and pulse timing are correct.</p></div>
+</section>
+<section class="component-section component-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 tabindex="-1" id="troubleshooting-heading"><span class="component-section-icon" aria-hidden="true">06</span><span class="component-section-title">Troubleshooting</span></h2>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Problem</th><th scope="col">Possible cause</th><th scope="col">Solution</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">ESP32 resets when the servo moves</th>
+  <td>Supply droop or motor current in ESP32 power wiring.</td>
+  <td>Use separate rated servo power and common ground; check actual surge current, wiring and supply decoupling.</td>
+</tr><tr>
+  <th scope="row">No movement</th>
+  <td>Wrong connector, disabled buffer, unsupported pulse input or no servo power.</td>
+  <td>Check vendor lead order, 4.8 V-compatible supply, shared ground, buffer OE and pulses; USB alone is not servo power.</td>
+</tr><tr>
+  <th scope="row">Buzzing or hard stop</th>
+  <td>Load, mechanical obstruction or unsuitable pulse range.</td>
+  <td>Disconnect power, remove the load and verify the model/pulse range. Do not force the shaft.</td>
+</tr><tr>
+  <th scope="row">ledcAttach is missing</th>
+  <td>Arduino-ESP32 2.x or wrong board/core.</td>
+  <td>Select Arduino-ESP32 3.x and the classic WROOM board. Do not mix channel-based legacy calls with this pin-based example.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section component-applications" id="applications" aria-labelledby="applications-heading">
+  <h2 tabindex="-1" id="applications-heading"><span class="component-section-title">Where you use it</span></h2>
+  <ul class="component-callout-list"><li>Small indicator pointer</li><li>Unloaded servo learning experiment</li><li>Documented low-load robot joint</li></ul>
+</section>
+<section class="component-section component-guides" id="guides" aria-labelledby="guides-heading">
+  <h2 tabindex="-1" id="guides-heading"><span class="component-section-title">Continue learning</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/guides/pwm-fundamentals.html">
+  <h3>PWM fundamentals</h3>
+  <p>Separate PWM timing from supply voltage using the 3.x baseline.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/guides/installing-arduino-ide-esp32.html">
+  <h3>Arduino IDE setup</h3>
+  <p>Select the supported ESP32 board package.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-projects" id="projects" aria-labelledby="projects-heading">
+  <h2 tabindex="-1" id="projects-heading"><span class="component-section-title">Related projects</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/projects/esp32-robot-arm-controller.html">
+  <h3>ESP32 Robot Arm Controller</h3>
+  <p>Advanced motion example with its own power/pin/library assumptions; verify its supply recommendation against your actual servos.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-related-components" id="related-components" aria-labelledby="related-components-heading">
+  <h2 tabindex="-1" id="related-components-heading"><span class="component-section-title">Related components</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/components/esp32-devkit.html">
+  <h3>ESP32 DevKit board assumptions</h3>
+  <p>Check classic WROOM power, pin labels and GPIO restrictions.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Can I power SG90 from ESP32 3.3 V?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No in this build. Use an external supply documented for the exact servo and sized for motor surges; share only the required ground reference.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Are all SG90 servos rated 5–6 V?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No such blanket claim is made. Tower Pro’s referenced SG90 Digital page lists 4.8 V; the exact servo/revision controls your supply choice.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does 1500 µs mean exactly 90 degrees?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Not for every variant. It is a conventional starting pulse, not a verified angle; check the actual servo documentation and mechanical range.</p></div></div></div>
+</section>
+<section class="component-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://towerpro.com.tw/product/sg90-7/">Tower Pro SG90 Digital</a> — Manufacturer lists 4.8 V and external adapter supply for this product; not a guarantee for clones.</li><li><a href="https://learn.adafruit.com/adafruit-motor-selection-guide/rc-servos">Adafruit RC servo guide</a> — RC pulse width versus positional/continuous-rotation behavior.</li><li><a href="https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf">TI SN74AHCT125 datasheet</a> — 4.5–5.5 V supply, TTL inputs, enables and package pinout.</li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/api/ledc.html">Espressif LEDC API</a> — 3.x pin-based ledcAttach/ledcWrite and classic ESP32 resolution limits.</li></ul></section>
+<section class="component-section component-downloads" id="downloads" aria-labelledby="downloads-heading">
+  <h2 tabindex="-1" id="downloads-heading"><span class="component-section-icon" aria-hidden="true">08</span><span class="component-section-title">Downloads</span></h2>
+  <div class="component-download-panel">
+    <p class="component-section-lead">Official manufacturer PDF for teachers and advanced builders.</p>
+    <p class="component-download-placeholder">No separate datasheet is needed for this beginner guide.</p>
+  </div>
+</section></article>
+<nav class="component-prevnext" aria-label="Previous and next component"><a class="component-prevnext-card" href="/components/relay-module.html"><span>Previous</span><strong>1-Channel Relay Module</strong></a><a class="component-prevnext-card is-next" href="/components/ssd1306-oled.html"><span>Next</span><strong>SSD1306 OLED Display with ESP32</strong></a></nav>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20260627-header-logo-v2" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

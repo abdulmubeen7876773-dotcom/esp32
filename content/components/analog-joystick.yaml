@@ -1,0 +1,194 @@
+slug: analog-joystick
+name: 'Analog Joystick: ESP32 Wiring and Axis Readings'
+category: Input Devices
+difficulty: Beginner
+image: /assets/visuals/components/photos/analog-joystick-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Analog Joystick; not a verified module pinout
+summary: Read two joystick axes on classic ESP32 ADC1 pins and its push switch on GPIO27. Power a verified
+  passive potentiometer module at 3.3 V to keep axis outputs ESP32-safe.
+date_modified: '2026-10-08'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board
+      or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor:
+      115200 baud.'
+  - label: Hardware assumption
+    value: A passive two-potentiometer joystick breakout with VRx, VRy and a normally open SW contact to GND,
+      documented to operate at 3.3 V. No model, resistance or physical header order is inferred. This is not
+      an I2C/Qwiic joystick.
+  - label: Prerequisites and parts
+    value: First complete Arduino IDE setup and Blink. Joystick, breadboard and wires; verify the breakout
+      has no 5 V-only electronics or pull-ups.
+  - label: Expected result
+    value: X and Y readings change as the stick moves; SW reads LOW when pressed. Center and end readings vary,
+      so calibrate your own module.
+  - label: Verification status
+    value: Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware
+      in this update. The approved product-style illustration identifies the family; follow documented terminal
+      labels and the logical wiring diagram, not its rendered pin positions.
+related_components:
+- title: ESP32 DevKit board assumptions
+  href: /components/esp32-devkit.html
+  description: Check classic WROOM power, pin labels and GPIO restrictions.
+code:
+  title: Raw axis and push-switch readout
+  filename: analog_joystick_esp32.ino
+  wiring: VCC to 3.3 V, GND to GND, VRx to GPIO32, VRy to GPIO33 and SW to GPIO27. This example prints raw
+    axis readings and the instantaneous switch level.
+  content: "#include <Arduino.h>\nconstexpr uint8_t X_PIN = 32, Y_PIN = 33, SW_PIN = 27;\nvoid setup() {\n\
+    \  Serial.begin(115200);\n  pinMode(SW_PIN, INPUT_PULLUP);\n  analogReadResolution(12);\n  analogSetPinAttenuation(X_PIN,\
+    \ ADC_11db);\n  analogSetPinAttenuation(Y_PIN, ADC_11db);\n}\nvoid loop() {\n  int x = analogRead(X_PIN);\n\
+    \  int y = analogRead(Y_PIN);\n  Serial.printf(\"X=%d Y=%d SW=%s\\n\", x, y,\n                digitalRead(SW_PIN)\
+    \ == LOW ? \"pressed\" : \"released\");\n  delay(100);\n}\n"
+  notes: Raw values demonstrate input changes, not calibrated voltage. Center need not be 2048, and 3.3 V can
+    clip the classic ESP32 ADC measurement range. This monitor does not debounce SW; use the linked debouncing
+    lesson before counting presses.
+sources:
+- title: SparkFun Thumb Joystick hookup guide
+  url: https://learn.sparkfun.com/tutorials/thumb-joystick-hookup-guide/all
+  note: Two potentiometers and push switch; module example, not proof of the pictured board.
+- title: Espressif ADC API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/adc.html
+  note: Resolution, per-pin attenuation and classic ESP32 measurable range.
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: INPUT_PULLUP and digitalRead.
+- title: Espressif ESP32 ADC limitations
+  url: https://github.com/espressif/esp-faq/blob/master/docs/en/software-framework/peripherals/adc.rst
+  note: Classic ESP32 ADC2/Wi-Fi sharing restrictions.
+eli12: 'Each axis is a potentiometer whose wiper voltage changes with movement. The ESP32 samples those voltages;
+  a separate switch detects a press on the stick.
+
+
+  Power the assumed passive module from 3.3 V, not 5 V: otherwise its wipers can drive unsafe voltage into
+  ESP32 inputs. Read GPIO32 and GPIO33, which are ADC1 on classic ESP32. The illustration does not verify the
+  circuit inside another module.'
+electrical:
+  supply: 3.3 V for the documented passive joystick used here.
+  signal: VRx/VRy between GND and the 3.3 V rail; SW pulls GPIO27 to GND.
+  protection: Do not connect 5 V wiper outputs or 5 V pull-ups; verify the actual module circuit.
+  basis: Potentiometer-divider principle and Espressif classic ESP32 ADC/GPIO documentation.
+specs:
+- name: Interface
+  value: Two analog wipers + one switch
+  why: Verify VRx/VRy/SW labels; physical pin order varies.
+- name: Supply
+  value: 3.3 V in this build
+  why: Assumes passive potentiometers and a switch, not an active 5 V module.
+- name: Axes
+  value: GPIO32 and GPIO33 (ADC1)
+  why: Avoid the classic ESP32 ADC2/Wi-Fi conflict; other families differ.
+- name: Resolution
+  value: 12-bit raw counts, 0–4095
+  why: Counts are not calibrated volts or guaranteed full mechanical range.
+- name: Attenuation
+  value: ADC_11db
+  why: Classic ESP32 documented measurable range is about 150–3100 mV; endpoints may clip even with safe 3.3
+    V supply.
+pinout:
+- pin: VCC / +
+  role: Potentiometer supply
+  connects: ESP32 3.3 V
+  note: Only for a module documented for this passive 3.3 V use.
+- pin: GND / -
+  role: Reference
+  connects: ESP32 GND
+  note: Shared reference for both axes and switch.
+- pin: VRx / X
+  role: X wiper
+  connects: GPIO32
+  note: ADC1 input; never a 5 V wiper.
+- pin: VRy / Y
+  role: Y wiper
+  connects: GPIO33
+  note: ADC1 input; orientation may reverse an axis.
+- pin: SW
+  role: Push switch
+  connects: GPIO27 with INPUT_PULLUP
+  note: Assumes switch closes to GND. GPIO34–39 lack internal pull resistors on classic ESP32.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/analog-joystick-wiring.svg
+  illustration_alt: 'Logical connections for Analog Joystick: ESP32 Wiring and Axis Readings; see the accompanying
+    wiring table for terminal details'
+  summary: VCC to 3.3 V, GND to GND, VRx to GPIO32, VRy to GPIO33 and SW to GPIO27. This example prints raw
+    axis readings and the instantaneous switch level.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: VCC / +
+    esp32_pin: ESP32 3.3 V
+    notes: Only for a module documented for this passive 3.3 V use.
+  - component_pin: GND / -
+    esp32_pin: ESP32 GND
+    notes: Shared reference for both axes and switch.
+  - component_pin: VRx / X
+    esp32_pin: GPIO32
+    notes: ADC1 input; never a 5 V wiper.
+  - component_pin: VRy / Y
+    esp32_pin: GPIO33
+    notes: ADC1 input; orientation may reverse an axis.
+  - component_pin: SW
+    esp32_pin: GPIO27 with INPUT_PULLUP
+    notes: Assumes switch closes to GND. GPIO34–39 lack internal pull resistors on classic ESP32.
+  steps:
+  - With power disconnected, verify the module circuit/labels and its 3.3 V suitability.
+  - Connect only the five named signals, then select the classic WROOM board profile.
+  - Upload and open Serial Monitor; move each axis separately and press the stick.
+  - Observe the actual center and extremes before choosing a dead zone or mapping values to motion.
+library: No additional library; Arduino-ESP32 ADC and GPIO APIs
+output: At 115200 baud, X and Y should vary with the stick and SW should change between released and pressed.
+  Numbers shown on your board depend on its potentiometers and ADC behavior. Establish a dead zone from observed
+  center noise; do not assume an exact center or endpoint value.
+how_it_works: 'A potentiometer is a divider, so the wiper follows its position between the supply rails. A
+  higher axis supply can create a higher output: analog input is not automatically voltage-safe. For control
+  projects, calibrate each axis, allow a center dead zone and debounce the switch separately.'
+applications:
+- Menu navigation
+- Joystick-controlled robot arm
+- Two-axis position input
+troubleshooting:
+- problem: Axis remains near an endpoint
+  cause: Wrong pin, loose wiper wire or clipped ADC range.
+  fix: Check GPIO numbers, 3.3 V supply and both axis labels. Test each axis alone; clipping is not automatically
+    a broken potentiometer.
+- problem: Center jitters
+  cause: Potentiometer/ADC noise and mechanical variation.
+  fix: Use short wires, stable supply, averaging and a measured dead zone; do not demand exactly 2048.
+- problem: Axes fail with Wi-Fi
+  cause: ADC2 used on classic ESP32 or wrong family map.
+  fix: Use the named ADC1 GPIO32/33 here and verify your board family.
+- problem: SW always pressed
+  cause: Wrong terminal, a short or mismatched switch circuit.
+  fix: Check that SW is normally open to GND and GPIO27 has INPUT_PULLUP; inspect module pull-ups.
+faqs:
+- question: Can I power the joystick at 5 V?
+  answer: Not with direct axis connections in this example. The passive wipers may then reach 5 V. Use the
+    assumed 3.3 V-compatible module or a properly documented interface.
+- question: Why is center not exactly 2048?
+  answer: Mechanical center, potentiometer tolerance and ADC response vary. Calibrate instead of assuming ideal
+    midpoint counts.
+- question: Is this the same pin map as the robot arm?
+  answer: No. The linked project uses its own ADC and servo pins. Follow one complete matching wiring/code
+    set.
+related_guides:
+- title: Analog inputs
+  href: /guides/analog-inputs.html
+  description: Understand raw ADC readings and attenuation.
+- title: Debouncing buttons
+  href: /guides/debouncing-buttons.html
+  description: Turn noisy switch transitions into stable presses.
+related_projects:
+- title: ESP32 Robot Arm Controller
+  href: /projects/esp32-robot-arm-controller.html
+  description: Apply joystick readings with the project’s separate power and pin assumptions.

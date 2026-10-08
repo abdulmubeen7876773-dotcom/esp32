@@ -1,0 +1,205 @@
+slug: sg90-micro-servo
+name: 'SG90 Micro Servo: External Power and ESP32 Pulses'
+category: Actuators
+difficulty: Beginner
+image: /assets/visuals/components/photos/sg90-micro-servo-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of SG90 Micro Servo; not a verified module pinout
+summary: Control a positional SG90-class servo using Arduino-ESP32 3.x LEDC. Use a documented external supply,
+  common ground and a buffered control signal; begin with small unloaded movements.
+date_modified: '2026-10-08'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board
+      or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor:
+      115200 baud.'
+  - label: Hardware assumption
+    value: A positional SG90-class servo documented for 4.8 V supply and a 50 Hz RC control signal accepting
+      1400–1600 µs pulses. Tower Pro lists 4.8 V for its SG90 Digital; clones/different revisions are not assumed
+      identical. Use a standard 14-pin SN74AHCT125 powered from the same regulated 4.8 V rail.
+  - label: Prerequisites and parts
+    value: First complete Arduino IDE setup and Blink. Servo without mechanical load, regulated external 4.8
+      V supply sized for its actual starting/stall current, SN74AHCT125, 100 nF buffer decoupling and suitable
+      supply wiring.
+  - label: Expected result
+    value: The servo starts near its pulse-defined center, then alternates between two nearby positions. No
+      angle, torque or travel is promised for an unidentified variant.
+  - label: Verification status
+    value: Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware
+      in this update. The approved product-style illustration identifies the family; follow documented terminal
+      labels and the logical wiring diagram, not its rendered pin positions.
+related_components:
+- title: ESP32 DevKit board assumptions
+  href: /components/esp32-devkit.html
+  description: Check classic WROOM power, pin labels and GPIO restrictions.
+code:
+  title: Narrow-range positional pulse test
+  filename: sg90_micro_servo_esp32.ino
+  wiring: External regulated 4.8 V powers the documented servo and SN74AHCT125; all grounds join. GPIO25 controls
+    buffer channel1, whose output drives the identified servo signal lead.
+  content: "#include <Arduino.h>\nconstexpr uint8_t SERVO_PIN = 25;\nconstexpr uint8_t RESOLUTION = 16; //\
+    \ Classic ESP32 supports this at 50 Hz.\nconstexpr uint32_t PERIOD_US = 20000;\nbool ready = false;\nbool\
+    \ nextHigh = false;\nbool writePulse(uint32_t pulseUs) {\n  uint32_t duty = (pulseUs * (1UL << RESOLUTION)\
+    \ + PERIOD_US / 2) / PERIOD_US;\n  return ledcWrite(SERVO_PIN, duty); // 3.x uses the pin, not a channel\
+    \ number.\n}\nvoid setup() {\n  Serial.begin(115200);\n  ready = ledcAttach(SERVO_PIN, 50, RESOLUTION);\n\
+    \  if (ready) ready = writePulse(1500);\n  if (!ready) { Serial.println(\"LEDC configuration failed.\"\
+    ); return; }\n  Serial.println(\"Start at 1500 us; next pulses are 1400 and 1600 us.\");\n  delay(2000);\n\
+    }\nvoid loop() {\n  if (!ready) { delay(1000); return; }\n  uint32_t pulseUs = nextHigh ? 1600 : 1400;\n\
+    \  nextHigh = !nextHigh;\n  ready = writePulse(pulseUs);\n  if (!ready) { Serial.println(\"LEDC write failed.\"\
+    ); return; }\n  Serial.printf(\"Pulse: %lu us\\n\", static_cast<unsigned long>(pulseUs));\n  delay(2000);\n\
+    }\n"
+  notes: Pulse duty equals pulse duration divided by the 20 ms period, scaled to 2^16. Hardware LEDC maintains
+    pulses during delay(). This is positional control, not speed control; a successful API return does not
+    verify a connected servo.
+sources:
+- title: Tower Pro SG90 Digital
+  url: https://towerpro.com.tw/product/sg90-7/
+  note: Manufacturer lists 4.8 V and external adapter supply for this product; not a guarantee for clones.
+- title: Adafruit RC servo guide
+  url: https://learn.adafruit.com/adafruit-motor-selection-guide/rc-servos
+  note: RC pulse width versus positional/continuous-rotation behavior.
+- title: TI SN74AHCT125 datasheet
+  url: https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf
+  note: 4.5–5.5 V supply, TTL inputs, enables and package pinout.
+- title: Espressif LEDC API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/ledc.html
+  note: 3.x pin-based ledcAttach/ledcWrite and classic ESP32 resolution limits.
+eli12: 'A positional servo uses repeated control pulses to choose a position; it is not powered from the signal
+  wire. The motor can draw a surge when starting or blocked, so its supply must be independent of the ESP32
+  3.3 V rail.
+
+
+  Tower Pro lists 4.8 V and external adapter power for its SG90 Digital. This example uses that nominal rail;
+  do not infer a universal 5–6 V rating from the SG90 name. A 5 V supply is acceptable only if the exact servo
+  documentation permits it. Share ground with the USB-powered ESP32, not independent positive rails.'
+electrical:
+  supply: External regulated 4.8 V for a servo documented for that rail and the AHCT buffer. Never ESP32 3V3.
+  signal: GPIO25 at 3.3 V into buffer; buffer output to servo signal.
+  protection: Common ground; verify supply surge capacity and servo input limits. Keep external positive rail
+    separate from ESP32 USB/3V3.
+  basis: Tower Pro SG90 Digital nominal supply; TI AHCT 4.5–5.5 V supply and TTL input; actual servo variant
+    must be documented.
+specs:
+- name: Servo type
+  value: Positional SG90-class
+  why: Continuous-rotation conversions behave differently; no universal travel/torque claim.
+- name: Power
+  value: Documented external 4.8 V supply
+  why: Size for actual peak/stall current; stop if buzzing or blocked.
+- name: Control
+  value: 50 Hz (20 ms period)
+  why: Assumed standard RC positional control; verify actual servo.
+- name: Example pulse width
+  value: 1500 µs start; 1400 / 1600 µs movement
+  why: Small initial range, not universal angles or endpoints.
+- name: LEDC
+  value: GPIO25, 16-bit resolution on classic ESP32
+  why: Uses ledcAttach and pin-based ledcWrite in Arduino-ESP32 3.x; other families may have lower resolution
+    limits.
+pinout:
+- pin: Servo positive
+  role: Motor/electronics supply
+  connects: External regulated 4.8 V
+  note: 'Common red convention is not proof: verify connector wiring.'
+- pin: Servo ground
+  role: Return
+  connects: Supply minus + ESP32 GND + buffer pin7
+  note: Use supply wiring sized for motor current; no motor current through GPIO.
+- pin: Servo signal
+  role: RC pulse input
+  connects: GPIO25 → buffer 1A pin2 / 1Y pin3 → signal
+  note: Buffer VCC pin14 to 4.8 V; OE pin1 LOW; 100 nF between supply/ground.
+- pin: Unused buffer channels
+  role: Defined unused state
+  connects: OE pins4/10/13 HIGH; A pins5/9/12 LOW
+  note: Outputs6/8/11 unconnected; verify standard 14-pin package. Do not substitute plain HC125 without checking
+    input thresholds.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/sg90-micro-servo-wiring.svg
+  illustration_alt: 'Logical connections for SG90 Micro Servo: External Power and ESP32 Pulses; see the accompanying
+    wiring table for terminal details'
+  summary: External regulated 4.8 V powers the documented servo and SN74AHCT125; all grounds join. GPIO25 controls
+    buffer channel1, whose output drives the identified servo signal lead.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Servo positive
+    esp32_pin: External regulated 4.8 V
+    notes: 'Common red convention is not proof: verify connector wiring.'
+  - component_pin: Servo ground
+    esp32_pin: Supply minus + ESP32 GND + buffer pin7
+    notes: Use supply wiring sized for motor current; no motor current through GPIO.
+  - component_pin: Servo signal
+    esp32_pin: GPIO25 → buffer 1A pin2 / 1Y pin3 → signal
+    notes: Buffer VCC pin14 to 4.8 V; OE pin1 LOW; 100 nF between supply/ground.
+  - component_pin: Unused buffer channels
+    esp32_pin: OE pins4/10/13 HIGH; A pins5/9/12 LOW
+    notes: Outputs6/8/11 unconnected; verify standard 14-pin package. Do not substitute plain HC125 without
+      checking input thresholds.
+  steps:
+  - Disconnect USB and servo power. Verify the exact servo supply range, signal lead and allowed pulses. Remove
+    the horn/load for first movement.
+  - Wire buffer channel1, enables, decoupling and unused inputs as shown. Share ground but do not join external
+    positive to USB/3V3.
+  - Upload the sketch with Arduino-ESP32 3.x, then power the verified servo circuit. Keep fingers and loose
+    wires away from motion.
+  - Start with the narrow pulse range. Disconnect power if the servo strains; do not force the shaft or widen
+    endpoints blindly.
+library: No additional servo library; Arduino-ESP32 3.x LEDC API
+output: After the initial 1500 µs pulse, the sketch sends 1400 and 1600 µs alternately every two seconds. A
+  compatible unloaded positional servo should move between nearby positions. Exact angles depend on the model;
+  continuous rotation, buzzing, hard stops or resets call for stopping and checking hardware.
+how_it_works: Pulse width requests position. Increasing supply voltage does not select an angle. The buffer
+  provides a documented logic interface instead of assuming every servo accepts ESP32 3.3 V HIGH. External
+  supply capacity and a common reference remain necessary even when code and pulse timing are correct.
+applications:
+- Small indicator pointer
+- Unloaded servo learning experiment
+- Documented low-load robot joint
+troubleshooting:
+- problem: ESP32 resets when the servo moves
+  cause: Supply droop or motor current in ESP32 power wiring.
+  fix: Use separate rated servo power and common ground; check actual surge current, wiring and supply decoupling.
+- problem: No movement
+  cause: Wrong connector, disabled buffer, unsupported pulse input or no servo power.
+  fix: Check vendor lead order, 4.8 V-compatible supply, shared ground, buffer OE and pulses; USB alone is
+    not servo power.
+- problem: Buzzing or hard stop
+  cause: Load, mechanical obstruction or unsuitable pulse range.
+  fix: Disconnect power, remove the load and verify the model/pulse range. Do not force the shaft.
+- problem: ledcAttach is missing
+  cause: Arduino-ESP32 2.x or wrong board/core.
+  fix: Select Arduino-ESP32 3.x and the classic WROOM board. Do not mix channel-based legacy calls with this
+    pin-based example.
+faqs:
+- question: Can I power SG90 from ESP32 3.3 V?
+  answer: No in this build. Use an external supply documented for the exact servo and sized for motor surges;
+    share only the required ground reference.
+- question: Are all SG90 servos rated 5–6 V?
+  answer: No such blanket claim is made. Tower Pro’s referenced SG90 Digital page lists 4.8 V; the exact servo/revision
+    controls your supply choice.
+- question: Does 1500 µs mean exactly 90 degrees?
+  answer: Not for every variant. It is a conventional starting pulse, not a verified angle; check the actual
+    servo documentation and mechanical range.
+related_guides:
+- title: PWM fundamentals
+  href: /guides/pwm-fundamentals.html
+  description: Separate PWM timing from supply voltage using the 3.x baseline.
+- title: Arduino IDE setup
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Select the supported ESP32 board package.
+related_projects:
+- title: ESP32 Robot Arm Controller
+  href: /projects/esp32-robot-arm-controller.html
+  description: Advanced motion example with its own power/pin/library assumptions; verify its supply recommendation
+    against your actual servos.

@@ -1,0 +1,180 @@
+slug: tactile-push-button
+name: 'Tactile Button: Terminal Pairing and ESP32 Input'
+category: Input Devices
+difficulty: Beginner
+image: /assets/visuals/components/photos/tactile-push-button-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Tactile Button; not a verified module pinout
+summary: Identify the two internally joined terminal pairs before wiring a four-leg tactile switch. Connect
+  one contact group to GPIO27 and the other to GND, then debounce the active-LOW input.
+date_modified: '2026-10-08'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board
+      or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor:
+      115200 baud.'
+  - label: Hardware assumption
+    value: A bare, normally open, momentary four-terminal tactile switch with two permanently connected terminal
+      groups. Exact model/physical pairing is unspecified; identify it with continuity or its datasheet. LED-lit,
+      latched and electronic button modules need different circuits.
+      Choose a part documented for low-current 3.3 V contact service; check any minimum-load specification.
+  - label: Prerequisites and parts
+    value: First complete Arduino IDE setup and Blink. Button, breadboard, short wires and a continuity meter;
+      no button supply pin or 5 V connection.
+  - label: Expected result
+    value: Serial prints PRESSED or RELEASED only after the input stays stable for 30 ms, including the first
+      state.
+  - label: Verification status
+    value: Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware
+      in this update. The approved product-style illustration identifies the family; follow documented terminal
+      labels and the logical wiring diagram, not its rendered pin positions.
+related_components:
+- title: ESP32 DevKit board assumptions
+  href: /components/esp32-devkit.html
+  description: Check classic WROOM power, pin labels and GPIO restrictions.
+code:
+  title: Debounced button state
+  filename: tactile_push_button_esp32.ino
+  wiring: One verified A terminal to GPIO27 and one verified B terminal to GND. The sketch enables INPUT_PULLUP;
+    released is HIGH and pressed is LOW.
+  content: "#include <Arduino.h>\nconstexpr uint8_t CONTACT_PIN = 27;\nconstexpr uint32_t DEBOUNCE_MS = 30;\
+    \ // Starting value; adjust for actual contacts.\nint lastRaw = HIGH;\nint stableState = -1;\nuint32_t\
+    \ changedAt = 0;\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(CONTACT_PIN, INPUT_PULLUP);\n  lastRaw\
+    \ = digitalRead(CONTACT_PIN);\n  changedAt = millis();\n}\nvoid loop() {\n  int raw = digitalRead(CONTACT_PIN);\n\
+    \  uint32_t now = millis();\n  if (raw != lastRaw) { lastRaw = raw; changedAt = now; }\n  if (now - changedAt\
+    \ >= DEBOUNCE_MS && raw != stableState) {\n    stableState = raw;\n    Serial.println(stableState == LOW\
+    \ ? \"PRESSED\" : \"RELEASED\");\n  }\n  delay(1);\n}\n"
+  notes: A held button produces one state message, not repeated press events. The first report waits for stability.
+    Count press edges only on accepted HIGH-to-LOW transitions if you later add a counter.
+sources:
+- title: Omron B3F manufacturer datasheet (RS-hosted copy)
+  url: https://assets.rs-online.com/v1698872977/Datasheets/0b4640ec13fd80eb1780b1c20343ca8a.pdf
+  note: Example contact arrangement and model-specific ratings; do not assume the unidentified switch is a B3F or transfer its minimum-load rating.
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: Pull-up mode, pin restrictions and digitalRead.
+- title: Arduino Debounce example
+  url: https://docs.arduino.cc/built-in-examples/digital/Debounce/
+  note: Stable-state timing using millis; debounce must suit actual contacts.
+eli12: 'A common four-leg tactile button has two electrical contacts, each brought out to two legs. Pressing
+  joins the two contacts. Choosing two legs already in the same group makes the circuit look permanently pressed.
+
+
+  Disconnect power and label your verified groups A1/A2 and B1/B2. Connect one A terminal to GPIO27 and one
+  B terminal to GND. INPUT_PULLUP holds a released input HIGH; pressing closes it to LOW. The logical diagram
+  is not a promise about every switch’s physical orientation.'
+electrical:
+  supply: No active supply for this bare contact; no VCC pin.
+  signal: GPIO27 with 3.3 V INPUT_PULLUP; press closes to GND.
+  protection: Confirm terminal groups and breadboard rows. Never wire a bare switch directly between 3.3 V
+    and GND.
+  basis: Omron B3F example contact diagrams and Espressif GPIO API; unknown switch layout/rating must be checked.
+specs:
+- name: Switch assumption
+  value: Momentary, normally open
+  why: Latching and illuminated variants differ.
+- name: Terminal groups
+  value: A1/A2 joined; B1/B2 joined
+  why: Verify which physical legs form each group with power off.
+- name: Released state
+  value: HIGH with INPUT_PULLUP
+  why: An unconnected INPUT is not a reliable LOW.
+- name: Pressed state
+  value: LOW
+  why: The contact grounds the input; it does not apply a supply voltage.
+- name: Debounce window
+  value: 30 ms starting value
+  why: A software example, not a measured specification; tune for the actual switch.
+pinout:
+- pin: A1 / A2 (verified group)
+  role: First contact
+  connects: One A terminal → GPIO27
+  note: Both A legs are electrically the same node; these labels are assigned after continuity checking.
+- pin: B1 / B2 (verified group)
+  role: Second contact
+  connects: One B terminal → ESP32 GND
+  note: Leave duplicate legs unused or in the same intended node; avoid breadboard shorts.
+- pin: Internal pull-up
+  role: Defined released state
+  connects: pinMode(27, INPUT_PULLUP)
+  note: Classic ESP32 GPIO27 supports pull-up; input-only GPIO34–39 do not have internal pulls.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/tactile-push-button-wiring.svg
+  illustration_alt: 'Logical connections for Tactile Button: Terminal Pairing and ESP32 Input; see the accompanying
+    wiring table for terminal details'
+  summary: One verified A terminal to GPIO27 and one verified B terminal to GND. The sketch enables INPUT_PULLUP;
+    released is HIGH and pressed is LOW.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: A1 / A2 (verified group)
+    esp32_pin: One A terminal → GPIO27
+    notes: Both A legs are electrically the same node; these labels are assigned after continuity checking.
+  - component_pin: B1 / B2 (verified group)
+    esp32_pin: One B terminal → ESP32 GND
+    notes: Leave duplicate legs unused or in the same intended node; avoid breadboard shorts.
+  - component_pin: Internal pull-up
+    esp32_pin: pinMode(27, INPUT_PULLUP)
+    notes: Classic ESP32 GPIO27 supports pull-up; input-only GPIO34–39 do not have internal pulls.
+  steps:
+  - Disconnect USB. Find the two pairs that are connected without pressing; pressing must join the groups.
+  - Place the switch across separate breadboard nodes, often across the center gap when its actual geometry
+    permits. Recheck continuity after insertion.
+  - Connect one terminal from each different group as shown; do not bridge 3.3 V directly to GND.
+  - Upload the stable-state sketch, then try slow and fast presses. Use actual contacts to tune the starting
+    debounce window.
+library: No additional library; Arduino-ESP32 GPIO and millis
+output: At 115200 baud, expect RELEASED when untouched and PRESSED when held, after the stable window. A four-leg
+  switch wired across two permanently joined legs reads pressed even when untouched. Fast transitions shorter
+  than the debounce window are intentionally ignored.
+how_it_works: Contact bounce can produce several raw changes from one movement. Restarting the stability timer
+  on each change avoids accepting those intermediate states. The duplicate legs are mechanical conveniences,
+  not four independent inputs. Verify pairing rather than relying on an image or a same-side rule.
+applications:
+- Menu button
+- LED control input
+- Mode selection with debounced edges
+troubleshooting:
+- problem: Always PRESSED
+  cause: Both chosen legs are in the same group or breadboard rows are shorted.
+  fix: Unplug USB, identify pairs and recheck the inserted circuit with a meter.
+- problem: Random RELEASED/PRESSED
+  cause: Wrong GPIO, missing INPUT_PULLUP or loose connection.
+  fix: Use GPIO27 with the matching sketch, common ground and the verified contact groups.
+- problem: One press becomes several actions
+  cause: Raw reads used as events or debounce bypassed.
+  fix: Use accepted stable transitions; count only HIGH-to-LOW edges, not every loop while LOW.
+faqs:
+- question: Why does a button have four legs?
+  answer: In the assumed switch, each of its two electrical contacts has two legs. Confirm the actual pairing
+    with the datasheet or continuity.
+- question: Should the button connect to 3.3 V?
+  answer: This INPUT_PULLUP circuit connects the switch to GND. A pull-down circuit is different; do not mix
+    their wiring and logic.
+- question: Do I need an external resistor?
+  answer: GPIO27 can use INPUT_PULLUP for this short-wire example. An external pull resistor may be appropriate
+    for a different pin or noisy/long wiring; choose it for the circuit.
+related_guides:
+- title: Button LED Control
+  href: /guides/button-led-control.html
+  description: Follow its matching input/output pin map and video.
+- title: Pull-up versus pull-down
+  href: /guides/pull-up-vs-pull-down-resistors.html
+  description: Compare released and pressed states.
+- title: Debouncing Buttons
+  href: /guides/debouncing-buttons.html
+  description: Turn stable transitions into useful events.
+related_projects:
+- title: RGB LED Pattern Controller
+  href: /projects/esp32-rgb-led-pattern-controller.html
+  description: Apply button inputs to a project with its own wiring assumptions.

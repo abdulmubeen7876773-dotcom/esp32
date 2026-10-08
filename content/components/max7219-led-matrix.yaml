@@ -1,0 +1,209 @@
+slug: max7219-led-matrix
+name: 'MAX7219 LED Matrix: Power, Wiring and First Pattern'
+category: Displays
+difficulty: Beginner
+image: /assets/visuals/components/photos/max7219-led-matrix-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of MAX7219 LED Matrix; not a verified module pinout
+summary: Connect one MAX7219 8x8 matrix to a classic ESP32 using a regulated 5 V supply and a 3.3-to-5 V buffer.
+  Select the actual module mapping before displaying a pattern.
+date_modified: '2026-10-08'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with these GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.x (API review baseline 3.3.2, not a latest-version claim). Select the exact board
+      or ESP32 Dev Module for a generic WROOM board. Other ESP32 families need their own pin map. Serial Monitor:
+      115200 baud.'
+  - label: Hardware assumption
+    value: One preassembled 8x8 matrix with one MAX7219, documented ISET/LED current and verified MD_MAX72XX
+      mapping. The illustration does not establish FC-16 layout or board pin order. Use a standard 14-pin SN74AHCT125
+      buffer.
+  - label: Prerequisites and parts
+    value: First complete Arduino IDE setup and Blink. Matrix, regulated 5 V supply sized for its documented
+      load, SN74AHCT125, decoupling capacitors and short wires; no extra LEDs or individual resistors on a
+      preassembled matrix.
+  - label: Expected result
+    value: A diagonal lights for one second, then the display clears for one second. Orientation depends on
+      the selected module mapping.
+  - label: Verification status
+    value: Reviewed against the technical references below. Not compiled for an ESP32 or tested on hardware
+      in this update. The approved product-style illustration identifies the family; follow documented terminal
+      labels and the logical wiring diagram, not its rendered pin positions.
+related_components:
+- title: ESP32 DevKit board assumptions
+  href: /components/esp32-devkit.html
+  description: Check classic WROOM power, pin labels and GPIO restrictions.
+code:
+  title: One-driver diagonal test
+  filename: max7219_led_matrix_esp32.ino
+  wiring: GPIO23 data, GPIO18 clock and GPIO27 LOAD go through a 5 V SN74AHCT125. Matrix/buffer power is external
+    5 V; grounds are shared. This is one driver, not a chain.
+  content: "#include <Arduino.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n\n// Replace GENERIC_HW with the\
+    \ type verified for your module.\nconstexpr auto HARDWARE_TYPE = MD_MAX72XX::GENERIC_HW;\nconstexpr uint8_t\
+    \ DIN_PIN = 23, CLK_PIN = 18, LOAD_PIN = 27;\nconstexpr uint8_t MAX_DEVICES = 1;\nMD_MAX72XX matrix(HARDWARE_TYPE,\
+    \ DIN_PIN, CLK_PIN, LOAD_PIN, MAX_DEVICES);\nbool ready = false;\n\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  ready = matrix.begin();\n  if (!ready) { Serial.println(\"Library initialization failed.\"); return;\
+    \ }\n  matrix.control(MD_MAX72XX::INTENSITY, 1);\n  matrix.clear();\n  Serial.println(\"Diagonal test;\
+    \ verify module mapping and buffered wiring.\");\n}\nvoid loop() {\n  if (!ready) { delay(1000); return;\
+    \ }\n  for (uint8_t i = 0; i < 8; ++i) matrix.setPoint(i, i, true);\n  delay(1000);\n  matrix.clear();\n\
+    \  delay(1000);\n}\n"
+  notes: begin() reports library initialization, not a sensor-style hardware identity or wiring test. GENERIC_HW
+    is a configurable example, not a claim about the supplied illustration. For text/scrolling use the linked
+    project and verified module mapping.
+sources:
+- title: Analog Devices MAX7219/MAX7221 datasheet
+  url: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX7219-MAX7221.pdf
+  note: Supply, input thresholds, LED-current setting and decoupling.
+- title: TI SN74AHCT125 datasheet
+  url: https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf
+  note: TTL input levels, enables and package-specific connections.
+- title: MD_MAX72XX API
+  url: https://majicdesigns.github.io/MD_MAX72XX/class_m_d___m_a_x72_x_x.html
+  note: Explicit software-interface constructor, begin, intensity and setPoint.
+- title: MD_MAX72XX hardware guide
+  url: https://majicdesigns.github.io/MD_MAX72XX/page_hardware.html
+  note: Select actual module wiring; layouts differ.
+eli12: 'A MAX7219 multiplexes up to 64 LEDs, so the ESP32 sends pixel data instead of driving every LED. Start
+  with one driver and a low intensity. A four-panel board may contain four drivers: chip count, not board count,
+  determines MAX_DEVICES.
+
+
+  Supply voltage and logic voltage are separate. The driver needs regulated 5 V in this build; its specified
+  HIGH minimum is 3.5 V. Direct ESP32 3.3 V signals are not guaranteed. Buffer DIN, CLK and LOAD through the
+  named AHCT device, or use a module interface with documented translation.'
+electrical:
+  supply: Regulated external 5 V for matrix and buffer; MAX7219 chip operating range 4.0–5.5 V.
+  signal: ESP32 3.3 V into SN74AHCT125; buffered signals to matrix DIN/CLK/LOAD.
+  protection: Common ground, decoupling and sized supply wires; keep 5 V away from ESP32 GPIO/3V3.
+  basis: Analog Devices MAX7219 and TI SN74AHCT125 datasheets; exact matrix supplier/current setting unspecified.
+specs:
+- name: Driver and panel
+  value: One MAX7219; 8x8 matrix
+  why: Check chip count and module wiring.
+- name: Module power
+  value: Regulated 5 V
+  why: Current depends on ISET, lit pixels, intensity and driver count; no universal current budget.
+- name: Logic translation
+  value: SN74AHCT125 powered at 5 V
+  why: TTL-compatible inputs accept ESP32 HIGH; MAX7219 needs a higher guaranteed HIGH.
+- name: Decoupling
+  value: 100 nF + 10 µF near MAX7219; 100 nF at buffer
+  why: Check what the module already provides; wire power with the supply disconnected.
+- name: Intensity
+  value: 0–15; start at 1
+  why: Zero is minimum brightness, not shutdown, and is not a supply current limit.
+pinout:
+- pin: VCC / V+
+  role: Supply
+  connects: External regulated 5 V
+  note: Not ESP32 3V3; verify module label.
+- pin: GND
+  role: Reference
+  connects: Supply minus + ESP32 GND + buffer GND
+  note: Do not join independent positive power rails.
+- pin: DIN (input side)
+  role: Data
+  connects: GPIO23 → buffer 1A pin2 / 1Y pin3 → DIN
+  note: DOUT is cascade output, not the ESP32 data input.
+- pin: CLK
+  role: Clock
+  connects: GPIO18 → buffer 2A pin5 / 2Y pin6 → CLK
+  note: Short buffered connection.
+- pin: CS / LOAD
+  role: Latch
+  connects: GPIO27 → buffer 3A pin9 / 3Y pin8 → LOAD
+  note: This reference uses GPIO27; the linked project uses GPIO5 with a strapping qualification.
+- pin: Buffer power / enables
+  role: 14-pin SN74AHCT125
+  connects: VCC pin14 to 5 V; GND pin7 to common GND
+  note: Ground OE pins1/4/10. Unused OE pin13 HIGH, input4A pin12 LOW, output4Y pin11 unconnected; verify package.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/max7219-led-matrix-wiring.svg
+  illustration_alt: 'Logical connections for MAX7219 LED Matrix: Power, Wiring and First Pattern; see the accompanying
+    wiring table for terminal details'
+  summary: GPIO23 data, GPIO18 clock and GPIO27 LOAD go through a 5 V SN74AHCT125. Matrix/buffer power is external
+    5 V; grounds are shared. This is one driver, not a chain.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: VCC / V+
+    esp32_pin: External regulated 5 V
+    notes: Not ESP32 3V3; verify module label.
+  - component_pin: GND
+    esp32_pin: Supply minus + ESP32 GND + buffer GND
+    notes: Do not join independent positive power rails.
+  - component_pin: DIN (input side)
+    esp32_pin: GPIO23 → buffer 1A pin2 / 1Y pin3 → DIN
+    notes: DOUT is cascade output, not the ESP32 data input.
+  - component_pin: CLK
+    esp32_pin: GPIO18 → buffer 2A pin5 / 2Y pin6 → CLK
+    notes: Short buffered connection.
+  - component_pin: CS / LOAD
+    esp32_pin: GPIO27 → buffer 3A pin9 / 3Y pin8 → LOAD
+    notes: This reference uses GPIO27; the linked project uses GPIO5 with a strapping qualification.
+  - component_pin: Buffer power / enables
+    esp32_pin: VCC pin14 to 5 V; GND pin7 to common GND
+    notes: Ground OE pins1/4/10. Unused OE pin13 HIGH, input4A pin12 LOW, output4Y pin11 unconnected; verify
+      package.
+  steps:
+  - Disconnect USB and external power; identify the matrix input-side header and actual buffer package.
+  - Wire the three buffered channels and enables exactly as the table shows. Add local decoupling and check
+    supply capacity.
+  - Install MD_MAX72XX by MajicDesigns in Library Manager; SPI comes with the ESP32 core. Select HARDWARE_TYPE
+    using the library hardware guide, not the artwork.
+  - Start at intensity 1, power the verified circuit, upload and inspect the pattern. Do not connect MAX7219
+    DOUT to ESP32 GPIO.
+library: MD_MAX72XX by MajicDesigns, with SPI supplied by the Arduino-ESP32 core
+output: Eight diagonal pixels should light for about one second and clear for one second. A different orientation
+  is possible until mapping is correct. A successful library message does not prove power or data wiring. Start
+  with the simple pattern before adding scrolling text.
+how_it_works: The library sends pixel data through the three named software-interface pins and the driver refreshes
+  the display. Verify module layout in MD_MAX72XX before judging orientation. The supply must support the configured
+  LED load; increasing intensity is not a repair for unstable power.
+applications:
+- LED status panel
+- Small clock display
+- Scrolling message board
+troubleshooting:
+- problem: No pixels
+  cause: Wrong header, missing power/ground or LOAD wiring.
+  fix: Check the regulated supply, input DIN, buffered channels, enabled outputs and chip count.
+- problem: Random pixels or resets
+  cause: Supply droop, long wiring or direct 3.3 V control.
+  fix: Use the specified buffer, short wires and decoupling; check the supply under load.
+- problem: Mirrored or rotated pattern
+  cause: Wrong hardware mapping or panel orientation.
+  fix: Choose the documented MD_MAX72XX module type; do not assume every board is FC-16.
+- problem: Missing MD_MAX72xx.h
+  cause: Library absent or include case differs.
+  fix: Install MD_MAX72XX by MajicDesigns; keep the exact header spelling shown.
+faqs:
+- question: Can I power MAX7219 from 3.3 V?
+  answer: This build uses regulated 5 V. MAX7219 specifies 4.0–5.5 V operation; another driver or translated
+    module needs its own documentation.
+- question: Does intensity zero turn the matrix off?
+  answer: No. It selects minimum intensity. Clear the pixels or use the library shutdown control for a blank
+    display.
+- question: Is the image a pinout?
+  answer: No. It is a product-style illustration. Use documented header labels, buffer package pins and the
+    wiring table.
+related_guides:
+- title: Arduino IDE and ESP32 setup
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Install the board package and select the correct port.
+- title: Blink an external LED
+  href: /guides/blink-led-esp32.html
+  description: Practice GPIO output before adding a display driver.
+related_projects:
+- title: ESP32 LED Matrix Display
+  href: /projects/esp32-led-matrix-display.html
+  description: Continue to scrolling text; that project has its own CS pin and hardware-map settings.
