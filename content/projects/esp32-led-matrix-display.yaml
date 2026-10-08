@@ -6,14 +6,14 @@ og_image: /assets/images/og/esp32-led-matrix-display.webp
 hero_image: /assets/images/generated/esp32-led-matrix-display.webp
 featured_image: /assets/images/generated/esp32-led-matrix-display.webp
 image: /assets/images/generated/esp32-led-matrix-display.webp
-description: Chain MAX7219 8x8 LED matrix modules with the ESP32 to create scrolling text, brightness control, web-updated messages, and optional MQTT ticker data.
-meta_description: Build an ESP32 MAX7219 LED matrix display with SPI wiring, 5 V matrix power, MD_Parola scrolling text code, brightness control, and troubleshooting.
+description: Build an ESP32 MAX7219 scrolling display with 5 V power, 3.3-to-5 V logic buffering, MD_Parola setup, module orientation and brightness checks.
+meta_description: Build an ESP32 MAX7219 scrolling display with 5 V power, 3.3-to-5 V logic buffering, MD_Parola setup, module orientation and brightness checks.
 source_base: esp32-led-matrix-display-legacy-import
 sensor: Message text in firmware
 output: MAX7219 LED matrix display
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-26'
+date_modified: '2026-10-08'
 quality_status: golden_tutorial
 status: published
 import_tier: 3
@@ -24,15 +24,17 @@ hardware:
   sensor_name: Firmware message text
   output_name: MAX7219 LED matrix display
   wiring:
-  - component: MAX7219 DIN (MOSI)
-    pin: GPIO 23
-  - component: MAX7219 CS (CS)
-    pin: GPIO 5
-  - component: MAX7219 CLK
-    pin: GPIO 18
-  - component: MAX7219 VCC
-    pin: 5 V (Vin)
-  - component: MAX7219 GND
+  - component: Matrix DIN
+    pin: GPIO23 → buffer1A/1Y
+  - component: Matrix CLK
+    pin: GPIO18 → buffer2A/2Y
+  - component: Matrix CS/LOAD
+    pin: GPIO5 → buffer3A/3Y
+  - component: Buffer OE1/OE2/OE3
+    pin: GND
+  - component: Matrix and buffer VCC
+    pin: External regulated 5 V
+  - component: All signal grounds
     pin: GND
 levels:
   beginner:
@@ -268,21 +270,18 @@ project:
   age: Ages 12+
   estimated_time: 60-90 min
   budget: Under 25 USD
-  what_you_build: A scrolling LED message display using an ESP32 and a MAX7219 matrix module, with clean SPI wiring
-    and brightness control.
-  story: 'This ESP32 LED matrix display project shows scrolling text on a MAX7219 8x8 module without wiring dozens
-    of LED pins. Build it when you want to move beyond one blinking LED and learn how a display driver controls
-    many LEDs through only DIN, CS, and CLK.
+  what_you_build: A MAX7219 8×8 display that repeatedly scrolls Hello ESP32! right to left. The complete example uses one FC16-mapped driver,
+    low starting brightness and explicit GPIO23/18/5 signals. Longer chains, buttons, web updates and MQTT remain extension ideas, not features
+    implemented by this sketch.
+  story: |-
+    This ESP32 LED matrix display project shows scrolling text on a MAX7219 8x8 module without wiring dozens of LED pins. Build it when you want to move beyond one blinking LED and learn how a display driver controls many LEDs through only DIN, CS, and CLK.
 
-
-    The useful lesson is the display chain itself: match the module type, wire SPI correctly, choose safe 5 V matrix
-    power, set brightness, and keep the scroll animation non-blocking so the ESP32 can later handle buttons, Wi-Fi,
-    or MQTT data.'
-  eli12: The MAX7219 is a tiny display manager. Instead of asking the ESP32 to control 64 LEDs one by one, the ESP32
-    sends a message to the manager and the chip refreshes the LEDs for you.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
-    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
-    unless a proper driver, enclosure, and adult supervision are used.
+    The useful lesson is the display chain itself: match the module type, wire SPI correctly, choose safe 5 V matrix power, set brightness, and keep the scroll animation non-blocking so the ESP32 can later handle buttons, Wi-Fi, or MQTT data.
+  eli12: The MAX7219 is a tiny display manager. Instead of asking the ESP32 to control 64 LEDs one by one, the ESP32 sends a message to the manager
+    and the chip refreshes the LEDs for you.
+  parent_safety: Unplug USB and matrix power before rewiring. This low-voltage prototype uses separate 5 V matrix power and 3.3 V ESP32 logic
+    with a buffer between them. Never connect 5 V outputs to ESP32 or route matrix current through its 3.3 V pin. Keep external positive power
+    separate from USB-powered board positive rails; share signal ground.
   learning_objectives:
   - Wire a MAX7219 LED matrix to ESP32 SPI pins.
   - Understand why a driver chip is used for many LEDs.
@@ -290,18 +289,21 @@ project:
   - Adjust brightness without overloading the supply.
   - Plan safe power for chained matrix modules.
   components:
-  - item: 1× ESP32 DevKit V1
-    note: Required for this build
+  - item: Classic ESP32-WROOM DevKit
+    note: USB data cable; GPIO23 DATA, GPIO18 CLK, GPIO5 CS
     icon: PART
     link: /components/esp32-devkit.html
-  - item: 1× MAX7219 8x8 LED matrix module
-    note: Pre-assembled module with MAX7219 and 64 LEDs
+  - item: MAX7219 matrix module
+    note: One driver for this example; verify mapping and chip count
     icon: PART
-  - item: 1× Breadboard and jumper wires
-    note: Required for this build
+  - item: SN74AHCT125 or documented equivalent
+    note: Three 3.3-to-5 V logic channels; powered at 5 V
     icon: PART
-  - item: USB data cable
-    note: Programming and bench power
+  - item: Regulated 5 V matrix supply
+    note: Size from actual module current, chain length and brightness; do not assume USB/VIN capacity
+    icon: PART
+  - item: Decoupling capacitors and short wires
+    note: 100 nF at buffer; MAX7219 recommends 100 nF + 10 µF near each driver; check module provisions
     icon: PART
   bom:
   - part: 1× ESP32 DevKit V1
@@ -322,63 +324,92 @@ project:
     notes: Programming and bench power
   wiring:
     illustration_alt: ESP32 LED Matrix Display wiring diagram
-    summary: The ESP32 sends serial data to the MAX7219 through DIN, CS, and CLK. Power the matrix module from 5
-      V for usable brightness, keep GND common, and start with one module before chaining displays.
+    summary: ESP32 supplies logic only. A 5 V SN74AHCT125 raises DIN/CLK/CS to the MAX7219 input levels; a regulated supply powers the matrix.
+      Connect to the DIN input side, not DOUT. Diagram shows logical connections.
     steps:
-    - Unplug USB before changing wires.
-    - Connect MAX7219 DIN (MOSI) to GPIO 23 (SPI MOSI).
-    - Connect MAX7219 CS (CS) to GPIO 5 (SPI chip select).
-    - Connect MAX7219 CLK to GPIO 18 (SPI clock).
-    - Connect MAX7219 VCC to 5 V (Vin) (Matrix LEDs need 5 V for full brightness).
-    - Connect MAX7219 GND to GND.
-    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+    - Unplug USB and 5 V supply. Identify input-side DIN/CLK/CS (sometimes LOAD), VCC and GND.
+    - For a standard 14-pin SN74AHCT125 package, connect VCC pin14 to regulated 5 V and GND pin7 to shared ground. Add 100 nF close to these pins;
+      verify actual package pinout.
+    - GPIO23 → 1A pin2; 1Y pin3 → DIN. GPIO18 → 2A pin5; 2Y pin6 → CLK. GPIO5 → 3A pin9; 3Y pin8 → CS/LOAD.
+    - Ground active-LOW OE pins1,4,10 to enable used channels. For unused channel4 tie OE pin13 HIGH and input4A pin12 LOW; leave output4Y pin11
+      open.
+    - Connect matrix VCC to regulated 5 V and matrix/buffer/ESP32 grounds together. Keep +5 V off ESP32 3.3 V and GPIO; do not join independent
+      USB/external positive rails.
+    - Verify decoupling and supply capacity before powering. Start at intensity1 with one driver; larger chains require sized power wiring.
+    - 'Set HARDWARE_TYPE and MAX_DEVICES to your actual module. GPIO5 is a classic ESP32 strapping pin: buffer input must not force an incompatible
+      reset level. If board circuitry conflicts, move CS to available GPIO27 and update code.'
+    image: /assets/visuals/projects/wiring/esp32-led-matrix-display-wiring.svg
   gpio_map:
-  - signal: MAX7219 DIN (MOSI)
-    esp32_pin: GPIO 23
+  - signal: Matrix DIN
+    esp32_pin: GPIO23 → buffer1A/1Y
     direction: Output
-    notes: SPI MOSI
-  - signal: MAX7219 CS (CS)
-    esp32_pin: GPIO 5
+    notes: 3.3 V source → 5 V signal; input connector
+  - signal: Matrix CLK
+    esp32_pin: GPIO18 → buffer2A/2Y
     direction: Output
-    notes: SPI chip select
-  - signal: MAX7219 CLK
-    esp32_pin: GPIO 18
+    notes: Explicit software clock pin
+  - signal: Matrix CS/LOAD
+    esp32_pin: GPIO5 → buffer3A/3Y
     direction: Output
-    notes: SPI clock
-  - signal: MAX7219 VCC
-    esp32_pin: 5 V (Vin)
+    notes: Classic ESP32 strapping pin; avoid reset conflict
+  - signal: Buffer OE1/OE2/OE3
+    esp32_pin: GND
+    direction: Enable
+    notes: Active-LOW enables channels
+  - signal: Matrix and buffer VCC
+    esp32_pin: External regulated 5 V
     direction: Power
-    notes: Matrix LEDs need 5 V for full brightness
-  - signal: MAX7219 GND
+    notes: Never ESP32 3.3 V; separate positive supply rails
+  - signal: All signal grounds
     esp32_pin: GND
     direction: Ground
-    notes: Match this wire to the code constant.
-  circuit_explanation: The ESP32 sends serial data to the MAX7219 through DIN, CLK, and CS. The MAX7219 multiplexes
-    rows and columns inside the matrix and controls LED current. The module usually needs 5 V for full brightness,
-    while the ESP32 signal pins still provide logic control.
-  engineering_explanation: Matrix displays are multiplexed. Only part of the display is driven at any instant, but
-    it refreshes fast enough that your eyes see a steady image. Brightness, power supply stability, and wiring length
-    matter more as you chain more modules.
+    notes: Common reference; sized supply wiring carries matrix current
+  circuit_explanation: The ESP32 sends serial data to the MAX7219 through DIN, CLK, and CS. The MAX7219 multiplexes rows and columns inside the
+    matrix and controls LED current. The module usually needs 5 V for full brightness, while the ESP32 signal pins still provide logic control.
+  engineering_explanation: |-
+    One 8×8 panel shows only part of the message at once. Chains add width: DOUT of each driver goes to next DIN; CLK/CS are shared. Match driver count, order and mapping. Never connect 5 V DOUT back to an ESP32 input.
+
+    Wrong mapping can mirror/rotate characters. Choose actual HARDWARE_TYPE first, then correct mounting or use documented Parola zone flips. Keep wires short, check shared ground and decoupling. Supply current depends on intensity, lit pixels, ISET and driver count; an unknown USB/VIN rail is not a guaranteed chain supply.
   libraries:
-  - name: Arduino ESP32 core
-    note: Install ESP32 board support in Arduino IDE.
+  - name: MD_Parola by MajicDesigns
+    note: Install via Library Manager for scrolling animation.
+  - name: MD_MAX72XX by MajicDesigns
+    note: Install dependency via Library Manager; include is MD_MAX72xx.h (case matters). Select actual mapping.
+  - name: esp32 by Espressif Systems 3.x
+    note: Select WROOM board/port. No Wi-Fi/MQTT dependencies for this complete example.
   code:
     filename: esp32-led-matrix-display.ino
-    content: "// ESP32 LED Matrix Display - Beginner\n// Single MAX7219 8x8; scrolling text via MD_MAX72XX library\n\
-      // Install: MD_MAX72XX by MajicDesigns in Library Manager\n// Install: MD_Parola by MajicDesigns in Library\
-      \ Manager\n\n#include <MD_Parola.h>\n#include <MD_MAX72xx.h>\n#include <SPI.h>\n\n#define HARDWARE_TYPE MD_MAX72XX::FC16_HW\n\
-      #define MAX_DEVICES   1\n#define CS_PIN        5\n\nMD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);\n\
-      \nconst char* message = \"Hello ESP32! \";\nconst uint8_t SCROLL_SPEED = 60; // milliseconds per step (lower\
-      \ = faster)\nconst uint8_t BRIGHTNESS   = 5;  // 0 (dim) to 15 (full)\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  display.begin();\n  display.setIntensity(BRIGHTNESS);\n  display.displayClear();\n  display.displayScroll(message,\
-      \ PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED);\n  Serial.println(\"LED matrix display ready.\");\n}\n\nvoid loop()\
-      \ {\n  if (display.displayAnimate()) {\n    // Animation complete — restart scroll\n    display.displayReset();\n\
-      \  }\n}"
-  code_explanation: The sketch selects the common FC16 hardware type, sets one MAX7219 device on CS GPIO5, starts
-    MD_Parola, sets brightness, and scrolls "Hello ESP32!" across the 8x8 matrix. loop() keeps calling displayAnimate()
-    so the non-blocking scroll can advance and restart.
-  expected_output: Serial Monitor prints "LED matrix display ready." The matrix should scroll "Hello ESP32!" from
-    right to left at the configured speed and brightness.
+    content: |-
+      #include <MD_Parola.h>
+      #include <MD_MAX72xx.h>
+      #include <SPI.h>
+
+      #define HARDWARE_TYPE MD_MAX72XX::FC16_HW // Verify actual module layout.
+      constexpr uint8_t MAX_DEVICES = 1; // Driver chips, not boards.
+      constexpr uint8_t DATA_PIN = 23, CLK_PIN = 18, CS_PIN = 5;
+      constexpr uint16_t SCROLL_SPEED_MS = 60;
+      constexpr uint8_t BRIGHTNESS = 1; // 0 minimum intensity; 15 maximum.
+      // Explicit pins select software serial. Buffer all signals to 5 V.
+      MD_Parola display(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+      char message[] = "Hello ESP32! "; // Persistent animation buffer.
+
+      void setup() {
+        Serial.begin(115200);
+        display.begin();
+        display.setIntensity(BRIGHTNESS);
+        display.displayClear();
+        display.displayScroll(message, PA_LEFT, PA_SCROLL_LEFT, SCROLL_SPEED_MS);
+        Serial.println("LED matrix ready: repeating Hello ESP32!");
+      }
+      void loop() {
+        if (display.displayAnimate()) display.displayReset();
+      }
+  code_explanation: The five-argument constructor selects software serial with explicit data, clock and select pins, matching the wiring without
+    default SPI assumptions. MD_Parola animates a persistent message buffer; loop calls displayAnimate frequently and displayReset starts the
+    next pass. No network or blocking delay is needed.
+  expected_output: 'Serial prints LED matrix ready: repeating Hello ESP32! once. The matrix should scroll Hello ESP32! right to left repeatedly
+    at 60 ms per step and intensity1. Only part of a character/message fits on one 8×8 panel. This describes expected behavior, not observed hardware
+    output.'
   common_mistakes:
   - text: Powering several matrix modules from the ESP32 3.3 V pin.
   - text: Mixing up DIN and DOUT when chaining modules.
@@ -386,21 +417,29 @@ project:
   - text: Setting brightness too high on USB power.
   - text: Using the wrong hardware type in the display library.
   troubleshooting:
-  - problem: Display stays blank
-    fix: Check VCC, GND, DIN, CS, CLK, and confirm the library hardware type matches the module.
-  - problem: Text scrolls backwards
-    fix: Change the module orientation or hardware type in the library settings.
-  - problem: Display flickers
-    fix: Use a stronger 5 V supply and shorter wires.
-  - problem: Only one module works in a chain
-    fix: Check DOUT of one module goes to DIN of the next.
+  - problem: Blank display
+    fix: Check external 5 V, common ground, buffer VCC/OE and input-side DIN. Match controller/mapping/chip count. Serial ready text does not
+      prove module detection.
+  - problem: Random pixels or intermittent output
+    fix: Check buffer signals, 5 V under load, short wires and decoupling. Direct 3.3 V HIGH does not meet the guaranteed MAX7219 threshold.
+  - problem: Mirrored, rotated or wrong module order
+    fix: Compare mapping/orientation with MD_MAX72XX documentation. FC16_HW is not universal; correct mapping before PA_FLIP_LR/PA_FLIP_UD zone
+      effects.
+  - problem: Only part of chain works
+    fix: Count chips for MAX_DEVICES; check DOUT-to-DIN, CLK/CS continuity and voltage at the far end.
+  - problem: ESP32 does not boot with matrix
+    fix: Check shorts and GPIO5 strapping. Buffer inputs must not impose a conflicting reset level; move CS to unused GPIO27 and update CS_PIN
+      if required.
+  - problem: Flicker, dim LEDs or resets at higher intensity
+    fix: Return to intensity1/one driver. Check rated supply, wire resistance and capacitors. Never increase brightness to fix insufficient power
+      or power matrix from ESP32 3.3 V.
   testing_checklist:
-  - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire VCC and GND first, then confirm the ESP32 still boots.
-  - Add DIN GPIO23, CS GPIO5, and CLK GPIO18 exactly as the sketch expects.
-  - Upload the matrix sketch and confirm Serial Monitor prints the ready message.
-  - Verify one module scrolls correctly before chaining more modules.
-  - Power-cycle the project and confirm it starts in a safe state.
+  - Verify Serial-only upload before adding hardware.
+  - Check buffer package pinout, enables and grounds with power off.
+  - Verify regulated 5 V module supply and ESP32-side 3.3 V signals.
+  - Match layout and driver count before uploading.
+  - Check repeating scroll/orientation at low intensity first.
+  - Power down before chaining and recalculate power/wiring capacity.
   engineer_tips:
   - Start with one module before chaining four or more.
   - Keep brightness low during USB testing.
@@ -412,7 +451,11 @@ project:
   - Avoid blocking delays if the display shares work with sensors.
   - Reduce brightness to save current.
   - Use hardware SPI pins for reliable high-speed updates.
-  upgrade_ideas: *id001
+  upgrade_ideas:
+  - Chain 4 MAX7219 modules for a 32x8 display with longer message capacity
+  - Add a button to cycle through several preset messages
+  - Add an RTC module and display the current time and date
+  - Add Wi-Fi and set the message via a web interface
   real_world_applications:
   - Classroom message board
   - IoT status display
@@ -444,23 +487,25 @@ project:
     href: /projects/esp32-smart-street-light.html
     description: Continue with a light-output project that uses sensor thresholds and safe switching.
   faqs:
-  - question: Why is the MAX7219 matrix blank?
-    answer: Check 5 V, GND, DIN, CS, and CLK first, then confirm the library hardware type matches your module. The
-      project uses GPIO 23, GPIO 5, and GPIO 18 for SPI-style wiring.
-  - question: Can I power several LED matrix modules from the ESP32 3.3 V pin?
-    answer: No. The page wires the matrix VCC to 5 V because the LEDs need more current than the ESP32 3.3 V pin
-      should provide, especially when brightness is high.
-  - question: Why does text scroll backward?
-    answer: Matrix modules are sold in different orientations. Change the library hardware type or rotate the module
-      after the basic wiring is proven.
+  - question: Can ESP32 outputs connect directly to MAX7219?
+    answer: 'This example buffers to 5 V: MAX7219 specified HIGH minimum is 3.5 V, above ESP32’s 3.3 V output. A different interface requires
+      documented module compatibility.'
+  - question: How many devices should I select?
+    answer: MAX_DEVICES counts driver chips, not boards. A four-chip FC16 board needs 4.
+  - question: Why is text mirrored or upside down?
+    answer: Verify actual row/column mapping and mounting order. FC16_HW is an example, not a universal layout.
   references:
-  - title: MAX7219 Datasheet
+  - title: MAX7219 datasheet
     href: https://www.analog.com/media/en/technical-documentation/data-sheets/MAX7219-MAX7221.pdf
-  - title: Arduino ESP32 Core Documentation
-    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  - title: TI SN74AHCT125 datasheet
+    href: https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf
+  - title: MD_Parola API/examples
+    href: https://majicdesigns.github.io/MD_Parola/
+  - title: MD_MAX72XX hardware mapping
+    href: https://majicdesigns.github.io/MD_MAX72XX/page_hardware.html
   complete:
-    summary: You completed ESP32 LED Matrix Display as a real ESP32 display build. You now know how to wire MAX7219
-      SPI-style control pins, power the matrix safely, tune brightness, and debug scrolling text.
+    summary: You completed ESP32 LED Matrix Display as a real ESP32 display build. You now know how to wire MAX7219 SPI-style control pins, power
+      the matrix safely, tune brightness, and debug scrolling text.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins
@@ -474,3 +519,14 @@ project:
     note: Show signal pins clearly enough for learners to compare.
   - title: Working output
     note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.
+  tutorial_flow: true
+  assumptions: |-
+    Classic ESP32-WROOM-32/32E DevKit with the named GPIOs exposed and unused. Select its exact board profile, or ESP32 Dev Module for an otherwise undocumented generic WROOM board. Arduino IDE 2.x and Arduino-ESP32 3.x; API review baseline 3.3.2, not a claim that it is the latest release. Other ESP32 families need their own pin/USB settings. Serial Monitor: 115200 baud. Examples are reviewed against documentation, not compiled or hardware tested in this content review.
+
+    Use MAX7219 or a module with equivalent documented ratings and verified MD_MAX72XX mapping. FC16_HW is an example, not a promise that every panel is FC16. MAX_DEVICES counts driver chips, not boards: a four-chip FC16 board needs 4. The example uses explicit software clock/data pins rather than board-default SPI pins.
+  configuration: |-
+    Set HARDWARE_TYPE to the actual MD_MAX72XX layout. FC16_HW is only for FC16-wired matrices; other layouts route rows/columns differently. MAX_DEVICES counts MAX7219 chips; a four-chip board needs 4.
+
+    BRIGHTNESS is 0 (minimum intensity, not OFF) to 15. Start at 1; intensity is not a current limit or supply rating. Budget supply current from actual module specifications or ISET/LED drive settings; no universal per-module current is assumed. MAX7219 specifies 4.0–5.5 V supply; this build uses regulated 5 V, not 3.3 V.
+
+    MAX7219 HIGH-input minimum is 3.5 V under specified conditions, so direct ESP32 3.3 V control is not guaranteed. At 5 V, SN74AHCT125 accepts HIGH from 2.0 V and buffers the three outputs. A generic bidirectional I2C level shifter is not automatically suitable for clocked signals. A module with verified onboard translation may use its documented interface instead.

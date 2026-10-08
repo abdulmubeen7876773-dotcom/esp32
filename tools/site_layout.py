@@ -1208,22 +1208,23 @@ _V2_TRUST_STRIP = """<div class="v2-trust-strip" aria-label="ESP32 Engine platfo
 </div>"""
 
 
-def home_v2_declaration() -> str:
+def home_v2_declaration(home=None) -> str:
     """Section 1 — Homepage v2: The Declaration (full-viewport hero)."""
+    home = home or {}
     return f"""<section class="v2-declaration" aria-labelledby="v2-hero-heading">
   <div class="wrap v2-declaration-inner">
     <div class="v2-declaration-content">
-      <p class="v2-eyebrow">GPIO, sensors, displays, code</p>
-      <h1 id="v2-hero-heading" class="v2-declaration-headline">Learn ESP32. Build real projects.</h1>
-      <p class="v2-declaration-sub">Follow step-by-step guides with exact wiring, practical Arduino code, troubleshooting notes, and real electronics projects you can test on a breadboard.</p>
+      <p class="v2-eyebrow">{esc(home.get("hero_eyebrow", "GPIO, sensors, displays, code"))}</p>
+      <h1 id="v2-hero-heading" class="v2-declaration-headline">{esc(home.get("hero_title", "Learn ESP32. Build real projects."))}</h1>
+      <p class="v2-declaration-sub">{esc(home.get("hero_sub", "Follow step-by-step ESP32 wiring and code guides."))}</p>
       <div class="home-hero-path-rail" aria-label="Primary ESP32 Engine paths">
         <a href="{site_href('guides.html')}"><span>Guides</span><strong>Setup, GPIO, sensors</strong></a>
         <a href="{site_href('projects.html')}"><span>Projects</span><strong>Wiring, code, results</strong></a>
-        <a href="{site_href('index.html#advanced-projects')}"><span>Advanced Projects</span><strong>Robotics, IoT, automation</strong></a>
+        <a href="{site_href('components.html')}"><span>Components</span><strong>Parts, power and pinouts</strong></a>
       </div>
       <div class="home-hero-actions">
-        <a class="v2-btn-hero" href="{site_href('guides.html')}">Start With Guides {_V2_ARROW_ICON}</a>
-        <a class="home-btn-secondary" href="{site_href('projects.html')}">Browse Projects</a>
+        <a class="v2-btn-hero" href="{site_href('guides/installing-arduino-ide-esp32.html')}">Start here: set up Arduino IDE {_V2_ARROW_ICON}</a>
+        <a class="home-btn-secondary" href="{site_href('learning.html#esp32-basics')}">See the five-step route</a>
       </div>
       <form class="home-hero-search" action="{site_href('search.html')}" method="get" role="search">
         <label class="visually-hidden" for="home-hero-search-input">Search ESP32 Engine</label>
@@ -1242,7 +1243,7 @@ def home_v2_declaration() -> str:
 
 
 def home_primary_paths() -> str:
-    """Top homepage decision cards: guides, projects, and advanced projects."""
+    """Top homepage decision cards: individual tutorials, component references, and projects."""
     arrow = _V2_ARROW_ICON
     paths = [
         {
@@ -1250,7 +1251,7 @@ def home_primary_paths() -> str:
             "label": "Guides",
             "href": "guides.html",
             "title": "Understand ESP32 from the ground up.",
-            "desc": "Setup, GPIO, sensors, displays, communication, and troubleshooting in a beginner-friendly order.",
+            "desc": "Individual tutorials for setup, GPIO, sensors, displays and troubleshooting.",
             "benefits": ["Setup basics", "GPIO fundamentals", "Sensor and display skills"],
             "cta": "Open guides",
             "code": "GPIO2 -> LED",
@@ -1267,13 +1268,13 @@ def home_primary_paths() -> str:
         },
         {
             "cls": "advanced",
-            "label": "Advanced Projects",
-            "href": "index.html#advanced-projects",
-            "title": "Combine sensors, networking, and motion.",
-            "desc": "Move into robotics, automation, camera systems, MQTT dashboards, and multi-sensor monitoring.",
-            "benefits": ["Robotics", "Automation", "Networking and monitoring"],
-            "cta": "See advanced picks",
-            "code": "MQTT -> dashboard",
+            "label": "Components",
+            "href": "components.html",
+            "title": "Understand the parts before wiring.",
+            "desc": "Check module assumptions, power requirements, pin labels and example readings.",
+            "benefits": ["Part selection", "Supply and signal voltage", "Pinouts and examples"],
+            "cta": "Explore components",
+            "code": "Power / pins / data",
         },
     ]
     cards = []
@@ -1291,8 +1292,8 @@ def home_primary_paths() -> str:
         )
     return f"""<section class="home-primary-paths" aria-labelledby="home-primary-paths-heading">
   <div class="wrap">
-    <p class="home-section-eyebrow">Choose your bench path</p>
-    <h2 id="home-primary-paths-heading">Guides, projects, or advanced builds.</h2>
+    <p class="home-section-eyebrow">Find what you need</p>
+    <h2 id="home-primary-paths-heading">Tutorials, parts and practical builds.</h2>
     <div class="home-primary-grid">{"".join(cards)}</div>
   </div>
 </section>"""
@@ -1610,7 +1611,7 @@ def home_learning_adventure(projects: list[dict]) -> str:
     return f"""<section class="home-learning-finder" id="learning-adventure" aria-labelledby="learning-adventure-heading">
   <div class="wrap">
     <p class="home-section-eyebrow">Project finder</p>
-    <h2 id="learning-adventure-heading">Choose Your Learning Adventure</h2>
+    <h2 id="learning-adventure-heading">Find a project for your next skill</h2>
     <div class="home-choice-grid">
       <div><h3>Who is building?</h3><div class="home-choice-row" role="group" aria-label="Choose visitor type">{audience_buttons}</div></div>
       <div><h3>What do you want to do?</h3><div class="home-choice-row" role="group" aria-label="Choose learning goal">{goal_buttons}</div></div>
@@ -1856,8 +1857,8 @@ def home_v3_academy() -> str:
       <div class="v3-top-picks-col">
         <h3 class="v3-top-picks-col-title">Academy Links</h3>
         <div class="v3-pick-list">
-          <a class="v3-pick-row" href="{site_href("learning.html#esp32-basics")}"><span class="v3-pick-row-main"><strong>ESP32 Basics</strong><span class="v3-pick-row-desc">Follow the beginner sequence from board choice to input and output fundamentals.</span></span><span class="v3-pick-row-meta">Start {arrow}</span></a>
-          <a class="v3-pick-row" href="{site_href("guides.html#missions")}"><span class="v3-pick-row-main"><strong>Foundation Roadmap</strong><span class="v3-pick-row-desc">See the full mission list and continue in order.</span></span><span class="v3-pick-row-meta">View {arrow}</span></a>
+          <a class="v3-pick-row" href="{site_href("learning.html#esp32-basics")}"><span class="v3-pick-row-main"><strong>ESP32 Basics</strong><span class="v3-pick-row-desc">Follow IDE setup, LED, button, DHT11 and OLED tutorials.</span></span><span class="v3-pick-row-meta">Start {arrow}</span></a>
+          <a class="v3-pick-row" href="{site_href("guides.html#missions")}"><span class="v3-pick-row-main"><strong>Foundation Roadmap</strong><span class="v3-pick-row-desc">Explore individual GPIO lessons after the beginner route.</span></span><span class="v3-pick-row-meta">View {arrow}</span></a>
         </div>
       </div>
     </div>

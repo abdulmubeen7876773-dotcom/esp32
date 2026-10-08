@@ -26,6 +26,8 @@ from site_layout import (
     SEARCH_JS_SRC,
 )
 
+from learning_journey import beginner_route_html, beginner_navigation, beginner_continue, journey_catalog
+
 ROOT = Path(__file__).resolve().parent.parent
 GUIDES_OUT = ROOT / "guides"
 GUIDES_INDEX = ROOT / "guides.html"
@@ -120,7 +122,7 @@ def beginner_next_steps_html(guide: dict) -> str:
     if guide.get("slug") != "what-is-esp32":
         return ""
     links = [
-        ("ESP32 with Arduino IDE", "/guides/esp32-arduino-ide.html", "Set up Arduino IDE, upload your first sketch, and open Serial Monitor."),
+        ("ESP32 with Arduino IDE", "/guides/installing-arduino-ide-esp32.html", "Set up Arduino IDE, upload your first sketch, and open Serial Monitor."),
         ("Blink an LED with ESP32", "/guides/blink-led-esp32.html", "Build the first hardware test with one LED."),
         ("ESP32 DevKit component guide", "/components/esp32-devkit.html", "Learn board pins, power notes, and beginner-safe wiring habits."),
         ("ESP32 project library", "/projects.html", "Choose a complete project once the basics make sense."),
@@ -261,7 +263,7 @@ def render_concise_reference(guide: dict) -> str:
 {guide_hero_image_html(guide)}
 {tutorial_video_section(guide)}
 <article class="mission-journey article-concise">
-{jump_links(body)}
+{beginner_navigation(guide["slug"])}{jump_links(body)}
 {body}
 </article>
 </section>
@@ -357,9 +359,9 @@ def render_mission_page(guide: dict) -> str:
   </section>
 </div>
 <section class="section-block wrap mission-guide-shell">
-{guide_trust_block(guide, mission=True)}
+{beginner_navigation(slug)}{guide_trust_block(guide, mission=True)}
 {render_mission_guide(guide)}
-</section>
+{beginner_continue(slug)}</section>
 </main>
 {footer_html()}
 <script src="{SEARCH_JS_SRC}" defer></script>
@@ -379,11 +381,8 @@ def render_guides_index(guides: list[dict]) -> str:
     guides = sorted_guides(guides)
     missions = [g for g in guides if is_mission_guide(g)]
     legacy = [g for g in guides if not is_mission_guide(g)]
-    title = f"ESP32 Missions — Learn by Building | {SITE_NAME}"
-    desc = (
-        "Step-by-step ESP32 missions for kids and beginners. Each guide is a journey — "
-        "story, wiring, code, teacher-friendly notes, and your next challenge."
-    )
+    title = journey_catalog()["guide_index"]["title"]
+    desc = journey_catalog()["guide_index"]["description"]
     list_items = [
         {
             "name": g.get("headline") or g.get("title", "").split("|")[0].strip(),
@@ -402,7 +401,7 @@ def render_guides_index(guides: list[dict]) -> str:
     if missions:
         missions_html = f"""  <section class="guide-missions-block" id="missions">
     <h2>Mission Journeys</h2>
-    <p class="section-sub">{len(missions)} hands-on missions with stories, safety tips, wiring, code, and practical challenges — start here if you're new.</p>
+    <p class="section-sub">{len(missions)} hands-on missions with stories, safety tips, wiring, code, and practical challenges — choose a topic or use the beginner sequence above.</p>
     <div class="mission-index-grid">{mission_cards}</div>
   </section>"""
     legacy_html = ""
@@ -410,7 +409,7 @@ def render_guides_index(guides: list[dict]) -> str:
         legacy_cards = "".join(legacy_guide_card_html(g) for g in legacy)
         legacy_html = f"""  <section class="guide-phase-block" id="reference">
     <h2>Reference Guides</h2>
-    <p class="section-sub">{len(legacy)} background articles for deeper reading after your first missions.</p>
+    <p class="section-sub">{len(legacy)} setup and background articles; read the topics you need alongside hands-on tutorials.</p>
     <div class="guide-index-grid reference-guide-grid">{legacy_cards}</div>
   </section>"""
     body = f"""  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li aria-current="page">Guides</li></ol></nav>
@@ -418,12 +417,14 @@ def render_guides_index(guides: list[dict]) -> str:
     <div class="premium-page-copy">
       <p class="hero-eyebrow">Learn by doing</p>
   <h1>ESP32 Learning Guides</h1>
-  <p class="article-lead">Start with Mission Journeys — fun step-by-step builds for kids and beginners. Reference Guides are here when you want extra background.</p>
+  <p class="article-lead">Guides are individual tutorials: choose a skill or part below. Learning Paths arrange those tutorials in an order, with prerequisites and a next step.</p>
   <p class="guide-count-summary meta">{len(missions)} mission journeys · {len(legacy)} reference guides</p>
-  <p class="meta">New to ESP32? Read <a href="{site_href('guides/what-is-esp32.html')}">What Is ESP32?</a>, set up the <a href="{site_href('guides/esp32-arduino-ide.html')}">Arduino IDE</a>, then build <a href="{site_href('guides/blink-led-esp32.html')}">Blink an LED</a>.</p>
+  <p class="meta">New to ESP32? Read <a href="{site_href('guides/what-is-esp32.html')}">What Is ESP32?</a>, set up the <a href="{site_href('guides/installing-arduino-ide-esp32.html')}">Arduino IDE</a>, then build <a href="{site_href('guides/blink-led-esp32.html')}">Blink an LED</a>.</p>
     </div>
     <div class="premium-page-visual"><img src="/assets/images/heroes/guides-hero.webp" alt="ESP32 guide workspace with development board, laptop, and printed wiring notes" width="1024" height="576" loading="eager" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;"></div>
   </section>
+<nav class="journey-jumps" aria-label="Guide sections"><a href="#start-here">Beginner sequence</a><a href="#missions">Hands-on tutorials</a><a href="#reference">Setup and reference</a><a href="/learning.html">Ordered learning paths</a></nav>
+{beginner_route_html(guides)}
 {missions_html}
 {legacy_html}
   <p class="meta guide-index-footer"><a href="{site_href('learning.html')}">View learning paths →</a> · <a href="{site_href('projects.html')}">Browse projects →</a></p>"""

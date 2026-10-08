@@ -73,11 +73,15 @@ def page_schema(page: dict) -> str:
 
 def cms_page_html(page: dict) -> str:
     slug = page["slug"]
+    body = page.get("body_html", "")
+    if slug == "learning":
+        from learning_journey import beginner_route_html
+        body = body.replace("{{beginner_route}}", beginner_route_html(get_content_store().guides(), "esp32-basics"))
     return static_page_shell(
         page.get("nav", slug),
         page["title"],
         page["meta_description"],
-        normalize_body(normalize_heading_outline(page.get("body_html", ""))),
+        normalize_body(normalize_heading_outline(body)),
         f"{slug}.html",
         page_schema(page),
     )

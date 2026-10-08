@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 from guide_mission import code_panel, illustration_placeholder
 from parent_registry import PARENT_BY_SLUG
@@ -310,6 +311,8 @@ def wiring_section(p: dict, wiring: dict) -> str:
     summary = (wiring.get("summary") or "").strip()
     steps = wiring.get("steps", [])
     summary_html = _paragraphs(summary) if summary else ""
+    image_link = (f'<p><a href="{esc(image)}">Open wiring diagram full size</a></p>'
+                  if image and (p.get("project") or {}).get("tutorial_flow") else "")
     steps_html = ""
     if steps:
         items = []
@@ -326,7 +329,7 @@ def wiring_section(p: dict, wiring: dict) -> str:
     return f"""<section class="project-section" id="wiring" aria-labelledby="wiring-heading">
   {project_section_heading("wiring", "🔗", "Wiring")}
   {summary_html}
-  {wiring_diagram_html(image, alt)}
+  {wiring_diagram_html(image, alt)}{image_link}
   {steps_html}
 </section>"""
 
@@ -339,9 +342,12 @@ def code_section(p: dict) -> str:
         return ""
     if not code.get("content"):
         code = {"filename": p.get("code_filename", "project.ino"), "content": content}
+    lead = ("Install the libraries above and match the configuration and wiring before uploading."
+            if proj.get("tutorial_flow") else
+            "Copy into Arduino IDE. Install any libraries noted in the component guides first.")
     return f"""<section class="project-section" id="code" aria-labelledby="code-heading">
   {project_section_heading("code", "⌨️", "Code")}
-  <p class="project-section-lead">Copy into Arduino IDE. Install any libraries noted in the component guides first.</p>
+  <p class="project-section-lead">{lead}</p>
   {code_panel(code)}
 </section>"""
 
@@ -545,6 +551,8 @@ def complete_section(p: dict) -> str:
 
 def render_project_body(p: dict) -> str:
     proj = p.get("project") or {}
+    if proj.get("tutorial_flow"):
+        return render_tutorial_flow(p)
     components = proj.get("components") or proj.get("things_you_need") or []
     return f"""<article class="project-journey">
 {mission_intro_card(p)}
@@ -587,6 +595,46 @@ def render_project_body(p: dict) -> str:
 {project_review_references_section(p)}
 {complete_section(p)}
 </article>"""
+
+def render_tutorial_flow(p: dict) -> str:
+    """Opt-in practical tutorial sequence; existing project layouts stay unchanged."""
+    proj = p["project"]
+    sections = [
+        prose_section("build", "Build", "What You Will Build", proj.get("what_you_build", "")),
+        prose_section("assumptions", "Setup", "Before You Start", proj.get("assumptions", "")),
+        parent_safety_section(p),
+        '<section class="project-section" id="components" aria-labelledby="components-heading">'
+        + project_section_heading("components", "Parts", "Parts")
+        + components_list(proj.get("components", [])) + '</section>',
+        wiring_section(p, proj.get("wiring", {})),
+        table_section("gpio-map", "GPIO", "Wiring Reference", ["Signal", "ESP32 Pin", "Direction", "Notes"], proj.get("gpio_map", [])),
+        simple_list_section("libraries", "Setup", "Libraries and Setup", proj.get("libraries", [])),
+        prose_section("configuration", "Settings", "Configure the Example", proj.get("configuration", "")),
+        table_section("behavior", "Behavior", "Control and Recovery Behavior", ["Condition", "Result"], proj.get("behavior", [])),
+        code_section(p),
+        prose_section("code-explanation", "Code", "How the Code Works", proj.get("code_explanation", "")),
+        output_section(proj.get("expected_output", "")),
+        troubleshooting_section(proj.get("troubleshooting", [])),
+        simple_list_section("testing", "Checks", "Checks to Perform on Your Build", proj.get("testing_checklist", [])),
+        prose_section("engineering", "Details", "Practical Design Notes", proj.get("engineering_explanation", "")),
+        upgrade_section(proj.get("upgrade_ideas", [])),
+        related_links_section("guides", "Guides", "Related Guides", proj.get("related_guides", [])),
+        related_links_section("projects", "Projects", "Related Projects", proj.get("related_projects", [])),
+        faq_section(proj.get("faqs", [])),
+        project_review_references_section(p),
+    ]
+    body = '\n'.join(sections)
+    links = []
+    for heading_id, heading in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body, re.S):
+        label = re.sub(r'<span class="project-section-icon".*?</span>', '', heading, flags=re.S)
+        label = re.sub(r'<[^>]+>', '', label).strip()
+        links.append(f'<a href="#{heading_id}">{label}</a>')
+    body = re.sub(r'(<h2 id="[^"]+")>', r'\1 tabindex="-1">', body)
+    body = body.replace('<pre class="code-block">', '<pre class="code-block" tabindex="0" aria-label="Arduino example code">')
+    body = body.replace('<div class="wiring-table-wrap">', '<div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable wiring or behavior table">')
+    nav = '<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page">' + ''.join(links) + '</nav></details>'
+    return '<article class="project-journey project-tutorial-flow">' + nav + body + '</article>'
+
 
 def project_hero_html(p: dict, category: str) -> str:
     proj = p.get("project") or {}

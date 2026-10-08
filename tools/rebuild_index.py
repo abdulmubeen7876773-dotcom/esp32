@@ -11,6 +11,7 @@ from project_images import project_image_path
 from project_text import card_description, primary_difficulty, project_meta_description, project_title, public_projects
 from parent_registry import PARENTS
 from content_store import get_content_store
+from learning_journey import beginner_route_html
 from site_counts import site_counts
 from site_layout import (
     modern_card,
@@ -319,20 +320,16 @@ def home_html(projects):
 <body class="home-page">
 <main>
 {header_html("home", project_count=project_count)}
-{home_v2_declaration()}
+{home_v2_declaration(home)}
+<div class="wrap">{beginner_route_html(guides)}</div>
 {home_primary_paths()}
 {home_project_discovery(source_projects)}
 {home_learning_adventure(source_projects)}
-{home_v3_roadmap(guides)}
 {home_v3_top_picks(catalog, guides, components)}
 {home_v3_component_feature()}
-{home_v2_proof()}
-{home_v3_mission_feature(guides)}
 {home_v3_why()}
 {home_parent_teacher_split()}
-{home_v3_progress(counts)}
 {home_discovery_links(counts)}
-{home_v2_invitation()}
 </main>
 {footer_html()}
 <script src="{SEARCH_JS_SRC}" defer></script>
