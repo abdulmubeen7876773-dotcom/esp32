@@ -146,10 +146,8 @@
     window['ga-disable-' + id] = false;
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
-    window.gtag('consent', 'default', {
-      analytics_storage: 'granted', ad_storage: 'denied',
-      ad_user_data: 'denied', ad_personalization: 'denied'
-    });
+    // Advertising consent is owned by Google's CMP; never infer it here.
+    window.gtag('consent', 'update', { analytics_storage: 'granted' });
     window.gtag('js', new Date());
     window.gtag('config', id, {
       allow_google_signals: false, allow_ad_personalization_signals: false,
@@ -176,7 +174,7 @@
     var bar = document.createElement('div');
     bar.className = 'cookie-consent'; bar.setAttribute('role', 'dialog');
     bar.setAttribute('aria-label', 'Cookie consent');
-    bar.innerHTML = '<div class="cookie-consent-inner"><p>Allow optional Google Analytics usage measurement? Advertising is disabled. YouTube embeds load separately; see our <a href="/privacy.html">Privacy Policy</a>. Change your choice using Privacy choices in the footer. Rejecting after acceptance reloads this page to stop the loaded analytics tag.</p><div class="cookie-actions"><button type="button" class="btn btn-secondary cookie-reject">Reject optional</button><button type="button" class="btn btn-primary cookie-accept">Accept</button></div></div>';
+    bar.innerHTML = '<div class="cookie-consent-inner"><p>Allow optional Google Analytics usage measurement? Google manages advertising choices separately. YouTube embeds load separately; see our <a href="/privacy.html">Privacy Policy</a>. Change your choice using Analytics choices in the footer. Rejecting after acceptance reloads this page to stop the loaded analytics tag.</p><div class="cookie-actions"><button type="button" class="btn btn-secondary cookie-reject">Reject optional</button><button type="button" class="btn btn-primary cookie-accept">Accept</button></div></div>';
     document.body.appendChild(bar);
     function choose(choice) {
       consentChoice = choice;
@@ -195,7 +193,7 @@
   }
   consentChoice = savedConsent();
   if (consentChoice === 'accepted') loadAnalytics();
-  else { clearAnalyticsCookies(); if (consentChoice !== 'rejected') showCookieConsent(); }
+  else { clearAnalyticsCookies(); }
   document.querySelectorAll('[data-cookie-settings]').forEach(function (button) {
     button.addEventListener('click', showCookieConsent);
   });
@@ -209,9 +207,24 @@
       consentChoice = next;
       if (next === 'accepted') loadAnalytics();
       document.querySelector('.cookie-consent')?.remove();
-      if (next !== 'accepted' && next !== 'rejected') showCookieConsent();
+      // Unknown choices remain analytics-off; ask only when explicitly opened.
     }
   });
+
+  // The supported Google API is independent of the local analytics preference.
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  window.googlefc.callbackQueue.push({ CONSENT_API_READY: function () {
+    if (typeof window.googlefc.showRevocationMessage !== 'function') return;
+    document.querySelectorAll('[data-ad-privacy]').forEach(function (button) {
+      button.hidden = false;
+      button.style.removeProperty('display');
+      button.addEventListener('click', function () {
+        document.querySelector('.cookie-consent')?.remove();
+        window.googlefc.callbackQueue.push(window.googlefc.showRevocationMessage);
+      });
+    });
+  } });
 
   var btt = document.createElement('button');
   btt.type = 'button';

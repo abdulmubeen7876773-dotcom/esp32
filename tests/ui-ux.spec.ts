@@ -668,8 +668,9 @@ test('production GA requires consent and initializes once', async ({ page }) => 
   await fulfillProductionHostFromLocalBuild(prodPage, productionGaRequests);
   await prodPage.goto('https://esp32engine.com/about.html', { waitUntil: 'networkidle' });
   await expect(prodPage.locator('#ga4-gtag-js')).toHaveCount(0);
+  await prodPage.getByRole('button', { name: 'Analytics choices', exact: true }).click();
   await prodPage.getByRole('button', { name: 'Accept', exact: true }).click();
-  await prodPage.getByRole('button', { name: 'Privacy choices', exact: true }).click();
+  await prodPage.getByRole('button', { name: 'Analytics choices', exact: true }).click();
   await prodPage.getByRole('button', { name: 'Accept', exact: true }).click();
   const productionGaState = await prodPage.evaluate(() => {
     return {
