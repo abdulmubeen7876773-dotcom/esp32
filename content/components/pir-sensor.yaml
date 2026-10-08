@@ -6,7 +6,7 @@
   "icon": "👁",
   "image": "/assets/visuals/components/photos/pir-sensor-photo.webp",
   "summary": "HC-SR501 PIR sensor ESP32 reference with VCC, GND, OUT on GPIO27, digital HIGH motion output, warm-up time, sensitivity/delay controls, code, and false-trigger fixes.",
-  "date_modified": "2026-08-22",
+  "date_modified": "2026-10-08",
   "applications": [
     "Motion security alert",
     "Automatic light trigger",
@@ -185,7 +185,7 @@
   "library": "Built-in Arduino digitalRead",
   "code": {
     "filename": "pir_esp32_motion_test.ino",
-    "notes": "The PIR output is digital, so no special library is needed. The code watches for state changes instead of printing continuously.\n\nsetup() gives the sensor time to stabilize. loop() compares the current reading with the previous reading, then prints only when motion starts or clears. This keeps Serial Monitor readable.",
+    "notes": "The PIR output is digital, so no special library is needed. The code watches for state changes instead of printing continuously.\n\nsetup() gives the sensor time to stabilize. loop() compares the current reading with the previous reading, then prints only when motion starts or clears. This keeps Serial Monitor readable.\n\nDocumentation review only: this example has not been compiled or tested on hardware for this revision. Confirm the exact module voltage ratings before connecting it.",
     "content": "#define PIR_PIN 27\n\nint lastState = LOW;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(PIR_PIN, INPUT);\n  Serial.println(\"PIR motion sensor warming up...\");\n  delay(30000);\n  Serial.println(\"PIR ready. Walk across the sensor view.\");\n}\n\nvoid loop() {\n  int currentState = digitalRead(PIR_PIN);\n\n  if (currentState != lastState) {\n    if (currentState == HIGH) {\n      Serial.println(\"Motion detected\");\n    } else {\n      Serial.println(\"Motion cleared\");\n    }\n    lastState = currentState;\n  }\n\n  delay(100);\n}"
   },
   "output": "After a warm-up message and 30 second delay, Serial Monitor prints Motion detected when someone moves across the sensor view. Depending on the delay trimpot, it may print Motion cleared several seconds later. If it triggers while nobody is moving, check heat sources and sensitivity.",
@@ -485,5 +485,10 @@
     "signal": "OUT typically 3.3 V; verify",
     "protection": "Check the actual module OUT voltage before direct GPIO connection; level shift if above 3.3 V. Supply and OUT voltage are different ratings.",
     "basis": "HC-SR501 module variants lack a single vendor guarantee; confirm seller documentation and measure OUT."
-  }
+  },
+  "curated_faqs": true,
+  "code_frameworks": [
+    "arduino"
+  ],
+  "code_intro": "This complete Arduino sketch uses the wiring above. Select a classic ESP32-WROOM DevKit with Arduino-ESP32 3.x. Native ESP-IDF and PlatformIO setup examples are not supplied here."
 }

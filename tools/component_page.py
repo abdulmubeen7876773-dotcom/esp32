@@ -312,16 +312,18 @@ def code_section_html(component: dict) -> str:
         code = {"filename": component.get("code_filename", "example.ino"), "content": content}
     tabs = []
     panels = []
-    for index, (key, label, _) in enumerate(FRAMEWORKS):
+    frameworks = [item for item in FRAMEWORKS if item[0] in component.get("code_frameworks", [item[0] for item in FRAMEWORKS])]
+    for index, (key, label, _) in enumerate(frameworks):
         active = " is-active" if index == 0 else ""
         hidden = "" if index == 0 else " hidden"
         tabs.append(f'<button class="component-code-tab{active}" type="button" data-code-tab="{key}" aria-selected="{str(index == 0).lower()}">{label}</button>')
         panels.append(f'<div class="component-code-panel{active}" data-code-panel="{key}"{hidden}>{code_panel(_framework_code(component, key, code))}</div>')
     notes = (code.get("notes") or code.get("explanation") or "").strip()
     notes_html = f'<div class="component-section-prose">{_paragraphs(notes)}</div>' if notes else ""
+    lead = component.get("code_intro", "Use the same wiring with Arduino IDE, PlatformIO, or ESP-IDF. Start with Arduino, then graduate when you need a larger project structure.")
     return f"""<section class="component-section" id="code" aria-labelledby="code-heading">
   {component_section_heading("code", "05", "Code Examples")}
-  <p class="component-section-lead">Use the same wiring with Arduino IDE, PlatformIO, or ESP-IDF. Start with Arduino, then graduate when you need a larger project structure.</p>
+  <p class="component-section-lead">{esc(lead)}</p>
   <div class="component-code-tabs" role="tablist" aria-label="Code framework options">{"".join(tabs)}</div>
   {"".join(panels)}
   {notes_html}

@@ -6,7 +6,7 @@
   "icon": "📺",
   "image": "/assets/visuals/components/photos/ssd1306-oled-photo.webp",
   "summary": "SSD1306 OLED ESP32 wiring reference for I2C displays, with VCC, GND, SDA GPIO21, SCL GPIO22, 0x3C/0x3D address checks, Arduino libraries, and blank-screen fixes.",
-  "date_modified": "2026-08-22",
+  "date_modified": "2026-10-08",
   "applications": [
     "Sensor dashboard",
     "Weather display",
@@ -167,7 +167,7 @@
       {
         "component_pin": "Address",
         "esp32_pin": "0x3C or 0x3D",
-        "notes": "Most modules use 0x3C and some use 0x3D. Run an I2C scanner if display.begin() fails."
+        "notes": "Most modules use 0x3C and some use 0x3D. Run an I2C scanner if no device acknowledges or the screen stays blank."
       }
     ],
     "steps": [
@@ -184,10 +184,10 @@
   "library": "Adafruit SSD1306 plus Adafruit GFX",
   "code": {
     "filename": "ssd1306_esp32_hello_status.ino",
-    "notes": "Wire.begin(21, 22) starts I2C on the same GPIO21/GPIO22 pins used in this site's ESP32 examples. The display object defines the screen size and reset behavior.\n\nsetup() initializes the display and prints a clear startup screen. loop() updates a counter once per second so you can prove the screen is refreshing, not just showing a static image.",
-    "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define SCREEN_WIDTH 128\n#define SCREEN_HEIGHT 64\n#define OLED_RESET -1\n#define OLED_ADDRESS 0x3C\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\nunsigned long counter = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {\n    Serial.println(\"SSD1306 not found. Check address, SDA, SCL, power, and ground.\");\n    while (true) delay(1000);\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n  Serial.println(\"OLED initialized\");\n}\n\nvoid loop() {\n  display.clearDisplay();\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"SSD1306 OLED\");\n  display.println(\"Status: running\");\n  display.print(\"Seconds: \");\n  display.println(counter++);\n  display.display();\n  delay(1000);\n}"
+    "notes": "Wire.begin(21, 22) starts I2C on the same GPIO21/GPIO22 pins used in this site's ESP32 examples. The display object defines the screen size and reset behavior.\n\nsetup() initializes the display and prints a clear startup screen. loop() updates a counter once per second so you can prove the screen is refreshing, not just showing a static image.\n\nDocumentation review only: this example has not been compiled or tested on hardware for this revision. Confirm the exact module voltage ratings before connecting it.\n\nUse a documented 3.3 V-compatible, four-pin I2C SSD1306 128x64 module with SDA/SCL pulled up to 3.3 V. The address acknowledgement checks for a responding device, not its controller identity. Adafruit SSD1306 begin() allocates a buffer and sends configuration commands; it is not a sensor-detection test. The final false argument keeps the Wire bus initialization under the sketch’s control.",
+    "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define SCREEN_WIDTH 128\n#define SCREEN_HEIGHT 64\n#define OLED_RESET -1\n#define OLED_ADDRESS 0x3C\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\nunsigned long counter = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n\n  Wire.beginTransmission(OLED_ADDRESS);\n  if (Wire.endTransmission() != 0) {\n    Serial.println(\"No I2C acknowledgement at 0x3C. Check address, wiring and power.\");\n    while (true) delay(1000);\n  }\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true, false)) {\n    Serial.println(\"SSD1306 buffer allocation failed. Check display size and available memory.\");\n    while (true) delay(1000);\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n  Serial.println(\"OLED initialized\");\n}\n\nvoid loop() {\n  display.clearDisplay();\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"SSD1306 OLED\");\n  display.println(\"Status: running\");\n  display.print(\"Seconds: \");\n  display.println(counter++);\n  display.display();\n  delay(1000);\n}"
   },
-  "output": "The OLED first shows ESP32 Engine and OLED ready. Then it refreshes once per second with a running seconds counter. Serial Monitor prints OLED initialized. If the display is blank and Serial Monitor reports not found, the address or I2C wiring is wrong.",
+  "output": "The OLED first shows ESP32 Engine and OLED ready. Then it refreshes once per second with a running seconds counter. Serial Monitor prints OLED initialized. No I2C acknowledgement means no device responded at 0x3C: check address, wiring and power. An acknowledgement alone does not confirm SSD1306 identity or that the pixels work.",
   "common_mistakes": [
     {
       "text": "Using the wrong I2C address."
@@ -253,8 +253,8 @@
     },
     {
       "problem": "Serial works but screen does not",
-      "cause": "Library init failed.",
-      "fix": "Check display.begin return value and address."
+      "cause": "A device acknowledges but the module type, size or display wiring differs.",
+      "fix": "Confirm an I2C SSD1306 128x64 module and its documented address; a successful begin() does not prove the screen is responding."
     },
     {
       "problem": "Screen is dim",
@@ -484,5 +484,10 @@
     "signal": "SDA/SCL pull-ups to 3.3 V",
     "protection": "SSD1306 chip VDD is 1.65–3.3 V; board power circuitry varies. Check module ratings and pull-ups. For a 5 V-powered board with 5 V bus pull-ups, use I2C level shifting.",
     "basis": "Solomon Systech SSD1306 datasheet; controller limits are not a breakout board 5 V rating."
-  }
+  },
+  "curated_faqs": true,
+  "code_frameworks": [
+    "arduino"
+  ],
+  "code_intro": "This complete Arduino sketch uses the wiring above. Select a classic ESP32-WROOM DevKit with Arduino-ESP32 3.x. Native ESP-IDF and PlatformIO setup examples are not supplied here."
 }
