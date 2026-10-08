@@ -4,7 +4,7 @@ category: Boards
 difficulty: Intermediate
 icon: CAM
 image: /assets/visuals/components/photos/esp32-cam-photo.webp
-date_modified: '2026-07-10'
+date_modified: '2026-10-08'
 summary: AI-Thinker ESP32-CAM board with an integrated OV2640 camera, fixed camera pin map, FTDI upload wiring,
   5 V power guidance, and privacy-first local camera use.
 applications:
@@ -177,7 +177,9 @@ wiring:
     U0T, and IO0 to GND only for programming mode; IO0 is disconnected for normal run mode.'
   image: /assets/visuals/components/wiring/esp32-cam-wiring.svg
   summary: 'Programming mode and normal run mode use the same 5 V, GND, and crossed TX/RX wiring. The only difference
-    is IO0: connect IO0 to GND while uploading, then disconnect IO0 from GND and reset the board to run the sketch.'
+    is IO0: connect IO0 to GND while uploading, then disconnect IO0 from GND and reset the board to run the sketch.
+    Use an adapter with 3.3 V UART logic. A 5 V power output label does not establish its TX voltage. Use one board
+    supply and common ground; do not join independent power outputs.'
   steps:
   - Unplug the 5 V supply and USB-to-serial adapter before rewiring.
   - Connect adapter GND to ESP32-CAM GND.
@@ -189,28 +191,37 @@ wiring:
 library: Arduino ESP32 core esp_camera.h camera driver
 code:
   filename: esp32_cam_ai_thinker_init_check.ino
-  notes: This minimal sketch checks that the AI-Thinker pin map, board profile, camera ribbon, PSRAM/frame setting,
-    and 5 V power are suitable before adding a web server or project-specific logic.
-  content: "#include \"esp_camera.h\"\n\n#define PWDN_GPIO_NUM     32\n#define RESET_GPIO_NUM    -1\n#define XCLK_GPIO_NUM\
-    \      0\n#define SIOD_GPIO_NUM     26\n#define SIOC_GPIO_NUM     27\n#define Y9_GPIO_NUM       35\n#define\
-    \ Y8_GPIO_NUM       34\n#define Y7_GPIO_NUM       39\n#define Y6_GPIO_NUM       36\n#define Y5_GPIO_NUM    \
-    \   21\n#define Y4_GPIO_NUM       19\n#define Y3_GPIO_NUM       18\n#define Y2_GPIO_NUM        5\n#define VSYNC_GPIO_NUM\
-    \    25\n#define HREF_GPIO_NUM     23\n#define PCLK_GPIO_NUM     22\n\nvoid setup() {\n  Serial.begin(115200);\n\
-    \n  camera_config_t config = {};\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n\
-    \  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n  config.pin_d3\
-    \ = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6 = Y8_GPIO_NUM;\n\
-    \  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n  config.pin_vsync\
-    \ = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sscb_sda = SIOD_GPIO_NUM;\n  config.pin_sscb_scl\
-    \ = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz\
-    \ = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = psramFound() ? FRAMESIZE_VGA :\
-    \ FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = psramFound() ? 2 : 1;\n\n  esp_err_t err\
-    \ = esp_camera_init(&config);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x\\n\", err);\n\
-    \    Serial.println(\"Check AI-Thinker board profile, 5 V power, ribbon cable, and PSRAM/frame settings.\");\n\
-    \    while (true) delay(1000);\n  }\n\n  Serial.println(\"ESP32-CAM initialized with AI-Thinker pin map.\");\n\
-    }\n\nvoid loop() {\n  delay(1000);\n}\n"
-output: Serial Monitor at 115200 baud prints 'ESP32-CAM initialized with AI-Thinker pin map' when the board profile,
-  power, ribbon cable, and frame-buffer settings are correct. If initialization fails, the sketch prints a clear
-  error.
+  notes: Assumes a classic AI-Thinker ESP32-CAM with OV2640, Arduino-ESP32 3.x and the listed camera pin map. Select
+    the matching board profile and enable PSRAM when the board has it; the sketch chooses VGA/two buffers with detected
+    PSRAM, otherwise QVGA/one buffer. Use stable 5 V board power and a USB-to-UART bridge with 3.3 V TX/RX logic,
+    regardless of its power-pin label. Share adapter/board ground; do not tie two separate 5 V sources together.
+    Each acquired frame is returned to the driver before the next capture. Documentation reviewed; this revision
+    has not been compiled or tested on physical hardware.
+  content: "#include <Arduino.h>\n#include \"esp_camera.h\"\n\n#define PWDN_GPIO_NUM     32\n#define RESET_GPIO_NUM\
+    \    -1\n#define XCLK_GPIO_NUM      0\n#define SIOD_GPIO_NUM     26\n#define SIOC_GPIO_NUM     27\n#define Y9_GPIO_NUM\
+    \       35\n#define Y8_GPIO_NUM       34\n#define Y7_GPIO_NUM       39\n#define Y6_GPIO_NUM       36\n#define\
+    \ Y5_GPIO_NUM       21\n#define Y4_GPIO_NUM       19\n#define Y3_GPIO_NUM       18\n#define Y2_GPIO_NUM    \
+    \    5\n#define VSYNC_GPIO_NUM    25\n#define HREF_GPIO_NUM     23\n#define PCLK_GPIO_NUM     22\n\nvoid setup()\
+    \ {\n  Serial.begin(115200);\n\n  camera_config_t config = {};\n  config.ledc_channel = LEDC_CHANNEL_0;\n  config.ledc_timer\
+    \ = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM;\n  config.pin_d1 = Y3_GPIO_NUM;\n  config.pin_d2 = Y4_GPIO_NUM;\n\
+    \  config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM;\n  config.pin_d5 = Y7_GPIO_NUM;\n  config.pin_d6\
+    \ = Y8_GPIO_NUM;\n  config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\n  config.pin_pclk = PCLK_GPIO_NUM;\n\
+    \  config.pin_vsync = VSYNC_GPIO_NUM;\n  config.pin_href = HREF_GPIO_NUM;\n  config.pin_sccb_sda = SIOD_GPIO_NUM;\n\
+    \  config.pin_sccb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\n  config.pin_reset = RESET_GPIO_NUM;\n\
+    \  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n  config.frame_size = psramFound()\
+    \ ? FRAMESIZE_VGA : FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = psramFound() ? 2 : 1;\n\
+    \  config.fb_location = psramFound() ? CAMERA_FB_IN_PSRAM : CAMERA_FB_IN_DRAM;\n  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;\n\
+    \n  esp_err_t err = esp_camera_init(&config);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed:\
+    \ 0x%x\\n\", err);\n    Serial.println(\"Check AI-Thinker board profile, 5 V power, ribbon cable, and PSRAM/frame\
+    \ settings.\");\n    while (true) delay(1000);\n  }\n\n  Serial.println(\"ESP32-CAM initialized with AI-Thinker\
+    \ pin map.\");\n}\n\nvoid loop() {\n  camera_fb_t *frame = esp_camera_fb_get();\n  if (!frame) {\n    Serial.println(\"\
+    Capture failed. Check power and camera connection.\");\n  } else {\n    Serial.printf(\"JPEG frame: %u x %u,\
+    \ %u bytes\\n\",\n                  (unsigned)frame->width, (unsigned)frame->height, (unsigned)frame->len);\n\
+    \    esp_camera_fb_return(frame);\n  }\n  delay(1000);\n}\n"
+output: At 115200 baud, initialization is followed by JPEG frame dimensions and byte counts about once per second.
+  Sizes vary with the scene; this is expected behavior, not a recorded measurement. An initialization error stops
+  the sketch; a capture error is reported and retried on the next loop. Successful initialization does not verify
+  all power, image-quality or network behavior.
 common_mistakes:
 - text: Leaving IO0 grounded after flashing, which keeps the board in bootloader mode.
 - text: Connecting FTDI TX-to-TX and RX-to-RX instead of crossing TX/RX.
@@ -298,6 +309,9 @@ faqs:
   answer: 'Only IO0 changes: grounded for upload, disconnected from GND for normal run.'
 - question: Mini quiz - Why cross TX and RX?
   answer: The adapter transmits into the board receiver, and the board transmits back into the adapter receiver.
+- question: Does this example show a live video or prove image quality?
+  answer: No. It captures JPEG frames and reports their dimensions and byte counts over Serial. A server and viewing
+    interface are separate steps, and readable image quality must be checked on actual hardware.
 datasheet_url: https://github.com/espressif/esp32-camera
 datasheet_note: Espressif camera driver reference used by Arduino ESP32 camera examples.
 electrical:
@@ -306,3 +320,11 @@ electrical:
   protection: Use 3.3 V UART logic even when the board is powered at 5 V; verify the exact board schematic.
   basis: AI-Thinker profile used by this page; camera driver documentation does not establish every clone board
     power rating.
+curated_faqs: true
+code_frameworks:
+- arduino
+code_intro: 'Arduino-ESP32 3.x: select AI Thinker ESP32-CAM with OV2640 and the fixed pin map below. The bundled
+  esp_camera.h driver is used; no separate camera library or server is required. This sketch captures JPEG frames
+  and reports their sizes over Serial, not a video stream.'
+datasheet_label: Open Espressif camera driver reference
+resource_heading: Driver reference

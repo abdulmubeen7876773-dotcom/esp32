@@ -66,18 +66,21 @@ jobs:
             assets/visuals/**
             category/**
             guides/**
-            components/**
+            components/*.html
             projects/*.html
             sitemap.*
             feed.xml
             esp32engineindex*.txt
       - name: Push main
         run: git push origin HEAD:refs/heads/main
+      - name: Package reader-facing website
+        run: python tools/package_site.py --output "${{ runner.temp }}/public-site"
       - name: Upload built site artifact
         uses: actions/upload-artifact@v4
         with:
           name: static-site
-          path: .
+          path: ${{ runner.temp }}/public-site
+          include-hidden-files: true
           if-no-files-found: error
   deploy-production:
     needs: build

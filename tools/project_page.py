@@ -297,7 +297,7 @@ def project_wiring_image(slug: str) -> str:
 
 def wiring_diagram_html(src: str, alt: str) -> str:
     if not src:
-        return illustration_placeholder(alt, "Wiring Diagram", "🔗")
+        return '<p class="project-prose">No separate electrical diagram is supplied. Use the connection table and wiring steps below; confirm the exact module pin labels before connecting power.</p>'
     return f"""<figure class="mission-illustration mission-illustration--image">
   <img src="{esc(src)}" alt="{esc(alt)}" loading="lazy" decoding="async" width="1200" height="800">
 </figure>"""
@@ -542,7 +542,7 @@ def complete_section(p: dict) -> str:
     return f"""<section class="project-section project-complete" id="complete" aria-labelledby="complete-heading">
   <div class="mission-complete-panel project-complete-panel">
     <span class="mission-complete-badge" aria-hidden="true">🏆</span>
-    <h2 id="complete-heading">Project Complete!</h2>
+    <h2 id="complete-heading">Check your result</h2>
     <div class="project-complete-body">{_paragraphs(summary)}</div>
     {"<ul class='mission-skills'>" + skills_html + "</ul>" if skills_html else ""}
   </div>

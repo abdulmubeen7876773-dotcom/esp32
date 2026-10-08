@@ -486,13 +486,15 @@ def downloads_html(component: dict) -> str:
     url = component.get("datasheet_url", "")
     if not url and component.get("hide_empty_downloads", False):
         return ""
+    label = component.get("datasheet_label", "Download Datasheet (PDF)")
+    heading = component.get("resource_heading", "Downloads")
     note = (component.get("datasheet_note") or "Official manufacturer PDF for teachers and advanced builders.").strip()
     if not url:
         action = '<p class="component-download-placeholder">No separate datasheet is needed for this beginner guide.</p>'
     else:
-        action = f'<a class="btn btn-secondary component-download-btn" href="{esc(url)}" rel="noopener noreferrer" target="_blank">Download Datasheet (PDF)</a>'
+        action = f'<a class="btn btn-secondary component-download-btn" href="{esc(url)}" rel="noopener noreferrer" target="_blank">{esc(label)}</a>'
     return f"""<section class="component-section component-downloads" id="downloads" aria-labelledby="downloads-heading">
-  {component_section_heading("downloads", "08", "Downloads")}
+  {component_section_heading("downloads", "08", heading)}
   <div class="component-download-panel">
     <p class="component-section-lead">{esc(note)}</p>
     {action}

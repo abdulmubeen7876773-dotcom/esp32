@@ -451,12 +451,10 @@ def main():
     import build_categories
     import build_feed
     import build_sitemap
-    import ping_indexnow
 
     build_categories.main()
     build_feed.main()
     build_sitemap.main()
-    ping_indexnow.main()
 
 
 if __name__ == "__main__":
