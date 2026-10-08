@@ -5,419 +5,336 @@ difficulty: Beginner
 icon: 🌤
 image: /assets/visuals/components/photos/bme280-photo.svg
 image_alt: Product-style illustration of a generic BME280 breakout module with pin header labels
-summary: Wire a BME280 sensor to ESP32 over I2C with GPIO21/GPIO22, 3.3 V power, Arduino code, 0x76/0x77 address handling, and temperature, humidity, pressure, and altitude-estimate guidance.
-date_modified: '2026-08-22'
+summary: Connect a BME280 to ESP32 at 3.3 V. Check SDA/SCL labels, detect 0x76 or 0x77, and read temperature, humidity
+  and pressure with Arduino.
+date_modified: '2026-10-08'
 experience_required: Basic Arduino upload, breadboard wiring, Serial Monitor, and beginner I2C wiring
 applications:
-  - ESP32 weather station
-  - Indoor climate monitor
-  - Greenhouse environment logger
-  - Barometric pressure trend tracker
-  - Approximate altitude monitor
-  - OLED weather dashboard
-  - Classroom atmosphere experiment
-  - Home automation sensor node
-eli12: |
-  The BME280 is a small I2C environmental sensor. With ESP32 it measures temperature, humidity, and local air pressure over four wires: 3.3 V, GND, SDA, and SCL.
+- ESP32 weather station
+- Indoor climate monitor
+- Greenhouse environment logger
+- Barometric pressure trend tracker
+- Approximate altitude monitor
+- OLED weather dashboard
+- Classroom atmosphere experiment
+- Home automation sensor node
+eli12: |-
+  BME280 measures temperature, relative humidity and air pressure. BMP280 measures temperature and pressure only: it cannot supply humidity. Similar-looking boards and a 0x76/0x77 response do not establish which chip you have.
 
-  Most ESP32 Arduino examples use GPIO21 for SDA and GPIO22 for SCL, and most BME280 modules answer at I2C address 0x76 or 0x77. Temperature tells you how warm the air is. Humidity tells you how much water vapor is in the air. Pressure tells you how hard the air is pushing on everything around it.
-
-  BME280 is different from BMP280, even though breakout boards can look very similar. BMP280 measures temperature and pressure only; BME280 also measures humidity. Use the BME280 for weather stations, room monitors, pressure trend logs, approximate altitude experiments, and OLED dashboards, but do not treat it as a lab-grade weather instrument.
+  Bosch specifies chip ID 0x60 at register 0xD0 for BME280, and 0x58 for BMP280. The example checks that register before initializing the BME280 library. A different or unreadable ID calls for a wiring and module-identity check; do not diagnose the sensor from missing humidity alone.
 quick_facts:
-  - label: Measures
-    value: Temperature, humidity, and barometric pressure
-    why: One small module gives the main values used in beginner weather and climate projects.
-  - label: Interface
-    value: I2C on SDA and SCL
-    why: I2C lets the ESP32 share two wires with other devices such as OLED displays.
-  - label: Common address
-    value: 0x76 or 0x77
-    why: Wrong address is the most common reason a working module appears missing.
-  - label: ESP32 pins
-    value: GPIO21 SDA, GPIO22 SCL defaults
-    why: These are common Arduino-ESP32 defaults, but Wire.begin() can choose other GPIOs.
-  - label: BME280 vs BMP280
-    value: BME280 adds humidity
-    why: BMP280 boards look similar but measure temperature and pressure only.
-  - label: Library
-    value: Adafruit BME280 plus Unified Sensor
-    why: The library handles calibration math stored inside the sensor.
-how_it_works: |
-  The BME280 contains three sensing systems inside one chip. Its temperature sensor measures the chip temperature, its humidity sensor responds to water vapor in the air, and its pressure sensor measures tiny deflections caused by atmospheric pressure.
+- label: Measures
+  value: Temperature, humidity, and barometric pressure
+  why: One small module gives the main values used in beginner weather and climate projects.
+- label: Interface
+  value: I2C on SDA and SCL
+  why: I2C lets the ESP32 share two wires with other devices such as OLED displays.
+- label: Common address
+  value: 0x76 or 0x77
+  why: Wrong address is the most common reason a working module appears missing.
+- label: ESP32 pins
+  value: GPIO21 SDA, GPIO22 SCL defaults
+  why: These are common Arduino-ESP32 defaults, but Wire.begin() can choose other GPIOs.
+- label: BME280 vs BMP280
+  value: BME280 adds humidity
+  why: BMP280 boards look similar but measure temperature and pressure only.
+- label: Library
+  value: Adafruit BME280 plus Unified Sensor
+  why: The library handles calibration math stored inside the sensor.
+how_it_works: |-
+  Adafruit readTemperature() returns degrees Celsius; readHumidity() returns relative humidity percent. readPressure() returns pascals (Pa). Divide by 100 for hectopascals (hPa): 100 Pa = 1 hPa = 1 mbar. This is local station pressure, not automatically adjusted to sea level.
 
-  The pressure part is the most interesting engineering idea. Air pressure pushes on a microscopic structure inside the chip. That structure changes electrically when it bends. The BME280 converts that tiny change into a local station-pressure reading measured in pascals or hectopascals. Weather apps often show sea-level adjusted pressure instead, so their numbers may differ from your raw sensor reading.
+  A weather service may report sea-level pressure, so comparing that number directly with local pressure is misleading. Compare the same type of pressure or apply an appropriate altitude correction. Watch trends over time rather than treating one number as a rain forecast.
 
-  The raw measurements are not directly useful on their own. Bosch stores calibration constants inside each sensor during manufacturing. The Arduino library reads those constants and uses compensation formulas to turn raw ADC values into temperature, humidity, and pressure.
+  For an optional altitude estimate, bme.readAltitude(1013.25F) returns metres using standard sea-level pressure in hPa. Replace 1013.25 with a current local sea-level reference for a more useful estimate. Weather changes and the assumed atmospheric model introduce error: it is not GPS height or a survey measurement, and a fixed reference can make a stationary sensor appear to move.
 
-  The ESP32 talks to the BME280 over I2C. SDA carries data and SCL carries the clock. GPIO21 and GPIO22 are common Arduino-ESP32 defaults on classic ESP32 boards, not fixed electrical pins. If your board uses different pins, Wire.begin(SDA, SCL) must match the GPIO numbers you actually wired.
-
-  Every I2C device has an address, so the ESP32 can ask the BME280 for data while other devices, such as an SSD1306 OLED display, share the same two wires. BME280 modules commonly use 0x76 or 0x77. SSD1306 OLED modules commonly use 0x3C and sometimes 0x3D, so an I2C scanner is the fastest way to confirm the real bus.
-
-  Pressure can also estimate altitude, but altitude is only approximate unless you know the current sea-level pressure for your location. The common 1013.25 hPa value is a standard reference, not a promise about your current weather. For weather projects, pressure trends over time are usually more useful than a single pressure number.
+  The library uses factory calibration coefficients for compensation. Temperature reflects the chip’s temperature and can estimate ambient air temperature when placement is suitable. Keep it away from ESP32/regulator heat, direct sunlight, fingers and condensation; allow airflow and settling time.
 specs:
-  - name: Supply voltage
-    value: Low-voltage chip; use 3.3 V breakout power with ESP32 unless the exact module documentation says otherwise
-    why: Some breakouts add regulators or level shifting and some do not, so 3.3 V is the safest beginner choice.
-  - name: Temperature range
-    value: -40 C to 85 C
-    why: Covers indoor rooms, outdoor shaded enclosures, greenhouses, and many classroom experiments.
-  - name: Temperature accuracy
-    value: Typically about +/-1 C
-    why: Good for trend monitoring; avoid treating the module as a calibrated thermometer.
-  - name: Humidity range
-    value: 0 to 100 percent RH, non-condensing
-    why: Lets the same board detect dry rooms, comfortable air, and humid greenhouse conditions without exposing the sensing element to liquid water.
-  - name: Humidity accuracy
-    value: Typically about +/-3 percent RH
-    why: Useful for comfort and trends, but not a laboratory humidity reference.
-  - name: Pressure range
-    value: 300 to 1100 hPa
-    why: Covers normal weather pressure and altitude changes from below sea level to mountain elevations.
-  - name: Pressure accuracy
-    value: About +/-1 hPa absolute, better relative resolution
-    why: Relative pressure changes are excellent for weather trend and altitude experiments.
-  - name: Interface
-    value: I2C by default; SPI on some breakout boards
-    why: This ESP32 guide uses I2C because it needs only two shared signal wires.
-  - name: I2C address
-    value: 0x76 or 0x77
-    why: The SDO/address pin decides the address; code must match the actual module.
-  - name: Default ESP32 I2C pins
-    value: SDA GPIO21, SCL GPIO22
-    why: These are common Arduino core defaults and match most ESP32 tutorials, but they can be changed in Wire.begin(SDA, SCL).
-  - name: Pull-up resistors
-    value: Usually included on breakout boards
-    why: I2C lines need pull-ups; bare sensors need an external circuit, and multiple modules can place pull-ups in parallel.
-  - name: Current consumption
-    value: Very low; depends on sampling mode and oversampling
-    why: Good for battery projects when paired with ESP32 deep sleep and low sample rates.
-  - name: Response behavior
-    value: Temperature and humidity change gradually; pressure changes slowly indoors
-    why: Environmental sensors should be read as trends, not instant switches.
+- name: Bare-chip supply limits
+  value: VDD 1.71–3.6 V; VDDIO 1.2–3.6 V
+  why: These Bosch limits are not a rating for a breakout VIN pin. A regulator may change supply requirements but
+    does not alone level-shift SDA/SCL.
+- name: Module supply in this example
+  value: 3.3 V at a manufacturer-approved input
+  why: VIN, VCC and 3V3 labels are not interchangeable guarantees. Check the exact module’s allowed input and regulator
+    requirements.
+- name: ESP32 signal voltage
+  value: SDA and SCL pull-ups to 3.3 V
+  why: ESP32 GPIO is not 5 V tolerant. Do not use direct 5 V I2C pull-ups; use an appropriate level-shifting interface
+    if required.
+- name: Interface
+  value: I2C here; the chip also supports SPI
+  why: The example uses one shared Wire bus at 100 kHz. SDA carries data; SCL carries the clock.
+- name: Chip operating ranges
+  value: −40 to +85 °C; 0–100% RH; 300–1100 hPa
+  why: Ranges do not imply uniform accuracy across all conditions. See Bosch’s specified accuracy conditions; keep
+    the sensor dry.
+- name: Manufacturer accuracy conditions
+  value: Humidity ±3% RH at 20–80% RH and 25 °C; pressure ±1 hPa at 300–1100 hPa and 0–65 °C
+  why: Bosch specifications apply under stated conditions, not a guarantee of your assembled board’s readings.
+- name: Chip temperature accuracy
+  value: ±0.5 °C at 0–65 °C in the current Bosch datasheet
+  why: This is chip temperature. PCB heat and placement can bias ambient estimates; resolution and accuracy are
+    different.
 pinout:
-  - pin: VIN / VCC
-    role: Power input
-    connects: ESP32 3.3 V
-    note: Use 3.3 V unless the exact breakout documentation confirms other input support. Do not assume VIN is 5 V tolerant.
-  - pin: GND
-    role: Ground reference
-    connects: ESP32 GND
-    note: Ground must be shared with the ESP32 and every other I2C device.
-  - pin: SDA / SDI
-    role: I2C data
-    connects: ESP32 GPIO21
-    note: Bidirectional data line. GPIO21 is the common Arduino-ESP32 default; follow GPIO numbers, not another board's physical layout.
-  - pin: SCL / SCK
-    role: I2C clock
-    connects: ESP32 GPIO22
-    note: Clock line generated by the ESP32 master. GPIO22 is common by default, but Wire.begin() can choose other pins.
-  - pin: SDO
-    role: Address select or SPI data output
-    connects: Usually left as breakout default
-    note: On many boards, SDO selects I2C address 0x76 or 0x77. Check your module if scanning fails.
-  - pin: CS / CSB
-    role: SPI chip select or I2C mode select
-    connects: Usually tied HIGH on I2C breakouts
-    note: If exposed, keep CS high for I2C mode. Pulling it low selects SPI mode on the chip.
+- pin: VIN / VCC
+  role: Power input
+  connects: ESP32 3.3 V
+  note: Use only the supply input documented for your exact board. A VIN label or regulator does not prove 5 V-safe
+    GPIO signals.
+- pin: GND
+  role: Ground reference
+  connects: ESP32 GND
+  note: Ground must be shared with the ESP32 and every other I2C device.
+- pin: SDA / SDI
+  role: I2C data
+  connects: ESP32 GPIO21
+  note: 'SDA may be labeled SDI on a dual-interface board. Confirm the schematic: SDI is I2C data in I2C mode, whereas
+    SDO is not the SDA connection.'
+- pin: SCL / SCK
+  role: I2C clock
+  connects: ESP32 GPIO22
+  note: SCL may be labeled SCK on a dual-interface board. Use GPIO22 here; the Wire.begin() pin arguments must match
+    your wiring.
+- pin: SDO
+  role: Address select or SPI data output
+  connects: GND for 0x76 or VDDIO for 0x77 (chip)
+  note: The chip’s SDO must not float in I2C mode. A breakout may set it with a resistor or address jumper. Verify
+    that configuration; do not add a conflicting connection.
+- pin: CS / CSB
+  role: SPI chip select or I2C mode select
+  connects: HIGH at VDDIO for I2C (chip)
+  note: The breakout may tie CS/CSB HIGH already. Confirm its schematic; a LOW CS selects SPI, and a floating CS
+    is not a defined I2C configuration.
 pinout_image: /assets/visuals/components/illustrations/bme280-pinout.svg
-pinout_illustration_alt: BME280 breakout module pinout showing VIN, GND, SDA, SCL, SDO, and CS with the I2C beginner pins emphasized
+pinout_illustration_alt: BME280 breakout module pinout showing VIN, GND, SDA, SCL, SDO, and CS with the I2C beginner
+  pins emphasized
 wiring:
   image: /assets/visuals/components/wiring/bme280-wiring.svg
   illustration_alt: ESP32 DevKit wired to a BME280 sensor over I2C using 3.3 V, GND, GPIO21 SDA, and GPIO22 SCL
-  summary: |
-    The BME280 breakout uses I2C, so it needs power, ground, data, and clock. The common ESP32 Arduino defaults are GPIO21 for SDA and GPIO22 for SCL, but they are not fixed pins. Your wiring and Wire.begin(SDA, SCL) must agree.
+  summary: |-
+    SDA goes to GPIO21 and SCL to GPIO22 in this sketch. The same chip signals may be labeled SDI and SCK on a board that exposes SPI pins. Follow the module schematic, not its physical pin order or a photograph of another variant.
 
-    Most breakout boards already include I2C pull-up resistors. If you build with a bare BME280 chip, you must add the correct external circuit and follow the datasheet carefully. Beginners should use a 3.3 V breakout module, keep wires short, and run an I2C scanner when the address is uncertain.
+    I2C needs pull-ups on both lines. Many breakouts include them, but this module is unspecified: confirm they connect to 3.3 V. If the module lacks them, add pull-ups sized for the bus’s capacitance, speed and device sink limits. A supply regulator alone does not make 5 V pull-ups safe.
+
+    At chip level, CSB must be HIGH for I2C. SDO LOW selects 0x76 and SDO HIGH selects 0x77; SDO must not float. Leave breakout defaults only after checking they establish these levels. Change address jumpers with power disconnected.
   table_columns:
-    - BME280 Pin
-    - ESP32 Pin
-    - Purpose / Notes
+  - BME280 Pin
+  - ESP32 Pin
+  - Purpose / Notes
   table_rows:
-    - component_pin: VIN / VCC
-      esp32_pin: 3.3 V
-      notes: Power the breakout from 3.3 V unless that exact module documents safe 5 V input and level shifting.
-    - component_pin: GND
-      esp32_pin: GND
-      notes: Shared ground is required for reliable I2C communication.
-    - component_pin: SDA / SDI
-      esp32_pin: GPIO21
-      notes: I2C data line in the site's ESP32 Arduino examples.
-    - component_pin: SCL / SCK
-      esp32_pin: GPIO22
-      notes: I2C clock line in the site's ESP32 Arduino examples.
-    - component_pin: SDO
-      esp32_pin: Breakout default
-      notes: Often selects address 0x76 or 0x77; follow your module labels and scan the bus if unsure.
-    - component_pin: CS / CSB
-      esp32_pin: Breakout default
-      notes: Usually kept high for I2C mode on breakout boards; do not guess if your board exposes this pin.
+  - component_pin: VIN / VCC
+    esp32_pin: 3.3 V
+    notes: Use a documented 3.3 V-compatible supply input; do not infer a 5 V rating from VIN.
+  - component_pin: GND
+    esp32_pin: GND
+    notes: Shared ground is required for reliable I2C communication.
+  - component_pin: SDA / SDI
+    esp32_pin: GPIO21
+    notes: SDA may be SDI in I2C mode. Use short wires and verify pull-ups to 3.3 V.
+  - component_pin: SCL / SCK
+    esp32_pin: GPIO22
+    notes: SCL may be SCK in I2C mode. Must match Wire.begin(21, 22, 100000).
+  - component_pin: SDO
+    esp32_pin: Verified module address setting
+    notes: 'At chip level: LOW → 0x76, HIGH at VDDIO → 0x77. Never leave SDO floating.'
+  - component_pin: CS / CSB
+    esp32_pin: Verified module I2C setting
+    notes: CSB must be HIGH at VDDIO. Check whether the board already establishes that level.
   steps:
-    - Unplug the ESP32 USB cable before wiring.
-    - Place the BME280 breakout on the breadboard so each pin is in a separate row.
-    - Connect VIN or VCC to ESP32 3.3 V unless your exact breakout documentation confirms another safe input.
-    - Connect GND to ESP32 GND.
-    - Connect SDA or SDI to ESP32 GPIO21, following the GPIO number printed for your board.
-    - Connect SCL or SCK to ESP32 GPIO22, following the GPIO number printed for your board.
-    - Leave SDO and CS at their breakout defaults unless your board documentation says otherwise.
-    - Plug in USB, upload the scanner or example code, and confirm whether the module responds at 0x76 or 0x77.
-library: Adafruit BME280 Library plus Adafruit Unified Sensor
+  - Disconnect USB before wiring. Verify your exact module accepts 3.3 V on the chosen supply pin.
+  - Connect that input to ESP32 3.3 V, and GND to ESP32 GND.
+  - Connect SDA/SDI to GPIO21 and SCL/SCK to GPIO22. Confirm these labels from the module schematic.
+  - Verify CSB is HIGH and SDO has a defined address-select level, through the board’s documented defaults or jumpers.
+    Confirm SDA/SCL pull-ups are to 3.3 V.
+  - Install the libraries, select ESP32 Dev Module and the correct port, then upload the example.
+  - Open Serial Monitor at 115200 baud. It probes 0x76 and 0x77, reads chip ID and initializes a responding BME280.
+    If neither responds, use the I2C scanner linked in Continue learning and the checks below.
+library: 'Adafruit BME280 Library 2.3.0; dependencies: Adafruit Unified Sensor and Adafruit BusIO'
 code:
+  title: Minimal BME280 readout with address and identity checks
   filename: bme280_esp32_environment_test.ino
-  notes: |
-    Wire.h starts the ESP32 I2C bus on GPIO21 and GPIO22. Adafruit_BME280 gives your sketch access to compensated temperature, humidity, and pressure readings.
-
-    setup() starts Serial Monitor, starts I2C, and tries both common BME280 addresses. If the sensor is not found, the code prints practical wiring checks instead of failing silently.
-
-    loop() reads the sensor once per second using millis(). Pressure is divided by 100 because the library returns pascals and weather reports usually use hectopascals. The altitude value is an estimate based on a standard sea-level pressure; it is useful for experiments, not precise navigation.
+  wiring: Use the four-wire I2C circuit above, with GPIO21 SDA, GPIO22 SCL and verified 3.3 V supply/pull-ups. Upload
+    this complete Arduino sketch.
+  notes: The two-address probe reports an I2C response separately from BME280 initialization. A response alone does
+    not identify the chip. The register read checks for short/failed transfers; a valid 0x60 is required before
+    bme.begin(). The delay only sets the print interval for this simple local demonstration. If initialization fails,
+    correct the circuit or module identity and reset the ESP32.
   content: |
     #include <Wire.h>
     #include <Adafruit_Sensor.h>
     #include <Adafruit_BME280.h>
 
-    // ESP32 Arduino default I2C pins.
-    #define I2C_SDA 21
-    #define I2C_SCL 22
-
-    // Standard sea-level pressure, not necessarily today's local sea-level pressure.
-    // Update this value for better altitude estimates.
-    #define SEALEVELPRESSURE_HPA 1013.25
-
-    const unsigned long READ_INTERVAL_MS = 1000;
-
     Adafruit_BME280 bme;
-    unsigned long lastReadTime = 0;
     bool sensorReady = false;
 
-    bool beginBME280() {
-      if (bme.begin(0x76)) {
-        Serial.println("BME280 found at I2C address 0x76");
-        return true;
-      }
-
-      if (bme.begin(0x77)) {
-        Serial.println("BME280 found at I2C address 0x77");
-        return true;
-      }
-
-      return false;
+    int readChipId(uint8_t address) {
+      Wire.beginTransmission(address);
+      Wire.write(0xD0);  // Bosch chip-ID register
+      if (Wire.endTransmission(false) != 0) return -1;
+      if (Wire.requestFrom(address, uint8_t(1)) != 1) return -1;
+      return Wire.read();
     }
 
     void setup() {
       Serial.begin(115200);
       delay(1000);
+      if (!Wire.begin(21, 22, 100000)) {
+        Serial.println("I2C bus setup failed.");
+        return;
+      }
 
-      Wire.begin(I2C_SDA, I2C_SCL);
-
-      Serial.println("BME280 ESP32 environmental sensor test");
-      sensorReady = beginBME280();
-
+      for (uint8_t address = 0x76; address <= 0x77; ++address) {
+        Wire.beginTransmission(address);
+        if (Wire.endTransmission() != 0) continue;
+        Serial.print("I2C response at 0x");
+        Serial.println(address, HEX);
+        int id = readChipId(address);
+        if (id < 0) {
+          Serial.println("Chip-ID read failed; check the I2C bus.");
+          continue;
+        }
+        Serial.print("Chip ID: 0x");
+        Serial.println(id, HEX);
+        if (id != 0x60) {
+          Serial.println("Not a BME280 ID (BMP280 is 0x58).");
+          continue;
+        }
+        if (bme.begin(address, &Wire)) {
+          sensorReady = true;
+          Serial.println("BME280 initialized.");
+          break;
+        }
+        Serial.println("BME280 initialization failed.");
+      }
       if (!sensorReady) {
-        Serial.println("BME280 not found at 0x76 or 0x77.");
-        Serial.println("Check 3.3 V, GND, SDA=GPIO21, SCL=GPIO22, module address, and run an I2C scanner.");
+        Serial.println("No initialized BME280. Check wiring, mode and identity.");
       }
     }
 
     void loop() {
-      if (!sensorReady) {
-        delay(2000);
-        return;
+      if (sensorReady) {
+        float temperatureC = bme.readTemperature();
+        float humidity = bme.readHumidity();
+        float pressureHpa = bme.readPressure() / 100.0F;
+        if (isnan(temperatureC) || isnan(humidity) || isnan(pressureHpa)) {
+          Serial.println("Invalid reading; check the sensor and bus.");
+        } else {
+          Serial.print("Temperature: "); Serial.print(temperatureC, 1);
+          Serial.print(" C | Humidity: "); Serial.print(humidity, 1);
+          Serial.print(" % | Pressure: "); Serial.print(pressureHpa, 1);
+          Serial.println(" hPa");
+        }
       }
-
-      if (millis() - lastReadTime < READ_INTERVAL_MS) {
-        return;
-      }
-      lastReadTime = millis();
-
-      float temperatureC = bme.readTemperature();
-      float humidity = bme.readHumidity();
-      float pressureHpa = bme.readPressure() / 100.0F;
-      float altitudeM = bme.readAltitude(SEALEVELPRESSURE_HPA);
-
-      if (isnan(temperatureC) || isnan(humidity) || isnan(pressureHpa)) {
-        Serial.println("Read failed: check I2C wiring, address, and power.");
-        return;
-      }
-
-      Serial.print("Temperature: ");
-      Serial.print(temperatureC, 1);
-      Serial.print(" C  |  Humidity: ");
-      Serial.print(humidity, 1);
-      Serial.print(" %  |  Pressure: ");
-      Serial.print(pressureHpa, 1);
-      Serial.print(" hPa  |  Altitude estimate: ");
-      Serial.print(altitudeM, 1);
-      Serial.println(" m");
+      delay(1000);
     }
-output: |
-  Open Serial Monitor at 115200 baud. A working BME280 usually prints the detected I2C address first:
+output: |-
+  Set Serial Monitor to 115200 baud. For an initialized BME280, expect I2C response at 0x76 (or 0x77), Chip ID: 0x60 and BME280 initialized.
 
-  BME280 found at I2C address 0x76
+  An illustrative reading is: Temperature: 24.1 C | Humidity: 48.7 % | Pressure: 1012.6 hPa. Your numbers depend on the surroundings; they are not pass/fail target values. Readings print about once a second after initialization.
 
-  Then it prints one reading about every second:
-
-  Temperature: 24.1 C  |  Humidity: 48.7 %  |  Pressure: 1012.6 hPa  |  Altitude estimate: 5.4 m
-
-  Humidity may rise if you breathe near the board. Temperature changes slowly because the chip and breakout board need time to settle. Pressure usually changes slowly indoors, so watch its trend over minutes or hours.
-
-  The pressure value printed here is local station pressure. A weather app may show sea-level adjusted pressure, so a difference can be normal. The altitude value is an estimate based on the reference pressure in the sketch, not a GPS or survey measurement.
+  If you see an address response but no initialization, use the chip-ID message and troubleshooting table. No response at either address suggests a bus, supply, mode or connection problem. A full I2C scan finds other responding addresses but still does not identify a sensor.
 common_mistakes:
-  - text: Swapping SDA and SCL.
-  - text: Using 0x76 in code when the module is actually 0x77.
-  - text: Assuming VIN means every breakout is 5 V tolerant.
-  - text: Forgetting that I2C requires common ground.
-  - text: Treating GPIO21 and GPIO22 as fixed pins instead of common Arduino defaults.
-  - text: Comparing raw local pressure directly with sea-level adjusted weather app pressure.
-  - text: Treating calculated altitude as GPS-level accuracy.
-  - text: Assuming invalid humidity always proves the board is a BMP280.
-  - text: Connecting an OLED and BME280 without checking both I2C addresses.
-  - text: Placing the sensor next to a warm voltage regulator, USB chip, OLED display, direct sun, or enclosed warm board.
-  - text: Using long jumper wires without understanding I2C pull-ups.
+- text: Swapping SDA and SCL.
+- text: Using 0x76 in code when the module is actually 0x77.
+- text: Assuming VIN means every breakout is 5 V tolerant.
+- text: Forgetting that I2C requires common ground.
+- text: Treating GPIO21 and GPIO22 as fixed pins instead of common Arduino defaults.
+- text: Comparing raw local pressure directly with sea-level adjusted weather app pressure.
+- text: Treating calculated altitude as GPS-level accuracy.
+- text: Assuming invalid humidity always proves the board is a BMP280.
+- text: Connecting an OLED and BME280 without checking both I2C addresses.
+- text: Placing the sensor next to a warm voltage regulator, USB chip, OLED display, direct sun, or enclosed warm
+    board.
+- text: Using long jumper wires without understanding I2C pull-ups.
 troubleshooting:
-  - problem: Serial Monitor says "BME280 not found"
-    cause: Wrong I2C address, SDA/SCL swapped, no 3.3 V power, no shared ground, wrong bus pins, or a module fault.
-    fix: Check 3.3 V and GND, confirm SDA on GPIO21 and SCL on GPIO22, try both 0x76 and 0x77, and run an I2C scanner.
-  - problem: I2C scanner shows no devices
-    cause: Sensor is unpowered, GND is not shared, SDA/SCL are on the wrong ESP32 pins, or the module is damaged.
-    fix: Measure 3.3 V at the module, confirm GPIO21/GPIO22, and test with short wires.
-  - problem: I2C scanner shows 0x76 or 0x77 but the sketch still fails
-    cause: The sketch may be using different SDA/SCL pins, a different Wire bus, the wrong library, or loose wiring.
-    fix: Confirm Wire.begin(21, 22) matches the breadboard, use Adafruit_BME280, and test with short jumper wires.
-  - problem: Humidity is missing, invalid, or unrealistic
-    cause: You may have a BMP280, the wrong library or sensor object, failed initialization, wiring trouble, or a moisture-contaminated sensor.
-    fix: Confirm the board is BME280, check that initialization succeeds, rerun the scanner, and remember that BMP280 measures temperature and pressure only.
-  - problem: Temperature reads too high
-    cause: Heat from the ESP32 board, voltage regulator, USB chip, OLED display, enclosure, direct sun, your fingers, or your breath warms the module.
-    fix: Move the sensor away from electronics, allow airflow, avoid touching the board, shade it from sun, and let it stabilize.
-  - problem: Pressure seems different from weather websites
-    cause: Weather reports often show sea-level adjusted pressure, while the sensor measures local station pressure.
-    fix: Compare trends or apply sea-level correction for your altitude.
-  - problem: Altitude estimate is wrong
-    cause: Altitude calculation depends on current sea-level pressure, which changes with weather.
-    fix: Update SEALEVELPRESSURE_HPA from a local weather source or use altitude only for relative experiments.
-  - problem: Readings are noisy
-    cause: Loose wiring, long I2C lines, weak pull-ups, or airflow/heat around the sensor.
-    fix: Shorten wires, secure connections, keep the sensor away from heat, and average readings if needed.
-  - problem: ESP32 resets when Wi-Fi starts
-    cause: USB power is weak or wiring causes voltage dips.
-    fix: Use a reliable USB cable and power supply; keep sensor power wiring solid.
-  - problem: OLED works but BME280 does not
-    cause: The BME280 may be at a different address, wired to the wrong bus, using swapped SDA/SCL, or affected by bus pull-up issues.
-    fix: Run an I2C scanner with both devices connected. Expect BME280 at 0x76 or 0x77 and SSD1306 OLED commonly at 0x3C or sometimes 0x3D.
-  - problem: BME280 works alone but fails with another I2C device
-    cause: Bus wiring is too long, pull-ups are too strong/weak, or two devices share the same address.
-    fix: Shorten wires, check addresses, and avoid stacking many pull-up resistors on one bus.
-  - problem: Code will not compile
-    cause: Missing Adafruit BME280 or Adafruit Unified Sensor library.
-    fix: Install both libraries from Arduino Library Manager and restart Arduino IDE if needed.
-  - problem: Output appears as unreadable characters
-    cause: Serial Monitor baud rate does not match Serial.begin(115200).
-    fix: Set Serial Monitor to 115200 baud.
-  - problem: Sensor fails after being touched or exposed to moisture
-    cause: Static discharge, condensation, or contamination can affect the sensing element.
-    fix: Remove power, let the module dry in clean airflow, and replace it if readings remain unrealistic. Do not heat or wash the sensor.
-  - problem: SPI pins are confusing
-    cause: Some breakout boards expose both I2C and SPI labels.
-    fix: "For this guide, use I2C only: VCC, GND, SDA/SDI, and SCL/SCK. Leave CS/SDO at breakout defaults."
+- problem: No response at 0x76 or 0x77
+  cause: Supply or ground missing, wrong SDA/SCL, SPI mode, floating address select, missing pull-ups or damaged
+    module.
+  fix: Disconnect power and verify the module schematic, 3.3 V-compatible supply input, shared GND, GPIO21/22, CSB
+    HIGH, defined SDO and 3.3 V pull-ups. Retry with short wires and only this device; run a full I2C scanner.
+- problem: Address responds but Chip ID is 0x58
+  cause: The responding chip identifies as BMP280, which lacks humidity.
+  fix: Use the BMP280 library for that sensor or obtain a verified BME280. Changing 0x76 to 0x77 cannot add humidity.
+- problem: Chip-ID read failed or a different ID appears
+  cause: A transaction failed, another device occupies the address, or this is a different sensor.
+  fix: Check the short-wire bus and pull-ups, isolate this module, verify its identity and compare its manufacturer
+    documentation. An address ACK alone is not proof of BME280.
+- problem: ID is 0x60 but initialization fails
+  cause: Intermittent I2C, unstable supply or calibration/register communication trouble.
+  fix: Verify the same Wire bus and pins, power-cycle after correcting connections, then retry with the specified
+    Adafruit library. If failure persists, check the module with its vendor before assuming a software fault.
+- problem: Missing header or compilation error
+  cause: A required library or the ESP32 board package is missing or the wrong board is selected.
+  fix: Select ESP32 Dev Module with esp32 by Espressif Systems 3.x. Install Adafruit BME280 Library 2.3.0 and its
+    Unified Sensor and BusIO dependencies.
+- problem: Temperature or humidity is unrealistic
+  cause: Board heat, restricted airflow, condensation, contamination or a bus fault.
+  fix: Move the sensor away from heat, keep it dry and allow airflow. Check successful initialization and wiring;
+    missing humidity by itself does not prove BMP280.
+- problem: Pressure or optional altitude differs from a weather app
+  cause: Local pressure is compared with sea-level pressure, or the altitude reference is outdated.
+  fix: Compare like pressure units/types. Use current sea-level pressure for readAltitude(); do not treat the result
+    as precise elevation.
+- problem: Works alone but fails beside an OLED
+  cause: Address collision, wiring problem or combined pull-ups/load affect the bus.
+  fix: Scan with each device alone and then together. Ensure distinct addresses, shared ground and 3.3 V pull-ups;
+    check effective pull resistance and bus capacitance.
+- problem: Output is unreadable or missing
+  cause: Wrong port, baud or USB cable, or an earlier initialization message was missed.
+  fix: Use a data cable, select the correct port, set 115200 baud and reset to see startup diagnostics.
 related_guides:
-  - title: ESP32 Sensors Learning Path
-    href: /learning.html#sensor-basics
-    description: Place BME280 after basic sensor concepts and before complete weather-station projects.
-  - title: ESP32 I2C Communication Guide
-    href: /guides/i2c-communication.html
-    description: Understand shared SDA/SCL wiring, I2C addresses, pull-ups, and scanner diagnostics for ESP32 devices.
-  - title: ESP32 OLED Display Tutorial
-    href: /guides/oled-display-esp32.html
-    description: Show BME280 readings on the same I2C bus as an OLED display.
-  - title: Read Temperature with DHT11
-    href: /guides/read-temperature-dht22.html
-    description: Compare a basic humidity sensor with BME280 when pressure is not needed.
+- title: ESP32 Sensors Learning Path
+  href: /learning.html#sensor-basics
+  description: Place BME280 after basic sensor concepts and before complete weather-station projects.
+- title: ESP32 I2C Communication Guide
+  href: /guides/i2c-communication.html
+  description: Understand shared SDA/SCL wiring, I2C addresses, pull-ups, and scanner diagnostics for ESP32 devices.
+- title: ESP32 OLED Display Tutorial
+  href: /guides/oled-display-esp32.html
+  description: Show BME280 readings on the same I2C bus as an OLED display.
+- title: Read Temperature with DHT11
+  href: /guides/read-temperature-dht22.html
+  description: Compare a basic humidity sensor with BME280 when pressure is not needed.
 related_projects:
-  - title: ESP32 IoT Weather Station
-    href: /projects/esp32-iot-weather-station.html
-    description: Build a complete weather display with temperature, humidity, pressure, and connectivity.
-  - title: ESP32 OLED Weather Clock
-    href: /projects/esp32-oled-weather-clock.html
-    description: Combine an OLED display with environmental readings for a desk weather clock.
-  - title: ESP32 MQTT Sensor Dashboard
-    href: /projects/esp32-mqtt-sensor-dashboard.html
-    description: Publish stable sensor readings to MQTT after the local BME280 test works.
+- title: ESP32 IoT Weather Station
+  href: /projects/esp32-iot-weather-station.html
+  description: Build a complete weather display with temperature, humidity, pressure, and connectivity.
+- title: ESP32 OLED Weather Clock
+  href: /projects/esp32-oled-weather-clock.html
+  description: Combine an OLED display with environmental readings for a desk weather clock.
+- title: ESP32 MQTT Sensor Dashboard
+  href: /projects/esp32-mqtt-sensor-dashboard.html
+  description: Publish stable sensor readings to MQTT after the local BME280 test works.
 related_components:
-  - title: DHT22 Temperature & Humidity Sensor
-    href: /components/dht22.html
-    description: Simpler humidity sensor with one data wire but no pressure measurement.
-  - title: SSD1306 OLED Display
-    href: /components/ssd1306-oled.html
-    description: Show BME280 readings locally on the same I2C bus.
-  - title: ESP32 DevKit Board
-    href: /components/esp32-devkit.html
-    description: The development board that powers and reads the sensor.
+- title: DHT22 Temperature & Humidity Sensor
+  href: /components/dht22.html
+  description: Simpler humidity sensor with one data wire but no pressure measurement.
+- title: SSD1306 OLED Display
+  href: /components/ssd1306-oled.html
+  description: Show BME280 readings locally on the same I2C bus.
+- title: ESP32 DevKit Board
+  href: /components/esp32-devkit.html
+  description: The development board that powers and reads the sensor.
 datasheet_url: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
-datasheet_note: Official Bosch BME280 datasheet for electrical limits, calibration behavior, I2C/SPI protocol, and measurement accuracy.
+datasheet_note: Official Bosch BME280 datasheet for electrical limits, calibration behavior, I2C/SPI protocol, and
+  measurement accuracy.
 faqs:
-  - question: What does the BME280 measure?
-    answer: It measures temperature, relative humidity, and barometric pressure. Pressure can also be used to estimate altitude.
-  - question: Is BME280 digital or analog?
-    answer: It is digital. ESP32 reads it over I2C or SPI, not with analogRead().
-  - question: Is BME280 the same as BMP280?
-    answer: No. BMP280 measures temperature and pressure only. BME280 adds humidity, although many breakout boards look very similar.
-  - question: Which is better, BME280 or DHT22?
-    answer: BME280 is usually chosen for weather projects because it adds pressure and uses I2C. DHT22 is simpler for first humidity lessons but has no pressure reading.
-  - question: What I2C address does BME280 use?
-    answer: Most modules use 0x76 or 0x77. The address depends on the SDO pin or breakout board design.
-  - question: Which ESP32 pins should I use?
-    answer: Use GPIO21 for SDA and GPIO22 for SCL when following common ESP32 Arduino examples. Match GPIO numbers, not physical pin positions from another board.
-  - question: Can I use different I2C pins?
-    answer: Yes. ESP32 can map I2C to other pins, but you must call Wire.begin(SDA, SCL) with the pins you wired.
-  - question: Does BME280 need pull-up resistors?
-    answer: I2C needs pull-ups on SDA and SCL. Most breakout boards include them, but bare chips do not.
-  - question: Can I power BME280 from 5 V?
-    answer: Only if your breakout board is designed for 5 V input and level shifting. For ESP32 beginners, use 3.3 V.
-  - question: Can BME280 share I2C with an OLED?
-    answer: Yes. Connect both devices to the same SDA and SCL lines as long as their I2C addresses are different. BME280 is commonly 0x76 or 0x77, while SSD1306 OLED modules are commonly 0x3C or sometimes 0x3D.
-  - question: Why does my scanner show 0x76 but the code fails?
-    answer: The sketch may be using different SDA/SCL pins, the wrong library, or a different Wire bus. Match Wire.begin() and the BME280 address to the scanner result.
-  - question: Why is pressure not exactly 1013 hPa?
-    answer: 1013.25 hPa is standard sea-level pressure, not the value every room should show. The BME280 reads local station pressure, while weather apps often show sea-level adjusted pressure.
-  - question: Why is altitude wrong?
-    answer: Altitude estimates require current sea-level pressure. If you use a default value, weather changes create altitude error.
-  - question: Can BME280 predict rain?
-    answer: It cannot predict rain by itself, but falling pressure over time can be a useful weather trend signal.
-  - question: How often should I read BME280?
-    answer: Once per second is fine for beginner displays. Slower intervals are better for battery logging.
-  - question: Is BME280 good for battery projects?
-    answer: Yes, the sensor can be very low power, but the ESP32 must use deep sleep and avoid always-on Wi-Fi for long battery life.
-  - question: Can BME280 be used outdoors?
-    answer: Yes, if protected from rain and direct sun while still allowing airflow. Do not seal it in an airtight box.
-  - question: Why does humidity respond slowly?
-    answer: Humidity sensing depends on moisture exchange with the sensing material and surrounding air, so it naturally settles over time. Breath, condensation, and contamination can also disturb readings.
-  - question: Can I use BME280 with MicroPython?
-    answer: Yes. MicroPython has BME280 drivers, but this page focuses on Arduino for beginner consistency.
-  - question: Does BME280 measure air quality?
-    answer: No. It does not measure VOCs, CO2, smoke, or dust. Use a dedicated air-quality sensor for those.
-  - question: Is the BME280 waterproof?
-    answer: No. Keep the chip dry. Use a ventilated weather shield for outdoor air measurements.
-  - question: Why do I see heat from the ESP32 in readings?
-    answer: The ESP32 and regulator warm nearby air. Put the sensor away from the board or on a short cable for better ambient readings.
-  - question: Glossary - What is barometric pressure?
-    answer: Barometric pressure is the air pressure around the sensor. Weather stations use its trend to understand changing conditions.
-  - question: Glossary - What is an I2C address?
-    answer: It is the small bus number, usually 0x76 or 0x77 for BME280, that lets the ESP32 choose this sensor on SDA and SCL.
-  - question: Parent tips - What is the safest first BME280 test?
-    answer: Use 3.3 V, short I2C wires, and Serial Monitor before adding an OLED, Wi-Fi, or weather-station enclosure.
-  - question: Parent tips - What should not be claimed from this sensor?
-    answer: Do not call it an air-quality, gas, smoke, CO2, or rain sensor because it only measures temperature, humidity, and pressure.
-  - question: Teacher tips - What lesson does BME280 support?
-    answer: It connects weather concepts with I2C addressing, unit conversion, calibration limits, and data logging.
-  - question: Teacher tips - What should students compare?
-    answer: Ask students to compare scanner address, sketch address, local pressure, weather-app pressure, and sensor placement.
-  - question: Challenge yourself - How can I improve ambient readings?
-    answer: Move the sensor away from the ESP32 heat source and compare readings before and after the placement change.
-  - question: Challenge yourself - How can I share the I2C bus?
-    answer: Add an SSD1306 OLED on the same SDA/SCL lines and confirm the OLED and BME280 addresses are different.
-  - question: Mini quiz - Why can altitude be wrong?
-    answer: Altitude estimates depend on current sea-level pressure, so using a default value can create a large error.
-  - question: Mini quiz - Why run an I2C scanner?
-    answer: It confirms wiring and tells the exact BME280 address before you troubleshoot library or code settings.
+- question: Can I use different I2C pins?
+  answer: Yes. ESP32 can map I2C to other pins, but you must call Wire.begin(SDA, SCL) with the pins you wired.
+- question: Can BME280 share I2C with an OLED?
+  answer: Yes. Connect both devices to the same SDA and SCL lines as long as their I2C addresses are different.
+    BME280 is commonly 0x76 or 0x77, while SSD1306 OLED modules are commonly 0x3C or sometimes 0x3D.
+- question: Is BME280 good for battery projects?
+  answer: Yes, the sensor can be very low power, but the ESP32 must use deep sleep and avoid always-on Wi-Fi for
+    long battery life.
+- question: Can BME280 be used outdoors?
+  answer: Yes, if protected from rain and direct sun while still allowing airflow. Do not seal it in an airtight
+    box.
+- question: Can I use BME280 with MicroPython?
+  answer: Yes. MicroPython has BME280 drivers, but this page focuses on Arduino for beginner consistency.
+- question: Does BME280 measure air quality?
+  answer: No. It does not measure VOCs, CO2, smoke, or dust. Use a dedicated air-quality sensor for those.
 quality_status: golden
 status: complete
 electrical:
@@ -426,3 +343,48 @@ electrical:
   protection: 'Bare Bosch chip: VDD 1.71–3.6 V, VDDIO 1.2–3.6 V. A regulator alone does not make I2C 5 V-safe; verify
     breakout pull-ups and level shifting.'
   basis: Bosch BME280 datasheet; exact breakout vendor is unspecified.
+concise_layout: true
+curated_faqs: true
+overview_heading: BME280 or BMP280?
+setup:
+  items:
+  - label: Board and pins
+    value: 'Classic ESP32-WROOM-32 DevKit, Arduino board: ESP32 Dev Module. This example explicitly uses GPIO21
+      for SDA and GPIO22 for SCL; these are GPIO numbers, not header positions. Other ESP32 boards need a suitable
+      pin map.'
+  - label: Module assumption
+    value: An I2C BME280 breakout whose manufacturer permits 3.3 V at the chosen supply input, with SDA/SCL pulled
+      up to 3.3 V and CS/SDO configured for I2C. Vendor and exact board variant are unspecified; verify its schematic
+      before wiring. This is not a bare-chip build.
+  - label: Software and libraries
+    value: 'Arduino IDE 2.x; esp32 by Espressif Systems 3.x (API review baseline 3.3.2). Install Adafruit BME280
+      Library 2.3.0 in Library Manager and accept Adafruit Unified Sensor and Adafruit BusIO dependencies. Wire
+      is included with the core. Serial Monitor: 115200 baud.'
+  - label: Prerequisites and parts
+    value: Be able to upload a sketch and open Serial Monitor. Use an ESP32 DevKit, verified 3.3 V BME280 breakout,
+      USB data cable and four short jumper wires; use a breadboard if needed. Begin with only this sensor on the
+      bus.
+  - label: Expected result
+    value: The sketch reports a responding address and chip ID, confirms BME280 initialization, then prints °C,
+      relative humidity (%) and pressure (hPa) about once a second. Numeric examples below are illustrative, not
+      hardware measurements.
+  - label: Verification status
+    value: Reviewed against Espressif, Bosch and Adafruit documentation. Not compiled for an ESP32 or tested on
+      hardware in this update.
+sources:
+- title: Bosch BME280 datasheet
+  url: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
+  note: Supply limits, chip ID, I2C mode and address selection.
+- title: Bosch BMP280 datasheet
+  url: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf
+  note: Pressure/temperature sensor identity and 0x58 chip ID.
+- title: Espressif Arduino-ESP32 I2C API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/i2c.html
+  note: Explicit SDA/SCL selection and Wire transaction APIs.
+- title: Adafruit BME280 Library 2.3.0 implementation
+  url: https://github.com/adafruit/Adafruit_BME280_Library/blob/2.3.0/Adafruit_BME280.cpp
+  note: Initialization, measurement units and altitude calculation.
+- title: Adafruit BME280 Library 2.3.0 dependencies
+  url: https://github.com/adafruit/Adafruit_BME280_Library/blob/2.3.0/library.properties
+  note: Unified Sensor and BusIO requirements.
+explanation_heading: Pressure units and altitude estimates

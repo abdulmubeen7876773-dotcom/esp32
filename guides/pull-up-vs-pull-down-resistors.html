@@ -65,8 +65,8 @@
 })();
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ESP32 Pull-up vs Pull-down Resistors: Button Wiring | ESP32 Engine</title>
-<meta name="description" content="Choose ESP32 pull-up or pull-down button wiring with INPUT_PULLUP logic, 10 kOhm resistor examples, floating GPIO fixes, and pressed HIGH/LOW behavior.">
+<title>ESP32 Pull-up vs Pull-down: Button Wiring and Code | ESP32 Engine</title>
+<meta name="description" content="Compare ESP32 pull-up and pull-down button wiring, released/pressed states, internal pulls, 10 kΩ resistor guidance and GPIO limits, with Arduino examples.">
 <meta name="theme-color" content="#081D3A">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://esp32engine.com/guides/pull-up-vs-pull-down-resistors.html">
@@ -74,16 +74,16 @@
 <link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="ESP32 Engine">
-<meta property="og:title" content="ESP32 Pull-up vs Pull-down Resistors: Button Wiring | ESP32 Engine">
-<meta property="og:description" content="Choose ESP32 pull-up or pull-down button wiring with INPUT_PULLUP logic, 10 kOhm resistor examples, floating GPIO fixes, and pressed HIGH/LOW behavior.">
+<meta property="og:title" content="ESP32 Pull-up vs Pull-down: Button Wiring and Code | ESP32 Engine">
+<meta property="og:description" content="Compare ESP32 pull-up and pull-down button wiring, released/pressed states, internal pulls, 10 kΩ resistor guidance and GPIO limits, with Arduino examples.">
 <meta property="og:url" content="https://esp32engine.com/guides/pull-up-vs-pull-down-resistors.html">
 <meta property="og:image" content="https://esp32engine.com/assets/images/og/pull-up-vs-pull-down-resistors.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ESP32 Pull-up vs Pull-down Resistors: Button Wiring | ESP32 Engine">
-<meta name="twitter:description" content="Choose ESP32 pull-up or pull-down button wiring with INPUT_PULLUP logic, 10 kOhm resistor examples, floating GPIO fixes, and pressed HIGH/LOW behavior.">
+<meta name="twitter:title" content="ESP32 Pull-up vs Pull-down: Button Wiring and Code | ESP32 Engine">
+<meta name="twitter:description" content="Compare ESP32 pull-up and pull-down button wiring, released/pressed states, internal pulls, 10 kΩ resistor guidance and GPIO limits, with Arduino examples.">
 <meta name="twitter:image" content="https://esp32engine.com/assets/images/og/pull-up-vs-pull-down-resistors.webp">
 <meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
 <meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
@@ -96,7 +96,7 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
 <link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
 <link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Pull-up vs Pull-down Resistors","description":"Choose ESP32 pull-up or pull-down button wiring with INPUT_PULLUP logic, 10 kOhm resistor examples, floating GPIO fixes, and pressed HIGH/LOW behavior.","datePublished":"2026-06-30","dateModified":"2026-08-22","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/pull-up-vs-pull-down-resistors.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 pull-up resistor, ESP32 pull-down resistor, INPUT_PULLUP ESP32, ESP32 button wiring, floating pin fix"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Pull-up vs Pull-down Resistors","item":"https://esp32engine.com/guides/pull-up-vs-pull-down-resistors.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a pull-up resistor?","acceptedAnswer":{"@type":"Answer","text":"A pull-up resistor connects an input pin weakly to 3.3 V so the pin reads HIGH when nothing else is pressing it LOW."}},{"@type":"Question","name":"What is a pull-down resistor?","acceptedAnswer":{"@type":"Answer","text":"A pull-down resistor connects an input pin weakly to GND so the pin reads LOW when nothing else is pressing it HIGH."}},{"@type":"Question","name":"Why do buttons need pull-up or pull-down resistors?","acceptedAnswer":{"@type":"Answer","text":"A button is open most of the time. Without a default path to 3.3 V or GND, the input can float and produce random readings."}},{"@type":"Question","name":"Why does INPUT_PULLUP read LOW when the button is pressed?","acceptedAnswer":{"@type":"Answer","text":"With INPUT_PULLUP the pin normally rests HIGH through the internal resistor. Pressing the button connects the pin to GND, so the pressed state becomes LOW."}},{"@type":"Question","name":"Is LOW a problem in INPUT_PULLUP button logic?","acceptedAnswer":{"@type":"Answer","text":"No. LOW simply means pressed in that wiring style. Your code can name it clearly, for example bool buttonPressed = digitalRead(pin) == LOW."}},{"@type":"Question","name":"When should I use INPUT?","acceptedAnswer":{"@type":"Answer","text":"Use INPUT when an external circuit already drives the pin HIGH or LOW, such as a sensor output, or when you add your own external pull-up or pull-down resistor."}},{"@type":"Question","name":"When should I use INPUT_PULLUP?","acceptedAnswer":{"@type":"Answer","text":"Use INPUT_PULLUP for simple buttons or switches where one side of the button connects to GND and you want the ESP32 to provide the default HIGH state."}},{"@type":"Question","name":"Does ESP32 have INPUT_PULLDOWN?","acceptedAnswer":{"@type":"Answer","text":"Arduino ESP32 supports INPUT_PULLDOWN on GPIOs that provide an internal pull-down resistor. Pin capabilities vary by ESP32 family and board, and classic ESP32 GPIO34-GPIO39 do not have integrated pull-up or pull-down resistors."}},{"@type":"Question","name":"What resistor value should I use for an external pull-up or pull-down?","acceptedAnswer":{"@type":"Answer","text":"10 kOhm is a common beginner-friendly value. It is strong enough to define the input but weak enough that only a tiny current flows when the button is pressed."}},{"@type":"Question","name":"Can I connect a button directly without a resistor?","acceptedAnswer":{"@type":"Answer","text":"Only if you use an internal pull-up or pull-down mode. A plain INPUT button without a resistor will usually float when the button is open."}},{"@type":"Question","name":"Can a pull resistor damage the ESP32?","acceptedAnswer":{"@type":"Answer","text":"A normal pull resistor such as 10 kOhm connected between a GPIO input and 3.3 V or GND is safe. The dangerous mistake is shorting 3.3 V directly to GND."}},{"@type":"Question","name":"Can I use 5 V with an ESP32 button input?","acceptedAnswer":{"@type":"Answer","text":"No. ESP32 GPIO pins are 3.3 V logic and are not 5 V tolerant. Use 3.3 V for button circuits connected to GPIO."}},{"@type":"Question","name":"Why do many ESP32 tutorials use INPUT_PULLUP?","acceptedAnswer":{"@type":"Answer","text":"It reduces parts, avoids an external resistor, and gives a stable default state with only a button wired between the GPIO and GND."}},{"@type":"Question","name":"Which is better, pull-up or pull-down?","acceptedAnswer":{"@type":"Answer","text":"Neither is universally better. Pull-up is very common for buttons because internal pull-ups are available and wiring to GND is convenient. Pull-down is easier for beginners to read because pressed often equals HIGH."}},{"@type":"Question","name":"What happens if I remove the pull-up resistor?","acceptedAnswer":{"@type":"Answer","text":"The input loses its default HIGH state. When the button is open, the pin can float and random HIGH/LOW readings can return."}},{"@type":"Question","name":"Why not use a very small resistor like 100 ohms?","acceptedAnswer":{"@type":"Answer","text":"A small resistor wastes more current when the button is pressed. Pull resistors should be weak defaults, not strong loads."}},{"@type":"Question","name":"Do pull-up resistors debounce a button?","acceptedAnswer":{"@type":"Answer","text":"No. Pull resistors stop floating. Debouncing handles the tiny rapid on/off transitions caused by the mechanical contacts inside a real button."}},{"@type":"Question","name":"Can one resistor serve multiple buttons?","acceptedAnswer":{"@type":"Answer","text":"Usually each independent button input should have its own pull-up or pull-down path so every GPIO has a clear default state."}},{"@type":"Question","name":"Does a PIR sensor need INPUT_PULLUP?","acceptedAnswer":{"@type":"Answer","text":"Usually no. Most PIR modules actively drive their output HIGH or LOW, so the ESP32 can read them as INPUT. Check the module documentation if the output is open-drain."}},{"@type":"Question","name":"What should I learn after pull-up and pull-down resistors?","acceptedAnswer":{"@type":"Answer","text":"Learn button debouncing. Once the input has a stable default state, debouncing helps your code ignore the brief mechanical chatter of a real button press."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Mission","headline":"Pull-up vs Pull-down Resistors","description":"Compare ESP32 pull-up and pull-down button wiring, released/pressed states, internal pulls, 10 kΩ resistor guidance and GPIO limits, with Arduino examples.","datePublished":"2026-06-30","dateModified":"2026-10-08","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/pull-up-vs-pull-down-resistors.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 pull-up resistor, ESP32 pull-down resistor, INPUT_PULLUP ESP32, ESP32 button wiring, floating pin fix"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Pull-up vs Pull-down Resistors","item":"https://esp32engine.com/guides/pull-up-vs-pull-down-resistors.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why does INPUT_PULLUP read LOW when the button is pressed?","acceptedAnswer":{"@type":"Answer","text":"With INPUT_PULLUP the pin normally rests HIGH through the internal resistor. Pressing the button connects the pin to GND, so the pressed state becomes LOW."}},{"@type":"Question","name":"Does ESP32 have INPUT_PULLDOWN?","acceptedAnswer":{"@type":"Answer","text":"Arduino ESP32 supports INPUT_PULLDOWN on GPIOs that provide an internal pull-down resistor. Pin capabilities vary by ESP32 family and board, and classic ESP32 GPIO34-GPIO39 do not have integrated pull-up or pull-down resistors."}},{"@type":"Question","name":"What resistor value should I use for an external pull-up or pull-down?","acceptedAnswer":{"@type":"Answer","text":"10 kΩ is the starting value for the short 3.3 V button circuit here. Choose other values from leakage, noise, wiring length and current requirements; it is not a rule for every module."}},{"@type":"Question","name":"Can I use 5 V with an ESP32 button input?","acceptedAnswer":{"@type":"Answer","text":"No. ESP32 GPIO pins are 3.3 V logic and are not 5 V tolerant. Use 3.3 V for button circuits connected to GPIO."}},{"@type":"Question","name":"Do pull-up resistors debounce a button?","acceptedAnswer":{"@type":"Answer","text":"No. Pull resistors stop floating. Debouncing handles the tiny rapid on/off transitions caused by the mechanical contacts inside a real button."}}]}</script>
 </head>
 <body class="mission-guide-page">
 <main>
@@ -146,7 +146,7 @@
     <div class="mission-hero-inner">
       <p class="hero-eyebrow mission-hero-eyebrow">Interactive Mission</p>
       <h1 class="mission-hero-title">Pull-up vs Pull-down Resistors</h1>
-      <p class="article-lead mission-hero-lead">Use a pull-up when an ESP32 input should rest HIGH, and a pull-down when it should rest LOW. This mission compares both button wiring patterns, explains INPUT_PULLUP pressed-LOW logic, and shows how pull resistors stop floating GPIO readings.</p>
+      <p class="article-lead mission-hero-lead">A pull-up holds an open input HIGH; a pull-down holds it LOW. Wire the button to the opposite rail: pull-up buttons read LOW when pressed, and pull-down buttons read HIGH. INPUT_PULLUP or INPUT_PULLDOWN supplies the resistor internally on supported GPIOs.</p>
       <div class="mission-meta-row"><span class="badge badge-mission">Mission 04</span><span class="badge badge-cat">Foundation</span><span class="badge badge-beginner">Beginner</span><span class="badge badge-time">20-25 minutes</span><span class="badge badge-parent-safe">Parent Safe</span><span class="badge badge-teacher-friendly">Teacher Friendly</span></div>
       <figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/images/generated/guides/pull-up-vs-pull-down-resistors-1200.webp" srcset="/assets/images/generated/guides/pull-up-vs-pull-down-resistors-640.webp 640w, /assets/images/generated/guides/pull-up-vs-pull-down-resistors-1024.webp 1024w, /assets/images/generated/guides/pull-up-vs-pull-down-resistors-1200.webp 1200w" sizes="(max-width: 900px) 100vw, 76vw" alt="Pull Up Vs Pull Down Resistors guide illustration" width="1200" height="675" loading="eager" fetchpriority="high" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
     </div>
@@ -155,105 +155,53 @@
 <section class="section-block wrap mission-guide-shell">
 <section class="mission-section academy-unlocks" id="review-and-references" aria-labelledby="trust-heading">
   <h2 id="trust-heading"><span class="mission-section-icon" aria-hidden="true">Review</span><span class="mission-section-title">Review, Testing, and References</span></h2>
-  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-08-22. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner. <strong>Estimated time:</strong> 20-25 min.</p>
+  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-10-08. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner. <strong>Estimated time:</strong> 20-25 min.</p>
   <p>This guide is written for learning and bench prototyping. Check the testing notes before adapting the circuit to different boards, batteries, relays, motors, or outdoor hardware.</p>
   <ul class="guide-related-list"><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li></ul>
 </section>
-<article class="mission-journey">
-<div class="guide-friendly-intro">
+<article class="mission-journey article-concise"><details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#story-heading">The Story</a><a href="#watch-tutorial-heading">Watch the tutorial</a><a href="#setup-heading">Before you start</a><a href="#prerequisites-heading">Prerequisites</a><a href="#input-comparison-heading">Pull-up and pull-down wiring compared</a><a href="#internal-resistor-heading">ESP32 Internal Pull-up and Pull-down Resistors</a><a href="#external-resistor-heading">External Pull-Up and Pull-Down Resistors</a><a href="#resistor-value-heading">What Value Pull-up Resistor Should I Use with ESP32?</a><a href="#wiring-heading">Wiring Diagram</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#output-heading">Expected Behaviour</a><a href="#troubleshooting-heading">Troubleshooting</a><a href="#quiz-heading">Knowledge Check</a><a href="#challenge-heading">Mini Challenge</a><a href="#faqs-heading">FAQs</a><a href="#next-mission-heading">Next Mission</a><a href="#continue-learning-heading">Continue Learning</a><a href="#sources-heading">Technical references</a></nav></details><div class="guide-friendly-intro">
 <header class="mission-card">
   <div class="mission-card-glow" aria-hidden="true"></div>
   <span class="mission-card-icon" aria-hidden="true">R</span>
   <span class="mission-card-badge">Mission 04</span>
-  <h2 class="mission-card-title">Give Your Button a Default State</h2>
+  <h2 class="mission-card-title">Choose a default state for your button</h2>
 </header>
 <section class="mission-section guide-intro-story" id="story" aria-labelledby="story-heading">
-  <h2 id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
-  <div class="mission-story"><p>Mission 03 showed the problem: an input pin with no clear connection can drift between HIGH and LOW. That was not a software bug. It was an unfinished circuit.</p><p>Mission 04 fixes that circuit. A pull-up resistor weakly connects the input to 3.3 V so the released/default state is HIGH. A pull-down resistor weakly connects the input to GND so the released/default state is LOW. Pressing the button then creates the intentional opposite state.</p><p>That default can come from an external pull-up or pull-down resistor, or from an internal pull mode such as INPUT_PULLUP or INPUT_PULLDOWN when the selected GPIO supports it.</p></div>
+  <h2 tabindex="-1" id="story-heading"><span class="mission-section-icon" aria-hidden="true">📖</span><span class="mission-section-title">The Story</span></h2>
+  <div class="mission-story"><p>An open switch disconnects the input from the switched rail. A pull resistor keeps that input at a defined voltage until the switch closes. The resistor also limits current when the switch connects to the opposite rail.</p></div>
 </section>
-<section class="mission-section" id="eli12" aria-labelledby="eli12-heading">
-  <div class="eli12-box mission-eli12">
-    <h2 id="eli12-heading"><span class="mission-section-icon" aria-hidden="true">🧒</span><span class="mission-section-title">Explain Like I&#x27;m 12</span></h2>
-    <div class="eli12-content"><p>Imagine a classroom where the teacher asks one student to answer yes or no. If the student says nothing, the class has no official answer. That is a floating pin: the ESP32 is listening, but nobody is giving the pin a clear HIGH or LOW.</p><p>A pull-down resistor is like a quiet default vote for LOW. If nobody presses the button, the pin rests at LOW. When the button is pressed, the button gives a stronger vote for HIGH by connecting the pin to 3.3 V.</p><p>A pull-up resistor is the opposite default. It quietly votes HIGH when nobody presses the button. With INPUT_PULLUP, the ESP32 turns on that quiet internal HIGH vote for you. Then the button connects the pin to GND when pressed, so pressed reads LOW.</p><p>Remember This Forever:
-A floating pin is not broken.
-It is simply undecided.
-A pull-up or pull-down resistor gives the pin a default decision until the button intentionally changes it.</p></div>
-  </div>
-</section>
+
 
 </div>
 <section class="mission-section guide-tutorial-video" id="watch-tutorial" aria-labelledby="watch-tutorial-heading">
-  <h2 id="watch-tutorial-heading">Watch the tutorial</h2>
+  <h2 tabindex="-1" id="watch-tutorial-heading">Watch the tutorial</h2>
   <p class="mission-section-lead">Follow this guide’s wiring and GPIO assignments when building; the video may use different pins or a different board.</p>
   <div class="guide-video-frame" style="position:relative;aspect-ratio:16 / 9;width:100%;overflow:hidden;border-radius:var(--radius-lg);background:var(--surface);outline:1px solid var(--border);outline-offset:-1px;">
     <iframe src="https://www.youtube-nocookie.com/embed/pkLKrbIEdjI" title="Pull-up vs Pull-down Resistors — video tutorial" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" width="560" height="315" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>
   </div>
   <p><a href="https://www.youtube.com/watch?v=pkLKrbIEdjI" target="_blank" rel="noopener noreferrer" aria-label="Open on YouTube: Pull-up vs Pull-down Resistors — video tutorial (opens in a new tab)">Open on YouTube</a></p>
 </section>
-<section class="mission-section mission-build" id="mission-goal" aria-labelledby="mission-goal-heading">
-  <h2 id="mission-goal-heading"><span class="mission-section-icon" aria-hidden="true">Goal</span><span class="mission-section-title">Mission Goal</span></h2>
-  <div class="mission-build-panel"><p>You will build stable button inputs using both an external pull-down resistor and the ESP32 internal pull-up resistor.</p></div>
-</section>
-<section class="mission-section" id="estimated-time" aria-labelledby="estimated-time-heading">
-  <h2 id="estimated-time-heading"><span class="mission-section-icon" aria-hidden="true">Time</span><span class="mission-section-title">Estimated Time</span></h2>
-  <div class="mission-prose"><p>20-25 min</p></div>
-</section>
-<section class="mission-section" id="difficulty" aria-labelledby="difficulty-heading">
-  <h2 id="difficulty-heading"><span class="mission-section-icon" aria-hidden="true">Level</span><span class="mission-section-title">Difficulty</span></h2>
-  <div class="mission-prose"><p>Beginner</p></div>
-</section>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Board</dt><dd>Classic ESP32-WROOM-32 DevKit with GPIO27 exposed; Arduino board selection: ESP32 Dev Module. Pin numbers are GPIO numbers, not header positions. ESP32-C3/S3 boards need their own pin map.</dd><dt>Software</dt><dd>Arduino IDE 2.x, esp32 by Espressif Systems 3.x (API review baseline 3.3.2). No extra libraries. Serial Monitor: 115200 baud.</dd><dt>Prerequisite</dt><dd>Upload a sketch and open Serial Monitor first. Know the board’s 3.3 V, GND and GPIO27 labels.</dd><dt>Parts</dt><dd>USB data cable, breadboard, jumper wires and normally open momentary button. The external pull example also needs one 10 kΩ resistor.</dd><dt>Expected result</dt><dd>External pull-down: RELEASED/LOW, PRESSED/HIGH. Internal pull-up: RELEASED/HIGH, PRESSED/LOW. Short mechanical bounce can still occur.</dd></dl></section>
 <section class="mission-section" id="prerequisites" aria-labelledby="prerequisites-heading">
-  <h2 id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">Before</span><span class="mission-section-title">Prerequisites</span></h2>
+  <h2 tabindex="-1" id="prerequisites-heading"><span class="mission-section-icon" aria-hidden="true">Before</span><span class="mission-section-title">Prerequisites</span></h2>
   <ul class="guide-related-list"><li><a href="/guides/digital-inputs-floating-pins.html"><strong>Understanding Digital Inputs and Floating Pins</strong></a> <span class="meta">You should understand why a GPIO input must not be left undecided.</span></li></ul>
 </section>
-<section class="mission-section" id="skills" aria-labelledby="skills-heading">
-  <h2 id="skills-heading"><span class="mission-section-title">Skills You&#x27;ll Learn</span></h2>
-  <ul class="mission-bullets"><li>Explain why floating pins are unreliable</li><li>Wire a button with an external pull-down resistor</li><li>Use the ESP32 internal pull-up resistor with INPUT_PULLUP</li><li>Predict why a pull-up button reads LOW when pressed</li><li>Choose between INPUT and INPUT_PULLUP for beginner button circuits</li></ul>
-</section>
-<section class="mission-section" id="parts" aria-labelledby="parts-heading">
-  <h2 id="parts-heading"><span class="mission-section-icon" aria-hidden="true">Parts</span><span class="mission-section-title">Components Required</span></h2>
-  <ul class="mission-things-list"><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">ESP32</span><span class="mission-thing-body"><a href="/components/esp32-devkit.html" class="mission-thing-name">ESP32 DevKit board</a><span class="mission-thing-note">The GPIO input platform</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BTN</span><span class="mission-thing-body"><span class="mission-thing-name">Push button</span><span class="mission-thing-note">Momentary tactile switch</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">10K</span><span class="mission-thing-body"><span class="mission-thing-name">10 kOhm resistor</span><span class="mission-thing-note">External pull-down resistor for the first circuit</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">BOARD</span><span class="mission-thing-body"><span class="mission-thing-name">Breadboard</span><span class="mission-thing-note">Keeps the button and resistor stable</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">WIRE</span><span class="mission-thing-body"><span class="mission-thing-name">Jumper wires</span><span class="mission-thing-note">For GPIO, 3.3 V, and GND connections</span></span></li><li class="mission-thing-item"><span class="mission-thing-icon" aria-hidden="true">USB</span><span class="mission-thing-body"><span class="mission-thing-name">USB data cable</span><span class="mission-thing-note">Upload code and read Serial Monitor</span></span></li></ul>
-</section>
-<section class="mission-section" id="concept" aria-labelledby="concept-heading">
-  <h2 id="concept-heading"><span class="mission-section-icon" aria-hidden="true">Concept</span><span class="mission-section-title">The Default State Problem</span></h2>
-  <figure class="mission-illustration mission-illustration--image" aria-label="ESP32 button input shown with a weak resistor pulling the GPIO to a default HIGH or LOW state">
-  <img src="/assets/visuals/guides/concepts/pull-up-vs-pull-down-resistors-concept.svg" alt="ESP32 button input shown with a weak resistor pulling the GPIO to a default HIGH or LOW state" loading="lazy" decoding="async">
-</figure>
-  <div class="mission-prose"><p>A button is not always connected. When it is open, it leaves one side of the circuit disconnected unless you add a default path.</p><p>A pull resistor gives the input a weak default. Pull-up means the default is HIGH. Pull-down means the default is LOW. Pressing the button creates a stronger path to the opposite state.</p><p>The resistor is important because it limits current. It is strong enough to guide the input, but weak enough that a button press can safely override it.</p></div>
-</section>
-<section class="mission-section" id="engineering" aria-labelledby="engineering-heading">
-  <h2 id="engineering-heading"><span class="mission-section-title">Engineering Explanation</span></h2>
-  <div class="mission-prose"><p>An ESP32 digital input is high impedance. That means it listens without taking much current. This is useful, but it also means the pin cannot decide its own state.</p><p>Think about water flow. A floating input is like a pipe with no steady connection to a tank or drain, so tiny disturbances can move it around. A pull-down resistor is a narrow drain to GND. It gently drains the pin toward LOW when the button is open. Pressing the button connects the pin to 3.3 V, which is a much stronger source, so the pin becomes HIGH.</p><p>A pull-up resistor is a narrow feed from 3.3 V. It gently fills the pin toward HIGH when the button is open. Pressing the button connects the pin to GND, which is a stronger path than the weak resistor, so the pin becomes LOW. This is why INPUT_PULLUP button logic looks inverted but works perfectly: released reads HIGH, pressed reads LOW, and your code simply treats LOW as the pressed condition.</p></div>
-</section>
-<section class="mission-section" id="analogy" aria-labelledby="analogy-heading">
-  <h2 id="analogy-heading"><span class="mission-section-icon" aria-hidden="true">Real World</span><span class="mission-section-title">Real-World Analogy</span></h2>
-  <div class="mission-prose"><p>Think of the GPIO input like a scale with two labeled sides: LOW on one side and HIGH on the other. A pull-down resistor places a tiny weight on the LOW side so the scale rests there by default. A button press places a much heavier weight on the HIGH side, so HIGH wins.</p><p>A pull-up resistor places the tiny default weight on the HIGH side instead. When the button is pressed to GND, the heavier LOW side wins. The resistor is not fighting the button; it only chooses the default when the button is not doing anything.</p><p>The classroom version is the same idea: the resistor gives the pin a quiet default answer, and the button is the student raising a hand to intentionally change that answer.</p></div>
-</section>
-<section class="mission-section" id="floating-recap" aria-labelledby="floating-recap-heading">
-  <h2 id="floating-recap-heading"><span class="mission-section-icon" aria-hidden="true">Recap</span><span class="mission-section-title">Floating Pin Recap</span></h2>
-  <div class="mission-prose"><p>In Mission 03, GPIO27 changed because the loose wire had no path to 3.3 V or GND. It picked up tiny noise from your hand, USB cable, nearby wiring, and the room.</p><p>A floating pin is not broken. It is simply undecided. The ESP32 input circuit is still working; it is just measuring a point that nobody has forced to HIGH or LOW.</p><p>A pull-up or pull-down resistor fixes that undecided state. It gives the pin a default decision while the button is open, and then the button intentionally changes that decision when pressed.</p></div>
-</section>
+<section class="mission-section" id="input-comparison" aria-labelledby="input-comparison-heading"><h2 tabindex="-1" id="input-comparison-heading">Pull-up and pull-down wiring compared</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Pull resistor comparison; scroll horizontally on small screens"><table class="wiring-table"><caption>GPIO27 with a normally open button; all supply connections are 3.3 V.</caption><thead><tr><th scope="col">Setup / Arduino mode</th><th scope="col">Resistor and button wiring</th><th scope="col">Released</th><th scope="col">Pressed</th></tr></thead><tbody><tr><th scope="row">External pull-up / INPUT</th><td>10 kΩ from GPIO27 to 3.3 V; button from GPIO27 to GND</td><td>HIGH</td><td>LOW</td></tr><tr><th scope="row">External pull-down / INPUT</th><td>10 kΩ from GPIO27 to GND; button from GPIO27 to 3.3 V</td><td>LOW</td><td>HIGH</td></tr><tr><th scope="row">Internal pull-up / INPUT_PULLUP</th><td>No external resistor; button from GPIO27 to GND</td><td>HIGH</td><td>LOW</td></tr><tr><th scope="row">Internal pull-down / INPUT_PULLDOWN</th><td>No external resistor; button from GPIO27 to 3.3 V</td><td>LOW</td><td>HIGH</td></tr></tbody></table></div></section>
 <section class="mission-section" id="internal-resistor" aria-labelledby="internal-resistor-heading">
-  <h2 id="internal-resistor-heading"><span class="mission-section-icon" aria-hidden="true">Internal</span><span class="mission-section-title">ESP32 Internal Pull-up and Pull-down Resistors</span></h2>
-  <div class="mission-prose"><p>Arduino ESP32 provides INPUT_PULLUP and INPUT_PULLDOWN on supported GPIOs. These modes enable weak internal resistors so an input has a default logic state instead of floating.</p><p>INPUT_PULLUP holds the released input HIGH until a button or switch connects the pin to GND. INPUT_PULLDOWN does the opposite on GPIOs that support it: the pin rests LOW until the circuit drives it HIGH.</p><p>Treat internal pulls as convenient defaults, not strong loads. Arduino-ESP32 documentation describes the internal pull resistance as roughly 45 kOhm, so it is much weaker than a common 10 kOhm external resistor.</p><p>GPIO capabilities vary by ESP32 family and by board. On the original classic ESP32, GPIO34-GPIO39 are input-only and do not provide integrated pull-up or pull-down resistors, so use an external pull resistor if one of those pins needs a defined default state.</p></div>
+  <h2 tabindex="-1" id="internal-resistor-heading"><span class="mission-section-icon" aria-hidden="true">Internal</span><span class="mission-section-title">ESP32 Internal Pull-up and Pull-down Resistors</span></h2>
+  <div class="mission-prose"><p>pinMode(pin, INPUT) leaves the digital input without an internal pull. INPUT_PULLUP enables a weak pull toward HIGH; INPUT_PULLDOWN enables one toward LOW. Use the wiring and pressed-state test from the comparison table. These modes do not debounce the switch.</p><p>Use GPIO27 for these examples. On classic ESP32, GPIO34–39 are input-only and have no internal pull-up or pull-down: use an external resistor there. Other ESP32 families have different restrictions.</p><p>Avoid boot-strapping pins GPIO0, GPIO2, GPIO5, GPIO12 and GPIO15 for this first button circuit: a button or resistor can change the boot configuration. GPIO6–11 are normally connected to flash. Check your board pin map before substituting a GPIO.</p></div>
 </section>
 <section class="mission-section" id="external-resistor" aria-labelledby="external-resistor-heading">
-  <h2 id="external-resistor-heading"><span class="mission-section-title">External Pull-Up and Pull-Down Resistors</span></h2>
-  <div class="mission-prose"><p>An external resistor is a physical resistor you place on the breadboard. External pull-down wiring is excellent for learning because the logic feels natural: released is LOW, pressed is HIGH.</p><p>External pull-up wiring works the other way: the resistor connects the GPIO weakly to 3.3 V, and the button or active circuit pulls the pin to GND. That is the same logic pattern you get from INPUT_PULLUP, but with a resistor value you choose yourself.</p><p>External resistors are useful when you need a specific resistor value, when a pin does not support an internal pull, when a sensor output requires a pull resistor, or when you want the circuit behavior to be obvious even before reading the code.</p></div>
+  <h2 tabindex="-1" id="external-resistor-heading"><span class="mission-section-title">External Pull-Up and Pull-Down Resistors</span></h2>
+  <div class="mission-prose"><p>Use INPUT with an external pull-up or pull-down so the physical resistor defines the default. External pulls let you choose a stronger pull and work on input-only pins without internal pulls. They also provide a default while the GPIO is not yet configured by setup().</p><p>A pull resistor biases an input; it does not convert a 5 V signal into safe ESP32 logic. Use 3.3 V rails in these circuits. A sensor that actively drives HIGH and LOW may need no pull, while an open-drain output needs the pull specified by its manufacturer.</p></div>
 </section>
+
 <section class="mission-section" id="resistor-value" aria-labelledby="resistor-value-heading">
-  <h2 id="resistor-value-heading"><span class="mission-section-icon" aria-hidden="true">Value</span><span class="mission-section-title">What Value Pull-up Resistor Should I Use with ESP32?</span></h2>
-  <div class="mission-prose"><p>For most ESP32 button experiments, 10 kOhm is a practical starting point for an external pull-up or pull-down resistor. It defines the input clearly without wasting much current.</p><p>A lower resistance makes a stronger pull, but it increases current when something drives the pin against that resistor. A higher resistance saves a little current, but the default state becomes weaker and more sensitive to noise, leakage, or long wires.</p><p>ESP32 internal pull resistors are convenient but weaker. Arduino-ESP32 documentation describes them as roughly 45 kOhm, so use an external resistor when you need a firmer default state or when the selected GPIO does not provide an internal pull.</p></div>
-</section>
-<section class="mission-section" id="input-comparison" aria-labelledby="input-comparison-heading">
-  <h2 id="input-comparison-heading"><span class="mission-section-icon" aria-hidden="true">Compare</span><span class="mission-section-title">Pull-up vs Pull-down Comparison</span></h2>
-  <div class="wiring-table-wrap"><table class="wiring-table">
-    <thead><tr><th>Setup</th><th>Default State</th><th>Active/Button State</th><th>Typical Use</th></tr></thead>
-    <tbody><tr><td>External pull-up</td><td>HIGH when the button/input is open</td><td>LOW when the button or active circuit connects the GPIO to GND</td><td>Common for buttons to GND, open-drain outputs, and circuits where active LOW logic is acceptable.</td></tr><tr><td>External pull-down</td><td>LOW when the button/input is open</td><td>HIGH when the button or active circuit connects the GPIO to 3.3 V</td><td>Good for learning natural pressed-equals-HIGH button logic or when a pin needs a physical resistor.</td></tr><tr><td>INPUT_PULLUP</td><td>HIGH when released/open</td><td>LOW when pressed to GND</td><td>Best for simple ESP32 buttons with fewer parts, on GPIOs that support the internal pull-up.</td></tr><tr><td>INPUT_PULLDOWN</td><td>LOW when released/open</td><td>HIGH when pressed or driven to 3.3 V</td><td>Useful when supported by the selected GPIO and you want pressed or active to read HIGH without an external resistor.</td></tr></tbody>
-  </table></div>
+  <h2 tabindex="-1" id="resistor-value-heading"><span class="mission-section-icon" aria-hidden="true">Value</span><span class="mission-section-title">What Value Pull-up Resistor Should I Use with ESP32?</span></h2>
+  <div class="mission-prose"><p>For this short-wire, 3.3 V button exercise, start with 10 kΩ. With the button pressed, the resistor has approximately 3.3 V across it: 3.3 V / 10,000 Ω = 0.33 mA. This is a calculated value, not a measured result or a universal resistor recommendation.</p><p>The classic ESP32 datasheet lists about 45 kΩ as the typical internal pull resistance; actual resistance varies. A lower external resistance is a stronger pull but draws more current when pressed. A higher value is more vulnerable to leakage and interference. Long cables and other modules need their own electrical requirements checked.</p></div>
 </section>
 <section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
-  <h2 id="wiring-heading"><span class="mission-section-title">Wiring Diagram</span></h2>
+  <h2 tabindex="-1" id="wiring-heading"><span class="mission-section-title">Wiring Diagram</span></h2>
   <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
   <figure class="mission-illustration mission-illustration--image" aria-label="Breadboard showing ESP32 GPIO27 connected to a push button with either a 10 kOhm pull-down resistor to GND or internal pull-up wiring to GND">
   <img src="/assets/visuals/guides/wiring/pull-up-vs-pull-down-resistors-wiring.svg" alt="Breadboard showing ESP32 GPIO27 connected to a push button with either a 10 kOhm pull-down resistor to GND or internal pull-up wiring to GND" loading="lazy" decoding="async">
@@ -261,188 +209,130 @@ A pull-up or pull-down resistor gives the pin a default decision until the butto
   <ol class="mission-steps-list"><li class="mission-step-wrap">
   <div class="mission-step">
     <span class="mission-num">1</span>
-    <p class="mission-step-text">External pull-down test: place the push button across the breadboard center gap.</p>
+    <p class="mission-step-text">Unplug USB. Check the button contacts: the two legs on one side of a four-leg tactile switch are often already joined. Use contacts that are open until pressed; confirm your switch pinout or check continuity with power disconnected.</p>
   </div>
 </li><li class="mission-step-wrap">
   <div class="mission-step">
     <span class="mission-num">2</span>
-    <p class="mission-step-text">Connect one side of the button to ESP32 3.3 V.</p>
+    <p class="mission-step-text">Example A: connect GPIO27 to one button contact and 3.3 V to the opposite switched contact. Add 10 kΩ between the GPIO27 node and GND.</p>
   </div>
 </li><li class="mission-step-wrap">
   <div class="mission-step">
     <span class="mission-num">3</span>
-    <p class="mission-step-text">Connect the other side of the button to ESP32 GPIO27.</p>
+    <p class="mission-step-text">Upload Example A and open Serial Monitor at 115200 baud. Released should read LOW; pressed should read HIGH.</p>
   </div>
 </li><li class="mission-step-wrap">
   <div class="mission-step">
     <span class="mission-num">4</span>
-    <p class="mission-step-text">Place a 10 kOhm resistor from the GPIO27 side of the button to GND.</p>
+    <p class="mission-step-text">Unplug USB before changing to Example B. Remove both the 10 kΩ resistor and the button’s 3.3 V connection.</p>
   </div>
 </li><li class="mission-step-wrap">
   <div class="mission-step">
     <span class="mission-num">5</span>
-    <p class="mission-step-text">Upload the INPUT example and open Serial Monitor at 115200 baud.</p>
+    <p class="mission-step-text">Example B: connect the button between GPIO27 and GND. Upload Example B; its INPUT_PULLUP setting supplies the pull resistor.</p>
   </div>
 </li><li class="mission-step-wrap">
   <div class="mission-step">
     <span class="mission-num">6</span>
-    <p class="mission-step-text">Internal pull-up test: remove the external resistor and 3.3 V button wire.</p>
-  </div>
-</li><li class="mission-step-wrap">
-  <div class="mission-step">
-    <span class="mission-num">7</span>
-    <p class="mission-step-text">Connect one side of the button to GPIO27 and the other side to GND.</p>
-  </div>
-</li><li class="mission-step-wrap">
-  <div class="mission-step">
-    <span class="mission-num">8</span>
-    <p class="mission-step-text">Upload the INPUT_PULLUP example and compare the released and pressed readings.</p>
+    <p class="mission-step-text">For external pull-up or internal pull-down, follow the comparison table. Never wire the button directly between 3.3 V and GND.</p>
   </div>
 </li></ol>
 </section>
-<section class="mission-section" id="gpio-table" aria-labelledby="gpio-table-heading">
-  <h2 id="gpio-table-heading"><span class="mission-section-title">GPIO Table</span></h2>
-  <div class="wiring-table-wrap"><table class="wiring-table">
-    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Mode</th><th>Notes</th></tr></thead>
-    <tbody><tr><td>Button input</td><td>GPIO27</td><td>INPUT or INPUT_PULLUP</td><td>Reads the button state in both examples.</td></tr><tr><td>External pull-down default</td><td>GND through 10 kOhm</td><td>Pull-down</td><td>Keeps GPIO27 LOW until the button connects it to 3.3 V.</td></tr><tr><td>Button HIGH source</td><td>3.3 V</td><td>Power</td><td>Used only in the external pull-down version.</td></tr><tr><td>Internal pull-up default</td><td>GPIO27 internal resistor</td><td>INPUT_PULLUP</td><td>Keeps GPIO27 HIGH until the button connects it to GND.</td></tr><tr><td>Serial debug</td><td>USB</td><td>Serial</td><td>Shows released and pressed states at 115200 baud.</td></tr></tbody>
-  </table></div>
-</section>
-<section class="mission-section" id="code" aria-labelledby="code-heading">
-  <h2 id="code-heading"><span class="mission-section-icon" aria-hidden="true">⌨️</span><span class="mission-section-title">Arduino Code</span></h2>
-  <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
-  <div class="mission-code-layout">
-    <div class="mission-code-main"><div class="code-panel">
+<section class="mission-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Example A: external pull-down (pressed HIGH)</h3><p>GPIO27 → button → 3.3 V. GPIO27 → 10 kΩ → GND. Upload this complete sketch by itself.</p><div class="code-panel">
   <div class="code-panel-head">
     <div class="code-panel-chrome" aria-hidden="true">
       <span class="code-dot code-dot-red"></span>
       <span class="code-dot code-dot-yellow"></span>
       <span class="code-dot code-dot-green"></span>
     </div>
-    <span class="code-panel-filename">pull_up_pull_down_buttons.ino</span>
+    <span class="code-panel-filename">button_external_pulldown.ino</span>
     <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
       <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
       <span class="btn-copy-label">Copy</span>
     </button>
   </div>
-  <pre class="code-block"><code class="language-arduino"><span class="tok-com">// Mission 04 - Example A: external pull-down resistor</span>
-<span class="tok-com">// Wiring: GPIO27 -&gt; button -&gt; 3.3V, and GPIO27 -&gt; 10k resistor -&gt; GND</span>
-
-const <span class="tok-kw">int</span> BUTTON_PIN = <span class="tok-num">27</span>;
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino">const <span class="tok-kw">int</span> BUTTON_PIN = <span class="tok-num">27</span>;
 
 <span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
   <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
   <span class="tok-fn">pinMode</span>(BUTTON_PIN, <span class="tok-const">INPUT</span>);
-  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Example A: <span class="tok-const">INPUT</span> with external pull-down&quot;);
 }
 
 <span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
-  <span class="tok-kw">int</span> reading = <span class="tok-fn">digitalRead</span>(BUTTON_PIN);
-
-  <span class="tok-kw">if</span> (reading == <span class="tok-const">HIGH</span>) {
-    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button is PRESSED&quot;);
-  } <span class="tok-kw">else</span> {
-    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button is RELEASED&quot;);
-  }
-
+  bool pressed = <span class="tok-fn">digitalRead</span>(BUTTON_PIN) == <span class="tok-const">HIGH</span>;
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(pressed ? &quot;PRESSED&quot; : &quot;RELEASED&quot;);
   <span class="tok-fn">delay</span>(<span class="tok-num">250</span>);
-}
-
-/*
-Mission <span class="tok-num">04</span> - Example B: internal pull-up resistor
-Rewire first: GPIO27 -&gt; button -&gt; GND. No external resistor needed.
-Then replace <span class="tok-fn">setup</span>() and <span class="tok-fn">loop</span>() with the code below.
-
-const <span class="tok-kw">int</span> BUTTON_PIN = <span class="tok-num">27</span>;
+}</code></pre>
+</div><p>For an external pull-up, move the resistor to 3.3 V and the button to GND; keep INPUT and change the pressed test to LOW.</p><h3>Example B: internal pull-up (pressed LOW)</h3><p>Unplug USB before rewiring. GPIO27 → button → GND. Remove the external resistor and the old 3.3 V button wire. Upload this complete sketch by itself.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">button_internal_pullup.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino">const <span class="tok-kw">int</span> BUTTON_PIN = <span class="tok-num">27</span>;
 
 <span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
   <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
   <span class="tok-fn">pinMode</span>(BUTTON_PIN, <span class="tok-const">INPUT_PULLUP</span>);
-  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Example B: <span class="tok-const">INPUT_PULLUP</span> internal pull-up&quot;);
 }
 
 <span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
-  <span class="tok-kw">int</span> reading = <span class="tok-fn">digitalRead</span>(BUTTON_PIN);
-
-  <span class="tok-kw">if</span> (reading == <span class="tok-const">LOW</span>) {
-    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button is PRESSED&quot;);
-  } <span class="tok-kw">else</span> {
-    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Button is RELEASED&quot;);
-  }
-
+  bool pressed = <span class="tok-fn">digitalRead</span>(BUTTON_PIN) == <span class="tok-const">LOW</span>;
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(pressed ? &quot;PRESSED&quot; : &quot;RELEASED&quot;);
   <span class="tok-fn">delay</span>(<span class="tok-num">250</span>);
-}
-*/</code></pre>
-</div></div>
-    <aside class="mission-code-preview" aria-label="Expected result preview">
-  <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
-  <div class="mission-code-preview-body"><p>Example A, external pull-down:</p></div>
-</aside>
-  </div>
-  <div class="mission-code-notes"><p>This file includes two examples. Upload Example A for the external pull-down circuit. Then rewire the button and upload Example B for INPUT_PULLUP. Do not use both setups on the breadboard at the same time.</p></div>
-</section>
-<section class="mission-section" id="code-explanation" aria-labelledby="code-explanation-heading">
-  <h2 id="code-explanation-heading"><span class="mission-section-icon" aria-hidden="true">Code</span><span class="mission-section-title">Line-by-line Explanation</span></h2>
-  <ul class="mission-bullets"><li>const int BUTTON_PIN = 27; gives the button input a clear name.</li><li>pinMode(BUTTON_PIN, INPUT); is used only when the external pull-down resistor already gives the pin a default LOW state.</li><li>In Example A, digitalRead() returns HIGH when the button connects GPIO27 to 3.3 V.</li><li>pinMode(BUTTON_PIN, INPUT_PULLUP); turns on the ESP32 internal pull-up resistor.</li><li>In Example B, the released button reads HIGH because the internal pull-up holds the pin near 3.3 V.</li><li>In Example B, the pressed button reads LOW because the button connects GPIO27 directly to GND.</li><li>The delay(250); line slows the output so the Serial Monitor is readable. It is not button debouncing yet.</li></ul>
-</section>
+}</code></pre>
+</div><p>For internal pull-down on GPIO27, wire the button to 3.3 V, use INPUT_PULLDOWN and test for HIGH. The delay here spaces Serial output; it is not a debounce algorithm.</p></section>
 <section class="mission-section mission-output" id="output" aria-labelledby="output-heading">
-  <h2 id="output-heading"><span class="mission-section-icon" aria-hidden="true">Output</span><span class="mission-section-title">Expected Behaviour</span></h2>
-  <div class="mission-output-body"><p>Example A, external pull-down:</p><p>Button is RELEASED
-Button is RELEASED
-Button is PRESSED</p><p>Example B, INPUT_PULLUP:</p><p>Button is RELEASED
-Button is RELEASED
-Button is PRESSED</p><p>The printed words are the same because the code handles the different logic. The raw GPIO value is different: Example A uses HIGH for pressed, while Example B uses LOW for pressed.</p></div>
-</section>
-<section class="mission-section" id="experiment" aria-labelledby="experiment-heading">
-  <h2 id="experiment-heading"><span class="mission-section-title">Experiment: Leave the Input Floating</span></h2>
-  <div class="mission-prose"><p>Try removing the 10 kOhm pull-down resistor from Example A while leaving the button open. The input may become random again, just like Mission 03. Put the resistor back and the reading should become stable.</p><p>Then try the INPUT_PULLUP circuit. Notice that there is no external resistor, but the reading stays stable because the ESP32 enabled one internally.</p><p>This is the main lesson: stable button inputs need a default state. That default can come from an external resistor or from an internal pull resistor enabled in software.</p></div>
-</section>
-<section class="mission-section" id="common-mistakes" aria-labelledby="common-mistakes-heading">
-  <h2 id="common-mistakes-heading"><span class="mission-section-icon" aria-hidden="true">Mistakes</span><span class="mission-section-title">Common Mistakes</span></h2>
-  <ul class="mission-bullets"><li><h3>The button always reads pressed</h3><p>The GPIO may be permanently connected to 3.3 V or GND because the button legs are in the wrong breadboard rows.</p></li><li><h3>The reading is still random</h3><p>The pull-down resistor is missing, in the wrong row, or not connected to GND.</p></li><li><h3>INPUT_PULLUP prints pressed when I release the button</h3><p>The code may be treating HIGH as pressed even though pull-up logic is inverted.</p></li><li><h3>The ESP32 resets when I press the button</h3><p>The button may be shorting 3.3 V directly to GND.</p></li><li><h3>Serial Monitor shows old text from Example A</h3><p>Example B is inside a comment until you copy it into the active sketch area.</p></li><li><h3>The button works but prints many lines per press</h3><p>The loop prints every 250 ms while the button is held.</p></li></ul>
+  <h2 tabindex="-1" id="output-heading"><span class="mission-section-icon" aria-hidden="true">Output</span><span class="mission-section-title">Expected Behaviour</span></h2>
+  <div class="mission-output-body"><p>At 115200 baud the sketch prints RELEASED until you hold the button, then PRESSED. The text is the same in both sketches because each uses the correct pressed polarity.</p><p>Example A’s raw input is LOW released and HIGH pressed. Example B’s raw input is HIGH released and LOW pressed. Brief chatter while pressing or releasing is contact bounce; learn debouncing next.</p></div>
 </section>
 <section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading">
-  <h2 id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
+  <h2 tabindex="-1" id="troubleshooting-heading"><span class="mission-section-icon" aria-hidden="true">!</span><span class="mission-section-title">Troubleshooting</span></h2>
   <p class="mission-section-lead">Most ESP32 problems are wiring, power, library, or timing issues. Check these first.</p>
-  <ul class="mission-bullets"><li><h3>The button always reads pressed</h3><p><strong>Likely cause:</strong> The GPIO may be permanently connected to 3.3 V or GND because the button legs are in the wrong breadboard rows.</p><p><strong>Fix:</strong> Rotate the button 90 degrees or move it across the breadboard center gap, then test again.</p></li><li><h3>The reading is still random</h3><p><strong>Likely cause:</strong> The pull-down resistor is missing, in the wrong row, or not connected to GND.</p><p><strong>Fix:</strong> Trace GPIO27 to the resistor and make sure the other resistor leg reaches a real GND pin.</p></li><li><h3>INPUT_PULLUP prints pressed when I release the button</h3><p><strong>Likely cause:</strong> The code may be treating HIGH as pressed even though pull-up logic is inverted.</p><p><strong>Fix:</strong> For INPUT_PULLUP, use digitalRead(pin) == LOW to detect a pressed button.</p></li><li><h3>The ESP32 resets when I press the button</h3><p><strong>Likely cause:</strong> The button may be shorting 3.3 V directly to GND.</p><p><strong>Fix:</strong> Unplug USB and rebuild the circuit slowly. The resistor should define the GPIO, not sit as a direct short bypass.</p></li><li><h3>Serial Monitor shows old text from Example A</h3><p><strong>Likely cause:</strong> Example B is inside a comment until you copy it into the active sketch area.</p><p><strong>Fix:</strong> Replace the active setup() and loop() with Example B, then upload again.</p></li><li><h3>The button works but prints many lines per press</h3><p><strong>Likely cause:</strong> The loop prints every 250 ms while the button is held.</p><p><strong>Fix:</strong> That is expected in this mission. Mission 05 will teach detecting one clean press and debouncing.</p></li></ul>
+  <ul class="mission-bullets"><li><h3>Always PRESSED or always RELEASED</h3><p><strong>Likely cause:</strong> Button contacts are already joined, the pin number is wrong, or the input is connected to a rail.</p><p><strong>Fix:</strong> Disconnect power, check switched contact pairs and breadboard rows, then match GPIO27 and the chosen example.</p></li><li><h3>States are inverted</h3><p><strong>Likely cause:</strong> The pressed-state test does not match the wiring.</p><p><strong>Fix:</strong> Pull-up uses == LOW; pull-down uses == HIGH. Do not swap the rails while leaving the old condition in place.</p></li><li><h3>Readings change while the button is untouched</h3><p><strong>Likely cause:</strong> Missing pull resistor, unsupported internal pull, loose wiring or interference.</p><p><strong>Fix:</strong> Check the default path and common ground. Use short wires; classic GPIO34–39 need an external resistor.</p></li><li><h3>Extra transitions during a press</h3><p><strong>Likely cause:</strong> Mechanical contact bounce remains even with a pull resistor.</p><p><strong>Fix:</strong> Keep the pull and add debouncing when counting presses. A pull fixes floating, not bounce.</p></li><li><h3>ESP32 will not boot after wiring</h3><p><strong>Likely cause:</strong> A strapping pin is held at an unsuitable level or the supply is shorted.</p><p><strong>Fix:</strong> Unplug USB, remove the circuit, inspect for shorts and use GPIO27 for this exercise.</p></li><li><h3>No readable Serial output</h3><p><strong>Likely cause:</strong> Wrong port, baud rate or USB cable.</p><p><strong>Fix:</strong> Select the board’s port, set 115200 baud and use a data-capable USB cable.</p></li></ul>
 </section>
-<section class="mission-section" id="engineer-tip" aria-labelledby="engineer-tip-heading">
-  <h2 id="engineer-tip-heading"><span class="mission-section-icon" aria-hidden="true">Tip</span><span class="mission-section-title">Engineer Tip</span></h2>
-  <div class="mission-prose"><p>When debugging a button, first ask one question: what should this pin read when nobody is pressing anything? If you cannot answer HIGH or LOW immediately, the circuit probably needs a pull-up, pull-down, or a sensor output that actively drives the pin.</p></div>
-</section>
-<section class="mission-section" id="remember" aria-labelledby="remember-heading">
-  <h2 id="remember-heading"><span class="mission-section-title">Remember This Forever</span></h2>
-  <div class="mission-build-panel"><p>A floating pin is not broken.</p><p>It is simply undecided.</p><p>A pull-up or pull-down resistor gives the pin a default decision until the button intentionally changes it.</p></div>
+<section class="mission-section mission-quiz" id="quiz" aria-labelledby="quiz-heading">
+  <h2 tabindex="-1" id="quiz-heading"><span class="mission-section-icon" aria-hidden="true">❓</span><span class="mission-section-title">Knowledge Check</span></h2>
+  <p class="mission-section-lead">Quick check — no grades, just confidence!</p>
+  <div class="mission-quiz-list"><div class="quiz-question" data-quiz-q="0" data-explanation="The pull holds an open switch HIGH; closing it connects GPIO27 to GND." data-correct-feedback="Correct: use digitalRead(BUTTON_PIN) == LOW." data-wrong-feedback="Check the switched rail before choosing the polarity.">
+  <p class="quiz-q-text" id="quiz-q-0"><span class="quiz-q-num">Q1.</span> A button is wired from GPIO27 to GND with INPUT_PULLUP. What means pressed?</p>
+  <div class="quiz-options" role="group" aria-labelledby="quiz-q-0"><button type="button" class="quiz-option" data-index="0" data-correct="0">HIGH</button><button type="button" class="quiz-option" data-index="1" data-correct="1">LOW</button><button type="button" class="quiz-option" data-index="2" data-correct="0">An unpredictable state</button></div>
+  <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
+</div><div class="quiz-question" data-quiz-q="1" data-explanation="Classic ESP32 GPIO34–39 do not have internal pulls. Pin capabilities differ on other families." data-correct-feedback="Correct: use INPUT and an external pull on GPIO34." data-wrong-feedback="The Arduino mode cannot add hardware that the pin does not contain.">
+  <p class="quiz-q-text" id="quiz-q-1"><span class="quiz-q-num">Q2.</span> Can INPUT_PULLUP alone give classic ESP32 GPIO34 a default HIGH?</p>
+  <div class="quiz-options" role="group" aria-labelledby="quiz-q-1"><button type="button" class="quiz-option" data-index="0" data-correct="0">Yes, on every ESP32 pin</button><button type="button" class="quiz-option" data-index="1" data-correct="0">Only if the code delays longer</button><button type="button" class="quiz-option" data-index="2" data-correct="1">No; GPIO34 needs an external pull</button></div>
+  <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
+</div><div class="quiz-question" data-quiz-q="2" data-explanation="Mechanical bounce creates short transitions even when the released state is defined." data-correct-feedback="Correct: filter the contact bounce." data-wrong-feedback="A defined default and a clean press event solve different problems.">
+  <p class="quiz-q-text" id="quiz-q-2"><span class="quiz-q-num">Q3.</span> With a stable default but several counts per press, what is the next fix?</p>
+  <div class="quiz-options" role="group" aria-labelledby="quiz-q-2"><button type="button" class="quiz-option" data-index="0" data-correct="1">Add debouncing</button><button type="button" class="quiz-option" data-index="1" data-correct="0">Remove the pull resistor</button><button type="button" class="quiz-option" data-index="2" data-correct="0">Use a 5 V pull-up</button></div>
+  <p class="quiz-feedback" role="status" aria-live="polite" hidden></p>
+</div></div>
 </section>
 <section class="mission-section mission-challenge" id="challenge" aria-labelledby="challenge-heading">
-  <h2 id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
+  <h2 tabindex="-1" id="challenge-heading"><span class="mission-section-icon" aria-hidden="true">🎯</span><span class="mission-section-title">Mini Challenge</span></h2>
   <p class="mission-section-lead">No wrong answers — experiment and have fun!</p>
-  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">LOGIC</span><span class="mission-challenge-text">Modify the code so the variable buttonPressed is true when the button is pressed, even in the INPUT_PULLUP example.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">WHY</span><span class="mission-challenge-text">Write one sentence explaining why INPUT_PULLUP reads LOW when the button is pressed.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">PREDICT</span><span class="mission-challenge-text">Predict what happens if the pull-up or pull-down resistor is removed while the button is released.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">COMPARE</span><span class="mission-challenge-text">Compare which wiring style feels easier to understand and which style uses fewer parts.</span></li></ul>
+  <ul class="mission-challenge-list"><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">🎯</span><span class="mission-challenge-text">Build the alternate wiring from the table. Predict released and pressed readings before powering it, then update the pin mode and pressed test to match.</span></li><li class="mission-challenge-item"><span class="mission-challenge-icon" aria-hidden="true">🎯</span><span class="mission-challenge-text">Explain why a pull resistor fixes a floating input but does not remove contact bounce.</span></li></ul>
 </section>
 <section class="mission-section" id="faqs" aria-labelledby="faqs-heading">
-  <h2 id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
-  <ul class="mission-bullets"><li><h3>What is a pull-up resistor?</h3><p>A pull-up resistor connects an input pin weakly to 3.3 V so the pin reads HIGH when nothing else is pressing it LOW.</p></li><li><h3>What is a pull-down resistor?</h3><p>A pull-down resistor connects an input pin weakly to GND so the pin reads LOW when nothing else is pressing it HIGH.</p></li><li><h3>Why do buttons need pull-up or pull-down resistors?</h3><p>A button is open most of the time. Without a default path to 3.3 V or GND, the input can float and produce random readings.</p></li><li><h3>Why does INPUT_PULLUP read LOW when the button is pressed?</h3><p>With INPUT_PULLUP the pin normally rests HIGH through the internal resistor. Pressing the button connects the pin to GND, so the pressed state becomes LOW.</p></li><li><h3>Is LOW a problem in INPUT_PULLUP button logic?</h3><p>No. LOW simply means pressed in that wiring style. Your code can name it clearly, for example bool buttonPressed = digitalRead(pin) == LOW.</p></li><li><h3>When should I use INPUT?</h3><p>Use INPUT when an external circuit already drives the pin HIGH or LOW, such as a sensor output, or when you add your own external pull-up or pull-down resistor.</p></li><li><h3>When should I use INPUT_PULLUP?</h3><p>Use INPUT_PULLUP for simple buttons or switches where one side of the button connects to GND and you want the ESP32 to provide the default HIGH state.</p></li><li><h3>Does ESP32 have INPUT_PULLDOWN?</h3><p>Arduino ESP32 supports INPUT_PULLDOWN on GPIOs that provide an internal pull-down resistor. Pin capabilities vary by ESP32 family and board, and classic ESP32 GPIO34-GPIO39 do not have integrated pull-up or pull-down resistors.</p></li><li><h3>What resistor value should I use for an external pull-up or pull-down?</h3><p>10 kOhm is a common beginner-friendly value. It is strong enough to define the input but weak enough that only a tiny current flows when the button is pressed.</p></li><li><h3>Can I connect a button directly without a resistor?</h3><p>Only if you use an internal pull-up or pull-down mode. A plain INPUT button without a resistor will usually float when the button is open.</p></li><li><h3>Can a pull resistor damage the ESP32?</h3><p>A normal pull resistor such as 10 kOhm connected between a GPIO input and 3.3 V or GND is safe. The dangerous mistake is shorting 3.3 V directly to GND.</p></li><li><h3>Can I use 5 V with an ESP32 button input?</h3><p>No. ESP32 GPIO pins are 3.3 V logic and are not 5 V tolerant. Use 3.3 V for button circuits connected to GPIO.</p></li><li><h3>Why do many ESP32 tutorials use INPUT_PULLUP?</h3><p>It reduces parts, avoids an external resistor, and gives a stable default state with only a button wired between the GPIO and GND.</p></li><li><h3>Which is better, pull-up or pull-down?</h3><p>Neither is universally better. Pull-up is very common for buttons because internal pull-ups are available and wiring to GND is convenient. Pull-down is easier for beginners to read because pressed often equals HIGH.</p></li><li><h3>What happens if I remove the pull-up resistor?</h3><p>The input loses its default HIGH state. When the button is open, the pin can float and random HIGH/LOW readings can return.</p></li><li><h3>Why not use a very small resistor like 100 ohms?</h3><p>A small resistor wastes more current when the button is pressed. Pull resistors should be weak defaults, not strong loads.</p></li><li><h3>Do pull-up resistors debounce a button?</h3><p>No. Pull resistors stop floating. Debouncing handles the tiny rapid on/off transitions caused by the mechanical contacts inside a real button.</p></li><li><h3>Can one resistor serve multiple buttons?</h3><p>Usually each independent button input should have its own pull-up or pull-down path so every GPIO has a clear default state.</p></li><li><h3>Does a PIR sensor need INPUT_PULLUP?</h3><p>Usually no. Most PIR modules actively drive their output HIGH or LOW, so the ESP32 can read them as INPUT. Check the module documentation if the output is open-drain.</p></li><li><h3>What should I learn after pull-up and pull-down resistors?</h3><p>Learn button debouncing. Once the input has a stable default state, debouncing helps your code ignore the brief mechanical chatter of a real button press.</p></li></ul>
-</section>
-<section class="mission-section academy-unlocks" id="related-components" aria-labelledby="related-components-heading">
-  <h2 id="related-components-heading"><span class="mission-section-icon" aria-hidden="true">Parts</span><span class="mission-section-title">Related Components</span></h2>
-  <ul class="guide-related-list"><li><a href="/components/esp32-devkit.html"><strong>ESP32 DevKit Board</strong></a> <span class="meta">The GPIO input hardware used in this mission.</span></li><li><a href="/components/relay-module.html"><strong>Relay Module</strong></a> <span class="meta">Relay projects often use stable button inputs for manual control.</span></li><li><a href="/components/pir-sensor.html"><strong>PIR Motion Sensor</strong></a> <span class="meta">A PIR output is already driven HIGH or LOW, so it usually does not need your pull resistor.</span></li></ul>
-</section>
-<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
-  <h2 id="related-projects-heading"><span class="mission-section-icon" aria-hidden="true">Projects</span><span class="mission-section-title">Related Projects</span></h2>
-  <ul class="guide-related-list"><li><a href="/projects/esp32-smart-door-lock.html"><strong>ESP32 Smart Door Lock</strong></a> <span class="meta">Build an ESP32 RFID smart door lock with MFRC522 SS GPIO5, RST GPIO22, servo output GPIO26, access granted/denied log…</span></li><li><a href="/projects/esp32-rfid-access-control-system.html"><strong>ESP32 RFID Access Control System</strong></a> <span class="meta">Build an ESP32 RFID access control system with MFRC522 RC522 wiring, SS GPIO5, RST GPIO22, relay or servo output GPIO…</span></li><li><a href="/projects/esp32-motion-security-alert.html"><strong>ESP32 Motion Security Alert</strong></a> <span class="meta">Build an ESP32 PIR motion sensor project with HC-SR501 OUT on GPIO27, warm-up behavior, buzzer or LED alert logic, fa…</span></li></ul>
-</section>
-<section class="mission-section academy-unlocks" id="previous-mission" aria-labelledby="previous-mission-heading">
-  <h2 id="previous-mission-heading"><span class="mission-section-title">Previous Mission</span></h2>
-  <ul class="guide-related-list"><li><a href="/guides/digital-inputs-floating-pins.html"><strong>Understanding Digital Inputs and Floating Pins</strong></a> <span class="meta">You observed random readings from an input without a default state.</span></li></ul>
+  <h2 tabindex="-1" id="faqs-heading"><span class="mission-section-icon" aria-hidden="true">?</span><span class="mission-section-title">FAQs</span></h2>
+  <ul class="mission-bullets"><li><h3>Why does INPUT_PULLUP read LOW when the button is pressed?</h3><p>With INPUT_PULLUP the pin normally rests HIGH through the internal resistor. Pressing the button connects the pin to GND, so the pressed state becomes LOW.</p></li><li><h3>Does ESP32 have INPUT_PULLDOWN?</h3><p>Arduino ESP32 supports INPUT_PULLDOWN on GPIOs that provide an internal pull-down resistor. Pin capabilities vary by ESP32 family and board, and classic ESP32 GPIO34-GPIO39 do not have integrated pull-up or pull-down resistors.</p></li><li><h3>What resistor value should I use for an external pull-up or pull-down?</h3><p>10 kΩ is the starting value for the short 3.3 V button circuit here. Choose other values from leakage, noise, wiring length and current requirements; it is not a rule for every module.</p></li><li><h3>Can I use 5 V with an ESP32 button input?</h3><p>No. ESP32 GPIO pins are 3.3 V logic and are not 5 V tolerant. Use 3.3 V for button circuits connected to GPIO.</p></li><li><h3>Do pull-up resistors debounce a button?</h3><p>No. Pull resistors stop floating. Debouncing handles the tiny rapid on/off transitions caused by the mechanical contacts inside a real button.</p></li></ul>
 </section>
 <section class="mission-section academy-unlocks" id="next-mission" aria-labelledby="next-mission-heading">
-  <h2 id="next-mission-heading"><span class="mission-section-title">Next Mission</span></h2>
+  <h2 tabindex="-1" id="next-mission-heading"><span class="mission-section-title">Next Mission</span></h2>
   <ul class="guide-related-list"><li><a href="/guides/debouncing-buttons.html"><strong>Mission 05 - Debouncing Buttons</strong></a> <span class="meta">Next you will learn why real buttons can flicker between pressed and released for a few milliseconds.</span></li></ul>
 </section>
 <section class="mission-section mission-next" id="continue-learning" aria-labelledby="continue-learning-heading">
-  <h2 id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">Next</span><span class="mission-section-title">Continue Learning</span></h2>
+  <h2 tabindex="-1" id="continue-learning-heading"><span class="mission-section-icon" aria-hidden="true">Next</span><span class="mission-section-title">Continue Learning</span></h2>
   <ul class="guide-related-list"><li><a href="/learning.html#esp32-basics"><strong>ESP32 Basics Learning Path</strong></a> <span class="meta">Review the beginner sequence that connects floating pins, pull resistors, and debouncing.</span></li><li><a href="/guides/button-led-control.html"><strong>Button Controls LED with ESP32</strong></a> <span class="meta">Review the button mission with your new pull-up knowledge.</span></li><li><a href="/guides/read-temperature-dht22.html"><strong>Read Temperature with DHT11</strong></a> <span class="meta">Move from digital states to sensor data after Foundation inputs.</span></li></ul>
 </section>
-</article>
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html">Espressif Arduino-ESP32 GPIO API</a> — INPUT, INPUT_PULLUP, INPUT_PULLDOWN and digitalRead().</li><li><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html">Espressif ESP32 GPIO restrictions</a> — Classic ESP32 input-only pins and internal pull limitations.</li><li><a href="https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf">Espressif ESP32 Series datasheet</a> — Electrical characteristics, typical internal pull resistance and boot strapping pins.</li><li><a href="https://github.com/espressif/arduino-esp32/releases/tag/3.3.2">Arduino-ESP32 3.3.2 release</a> — Documentation-review baseline for the examples; no compilation or hardware test is claimed.</li></ul></section></article>
 </section>
 </main>
 <footer class="site-footer">

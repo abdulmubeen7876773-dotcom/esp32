@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from component_images import component_image_path
+from article_sections import prepare_article, jump_links, setup_section, examples_section, sources_section
 from guide_mission import code_panel, illustration_placeholder
 from site_layout import badge_class, esc, site_href, UI_JS_SRC, SEARCH_JS_SRC
 
@@ -463,6 +464,8 @@ def component_quality_faqs(component: dict) -> list[dict]:
 
 def component_all_faqs(component: dict) -> list[dict]:
     existing = list(component.get("faqs", []) or [])
+    if component.get("curated_faqs"):
+        return existing
     seen = {str(item.get("question", "")).strip().lower() for item in existing if isinstance(item, dict)}
     for item in component_quality_faqs(component):
         key = item["question"].strip().lower()
@@ -585,6 +588,27 @@ def render_component_body(component: dict) -> str:
     library = component.get("library", "")
     electrical = component.get("electrical") or {}
     electrical_specs = [{"name": label, "value": electrical[key], "why": electrical.get("basis", "Check exact module documentation.")} for key, label in (("supply", "Supply in this build"), ("signal", "GPIO signal level"), ("protection", "Protection / level shifting")) if key in electrical]
+    if component.get("concise_layout"):
+        body = "\n".join([
+            setup_section(component.get("setup", {}), "component-section"),
+            text_section_html("eli12", "", component.get("overview_heading", "Overview"), component.get("eli12", "")),
+            specs_html(component.get("specs", []), library),
+            pinout_html(component),
+            wiring_html(derive_wiring(component)),
+            examples_section([component["code"]], "component-section"),
+            output_html(component.get("output", "")),
+            text_section_html("how-it-works", "", component.get("explanation_heading", "How it works"), component.get("how_it_works", "")),
+            troubleshooting_html(component.get("troubleshooting", [])),
+            list_panel_html("applications", "", "Where you use it", component.get("applications", []), "component-applications"),
+            related_links_html("guides", "", "Continue learning", component.get("related_guides", []), "component-guides"),
+            related_links_html("projects", "", "Related projects", component.get("related_projects", []), "component-projects"),
+            related_links_html("related-components", "", "Related components", component.get("related_components", []), "component-related-components"),
+            faq_section_html(component_all_faqs(component)),
+            sources_section(component.get("sources", []), "component-section"),
+            downloads_html(component),
+        ])
+        body = prepare_article(body)
+        return '<article class="component-journey article-concise">' + jump_links(body) + body + '</article>'
     return f"""<article class="component-journey">
 {eli12_html(component.get("eli12", ""))}
 {list_panel_html("applications", "A", "Where You Use It", component.get("applications", []), "component-applications")}
@@ -614,7 +638,7 @@ def component_hero_html(component: dict) -> str:
     media_img = f'<img src="{esc(img)}" alt="{esc(alt)}" loading="eager" width="320" height="240">' if img else f'<span class="component-hero-fallback" aria-hidden="true">{esc(icon)}</span>'
     media = f'<div class="component-hero-photo">{media_img}</div><div class="component-hero-illustration" aria-hidden="true">{component_art_svg(component)}</div>'
     return f"""<div class="component-hero-band">
-  <section class="wrap component-hero">
+  <section class="wrap component-hero{" component-hero--concise" if component.get("concise_layout") else ""}">
     <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href("components.html")}">Components</a></li><li aria-current="page">{esc(name)}</li></ol></nav>
     <div class="component-hero-grid">
       <div class="component-hero-copy">
@@ -634,8 +658,8 @@ def component_hero_html(component: dict) -> str:
 </div>"""
 
 
-def component_faq_script() -> str:
-    return """<script>
+def component_faq_script(*, sync_aria: bool = False) -> str:
+    script = """<script>
 document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
   btn.addEventListener("click", function() {
     var item = btn.closest(".faq-item");
@@ -676,6 +700,11 @@ document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
   });
 });
 </script>"""
+    if sync_aria:
+        script = script.replace('"open"', '"is-open"').replace(".faq-item.open", ".faq-item.is-open")
+        script = script.replace("if (a) a.hidden = true;", "if (a) a.hidden = true; var q = el.querySelector(\".faq-q\"); if (q) q.setAttribute(\"aria-expanded\", \"false\");")
+    return script
+
 
 
 def render_component_page(component: dict, *, head: str, header: str, footer: str, prev_component: dict | None = None, next_component: dict | None = None) -> str:
@@ -685,8 +714,8 @@ def render_component_page(component: dict, *, head: str, header: str, footer: st
         nxt = f'<a class="component-prevnext-card is-next" href="{site_href(f"components/{next_component["slug"]}.html")}"><span>Next</span><strong>{esc(next_component["name"])}</strong></a>' if next_component else "<span></span>"
         prev_next = f'<nav class="component-prevnext" aria-label="Previous and next component">{prev}{nxt}</nav>'
     body = f"""{component_hero_html(component)}
-<section class="section-block wrap component-guide-shell">
-{toc_html()}
+<section class="section-block wrap component-guide-shell{" component-guide-shell--concise" if component.get("concise_layout") else ""}">
+{toc_html() if not component.get("concise_layout") else ""}
 {render_component_body(component)}
 {prev_next}
 </section>"""
@@ -704,6 +733,6 @@ def render_component_page(component: dict, *, head: str, header: str, footer: st
 <script src="{SEARCH_JS_SRC}" defer></script>
 <script src="{UI_JS_SRC}" defer></script>
 <script src="/mission-guide.js" defer></script>
-{component_faq_script()}
+{component_faq_script(sync_aria=bool(component.get("concise_layout")))}
 </body>
 </html>"""

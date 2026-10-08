@@ -4,6 +4,7 @@ from pathlib import Path
 from site_layout import badge_class, esc, site_href
 from guide_images import guide_image_alt, guide_image_path, guide_image_srcset, guide_image_variant_path
 from parent_registry import PARENT_BY_SLUG
+from article_sections import prepare_article, jump_links, setup_section, examples_section, sources_section, comparison_section
 from project_text import card_description, project_slug_from_href, project_title
 
 _ROOT = Path(__file__).resolve().parent.parent
@@ -959,6 +960,39 @@ def render_mission_guide(guide: dict) -> str:
         next_item = m.get("next_missions", [])[0]
     next_html = mission_nav_section("next-mission", "Next", "Next Mission", next_item, "Continue with projects and advanced topics.")
     continue_html = continue_learning_section(guide)
+
+    # Opt-in section selection leaves existing mission layouts unchanged.
+    if guide.get("section_order"):
+        sections = {
+            "setup": setup_section(guide.get("setup", {})),
+            "prerequisites": prerequisites_html,
+            "parts": components_required_html,
+            "concept": concept_html,
+            "internal-resistor": internal_resistor_html,
+            "external-resistor": external_resistor_html,
+            "resistor-value": resistor_value_html,
+            "input-comparison": comparison_section(m.get("comparison_table", [])),
+            "wiring": wiring_html,
+            "gpio": gpio_html,
+            "code": examples_section(m.get("examples", [])),
+            "output": output_html,
+            "experiment": experiment_html,
+            "troubleshooting": troubleshooting_html,
+            "quiz": quiz_block(m.get("quiz", [])),
+            "challenge": challenge_html,
+            "faqs": faq_html,
+            "next-mission": next_html,
+            "continue-learning": continue_html,
+            "sources": sources_section(guide.get("sources", [])),
+        }
+        order = guide["section_order"]
+        if len(order) != len(set(order)) or any(key not in sections for key in order):
+            raise ValueError("Invalid or duplicate mission section_order")
+        body = "\n".join(sections[key] for key in order if sections[key])
+        # Videos remain immediately after the introduction and before wiring/code.
+        body = intro_html + "\n" + tutorial_video_section(guide) + "\n" + body
+        body = prepare_article(body)
+        return '<article class="mission-journey article-concise">' + jump_links(body) + body + '</article>'
 
     return f"""<article class="mission-journey">
 {intro_html}
