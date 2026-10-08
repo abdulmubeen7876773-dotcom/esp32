@@ -919,10 +919,12 @@ def render_mission_guide(guide: dict) -> str:
     wiring_steps = wiring.get("steps", [])
     wiring_html = ""
     if wiring_steps or wiring.get("illustration_alt"):
+        full_size_link = (f'\n  <p><a href="{esc(wiring.get("image", ""))}">Open wiring diagram full size</a></p>'
+                          if wiring.get("open_full_size") and wiring.get("image") else "")
         wiring_html = f"""<section class="mission-section" id="wiring" aria-labelledby="wiring-heading">
   {section_heading("wiring", "Wiring", "Wiring Diagram")}
   <p class="mission-section-lead">Follow these steps in order. Unplug USB before you change any wires.</p>
-  {illustration_block(wiring.get("illustration_alt", "Wiring diagram"), "Wiring Diagram", "Wiring", wiring.get("image", ""))}
+  {illustration_block(wiring.get("illustration_alt", "Wiring diagram"), "Wiring Diagram", "Wiring", wiring.get("image", ""))}{full_size_link}
   {wiring_steps_html(wiring_steps)}
 </section>"""
     gpio_html = gpio_table_section(m.get("gpio_table", []))
@@ -974,10 +976,11 @@ def render_mission_guide(guide: dict) -> str:
             "input-comparison": comparison_section(m.get("comparison_table", [])),
             "wiring": wiring_html,
             "gpio": gpio_html,
-            "code": examples_section(m.get("examples", [])),
+            "code": examples_section(m.get("examples", [])) if m.get("examples") else code_html,
             "output": output_html,
             "experiment": experiment_html,
             "troubleshooting": troubleshooting_html,
+            "engineer-tip": engineer_tip_html,
             "quiz": quiz_block(m.get("quiz", [])),
             "challenge": challenge_html,
             "faqs": faq_html,

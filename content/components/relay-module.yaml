@@ -5,163 +5,108 @@
   "difficulty": "Beginner",
   "icon": "⚡",
   "image": "/assets/visuals/components/photos/relay-module-photo.webp",
-  "summary": "Electrically isolated switch module that lets an ESP32 control higher-power DC loads and carefully supervised AC loads from a low-current GPIO signal.",
+  "summary": "Learn relay contacts and ESP32 control using a documented active-HIGH STEMMA non-latching relay and a low-voltage LED test. Other module inputs require their own specifications.",
   "applications": [
-    "Low-voltage pump control",
-    "Fan switching",
-    "Lamp automation demo",
-    "Irrigation valve control",
-    "Alarm siren control",
-    "Classroom switch experiment",
-    "Power strip prototype",
-    "Heater control with safety supervision"
+    "Learn COM/NO/NC contact behavior",
+    "Practice low-voltage digital output control",
+    "Build the documented sound-triggered LED relay project"
   ],
-  "eli12": "A relay module is a remote-controlled switch. Your ESP32 sends a small signal to the relay input, and the relay clicks to open or close a separate circuit.\n\nThat separate circuit can control a larger load than an ESP32 pin can handle, such as a small pump, fan, lamp, or solenoid. The ESP32 does not power the load directly; it only tells the relay when to switch.\n\nStart with low-voltage DC loads. Mains AC wiring can injure or kill people and should only be handled by qualified adults using proper enclosures, fuses, strain relief, and local electrical rules.",
+  "eli12": "A relay uses a coil to move a mechanical contact. A driver module lets a GPIO command the coil without powering it from the pin. The control supply and the load supply do different jobs.\n\nCOM connects to NC with the supported relay de-energized. Energizing it connects COM to NO. Using NO makes this LED load off when the coil is off; it does not make a circuit fail-safe if contacts weld or software fails.",
   "quick_facts": [
     {
-      "label": "Function",
-      "value": "Electrically controlled switch",
-      "why": "Lets a small ESP32 signal control a separate load circuit."
-    },
-    {
       "label": "Input behavior",
-      "value": "Often active LOW",
-      "why": "Many modules turn on when the input pin is LOW, which surprises beginners."
+      "value": "Model dependent; supported STEMMA example active HIGH",
+      "why": "A category photo does not establish polarity or input thresholds."
     },
     {
       "label": "Contacts",
-      "value": "COM, NO, NC",
-      "why": "These are the actual switch terminals for the load side."
-    },
-    {
-      "label": "Isolation",
-      "value": "Often optocoupler/transistor driven",
-      "why": "Keeps the GPIO from driving the coil directly."
-    },
-    {
-      "label": "Best first load",
-      "value": "Low-voltage DC fan or LED strip",
-      "why": "Safer than learning on mains voltage."
-    },
-    {
-      "label": "GPIO safety",
-      "value": "Use module input, not bare coil",
-      "why": "A relay coil must never connect directly to an ESP32 pin."
+      "value": "COM, NO and NC",
+      "why": "Read actual terminal labels; use a separate low-voltage LED load."
     }
   ],
-  "how_it_works": "A relay contains an electromagnet and a mechanical switch. When the module energizes the coil, the switch moves with a click. COM connects either to NC or NO depending on whether the relay is off or on.\n\nNO means normally open: the load is off until the relay activates. NC means normally closed: the load is on until the relay activates. COM is the moving common terminal.\n\nThe ESP32 GPIO does not power the relay coil directly. A relay module usually includes a transistor driver, diode, indicator LED, and sometimes optocoupler isolation. The GPIO only controls the input side.\n\nMany modules are active LOW because of the input circuit design. That means digitalWrite(RELAY_PIN, LOW) turns the relay on and HIGH turns it off. Production code should define RELAY_ON and RELAY_OFF constants so the logic is obvious.",
+  "how_it_works": "The supported STEMMA input is active HIGH: GPIO26 HIGH commands ON, and LOW commands OFF. A 10 kΩ Signal-to-GND resistor helps keep it OFF while the ESP32 pin is high impedance. Firmware sets OFF before starting its slow toggle.\n\nOther relay boards can have different supply voltages, input thresholds, pull-ups, polarity and jumper arrangements. A coil marking alone does not establish GPIO compatibility. Before substitution, find the exact board schematic and documentation, establish its input voltage/current limits and OFF state, and select a suitable driver interface if needed. Never connect a 5 V-pulled input directly to ESP32 GPIO. Do not guess by trying opposite polarity.\n\nMechanical contacts are unsuitable for fast PWM. Motors and solenoids additionally need load-specific protection and contact ratings; they are outside this LED example. Module contact separation is not a certification of an assembled circuit or permission to wire mains.",
   "specs": [
     {
-      "name": "Module supply",
-      "value": "Often 5 V",
-      "why": "Most relay coils need more current than the ESP32 3.3 V rail should provide."
+      "name": "Supported input",
+      "value": "STEMMA 4409: active HIGH, 3–5 V signal",
+      "why": "ESP32 supplies a 3.3 V command; this does not apply to generic relay boards."
     },
     {
-      "name": "Input signal",
-      "value": "3.3 V may work on many modules; verify yours",
-      "why": "Some 5 V relay modules do not trigger reliably from 3.3 V logic."
+      "name": "Control supply",
+      "value": "STEMMA 4409: 3–5 V DC; example uses external regulated 5 V",
+      "why": "Manufacturer reports about 50 mA while energized. GPIO supplies signal, not coil power."
     },
     {
-      "name": "Contact rating",
-      "value": "Often printed as 10 A 250 VAC or 10 A 30 VDC",
-      "why": "The printed maximum is not a beginner design target."
+      "name": "Contacts",
+      "value": "COM, NO and NC",
+      "why": "Separate 3 V battery/LED circuit uses COM and NO."
     },
     {
-      "name": "Isolation",
-      "value": "Module dependent",
-      "why": "Optocoupler labels do not guarantee safe mains layout."
-    },
-    {
-      "name": "Switch type",
-      "value": "SPDT: COM, NO, NC",
-      "why": "One moving contact can connect to either of two terminals."
-    },
-    {
-      "name": "Response",
-      "value": "Mechanical milliseconds",
-      "why": "Fine for pumps/lights, not for fast PWM."
-    },
-    {
-      "name": "Coil current",
-      "value": "Often 60-90 mA",
-      "why": "Too much for direct GPIO drive."
-    },
-    {
-      "name": "Load type",
-      "value": "Resistive loads easiest; inductive loads need protection",
-      "why": "Motors and solenoids create voltage spikes."
-    },
-    {
-      "name": "Default state",
-      "value": "Off when input inactive if wired to NO",
-      "why": "Important for fail-safe design."
-    },
-    {
-      "name": "Safety",
-      "value": "Use enclosure and fuse for hazardous voltage",
-      "why": "Relay contacts can expose dangerous voltage."
+      "name": "Startup",
+      "value": "LOW command plus 10 kΩ Signal pull-down",
+      "why": "Keep relay command OFF during startup; not a safety guarantee."
     }
   ],
   "pinout": [
     {
-      "pin": "VCC",
-      "role": "Module power",
-      "connects": "5 V supply",
-      "note": "Powers relay coil and input circuit on common modules."
+      "pin": "Red Vin",
+      "role": "Control power",
+      "connects": "External regulated +5 V",
+      "note": "Supported STEMMA connector; not generic pin positions."
     },
     {
-      "pin": "GND",
-      "role": "Ground reference",
-      "connects": "ESP32 GND",
-      "note": "Needed unless using true isolated wiring per module documentation."
+      "pin": "Black GND",
+      "role": "Control return",
+      "connects": "External supply negative and ESP32 GND",
+      "note": "USB powers the ESP32 separately."
     },
     {
-      "pin": "IN",
-      "role": "Control input",
-      "connects": "ESP32 GPIO26",
-      "note": "Often active LOW; test before connecting real loads."
+      "pin": "White Signal",
+      "role": "Active-HIGH input",
+      "connects": "GPIO26; 10 kΩ to GND",
+      "note": "3.3 V command for the supported board only."
     },
     {
       "pin": "COM",
-      "role": "Common switch terminal",
-      "connects": "Load power input",
-      "note": "Moving contact of the relay switch."
+      "role": "Common contact",
+      "connects": "Separate 3 V battery positive",
+      "note": "Read terminal labels, not the generic photograph."
     },
     {
       "pin": "NO",
-      "role": "Normally open terminal",
-      "connects": "Load switched output",
-      "note": "Use when load should be off by default."
+      "role": "Normally open contact",
+      "connects": "330 ohm resistor → red LED anode",
+      "note": "LED cathode returns to battery negative."
     },
     {
       "pin": "NC",
-      "role": "Normally closed terminal",
-      "connects": "Optional always-on path",
-      "note": "Use only when you understand fail-safe behavior."
+      "role": "Normally closed contact",
+      "connects": "Leave unused",
+      "note": "Connected to COM when the coil is off."
     }
   ],
   "wiring": {
-    "illustration_alt": "Relay module VCC to 5 V, GND to ESP32 GND, IN to GPIO26, load wired through COM and NO on low-voltage supply",
-    "image": "/assets/visuals/components/wiring/relay-module-wiring.svg",
-    "summary": "The control side connects to the ESP32. The contact side connects in series with the load power circuit. These two sides are different jobs.\n\nFor a beginner test, switch a low-voltage LED strip, buzzer, or small fan. Do not put mains voltage on a breadboard.",
+    "image": "/assets/visuals/components/wiring/relay-stemma-led-wiring.svg",
+    "illustration_alt": "Logical STEMMA 4409 relay circuit: external 5 V control supply, GPIO26 with a 10 kiloohm pull-down, shared control ground, and a separate 3 V battery LED through COM, NO and 330 ohms",
+    "summary": "Logical connections for the explicitly supported STEMMA board; not a physical pin-position drawing. Supply and contact circuits are separate. Follow the terminal labels and manufacturer pinout.",
     "steps": [
-      "Unplug all power before wiring.",
-      "Connect relay VCC to a suitable 5 V supply.",
-      "Connect relay GND to ESP32 GND.",
-      "Connect relay IN to ESP32 GPIO26.",
-      "For a low-voltage load, connect supply positive to COM.",
-      "Connect NO to the load positive wire.",
-      "Connect the load negative wire back to the load supply negative.",
-      "Upload test code before connecting valuable equipment."
-    ]
+      "Disconnect USB, the external relay supply and the load battery before wiring.",
+      "Connect the supported relay red Vin lead to regulated external +5 V; connect its black GND lead to that supply negative and ESP32 GND. Do not join external +5 V to the USB-powered DevKit 5 V pin.",
+      "Connect the relay white Signal lead to GPIO26. Add a 10 kΩ resistor between Signal and control-side GND to hold the command LOW while GPIO26 is not driven.",
+      "Wire the separate 3 V battery positive to COM. Wire NO through a 330 ohm resistor to the red LED anode; LED cathode returns to battery negative. Leave NC unused.",
+      "Initially leave the load battery disconnected. Upload the example, open Serial Monitor at 115200 baud and check the relay command and contact operation.",
+      "Disconnect all supplies before adding the battery. Reconnect and confirm that the LED lights only when the relay is commanded ON."
+    ],
+    "open_full_size": true
   },
   "library": "Built-in Arduino digitalWrite",
   "code": {
-    "filename": "relay_esp32_safe_toggle.ino",
-    "notes": "The constants RELAY_ON and RELAY_OFF make active-LOW behavior explicit. setup() starts with the relay off before configuring normal operation.\n\nloop() toggles the relay slowly so you can hear the click and measure the contact state. Do not use relay modules for rapid PWM; mechanical contacts wear out.",
-    "content": "#define RELAY_PIN 26\n\nconst int RELAY_ON = LOW;\nconst int RELAY_OFF = HIGH;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, RELAY_OFF);\n  Serial.println(\"Relay module test. Load should start OFF.\");\n}\n\nvoid loop() {\n  Serial.println(\"Relay ON\");\n  digitalWrite(RELAY_PIN, RELAY_ON);\n  delay(2000);\n\n  Serial.println(\"Relay OFF\");\n  digitalWrite(RELAY_PIN, RELAY_OFF);\n  delay(2000);\n}"
+    "title": "Arduino: supported active-HIGH relay test",
+    "filename": "relay_stemma_led_test.ino",
+    "content": "#include <Arduino.h>\n\n// Adafruit STEMMA Non-Latching Mini Relay 4409 only: active HIGH.\nconstexpr uint8_t RELAY_PIN = 26;\nconstexpr uint8_t RELAY_ON = HIGH;\nconstexpr uint8_t RELAY_OFF = LOW;\n\nvoid setup() {\n  pinMode(RELAY_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, RELAY_OFF);\n  Serial.begin(115200);\n  Serial.println(\"Relay OFF. Low-voltage LED load only.\");\n  delay(2000);  // Observe the initial OFF command before the first toggle.\n}\n\nvoid loop() {\n  digitalWrite(RELAY_PIN, RELAY_ON);\n  Serial.println(\"Relay ON\");\n  delay(2000);\n  digitalWrite(RELAY_PIN, RELAY_OFF);\n  Serial.println(\"Relay OFF\");\n  delay(2000);\n}\n",
+    "notes": "Complete Arduino sketch; no third-party library is required. ESP-IDF and PlatformIO alternatives are deferred rather than presented as working examples. OFF is LOW for this supported board only. The external pull-down covers the high-impedance startup interval; software alone does not establish safe power sequencing."
   },
-  "output": "The relay clicks on for two seconds, then clicks off for two seconds. Serial Monitor prints Relay ON and Relay OFF. If the LED on the relay module changes but your load does not, the contact-side wiring is wrong or the load supply is missing.",
+  "output": "After reset the command is OFF for two seconds. Relay ON and Relay OFF then print alternately every two seconds. With the separate LED battery connected, the red LED lights during ON and goes dark during OFF. A click alone is not proof that the load circuit is correctly wired.",
   "common_mistakes": [
     {
       "text": "Switching mains voltage on a breadboard."
@@ -196,79 +141,29 @@
   ],
   "troubleshooting": [
     {
-      "problem": "Relay does not click",
-      "cause": "No 5 V coil power, wrong GPIO, or input logic mismatch.",
-      "fix": "Check VCC/GND, try active LOW, and measure IN voltage."
+      "problem": "Relay does not operate",
+      "cause": "Wrong relay model, absent control supply or incorrect Signal/GND connection.",
+      "fix": "Disconnect the load. Verify the model and documented 3–5 V input, then check external 5 V and shared control GND. Do not invert polarity to guess compatibility."
     },
     {
-      "problem": "Relay clicks but load stays off",
-      "cause": "COM/NO/NC wiring or load supply is wrong.",
-      "fix": "Wire load supply through COM and NO for off-by-default behavior."
+      "problem": "Relay responds but LED stays off",
+      "cause": "Missing battery, reversed LED, wrong contact or open wiring.",
+      "fix": "Disconnect all power. Trace battery + → COM → NO → 330 ohms → LED anode → cathode → battery −."
     },
     {
-      "problem": "Relay is on at boot",
-      "cause": "Active LOW input floats or boot state triggers module.",
-      "fix": "Use pull-up, safe boot pin, or external driver logic."
+      "problem": "Load turns on with an OFF command",
+      "cause": "NC selected, unsupported relay polarity, or a failed contact.",
+      "fix": "Remove load power. Check COM/NO labels and supported board identity. Do not keep testing an unidentified module."
     },
     {
-      "problem": "ESP32 resets when relay switches",
-      "cause": "Power dip or coil/load noise.",
-      "fix": "Use separate relay supply, common ground, and proper suppression."
+      "problem": "ESP32 resets or relay chatters",
+      "cause": "Weak supply, loose control ground or wiring noise.",
+      "fix": "Check the external relay supply and short ground connections; do not power the coil from GPIO or feed external 5 V into the USB supply rail."
     },
     {
-      "problem": "Module LED turns on but no click",
-      "cause": "Insufficient coil voltage/current.",
-      "fix": "Use rated 5 V supply for the relay module."
-    },
-    {
-      "problem": "GPIO gets hot or damaged",
-      "cause": "Bare relay coil connected directly.",
-      "fix": "Use a relay module or transistor driver with flyback diode."
-    },
-    {
-      "problem": "Load turns on opposite of code",
-      "cause": "NC used instead of NO or active LOW logic.",
-      "fix": "Move wire to NO or invert constants."
-    },
-    {
-      "problem": "Motor causes false resets",
-      "cause": "Inductive noise from load.",
-      "fix": "Add flyback diode/snubber and separate power wiring."
-    },
-    {
-      "problem": "Relay chatters",
-      "cause": "Weak supply or noisy input.",
-      "fix": "Use stable supply and avoid floating control pin."
-    },
-    {
-      "problem": "No isolation despite optocoupler",
-      "cause": "JD-VCC jumper/wiring not configured for isolation.",
-      "fix": "Follow your module schematic; do not assume isolation."
-    },
-    {
-      "problem": "Mains wiring unsafe",
-      "cause": "Exposed contacts or no enclosure.",
-      "fix": "Stop and use proper rated enclosure, fuse, and qualified supervision."
-    },
-    {
-      "problem": "Relay too slow for dimming",
-      "cause": "Mechanical contacts are not PWM devices.",
-      "fix": "Use MOSFET or solid-state driver for fast switching."
-    },
-    {
-      "problem": "Contacts wear out",
-      "cause": "Switching high current or frequent cycles.",
-      "fix": "Use rated relay and reduce switching frequency."
-    },
-    {
-      "problem": "ESP32 cannot trigger 5 V module",
-      "cause": "Input threshold too high.",
-      "fix": "Use transistor driver or 3.3 V compatible relay module."
-    },
-    {
-      "problem": "Load always on",
-      "cause": "Wired through NC.",
-      "fix": "Use NO for normally-off projects."
+      "problem": "Unexpected operation during reset",
+      "cause": "Missing Signal pull-down or incorrect power sequencing/module.",
+      "fix": "Disconnect the load, check the 10 kΩ pull-down and model. Verify startup with the low-voltage load before reuse; this is not a fail-safe design."
     }
   ],
   "related_guides": [
@@ -290,19 +185,14 @@
   ],
   "related_projects": [
     {
-      "title": "ESP32 Smart Irrigation System",
-      "href": "/projects/esp32-smart-irrigation-system.html",
-      "description": "Switch a pump or valve safely."
-    },
-    {
-      "title": "ESP32 Voice Controlled Relay",
+      "title": "ESP32 Sound-Triggered Relay Demo",
       "href": "/projects/esp32-voice-controlled-relay.html",
-      "description": "Control a relay with commands."
+      "description": "Use the same supported relay with an INMP441 microphone."
     },
     {
-      "title": "ESP32 Smart Power Strip",
-      "href": "/projects/esp32-smart-power-strip.html",
-      "description": "Learn the safety considerations of switched outlets."
+      "title": "ESP32 Smart Thermostat",
+      "href": "/projects/esp32-smart-thermostat.html",
+      "description": "A separate temperature-control lesson with its own documented relay assumptions."
     }
   ],
   "related_components": [
@@ -326,124 +216,28 @@
   "datasheet_note": "Relay modules vary by board. Check the exact module markings, schematic, coil voltage, input trigger type, and contact rating before connecting real loads.",
   "faqs": [
     {
-      "question": "What is a relay module?",
-      "answer": "It is an electrically controlled switch module."
+      "question": "Does the photo establish which relay I have?",
+      "answer": "No. It is a generic illustration of the category. The example names the supported STEMMA 4409 board; use its manufacturer documentation and actual terminal labels."
     },
     {
-      "question": "Can ESP32 drive a bare relay coil?",
-      "answer": "No. Use a driver transistor or relay module."
+      "question": "Can I reuse this sketch with an active-LOW relay?",
+      "answer": "Not unchanged. Verify the exact supply, input circuit and OFF state first, and design any required interface. Changing constants alone cannot establish electrical compatibility."
     },
     {
-      "question": "Why is my relay active LOW?",
-      "answer": "Many modules use input circuits that energize when IN is pulled LOW."
+      "question": "How do I check COM, NO and NC?",
+      "answer": "Disconnect the load battery before using a continuity meter. With the relay de-energized, COM–NC should be closed and COM–NO open. Do not use continuity mode on a powered load circuit."
     },
     {
-      "question": "What are COM, NO, and NC?",
-      "answer": "COM is the moving contact, NO is open when off, and NC is closed when off."
+      "question": "Is common ground required?",
+      "answer": "ESP32 ground and the relay control-supply negative are shared in this example. The separate battery/LED contact circuit does not need to share that ground."
     },
     {
-      "question": "Which terminal should beginners use?",
-      "answer": "Use COM and NO so the load is off by default."
+      "question": "Can I drive a bare coil or use PWM?",
+      "answer": "Do not power a coil from GPIO. This supported module includes its driver; mechanical contacts are unsuitable for fast PWM."
     },
     {
-      "question": "Can I switch mains voltage?",
-      "answer": "Only with qualified supervision, proper enclosure, fuse, strain relief, and local electrical compliance."
-    },
-    {
-      "question": "Can I test with a battery load?",
-      "answer": "Yes. Low-voltage DC loads are best for learning."
-    },
-    {
-      "question": "Does relay need separate power?",
-      "answer": "Often yes, especially if the coil current causes ESP32 resets."
-    },
-    {
-      "question": "Can I PWM a relay?",
-      "answer": "No. Use MOSFET or solid-state switching for PWM."
-    },
-    {
-      "question": "Why does it click?",
-      "answer": "The internal mechanical switch moves when the coil energizes."
-    },
-    {
-      "question": "Can relay switch DC motors?",
-      "answer": "Yes if rated properly, but motors need flyback/noise protection."
-    },
-    {
-      "question": "Is optocoupler isolation always safe?",
-      "answer": "No. Board layout and jumper wiring determine real isolation."
-    },
-    {
-      "question": "What GPIO should I use?",
-      "answer": "GPIO26 is a good beginner output pin."
-    },
-    {
-      "question": "Why does relay turn on during boot?",
-      "answer": "Boot pin states or floating inputs can briefly trigger modules."
-    },
-    {
-      "question": "Can I use 3.3 V relay module?",
-      "answer": "Yes if designed for 3.3 V coil/input."
-    },
-    {
-      "question": "Can relay switch AC and DC?",
-      "answer": "Contacts can switch rated AC or DC, but ratings differ."
-    },
-    {
-      "question": "Why does my load not turn on?",
-      "answer": "The contact-side circuit may not have a complete power path."
-    },
-    {
-      "question": "Do I need common ground?",
-      "answer": "For normal module control, yes. True isolation wiring is module-specific."
-    },
-    {
-      "question": "What is JD-VCC?",
-      "answer": "Some modules use JD-VCC for separate relay coil power."
-    },
-    {
-      "question": "What is safer than relay for DC loads?",
-      "answer": "A MOSFET module is often quieter, faster, and longer-lasting."
-    },
-    {
-      "question": "Glossary - What is COM?",
-      "answer": "COM is the moving relay contact that connects to NO when the relay is energized or NC when it is off."
-    },
-    {
-      "question": "Glossary - What does active LOW mean?",
-      "answer": "Active LOW means the module turns on when the ESP32 drives the input LOW instead of HIGH."
-    },
-    {
-      "question": "Parent tips - What is the safest relay load for beginners?",
-      "answer": "Use a low-voltage DC LED strip segment, buzzer, or small lamp with current below the module rating."
-    },
-    {
-      "question": "Parent tips - When should the project stop?",
-      "answer": "Stop before any mains wiring unless a qualified adult handles enclosure, fuse, strain relief, and local electrical rules."
-    },
-    {
-      "question": "Teacher tips - What should students prove before adding a load?",
-      "answer": "Have them prove IN logic, relay click, COM/NO continuity, and low-voltage load wiring with power disconnected first."
-    },
-    {
-      "question": "Teacher tips - What lesson does a relay teach?",
-      "answer": "It separates safe GPIO control from a separate load circuit and shows why ratings, isolation, and default-off wiring matter."
-    },
-    {
-      "question": "Challenge yourself - How can I test active LOW safely?",
-      "answer": "Use Serial Monitor and an LED load to compare HIGH and LOW commands before connecting any larger device."
-    },
-    {
-      "question": "Challenge yourself - How can I compare NO and NC?",
-      "answer": "Use a multimeter continuity test with the load power disconnected to observe which contact is closed in each relay state."
-    },
-    {
-      "question": "Mini quiz - Why not PWM a relay?",
-      "answer": "Mechanical relays are slow and wear out; use a MOSFET or driver for fast dimming or speed control."
-    },
-    {
-      "question": "Mini quiz - Why use COM and NO first?",
-      "answer": "COM and NO keep the beginner load off by default until code deliberately energizes the relay."
+      "question": "Does this cover mains wiring?",
+      "answer": "No. This tutorial covers only a separate 3 V battery LED load and does not establish mains safety, certification or fail-safe operation."
     }
   ],
   "quality_status": "golden",
@@ -452,6 +246,51 @@
     "supply": "Typically 5 V; verify coil",
     "signal": "IN compatibility unverified",
     "protection": "Check exact module schematic and trigger thresholds. Use a suitable transistor/level-shifting interface if 3.3 V control is unsupported or IN is pulled to 5 V; never drive the coil from GPIO.",
-    "basis": "Exact relay module model/schematic is unspecified; no blanket 3.3 V input compatibility claim is justified."
-  }
+    "basis": "Generic category/photo model unspecified. The page separately names STEMMA 4409 as its supported example; do not transfer its specifications to an unidentified module."
+  },
+  "concise_layout": true,
+  "curated_faqs": true,
+  "show_time_estimates": false,
+  "show_pinout_image": false,
+  "hide_empty_downloads": true,
+  "board_family": "Classic ESP32",
+  "date_modified": "2026-10-08",
+  "image_alt": "Generic single-channel relay module photo; not identification or pin order for the supported STEMMA example",
+  "setup": {
+    "items": [
+      {
+        "label": "Board and software",
+        "value": "Classic ESP32-WROOM-32/32E DevKit with the named GPIOs exposed and unused; Arduino IDE 2.x and esp32 by Espressif Systems 3.x. Other ESP32 families need their own pin map. Serial Monitor: 115200 baud."
+      },
+      {
+        "label": "Supported relay",
+        "value": "The complete example supports the Adafruit STEMMA Non-Latching Mini Relay (product 4409), with red Vin, black GND and white Signal leads. It is active HIGH and accepts a 3.3 V signal. Use a regulated external 5 V supply rated at least 100 mA for this relay alone (about 50 mA energized per manufacturer). Do not substitute a latching relay or an unidentified active-LOW board. The generic page photo does not identify this supported model."
+      },
+      {
+        "label": "Parts and load",
+        "value": "Use only a separate 3 V battery supply, one ordinary red LED and a 330 ohm series resistor as the contact-side load. No mains, motors, heaters or unattended operation are covered. The contact-side battery circuit needs no connection to ESP32 ground. Also use a STEMMA 3-pin JST-PH breakout cable, 10 kΩ signal pull-down, breadboard and jumper wires."
+      },
+      {
+        "label": "Verification status",
+        "value": "Documentation and code-path review only. This update was not compiled for an ESP32 or tested on hardware. This is a supervised demonstration, not a fail-safe controller."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "title": "Adafruit STEMMA relay pinouts",
+      "url": "https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/pinouts",
+      "note": "Supported power/signal ranges, active-HIGH input and contact labels."
+    },
+    {
+      "title": "Adafruit STEMMA relay usage",
+      "url": "https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/usage",
+      "note": "Module operation and coil-current guidance; this site limits the load to a battery LED."
+    },
+    {
+      "title": "Espressif Arduino GPIO API",
+      "url": "https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html",
+      "note": "GPIO direction and digital output API."
+    }
+  ]
 }

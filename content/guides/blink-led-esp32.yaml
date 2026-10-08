@@ -1,9 +1,8 @@
 tutorial_video:
   youtube_id: 8pv1U53mXcU
   title: Blink an LED with ESP32 — video tutorial
-  note: Follow this guide’s wiring and GPIO assignments when building; the video may
-    use different pins or a different board.
-
+  note: Follow this guide’s wiring and GPIO assignments when building; the video may use different pins or
+    a different board.
 format: mission
 phase: 1
 sort_order: 1
@@ -14,15 +13,14 @@ track: core
 track_order: 1
 title: Blink an LED with ESP32 | ESP32 Engine
 headline: Blink an LED with ESP32
-meta_description: Mission 1 — blink your first LED with ESP32. Kid-friendly steps, wiring, Arduino code,
-  mini challenge, and practical tips. Perfect first project for ages 10+.
-lead: Your first real ESP32 project — one LED, a few wires, and code you write yourself. Let's make it
-  blink!
+meta_description: Mission 1 — blink your first LED with ESP32. Kid-friendly steps, wiring, Arduino code, mini
+  challenge, and practical tips. Perfect first project for ages 10+.
+lead: Your first real ESP32 project — one LED, a few wires, and code you write yourself. Let's make it blink!
 keywords: ESP32 blink LED, ESP32 beginner, first ESP32 project, GPIO ESP32
 proficiency_level: Beginner
 reading_time: 10–15 min
 date_published: '2026-06-26'
-date_modified: '2026-06-27'
+date_modified: '2026-10-08'
 academy:
   mission_id: Mission 01
   level: Foundation
@@ -67,13 +65,18 @@ academy:
     description: Learn digital input next.
 faqs:
 - question: Why does the LED need a resistor?
-  answer: The resistor limits current. Without it, too much current can flow through the LED and possibly damage the LED or the ESP32 GPIO pin.
+  answer: The resistor limits current. Without it, too much current can flow through the LED and possibly damage
+    the LED or the ESP32 GPIO pin.
 - question: Which ESP32 pin should I use for the blink mission?
-  answer: This mission uses GPIO2 because many ESP32 DevKit boards expose it clearly and often connect it to an onboard LED. You can use another safe output pin later if you update the code and wiring together.
+  answer: This external-LED circuit uses GPIO2 on a classic ESP32-WROOM DevKit. It does not assume an onboard
+    LED. GPIO2 is also a boot-strapping pin; follow the setup note if upload fails. A different board/pin needs
+    matching wiring and code.
 - question: What does HIGH mean in the blink code?
-  answer: HIGH tells the ESP32 to drive the output pin toward 3.3 V. In this circuit, that lets current flow through the resistor and LED, so the LED turns on.
+  answer: HIGH tells the ESP32 to drive the output pin toward 3.3 V. In this circuit, that lets current flow
+    through the resistor and LED, so the LED turns on.
 - question: What does LOW mean in the blink code?
-  answer: LOW tells the ESP32 to drive the output pin toward GND. With no voltage pushing current through the LED, the LED turns off.
+  answer: LOW tells the ESP32 to drive the output pin toward GND. With no voltage pushing current through the
+    LED, the LED turns off.
 mission:
   badge: Mission 1
   icon: 💡
@@ -84,8 +87,8 @@ mission:
     Right now every light on your ship is off. Mission Control is waiting for a sign you''re online.
 
 
-    Your first command? Turn on one small LED. When it blinks, you''ll know your ship heard you — and
-    you''re officially a maker.
+    Your first command? Turn on one small LED. When it blinks, you''ll know your ship heard you — and you''re
+    officially a maker.
 
     '
   eli12: '- An LED is a tiny light on a chip.
@@ -106,14 +109,14 @@ mission:
     '
   things_you_need:
   - item: ESP32 DevKit board
-    note: Any board with a USB port
+    note: Classic ESP32-WROOM DevKit exposing GPIO2; other families need their own wiring.
     link: /components/esp32-devkit.html
     icon: 🖥
   - item: LED
-    note: Any color — 5 mm works great
+    note: Ordinary red LED for this example; external LED, not an assumed onboard LED.
     icon: 💡
   - item: 220 ohm resistor
-    note: Red-red-brown stripes on the body
+    note: 220 ohms (red-red-brown for a four-band resistor) or 330 ohms; verify with a meter if unclear.
     icon: 🎚
   - item: Breadboard
     note: Half-size is perfect
@@ -131,10 +134,8 @@ mission:
   component_spotlight_lead: Meet the brain of your circuit — tap to learn more about your board.
   concept:
     title: How Does Blinking Work?
-
     image: /assets/visuals/guides/concepts/blink-led-esp32-concept.svg
-    illustration_alt: ESP32 pin sends power through a resistor to the LED long leg, short leg returns
-      to ground
+    illustration_alt: ESP32 pin sends power through a resistor to the LED long leg, short leg returns to ground
     body: '- Each pin on the ESP32 can be ON or OFF — these are called GPIO pins.
 
       - The resistor protects the LED from too much power — like a speed bump for electricity.
@@ -145,8 +146,8 @@ mission:
 
       '
   wiring:
-    illustration_alt: Breadboard wiring diagram — ESP32 GPIO 2 through a 220 ohm resistor to the LED long
-      leg, LED short leg to GND
+    illustration_alt: 'Logical external red LED circuit: classic ESP32 GPIO2 through 220 ohms to LED anode,
+      LED cathode to GND; not physical pin positions'
     image: /assets/visuals/guides/wiring/blink-led-wiring-esp32.svg
     steps:
     - Unplug USB. Place the ESP32 on the left and the breadboard on the right.
@@ -156,25 +157,27 @@ mission:
     - Connect the LED's short leg (−) row to GND on the ESP32 (black wire).
     - Double-check — GPIO 2 → resistor → long leg → LED → short leg → GND.
     - Plug in USB and upload the code. Watch your LED blink!
+    open_full_size: true
   code:
     filename: blink_led.ino
-    notes: '- setup() runs once — it tells the ESP32 that pin 2 is an output.
+    notes: '- Save this complete Arduino sketch as blink_led.ino and upload after selecting the board and port.
+      No extra library is needed.
 
-      - loop() runs forever — turn the LED on, wait half a second, turn off, wait again.
+      - setup() configures GPIO2 and starts LOW; loop() alternates HIGH and LOW every 500 ms.
 
-      - Try changing 500 to 200 for fast blinks or 1000 for slow ones.
+      - Change both delays to 200 or 1000 to compare timing.
 
-      '
-    content: "#define LED_PIN 2\n\nvoid setup() {\n  pinMode(LED_PIN, OUTPUT);\n}\n\nvoid loop() {\n \
-      \ digitalWrite(LED_PIN, HIGH);\n  delay(500);\n  digitalWrite(LED_PIN, LOW);\n  delay(500);\n}\n"
-  expected_output: '- The LED turns on for half a second, then off for half a second — over and over.
+      - This guide supplies only the complete Arduino example. PlatformIO and ESP-IDF alternatives are deferred
+      until their full project setup and code are provided.'
+    content: "#include <Arduino.h>\n\nconstexpr uint8_t LED_PIN = 2;\n\nvoid setup() {\n  pinMode(LED_PIN,\
+      \ OUTPUT);\n  digitalWrite(LED_PIN, LOW);\n}\n\nvoid loop() {\n  digitalWrite(LED_PIN, HIGH);\n  delay(500);\n\
+      \  digitalWrite(LED_PIN, LOW);\n  delay(500);\n}\n"
+  expected_output: 'The external red LED lights for 500 ms, then goes dark for 500 ms, repeatedly. An onboard
+    LED is not required and its GPIO/polarity can differ by board.
 
-    - Many DevKit boards also blink a tiny onboard LED near the USB port — that''s normal!
 
-
-    If nothing happens, check that your wire goes to GPIO 2 and the long LED leg connects to the resistor.
-
-    '
+    If the external LED stays off, disconnect USB before checking GPIO2 → resistor → LED anode → cathode →
+    GND.'
   gpio_table:
   - signal: LED output
     esp32_pin: GPIO2
@@ -188,14 +191,16 @@ mission:
     esp32_pin: GND
     mode: Ground
     notes: Completes the circuit so current can return to the ESP32.
-  engineer_tip: Before blaming the code, trace the physical circuit with your finger. GPIO2 should go to the resistor, the resistor should go to the LED long leg, and the LED short leg should return to GND.
+  engineer_tip: Before blaming the code, trace the physical circuit with your finger. GPIO2 should go to the
+    resistor, the resistor should go to the LED long leg, and the LED short leg should return to GND.
   remember_forever: 'A GPIO output is a controllable decision.
 
     HIGH means the ESP32 drives the pin toward 3.3 V.
 
     LOW means the ESP32 drives the pin toward GND.
 
-    The LED only lights when the circuit has a complete path from the GPIO pin, through the resistor and LED, back to GND.'
+    The LED only lights when the circuit has a complete path from the GPIO pin, through the resistor and LED,
+    back to GND.'
   quiz:
   - question: Why do we use a resistor with the LED?
     options:
@@ -205,8 +210,7 @@ mission:
     correct: 0
     correct_feedback: Yes! The resistor is like a speed bump — it protects the LED.
     wrong_feedback: Good guess, but the resistor protects the LED from too much power.
-    explanation: It limits how much current flows through the LED, protecting both the LED and the ESP32
-      pin.
+    explanation: It limits how much current flows through the LED, protecting both the LED and the ESP32 pin.
   - question: Which line of code turns the LED on?
     options:
     - digitalWrite(LED_PIN, HIGH)
@@ -215,8 +219,7 @@ mission:
     correct: 0
     correct_feedback: You got it! HIGH sends power to the pin and lights the LED.
     wrong_feedback: Close! pinMode sets up the pin — digitalWrite actually turns the light on.
-    explanation: digitalWrite with HIGH sends 3.3 V to the pin. pinMode runs once in setup; delay just
-      waits.
+    explanation: digitalWrite with HIGH sends 3.3 V to the pin. pinMode runs once in setup; delay just waits.
   - question: Which pin is the LED connected to in this mission?
     options:
     - GPIO 2
@@ -225,7 +228,7 @@ mission:
     correct: 0
     correct_feedback: Correct! We wired the LED to GPIO 2 — and the code uses pin 2 too.
     wrong_feedback: Look at the top of the code — LED_PIN is set to 2. That's GPIO 2 on your board.
-    explanation: '#define LED_PIN 2 matches the wire you connected to GPIO 2 on the ESP32.'
+    explanation: LED_PIN is 2, matching the GPIO2 connection on the supported classic ESP32 board.
   challenge_items:
   - icon: ⚡
     text: Blink faster — change delay(500) to delay(200).
@@ -237,17 +240,22 @@ mission:
     text: Invent your own pattern — can you make a heartbeat or a disco flash?
   common_problems:
   - problem: LED does not turn on
-    cause: The LED may be backwards, the wire may be on the wrong GPIO, or the resistor may not share the same row as the LED long leg.
-    fix: Confirm the code uses GPIO2, connect GPIO2 to the resistor, connect the resistor to the LED long leg, and connect the short leg to GND.
+    cause: The LED may be backwards, the wire may be on the wrong GPIO, or the resistor may not share the same
+      row as the LED long leg.
+    fix: Disconnect USB, then trace GPIO2 → resistor → LED anode → LED cathode → GND. Verify the breadboard
+      rows and reconnect power only after correcting wiring.
   - problem: LED is very dim
     cause: The resistor value may be too large or the LED may not be fully seated in the breadboard.
-    fix: Use a 220 ohm to 330 ohm resistor and press the LED and resistor legs firmly into separate breadboard rows.
+    fix: Disconnect USB before reseating the LED/resistor. Verify a 220–330 ohm resistor and the stated ordinary
+      red LED; a different LED has its own forward voltage.
   - problem: Upload succeeds but nothing blinks
     cause: Some boards do not connect the onboard LED to GPIO2, or the external LED wiring is incomplete.
     fix: Use the external LED circuit from the wiring diagram and check the exact GPIO label on your board.
   - problem: Upload fails
     cause: The wrong board, wrong port, or a charge-only USB cable is selected.
-    fix: Select the ESP32 board and port in Arduino IDE, then try a known data-capable USB cable.
+    fix: Check board, port and a data USB cable using the IDE setup guide. On classic ESP32 GPIO2 must not
+      be pulled HIGH for serial download; unplug, disconnect the GPIO2 circuit, upload, then unplug before
+      reconnecting.
   complete:
     subtitle: You just became an ESP32 maker.
     summary: 'You built a real circuit, wrote real code, and made a light blink on command. Every inventor,
@@ -267,3 +275,42 @@ mission:
     description: Move from outputs to real sensor readings.
 quality_status: golden
 status: complete
+section_order:
+- setup
+- prerequisites
+- parts
+- concept
+- wiring
+- gpio
+- code
+- output
+- troubleshooting
+- engineer-tip
+- quiz
+- challenge
+- faqs
+- next-mission
+- continue-learning
+- sources
+setup:
+  items:
+  - label: Supported board and tools
+    value: Classic ESP32-WROOM-32/32E DevKit exposing GPIO2. Arduino IDE 2.x and esp32 by Espressif Systems
+      3.x; select the matching board and port. Complete the IDE setup guide first.
+  - label: Hardware and expected result
+    value: External ordinary red LED, 220–330 ohm series resistor, breadboard, jumpers and USB data cable.
+      GPIO2 HIGH lights the LED for 500 ms; LOW turns it off for 500 ms. No onboard LED is required.
+  - label: GPIO2 restriction
+    value: On classic ESP32, GPIO2 must be floating or LOW when entering serial download mode. This LED-to-ground
+      circuit has no pull-up. If uploading fails, unplug USB, disconnect the GPIO2 wire, upload, then unplug
+      again before reconnecting. Other ESP32 families need their own pin map.
+  - label: Safety and verification
+    value: Disconnect USB before rewiring; never connect 5 V to GPIO. This update was reviewed against documentation,
+      not compiled for ESP32 or hardware tested.
+sources:
+- title: Espressif Arduino GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: pinMode and digitalWrite for a digital output.
+- title: Espressif classic ESP32 boot-mode selection
+  url: https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html
+  note: GPIO2 requirements during serial download; these are classic ESP32 restrictions.

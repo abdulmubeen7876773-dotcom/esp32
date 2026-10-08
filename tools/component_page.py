@@ -198,7 +198,8 @@ def pinout_html(component: dict) -> str:
     slug = component.get("slug", "component")
     image = component.get("pinout_image") or f"/assets/visuals/components/illustrations/{slug}-pinout.svg"
     alt = component.get("pinout_illustration_alt") or f"Pinout diagram for {component.get('name', 'component')}"
-    image_html = local_visual_figure(image, alt, "component-visual-art component-pinout-art")
+    image_html = (local_visual_figure(image, alt, "component-visual-art component-pinout-art")
+                  if component.get("show_pinout_image", True) else "")
     image_block = f"  {image_html}\n" if image_html else ""
     if pinout:
         rows = []
@@ -481,6 +482,8 @@ def component_all_faqs(component: dict) -> list[dict]:
 
 def downloads_html(component: dict) -> str:
     url = component.get("datasheet_url", "")
+    if not url and component.get("hide_empty_downloads", False):
+        return ""
     note = (component.get("datasheet_note") or "Official manufacturer PDF for teachers and advanced builders.").strip()
     if not url:
         action = '<p class="component-download-placeholder">No separate datasheet is needed for this beginner guide.</p>'

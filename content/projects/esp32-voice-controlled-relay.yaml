@@ -1,257 +1,38 @@
 slug: esp32-voice-controlled-relay
 title: ESP32 Sound-Triggered Relay Demo
 category: Home Automation
-description: Build a low-voltage ESP32 relay demo that reacts to loud sound peaks from an INMP441 I2S microphone. This is threshold-based sound triggering, not speech recognition.
-meta_description: Build an ESP32 sound-triggered relay demo with an INMP441 I2S microphone, peak detection, and a low-voltage relay load. Not speech recognition.
+description: Build a low-voltage ESP32 relay demo that reacts to loud sound peaks from an INMP441 I2S microphone.
+  This is threshold-based sound triggering, not speech recognition.
+meta_description: Build an ESP32 sound-triggered relay demo with an INMP441 I2S microphone, peak detection,
+  and a low-voltage relay load. Not speech recognition.
 source_base: esp32-voice-controlled-relay-legacy-import
 sensor: INMP441 SCK / WS / SD
-output: LED indicator
+output: STEMMA relay and LED indicator
 image: /assets/images/generated/esp32-voice-controlled-relay.webp
 featured_image: /assets/images/generated/esp32-voice-controlled-relay.webp
 hero_image: /assets/images/generated/esp32-voice-controlled-relay.webp
 og_image: /assets/images/og/esp32-voice-controlled-relay.webp
-image_alt: ESP32 sound-triggered relay demo with I2S microphone, relay module, and low-voltage load
+image_alt: Illustrative sound relay scene; follow the supported STEMMA/INMP441 wiring diagram, not rendered
+  hardware pin positions
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-10-08'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
   sensor_pin: GPIO14 / GPIO15 / GPIO32
-  output_pin: GPIO25
+  output_pin: GPIO26
   sensor_name: INMP441 SCK / WS / SD
-  output_name: LED indicator
+  output_name: STEMMA relay and LED indicator
   wiring:
   - component: INMP441 SCK / WS / SD
     pin: GPIO14 / GPIO15 / GPIO32
-  - component: Relay IN
+  - component: STEMMA white Signal (active HIGH)
     pin: GPIO26
   - component: LED indicator
     pin: GPIO25
-levels:
-  beginner:
-    level: beginner
-    overview_html: <p>In this beginner project you will connect an INMP441 I2S digital microphone to the ESP32 and read audio
-      samples using the I2S peripheral. A loud clap produces a large amplitude spike. When the peak amplitude exceeds a threshold,
-      a relay toggles on or off. No internet connection is needed. The Serial Monitor prints the current peak amplitude every
-      100 ms so you can calibrate the clap threshold for your room.</p>
-    components:
-    - ESP32 DevKit board
-    - INMP441 I2S microphone module
-    - Single-channel relay module
-    - LED with 220 ohm resistor
-    - Low-voltage demo load
-    wiring:
-    - - INMP441 SCK / WS / SD
-      - GPIO14 / GPIO15 / GPIO32
-      - I2S microphone signals.
-    - - Relay IN
-      - GPIO26
-      - Active-low relay input.
-    - - LED indicator
-      - GPIO25
-      - Shows relay state.
-    how:
-    - 'I2S Digital Microphone: The INMP441 converts acoustic pressure to a 24-bit digital value using a MEMS capsule and built-in
-      sigma-delta ADC. Data is clocked out serially on the SD pin, framed by the WS (word select) and SCK (bit clock) lines.
-      The ESP32 I2S peripheral reads the data stream directly into a DMA buffer without CPU involvement.'
-    - 'Peak Amplitude Detection: Each 32-bit I2S sample is right-shifted by 8 bits to bring the 24-bit audio value into a
-      useful integer range. The peak() function scans 256 samples (16 ms of audio at 16 kHz) and returns the largest absolute
-      value. A clap produces a brief, very large peak.'
-    - 'Relay Toggle Logic: When peak amplitude exceeds CLAP_THRESHOLD, the relay state is toggled (on to off, or off to on).
-      A 500 ms delay after each trigger prevents the acoustic echo of the same clap from re-triggering immediately.'
-    - 'Threshold Calibration: Run the sketch and observe the Serial Monitor. Background noise in a quiet room typically produces
-      peaks under 5000. A hand clap 1 metre away produces peaks of 80,000-200,000. Set CLAP_THRESHOLD to approximately twice
-      the background noise peak.'
-    apps:
-    - Clap-controlled bedroom light switch
-    - Hands-free relay toggle for accessibility aids
-    - Sound-activated party light controller
-    - Loud-noise alarm trigger for industrial applications
-    troubleshooting:
-    - - I2S read returns all zeros
-      - Verify INMP441 L/R pin is connected to GND to select the left channel. Also check that SCK, WS, and SD wiring matches
-        the i2s_pin_config_t exactly. A floating SD pin reads zero continuously.
-    - - Relay triggers on background sounds
-      - Increase CLAP_THRESHOLD. Read the Serial Monitor in a quiet room for 30 seconds and note the maximum background peak,
-        then set the threshold 3-5 times above that value.
-    - - Relay triggers twice per clap
-      - Increase the debounce delay from 500 ms to 800 ms. The first trigger fires on the clap transient and the second may
-        fire on the room echo reflecting back to the microphone.
-    - - INMP441 module gets warm
-      - 'The INMP441 draws approximately 1.4 mA; it should not get warm. Warmth indicates incorrect voltage: some modules
-        are 5 V only. Verify the module VCC is connected to 3.3 V.'
-    upgrades:
-    - 'Add a double-clap pattern: only toggle if two peaks occur within 400 ms'
-    - Add an OLED display showing current relay state and peak level bar graph
-    - Add multiple relay channels triggered by 1, 2, or 3 claps
-    - Upgrade to ESP-SR wake-word detection for a named voice command
-    code: "// ESP32 sound-triggered relay demo - not speech recognition\n#include <driver/i2s.h>\n\nconst i2s_port_t I2S_PORT\
-      \ = I2S_NUM_0;\nconst int RELAY_PIN = 26;  // active LOW relay module input\nconst int LED_PIN = 25;\nconst int CLAP_THRESHOLD\
-      \ = 50000; // tune from Serial Monitor peak values\nbool relayState = false;\n\nvoid i2sInit() {\n  i2s_config_t cfg\
-      \ = {\n    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),\n    .sample_rate = 16000,\n    .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,\n\
-      \    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,\n    .communication_format = I2S_COMM_FORMAT_STAND_I2S,\n    .intr_alloc_flags\
-      \ = ESP_INTR_FLAG_LEVEL1,\n    .dma_buf_count = 4,\n    .dma_buf_len = 256,\n    .use_apll = false\n  };\n  i2s_pin_config_t\
-      \ pins = {\n    .bck_io_num = 14,\n    .ws_io_num = 15,\n    .data_out_num = I2S_PIN_NO_CHANGE,\n    .data_in_num =\
-      \ 32\n  };\n  i2s_driver_install(I2S_PORT, &cfg, 0, NULL);\n  i2s_set_pin(I2S_PORT, &pins);\n}\n\nint32_t peak(int32_t\
-      \ *buf, size_t n) {\n  int32_t mx = 0;\n  for (size_t i = 0; i < n; i++) {\n    int32_t v = abs(buf[i] >> 8);\n    if\
-      \ (v > mx) mx = v;\n  }\n  return mx;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n\
-      \  pinMode(LED_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, HIGH); // active LOW relay off\n  digitalWrite(LED_PIN, LOW);\n\
-      \  i2sInit();\n  Serial.println(\"Sound-triggered relay demo ready. Use a low-voltage demo load.\");\n}\n\nvoid loop()\
-      \ {\n  int32_t samples[256];\n  size_t bytesRead = 0;\n  i2s_read(I2S_PORT, samples, sizeof(samples), &bytesRead, portMAX_DELAY);\n\
-      \  int32_t p = peak(samples, bytesRead / sizeof(int32_t));\n  Serial.printf(\"Peak: %d\\n\", p);\n  if (p > CLAP_THRESHOLD)\
-      \ {\n    relayState = !relayState;\n    digitalWrite(RELAY_PIN, relayState ? LOW : HIGH);\n    digitalWrite(LED_PIN,\
-      \ relayState ? HIGH : LOW);\n    Serial.printf(\"Relay: %s\\n\", relayState ? \"ON\" : \"OFF\");\n    delay(500);\n\
-      \  }\n}\n"
-    code_filename: esp32-voice-relay-beginner.ino
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate build uses Espressif's ESP-SR speech recognition library to detect a custom wake word
-      ("Hi ESP") running entirely on the ESP32. When the wake word is detected, a relay toggles and an OLED shows the recognition
-      result and confidence score. No internet connection is required. A second command ("relay off") turns the relay off.
-      The system listens continuously with under 5 mW idle power draw.</p>
-    components:
-    - 1× ESP32-S3 DevKit — ESP-SR requires ESP32-S3 or ESP32 with PSRAM; standard ESP32 lacks RAM for the model
-    - 1× INMP441 I2S microphone
-    - 1× SSD1306 OLED 128x64 I2C
-    - 1× 5 V relay module
-    - 1× Wi-Fi router (optional) — Not needed for voice control; optional for remote status
-    wiring:
-    - - INMP441 SCK/WS/SD/VCC/GND
-      - GPIO 14 / 15 / 32 / 3.3 V / GND
-      - ''
-    - - OLED SDA/SCL
-      - GPIO 21 / 22
-      - ''
-    - - Relay IN
-      - GPIO 26
-      - ''
-    how:
-    - 'ESP-SR Architecture: ESP-SR contains two neural network stages: WakeNet (always-on, low-power wake-word detector) and
-      MultiNet (command recogniser, active only after wake word). WakeNet listens for "Hi ESP" using a compact CRNN model
-      requiring 2 MB PSRAM. MultiNet recognises up to 200 custom commands using an LSTM model.'
-    - 'Two-Stage Power Optimisation: WakeNet consumes approximately 5 mW in active listening mode. When it detects the wake
-      word, it activates MultiNet for 6 seconds to capture the command. If no command is recognised, it returns to WakeNet-only
-      mode. This two-stage design allows continuous listening without significant battery drain.'
-    - 'PSRAM Requirement: The ESP-SR model weights (WakeNet: ~500 KB, MultiNet: ~1 MB) exceed the 520 KB internal SRAM of
-      the standard ESP32. The ESP32-S3 includes 8 MB PSRAM on-chip and is the recommended platform. The ESP32 with an external
-      PSRAM chip (e.g. WROVER module) also works.'
-    - 'OLED Feedback Loop: The OLED displays the current state (listening, wake word detected, command result) and relay state.
-      This visual feedback confirms the system heard the command correctly and shows the confidence score returned by MultiNet,
-      helping users understand recognition accuracy.'
-    apps:
-    - Hands-free kitchen appliance control
-    - Accessibility switch for mobility-impaired users
-    - Workshop tool activation by voice without touching dirty controls
-    - Smart home offline voice control hub
-    troubleshooting:
-    - - ESP-SR component not found during build
-      - ESP-SR requires ESP-IDF 5.0 or later. Run idf.py add-dependency espressif/esp-sr==1.x.x in the project directory.
-        Ensure ESP-IDF is installed and the idf.py environment variables are set correctly.
-    - - Wake word false positives in noisy environments
-      - Increase the WakeNet detection threshold in the model configuration. Also position the microphone away from speakers,
-        fans, and HVAC vents. The INMP441 cardioid-like directivity helps reject sounds from behind the microphone.
-    - - Command not recognised after wake word
-      - Speak the command clearly within 2 seconds of the wake word. MultiNet has a fixed listening window. Increase DET_TIMEOUT
-        in the MultiNet configuration. Also ensure the command phrase is in the MultiNet model vocabulary.
-    upgrades:
-    - Add custom wake words by training a new WakeNet model in Espressif's WakeWord Customisation Tool
-    - Add multiple relay channels assigned to different voice commands
-    - Add a buzzer that sounds a short tone to confirm wake-word detection
-    - Add MQTT publishing so each voice command is also logged to a home automation hub
-    code: "// ESP32 Voice-Controlled Relay - Intermediate\n// ESP-SR wake-word detection (\"Hi ESP\") + MultiNet command recognition\n\
-      // Requires: ESP-IDF component esp-sr, ESP32-S3 with PSRAM\n// Install via: idf.py add-dependency \"espressif/esp-sr\"\
-      \n// This sketch shows the integration pattern; full ESP-SR setup uses ESP-IDF.\n\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
-      #include <driver/i2s.h>\n\n// ESP-SR headers (available after esp-sr component install)\n// #include \"esp_wn_iface.h\"\
-      \n// #include \"esp_wn_models.h\"\n// #include \"esp_mn_iface.h\"\n// #include \"esp_mn_models.h\"\n\nAdafruit_SSD1306\
-      \ oled(128,64,&Wire,-1);\nconst int RELAY=26;\nbool relayState=false;\n\n// Simplified wake-word simulation using energy\
-      \ threshold\n// Replace with ESP-SR detect_state check in ESP-IDF environment\nconst int WAKE_THRESHOLD=80000;\nconst\
-      \ int RELAY_THRESHOLD=120000;\n\nvoid showStatus(const String &line1, const String &line2){\n  oled.clearDisplay();\
-      \ oled.setTextSize(1); oled.setTextColor(WHITE);\n  oled.setCursor(0,0); oled.println(line1);\n  oled.println(line2);\n\
-      \  oled.printf(\"Relay: %s\",relayState?\"ON\":\"OFF\");\n  oled.display();\n}\n\nvoid i2sInit(){\n  i2s_config_t cfg={\n\
-      \    .mode=(i2s_mode_t)(I2S_MODE_MASTER|I2S_MODE_RX),\n    .sample_rate=16000,\n    .bits_per_sample=I2S_BITS_PER_SAMPLE_32BIT,\n\
-      \    .channel_format=I2S_CHANNEL_FMT_ONLY_LEFT,\n    .communication_format=I2S_COMM_FORMAT_STAND_I2S,\n    .intr_alloc_flags=ESP_INTR_FLAG_LEVEL1,\n\
-      \    .dma_buf_count=8,.dma_buf_len=512,.use_apll=false\n  };\n  i2s_pin_config_t pins={.bck_io_num=14,.ws_io_num=15,\n\
-      \    .data_out_num=I2S_PIN_NO_CHANGE,.data_in_num=32};\n  i2s_driver_install(I2S_NUM_0,&cfg,0,NULL);\n  i2s_set_pin(I2S_NUM_0,&pins);\n\
-      }\n\nvoid setup(){\n  Serial.begin(115200);\n  Wire.begin(21,22);\n  oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n  pinMode(RELAY,OUTPUT);\
-      \ digitalWrite(RELAY,HIGH);\n  i2sInit();\n  showStatus(\"Listening...\",\"Say: Hi ESP\");\n}\n\nvoid loop(){\n  int32_t\
-      \ samples[512]; size_t bytesRead=0;\n  i2s_read(I2S_NUM_0,samples,sizeof(samples),&bytesRead,portMAX_DELAY);\n  size_t\
-      \ n=bytesRead/sizeof(int32_t);\n  int32_t mx=0;\n  for(size_t i=0;i<n;i++){ int32_t v=abs(samples[i]>>8); if(v>mx) mx=v;\
-      \ }\n\n  // In full ESP-SR integration, replace threshold checks with:\n  // int wake = wakenet->detect(model_data,\
-      \ samples);\n  // int cmd  = multinet->detect(model_data, samples);\n  if(mx>RELAY_THRESHOLD){\n    relayState=!relayState;\n\
-      \    digitalWrite(RELAY,relayState?LOW:HIGH);\n    showStatus(\"Command detected\",relayState?\"Relay ON\":\"Relay OFF\"\
-      );\n    Serial.printf(\"Relay toggled: %sn\",relayState?\"ON\":\"OFF\");\n    delay(800);\n    showStatus(\"Listening...\"\
-      ,\"Say: Hi ESP\");\n  }\n}"
-    code_filename: esp32-voice-relay-intermediate.ino
-  advanced:
-    level: advanced
-    overview_html: <p>The advanced build integrates the ESP32 with Google Assistant via IFTTT webhooks. Saying "Hey Google,
-      turn on the relay" triggers an IFTTT applet that sends an HTTP POST to the ESP32's local IP. The ESP32 runs an AsyncWebServer
-      that receives the webhook, toggles the relay, and publishes the new state to MQTT. A Node-RED flow provides a backup
-      web dashboard with manual override buttons.</p>
-    components:
-    - 1× ESP32 DevKit V1
-    - 1× 5 V relay module
-    - 1× Google Home or Android phone with Google Assistant
-    - 1× IFTTT account (free tier) — Bridges Google Assistant to local ESP32 webhook
-    - 1× MQTT broker — Optional for state logging
-    wiring:
-    - - Relay IN
-      - GPIO 26
-      - Active LOW
-    how:
-    - 'IFTTT Google Assistant Applet: An IFTTT applet listens for a Google Assistant trigger phrase ("turn on the relay").
-      When activated, IFTTT sends an HTTP POST request to a configured webhook URL. For local ESP32 access, a port-forwarding
-      rule on the home router maps an external port to the ESP32''s local IP and port 80.'
-    - 'Secret Key Authentication: The webhook endpoint checks the X-IFTTT-Key header against a stored secret. IFTTT sends
-      this header automatically when configured in the webhook action. This prevents unauthorised callers from toggling the
-      relay if the port-forwarding URL is discovered.'
-    - 'AsyncWebServer Non-Blocking Handler: ESPAsyncWebServer handles HTTP requests asynchronously on a FreeRTOS task, so
-      the main loop() continues running MQTT and other work while a request is being processed. This prevents relay state
-      from being delayed by slow HTTP clients.'
-    - 'MQTT State Retention: The relay state is published to MQTT with retain=true each time it changes. Home Assistant or
-      Node-RED subscribed to voice/relay always receives the current state immediately on connection, enabling reliable dashboard
-      synchronisation across restarts.'
-    apps:
-    - Google Assistant controlled bedroom lamp
-    - Voice-activated coffee machine warm-up routine
-    - Hands-free garage door opener integration
-    - Smart home scene trigger via voice command
-    troubleshooting:
-    - - IFTTT webhook cannot reach the ESP32
-      - IFTTT sends requests from the internet; the ESP32 must be reachable via a port-forward on the home router. Alternatively,
-        use ngrok or a cloud MQTT broker (HiveMQ Cloud free tier) as an intermediary to avoid port-forwarding.
-    - - Google Assistant says it cannot reach the device
-      - This means IFTTT received the Google trigger but the webhook HTTP request timed out. Verify the port-forward is active
-        and the ESP32 is online. IFTTT has a 10-second webhook timeout; ensure the ESP32 responds within this window.
-    - - Relay toggles without voice command
-      - The /toggle endpoint has no authentication. Add the X-IFTTT-Key check to all endpoints, or change the /toggle path
-        to an unpredictable URL prefix.
-    upgrades:
-    - Use ngrok tunnel to eliminate port-forwarding and make the webhook accessible without router configuration
-    - Add a Siri Shortcut that calls the webhook for Apple ecosystem integration
-    - Add multiple IFTTT applets for different phrases controlling different relay channels
-    - Replace IFTTT with native Google Home local fulfilment SDK for sub-100 ms latency
-    code: "// ESP32 Voice-Controlled Relay - Advanced (Google Assistant + IFTTT + MQTT)\n#include <WiFi.h>\n#include <AsyncTCP.h>\n\
-      #include <ESPAsyncWebServer.h>\n#include <PubSubClient.h>\n#include <ArduinoJson.h>\n\nAsyncWebServer server(80);\n\
-      WiFiClient wifiClient;\nPubSubClient mqtt(wifiClient);\n\nconst char* SSID=\"YourSSID\", *PASS=\"YourPass\";\nconst\
-      \ char* MQTT_HOST=\"192.168.1.100\";\nconst char* WEBHOOK_KEY=\"your_ifttt_secret_key\"; // IFTTT webhook secret\nconst\
-      \ int RELAY=26;\nbool relayState=false;\n\nvoid setRelay(bool on){\n  relayState=on;\n  digitalWrite(RELAY,on?LOW:HIGH);\n\
-      \  StaticJsonDocument<64> doc;\n  doc[\"relay\"]=on?\"on\":\"off\";\n  char buf[64]; serializeJson(doc,buf);\n  mqtt.publish(\"\
-      voice/relay\",buf,true);\n  Serial.printf(\"Relay: %sn\",on?\"ON\":\"OFF\");\n}\n\nvoid setup(){\n  Serial.begin(115200);\n\
-      \  pinMode(RELAY,OUTPUT); setRelay(false);\n  WiFi.begin(SSID,PASS);\n  while(WiFi.status()!=WL_CONNECTED) delay(500);\n\
-      \  Serial.printf(\"IP: %sn\",WiFi.localIP().toString().c_str());\n  mqtt.setServer(MQTT_HOST,1883);\n\n  // IFTTT Webhook\
-      \ endpoints: POST /relay/on and /relay/off with secret header\n  server.on(\"/relay/on\",HTTP_POST,[](AsyncWebServerRequest\
-      \ *r){\n    String key=r->header(\"X-IFTTT-Key\");\n    if(key!=WEBHOOK_KEY){ r->send(403,\"text/plain\",\"Forbidden\"\
-      ); return; }\n    setRelay(true);\n    r->send(200,\"application/json\",\"{\"status\":\"on\"}\");\n  });\n  server.on(\"\
-      /relay/off\",HTTP_POST,[](AsyncWebServerRequest *r){\n    String key=r->header(\"X-IFTTT-Key\");\n    if(key!=WEBHOOK_KEY){\
-      \ r->send(403,\"text/plain\",\"Forbidden\"); return; }\n    setRelay(false);\n    r->send(200,\"application/json\",\"\
-      {\"status\":\"off\"}\");\n  });\n  // Manual web toggle\n  server.on(\"/toggle\",HTTP_GET,[](AsyncWebServerRequest *r){\n\
-      \    setRelay(!relayState);\n    r->send(200,\"text/plain\",relayState?\"Relay ON\":\"Relay OFF\");\n  });\n  server.begin();\n\
-      }\n\nvoid loop(){\n  if(!mqtt.connected()) mqtt.connect(\"VoiceRelay\");\n  mqtt.loop();\n  delay(10);\n}"
-    code_filename: esp32-voice-relay-advanced.ino
 related_slugs:
 - esp32-smart-door-lock
 - esp32-smart-power-strip
@@ -270,143 +51,194 @@ project:
   screen_free_activity: Draw the signal path from microphone samples to relay state.
   skills_practiced:
   - I2S microphone input
-  - Peak detection
-  - Relay module safety
-  - Active-low logic
-  learning_outcomes: &id001
-  - Read an INMP441 microphone with I2S.
-  - Detect a loud sound peak instead of speech commands.
-  - Toggle an active-low relay module input.
-  - Explain why relay isolation is not breadboard mains safety.
+  - Peak threshold and quiet rearming
+  - Documented active-HIGH relay control
   mini_experiments:
   - Print room-noise peaks and choose a threshold.
   - Clap once and watch the relay toggle.
-  - Change the debounce delay and observe double triggers.
-  next_challenge: Add a low-voltage LED strip demo load and a physical override button.
-  what_you_build: A sound-triggered relay demo using an INMP441 I2S microphone, a low-voltage relay module input, and an LED
-    state indicator.
-  story: 'The old title says voice control, but the beginner implementation is clap or loud-sound detection. This page names
-    that honestly and keeps relay use low-voltage. This Golden version keeps the promise narrow: the parts list, code constants,
-    GPIO table, expected output, safety notes, and troubleshooting all describe the same low-voltage educational build.'
-  eli12: 'The microphone sends sound samples to the ESP32. The code looks for a big sound peak; when it sees one, it toggles
-    the relay input and LED. The ESP32 is the decision maker: it reads one signal, compares it with simple rules, then changes
-    an output you can see or hear.'
-  parent_safety: Relay isolation does not make breadboard mains wiring safe. Use a low-voltage LED or demo load only; mains
-    work needs a qualified adult or professional and a proper enclosure. Unplug USB and any external supply before rewiring.
-    Keep the build low-voltage on the bench and do not treat it as certified equipment.
-  learning_objectives: *id001
+  - Compare quiet-rearm and cooldown settings while observing false triggers.
+  next_challenge: Add an explicit physical override button to the low-voltage LED demonstration.
+  what_you_build: An offline loud-sound detector that toggles the supported active-HIGH relay and a GPIO25
+    LED indicator. It compares INMP441 sample peaks with a configurable threshold; it does not recognize words.
+    A quiet interval and cooldown separate triggers, but room echoes and noise can still affect detection.
+  story: Read microphone samples, choose a threshold from your own Serial readings, and use the result to switch
+    a separate battery-powered LED circuit.
+  eli12: 'The microphone sends sound samples to the ESP32. The code looks for a big sound peak; when it sees
+    one, it toggles the relay input and LED. The ESP32 is the decision maker: it reads one signal, compares
+    it with simple rules, then changes an output you can see or hear.'
+  parent_safety: Use only the 3 V battery/LED contact load described here. No mains, motors or heaters. Disconnect
+    USB, relay supply and load battery before rewiring. This demonstration is not a certified or fail-safe
+    controller.
   components:
-  - item: ESP32 DevKit board
-    note: USB-programmable ESP32 board used as the controller.
+  - item: Classic ESP32-WROOM DevKit and USB data cable
+    note: Board pins must match the table.
     link: /components/esp32-devkit.html
-  - item: INMP441 I2S microphone module
-    note: 3.3 V digital microphone.
-  - item: Single-channel relay module
-    note: Use only the low-voltage input side for this bench demo.
+  - item: INMP441 I2S microphone breakout
+    note: 3.3 V power; L/R to GND; not a PDM microphone.
+  - item: Adafruit STEMMA Non-Latching Mini Relay 4409 and 3-pin JST-PH cable
+    note: Documented active-HIGH, 3.3 V signal input.
     link: /components/relay-module.html
-  - item: LED with 220 ohm resistor
-    note: Relay state indicator on GPIO25.
-  - item: Low-voltage demo load
-    note: Use an LED module or other safe bench load.
-  bom:
-  - part: ESP32 DevKit board
-    qty: '1'
-    estimated_cost: Varies
-    notes: USB-programmable ESP32 board used as the controller.
-  - part: INMP441 I2S microphone module
-    qty: '1'
-    estimated_cost: Varies
-    notes: 3.3 V digital microphone.
-  - part: Single-channel relay module
-    qty: '1'
-    estimated_cost: Varies
-    notes: Use only the low-voltage input side for this bench demo.
-  - part: LED with 220 ohm resistor
-    qty: '1'
-    estimated_cost: Varies
-    notes: Relay state indicator on GPIO25.
-  - part: Low-voltage demo load
-    qty: '1'
-    estimated_cost: Varies
-    notes: Use an LED module or other safe bench load.
+  - item: External regulated 5 V supply
+    note: At least 100 mA for the relay alone; negative shares ESP32 ground; do not connect +5 V to USB-powered
+      DevKit rail.
+  - item: 10 kΩ resistor
+    note: Relay Signal pull-down to GND.
+  - item: Two ordinary red LEDs, 220 ohm and 330 ohm resistors
+    note: GPIO25 indicator uses 220 ohms; separate battery load uses 330 ohms.
+  - item: Separate 3 V battery holder, breadboard and jumper wires
+    note: Battery powers only the switched LED load.
   wiring:
-    illustration_alt: ESP32 Voice-Controlled Relay wiring diagram
-    summary: INMP441 uses I2S pins GPIO14, GPIO15, and GPIO32. Relay IN is GPIO26 and LED indicator is GPIO25.
+    image: /assets/visuals/projects/wiring/esp32-voice-controlled-relay-wiring.svg
+    illustration_alt: 'Logical INMP441 sound relay circuit: GPIO14 SCK, GPIO15 WS, GPIO32 SD with 100 kiloohm
+      pull-down, microphone at 3.3 V and L/R to GND; supported STEMMA relay Signal on GPIO26 with 10 kiloohm
+      pull-down; external 5 V control power; GPIO25 LED and separate 3 V switched LED'
+    summary: This is a logical connection diagram, not physical pin placement. The microphone uses ESP32 3.3
+      V; the supported relay uses external 5 V. Both control grounds are shared. The LED contact load has its
+      own 3 V battery.
     steps:
-    - Unplug USB and relay supply before rewiring.
-    - Connect INMP441 SCK to GPIO14, WS to GPIO15, and SD to GPIO32.
-    - Connect INMP441 VCC to 3.3 V and GND to GND; connect L/R to GND for left channel.
-    - Connect relay IN to GPIO26 and relay input-side GND to ESP32 GND.
-    - Connect LED through a 220 ohm resistor to GPIO25 and GND.
-    - Use only a low-voltage demo load for relay output testing.
+    - Disconnect USB, the external relay supply and the load battery before wiring.
+    - Connect microphone VDD/VCC to 3.3 V, GND and L/R to ESP32 GND. Connect SCK/BCLK to GPIO14, WS/LRCLK to
+      GPIO15 and SD/DOUT to GPIO32. Add a 100 kΩ SD-to-GND pull-down if the breakout does not already provide
+      one, following the microphone datasheet.
+    - Connect GPIO25 through 220 ohms to the indicator LED anode; its cathode goes to ESP32 GND.
+    - Connect the supported relay red Vin lead to regulated external +5 V; connect its black GND lead to that
+      supply negative and ESP32 GND. Do not join external +5 V to the USB-powered DevKit 5 V pin.
+    - Connect the relay white Signal lead to GPIO26. Add a 10 kΩ resistor between Signal and control-side GND
+      to hold the command LOW while GPIO26 is not driven.
+    - Wire the separate 3 V battery positive to COM. Wire NO through a 330 ohm resistor to the red LED anode;
+      LED cathode returns to battery negative. Leave NC unused.
+    - Initially leave the load battery disconnected. Upload the example, open Serial Monitor at 115200 baud
+      and check the relay command and contact operation.
+    - Disconnect all supplies before adding the battery. Reconnect and confirm that the LED lights only when
+      the relay is commanded ON.
   gpio_map:
-  - signal: INMP441 SCK / WS / SD
-    esp32_pin: GPIO14 / GPIO15 / GPIO32
-    direction: I/O
-    notes: I2S microphone signals.
-  - signal: Relay IN
-    esp32_pin: GPIO26
-    direction: Output
-    notes: Active-low relay input.
-  - signal: LED indicator
-    esp32_pin: GPIO25
-    direction: Output
-    notes: Shows relay state.
-  circuit_explanation: The INMP441 sends digital microphone samples over I2S. The code calculates a peak value and toggles
-    GPIO26 when the peak crosses the threshold.
-  engineering_explanation: This is sound-triggered control, not speech recognition. Background noise, echoes, and threshold
-    choice affect false triggers.
+  - - INMP441 SCK / WS
+    - GPIO14 / GPIO15
+    - Output
+    - Standard I2S bit/frame clocks
+  - - INMP441 SD
+    - GPIO32
+    - Input
+    - Left slot; 100 kΩ to GND if absent on breakout
+  - - INMP441 VDD; L/R
+    - 3.3 V; GND
+    - Power / selection
+    - 3.3 V breakout; select left channel
+  - - STEMMA white Signal
+    - GPIO26
+    - Output
+    - HIGH=ON; LOW=OFF; 10 kΩ to control GND
+  - - STEMMA red Vin / black GND
+    - External +5 V / supply − and ESP32 GND
+    - Power
+    - External +5 V must not join USB power rail
+  - - Indicator LED
+    - GPIO25 → 220 ohms → anode; cathode → GND
+    - Output
+    - HIGH lights indicator
+  - - Separate switched LED
+    - 3 V battery + → COM → NO → 330 ohms → LED → battery −
+    - Contact circuit
+    - NC unused; independent of control supply
+  circuit_explanation: The INMP441 sends digital microphone samples over I2S. The code calculates a peak value
+    and toggles GPIO26 when the peak crosses the threshold.
+  engineering_explanation: Sound peaks do not identify words or reliably distinguish claps from dropped objects
+    or relay clicks. Thresholds, quiet rearming and cooldown improve this demonstration but do not guarantee
+    recognition. The relay contact state is not fed back; OFF is a software command, not proof of isolation
+    or a fail-safe state.
   libraries:
-  - name: Arduino ESP32 core
-    note: Uses the ESP32 I2S driver included with the core.
+  - name: esp32 by Espressif Systems 3.x
+    note: ESP_I2S.h is included in the core. API signatures reviewed against 3.0.7 and current official documentation;
+      not a compilation or latest-release claim.
+  - name: Arduino IDE setup
+    note: Choose the exact WROOM board (or ESP32 Dev Module for a generic WROOM DevKit), select port and use
+      Serial Monitor at 115200 baud. No third-party microphone library.
   code:
-    filename: esp32-voice-controlled-relay.ino
-    content: "// ESP32 sound-triggered relay demo - not speech recognition\n#include <driver/i2s.h>\n\nconst i2s_port_t I2S_PORT\
-      \ = I2S_NUM_0;\nconst int RELAY_PIN = 26;  // active LOW relay module input\nconst int LED_PIN = 25;\nconst int CLAP_THRESHOLD\
-      \ = 50000; // tune from Serial Monitor peak values\nbool relayState = false;\n\nvoid i2sInit() {\n  i2s_config_t cfg\
-      \ = {\n    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),\n    .sample_rate = 16000,\n    .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,\n\
-      \    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,\n    .communication_format = I2S_COMM_FORMAT_STAND_I2S,\n    .intr_alloc_flags\
-      \ = ESP_INTR_FLAG_LEVEL1,\n    .dma_buf_count = 4,\n    .dma_buf_len = 256,\n    .use_apll = false\n  };\n  i2s_pin_config_t\
-      \ pins = {\n    .bck_io_num = 14,\n    .ws_io_num = 15,\n    .data_out_num = I2S_PIN_NO_CHANGE,\n    .data_in_num =\
-      \ 32\n  };\n  i2s_driver_install(I2S_PORT, &cfg, 0, NULL);\n  i2s_set_pin(I2S_PORT, &pins);\n}\n\nint32_t peak(int32_t\
-      \ *buf, size_t n) {\n  int32_t mx = 0;\n  for (size_t i = 0; i < n; i++) {\n    int32_t v = abs(buf[i] >> 8);\n    if\
-      \ (v > mx) mx = v;\n  }\n  return mx;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n\
-      \  pinMode(LED_PIN, OUTPUT);\n  digitalWrite(RELAY_PIN, HIGH); // active LOW relay off\n  digitalWrite(LED_PIN, LOW);\n\
-      \  i2sInit();\n  Serial.println(\"Sound-triggered relay demo ready. Use a low-voltage demo load.\");\n}\n\nvoid loop()\
-      \ {\n  int32_t samples[256];\n  size_t bytesRead = 0;\n  i2s_read(I2S_PORT, samples, sizeof(samples), &bytesRead, portMAX_DELAY);\n\
-      \  int32_t p = peak(samples, bytesRead / sizeof(int32_t));\n  Serial.printf(\"Peak: %d\\n\", p);\n  if (p > CLAP_THRESHOLD)\
-      \ {\n    relayState = !relayState;\n    digitalWrite(RELAY_PIN, relayState ? LOW : HIGH);\n    digitalWrite(LED_PIN,\
-      \ relayState ? HIGH : LOW);\n    Serial.printf(\"Relay: %s\\n\", relayState ? \"ON\" : \"OFF\");\n    delay(500);\n\
-      \  }\n}\n"
-  code_explanation: I2S uses GPIO14, GPIO15, and GPIO32. CLAP_THRESHOLD sets the sound peak needed to toggle the active-low
-    relay input on GPIO26.
-  expected_output: Serial Monitor prints Peak values. A loud clap above 50000 toggles Relay ON or OFF and changes the LED
-    state.
+    filename: esp32_sound_relay.ino
+    content: "#include <Arduino.h>\n#include <ESP_I2S.h>\n\nI2SClass microphone;\nconstexpr uint8_t RELAY_PIN\
+      \ = 26;  // STEMMA 4409: active HIGH only\nconstexpr uint8_t LED_PIN = 25;\nconstexpr int32_t CLAP_THRESHOLD\
+      \ = 50000;\nconstexpr int32_t QUIET_THRESHOLD = 15000;\nconstexpr uint32_t QUIET_MS = 200;\nconstexpr\
+      \ uint32_t COOLDOWN_MS = 750;\nstatic_assert(QUIET_THRESHOLD > 0 && QUIET_THRESHOLD < CLAP_THRESHOLD,\n\
+      \              \"Quiet threshold must be positive and below trigger threshold\");\nbool relayOn = false;\n\
+      bool audioReady = false;\nbool armed = false;\nuint32_t lastAboveQuiet = 0;\nuint32_t lastTrigger = 0;\n\
+      uint32_t lastReport = 0;\nint32_t reportPeak = 0;\n\nvoid setRelay(bool on) {\n  relayOn = on;\n  digitalWrite(RELAY_PIN,\
+      \ on ? HIGH : LOW);\n  digitalWrite(LED_PIN, on ? HIGH : LOW);\n}\n\nvoid stopOnAudioError() {\n  setRelay(false);\n\
+      \  audioReady = false;\n  Serial.println(\"I2S error: relay OFF. Check wiring/settings, then reset.\"\
+      );\n}\n\nvoid setup() {\n  pinMode(RELAY_PIN, OUTPUT);\n  pinMode(LED_PIN, OUTPUT);\n  setRelay(false);\n\
+      \  Serial.begin(115200);\n  microphone.setPins(14, 15, -1, 32); // BCLK, WS, no TX data, RX data\n  microphone.setTimeout(100);\n\
+      \  if (!microphone.begin(I2S_MODE_STD, 16000, I2S_DATA_BIT_WIDTH_32BIT,\n                        I2S_SLOT_MODE_MONO,\
+      \ I2S_STD_SLOT_LEFT)) {\n    stopOnAudioError();\n    return;\n  }\n  // Drain startup data while the\
+      \ INMP441 settles; keep the output OFF.\n  int32_t discard[256];\n  const uint32_t started = millis();\n\
+      \  while (millis() - started < 300) {\n    if (microphone.readBytes(reinterpret_cast<char *>(discard),\
+      \ sizeof(discard))\n        != sizeof(discard)) {\n      stopOnAudioError();\n      return;\n    }\n\
+      \  }\n  lastAboveQuiet = lastTrigger = lastReport = millis();\n  audioReady = true;\n  Serial.println(\"\
+      Ready: wait for quiet, then make a loud sound. Relay OFF.\");\n}\n\nvoid loop() {\n  if (!audioReady)\
+      \ {\n    delay(100);\n    return; // Error remains latched; reset after correcting the cause.\n  }\n\
+      \  int32_t samples[256];\n  const size_t count = microphone.readBytes(\n      reinterpret_cast<char *>(samples),\
+      \ sizeof(samples));\n  if (count != sizeof(samples)) {\n    stopOnAudioError();\n    return;\n  }\n \
+      \ int32_t peak = 0;\n  for (size_t i = 0; i < 256; ++i) {\n    // 24-bit signed I2S audio is in the high\
+      \ bits of a 32-bit slot.\n    const int32_t value = samples[i] / 256;\n    const int32_t magnitude =\
+      \ value < 0 ? -value : value;\n    if (magnitude > peak) peak = magnitude;\n  }\n  const uint32_t now\
+      \ = millis();\n  if (peak >= QUIET_THRESHOLD) lastAboveQuiet = now;\n  else if (now - lastAboveQuiet\
+      \ >= QUIET_MS) armed = true;\n\n  if (armed && peak > CLAP_THRESHOLD && now - lastTrigger >= COOLDOWN_MS)\
+      \ {\n    setRelay(!relayOn);\n    armed = false;\n    lastTrigger = now;\n    Serial.printf(\"Relay:\
+      \ %s\\n\", relayOn ? \"ON\" : \"OFF\");\n  }\n  if (peak > reportPeak) reportPeak = peak;\n  if (now\
+      \ - lastReport >= 100) {\n    Serial.printf(\"Peak: %ld\\n\", static_cast<long>(reportPeak));\n    reportPeak\
+      \ = 0;\n    lastReport = now;\n  }\n}\n"
+  code_explanation: 'The modern ESP_I2S API receives left-slot, 32-bit standard-I2S frames at 16 kHz. INMP441
+    audio is 24-bit signed data; division by 256 produces a bounded value for peak comparison without overflowing
+    when taking its magnitude. The sketch continuously drains samples, prints the largest peak seen in each
+    reporting interval, and rearms only after quiet.
+
+
+    setRelay() gives the documented active-HIGH relay and GPIO25 indicator the same command. Initialization/read
+    errors latch both OFF; full-length zero readings cannot prove the microphone is healthy. Hardware contact
+    state is not sensed by the program.'
+  expected_output: 'Serial Monitor at 115200 baud first says the relay is OFF, then reports Peak values approximately
+    every 100 ms. After a quiet interval, an accepted loud sound prints Relay: ON and lights the GPIO25 indicator;
+    the separate battery LED should also light through COM/NO. A later accepted sound prints Relay: OFF and
+    both LEDs go dark. Actual peaks and detection reliability depend on the room and hardware; no acoustic
+    measurements are claimed.'
   common_mistakes:
   - text: Calling clap detection full speech recognition.
   - text: Putting mains voltage on a breadboard.
-  - text: Forgetting active-low relay logic.
+  - text: Substituting an unidentified relay instead of the documented active-HIGH model.
   - text: Setting the threshold before measuring room noise.
   troubleshooting:
-  - problem: Relay toggles randomly
-    fix: Raise CLAP_THRESHOLD after recording normal room peaks.
-  - problem: No sound detected
-    fix: Check INMP441 power and I2S pins.
-  - problem: Relay logic is backwards
-    fix: Confirm the module is active LOW and starts with GPIO26 HIGH.
+  - problem: ESP_I2S.h not found
+    fix: Install/select esp32 by Espressif Systems 3.x. Do not mix this sketch with the legacy driver/i2s.h
+      example.
+  - problem: I2S error and relay stays OFF
+    fix: Check supported board/core, VDD/GND, clock/data pins and breakout identity. Correct the issue, then
+      reset; the error deliberately remains latched.
+  - problem: Peaks remain zero or very small
+    fix: Check 3.3 V power, L/R=GND, GPIO32 data and SD pull-down. Confirm this is an INMP441 standard-I2S
+      breakout. Complete zero-valued reads alone cannot diagnose a failed microphone.
+  - problem: Unwanted or missed triggers
+    fix: Record your own quiet and deliberate-sound peaks; adjust both thresholds. Move microphone away from
+      relay clicks and echoes. If the room never becomes quiet enough, it will not rearm.
+  - problem: Indicator toggles but relay or load does not
+    fix: Disconnect load power. Verify STEMMA 4409, external 5 V and shared control ground, then trace the
+      separate battery COM/NO LED circuit. Do not substitute an unknown active-LOW module.
+  - problem: ESP32 resets when switching
+    fix: Check the relay external supply and ground connections. Keep +5 V separate from the USB-powered board
+      rail and keep microphone wiring short.
   testing_checklist:
-  - Boot with no relay load connected.
-  - Record quiet-room peak values.
-  - Clap once and confirm one toggle.
-  - Test only a low-voltage demo load.
+  - With the battery load disconnected, confirm an OFF command at startup.
+  - Observe your own quiet-room and loud-sound peak ranges before choosing thresholds.
+  - Confirm that continuous sound does not repeatedly toggle; allow a quiet interval between events.
+  - Disconnect all power before attaching the specified low-voltage LED load; compare its state with Serial
+    and the GPIO25 indicator.
+  - These are reader checks to perform, not hardware tests reported as completed.
   engineer_tips:
   - Call it sound-triggered unless real speech recognition is added.
   - Keep microphone wires short.
   - Use enclosures and professionals for mains work.
   upgrade_ideas:
-  - Add a physical override button.
-  - Add a low-voltage LED strip demo load.
-  - Move to a real speech-recognition module before claiming commands.
+  - Add a physical override button and explicit default-OFF behavior.
+  - Add an OLED showing relay command and peak level.
+  - Experiment with a two-event timing pattern after understanding false triggers.
+  - Use a dedicated speech-recognition implementation before describing a project as responding to spoken commands.
   real_world_applications:
   - Sound-triggered demo
   - Relay safety lesson
@@ -424,15 +256,64 @@ project:
     description: Practice safer low-voltage control logic with sensor-triggered output.
   faqs:
   - question: Is this speech recognition?
-    answer: No. The beginner version detects loud sound peaks.
-  - question: Can I wire a lamp?
-    answer: Not on a breadboard. Mains work needs rated parts, enclosure, and qualified supervision.
-  - question: Why is the relay active LOW?
-    answer: Many relay modules turn on when their IN pin is driven LOW.
-  complete:
-    summary: You completed ESP32 Voice-Controlled Relay as a trustworthy ESP32 learning build with matching wiring, code,
-      testing, and safety boundaries.
-    skills:
-    - I2S microphone input
-    - Peak detection
-    - Relay module safety
+    answer: No. It compares loud-sound peaks with thresholds and cannot identify words.
+  - question: Can I use a generic active-LOW relay board?
+    answer: Not unchanged. This complete example is for STEMMA 4409. Verify a different module schematic, thresholds,
+      supply and OFF state before designing an interface.
+  - question: Does OFF guarantee that a load is safe?
+    answer: No. The program commands OFF but cannot sense a welded contact, a failed driver or microphone health.
+      Use only the stated battery LED demonstration.
+  tutorial_flow: true
+  assumptions: 'Classic ESP32-WROOM-32/32E DevKit with the named GPIOs exposed and unused; Arduino IDE 2.x
+    and esp32 by Espressif Systems 3.x. Other ESP32 families need their own pin map. Serial Monitor: 115200
+    baud.
+
+
+    The complete example supports the Adafruit STEMMA Non-Latching Mini Relay (product 4409), with red Vin,
+    black GND and white Signal leads. It is active HIGH and accepts a 3.3 V signal. Use a regulated external
+    5 V supply rated at least 100 mA for this relay alone (about 50 mA energized per manufacturer). Do not
+    substitute a latching relay or an unidentified active-LOW board. The generic page photo does not identify
+    this supported model.
+
+
+    Use an INMP441 standard I2S breakout at 3.3 V, with its L/R pin tied to GND for the left slot. Confirm
+    its labels and onboard decoupling; a PDM microphone is not a substitute. Use only a separate 3 V battery
+    supply, one ordinary red LED and a 330 ohm series resistor as the contact-side load. No mains, motors,
+    heaters or unattended operation are covered. The contact-side battery circuit needs no connection to ESP32
+    ground.
+
+
+    Verification: documentation/API and code-path review only; not compiled for ESP32 or tested on hardware
+    in this update.'
+  configuration: 'CLAP_THRESHOLD=50000 and QUIET_THRESHOLD=15000 are starting values in shifted PCM counts,
+    not measured noise levels or decibels. Record quiet-room peaks and deliberate sounds, then choose a trigger
+    above normal noise and a lower quiet threshold. Keep 0 < QUIET_THRESHOLD < CLAP_THRESHOLD.
+
+
+    The example needs 200 ms below the quiet threshold to rearm and at least 750 ms between accepted triggers.
+    These are software settings, not proof of one trigger per real clap. Keep the microphone away from the
+    relay click. Startup discards 300 ms of microphone data before measuring.'
+  behavior:
+  - - Reset / startup
+    - Relay and indicator commanded OFF; Signal pull-down holds LOW while GPIO is not driven.
+  - - Quiet for 200 ms
+    - Detector can rearm; no toggle yet.
+  - - Armed peak above CLAP_THRESHOLD after cooldown
+    - Toggle relay and indicator once; disarm until a new quiet interval.
+  - - Continuous loud input
+    - Remain disarmed; do not repeatedly toggle from the same sustained sound.
+  - - I2S initialization failure or incomplete read
+    - Latch OFF with an error message; correct the cause and reset.
+  - - Silent or disconnected microphone that still returns complete reads
+    - Zero samples are not a reliable fault diagnosis; do not use this demonstration for safety control.
+  references:
+  - title: Adafruit STEMMA relay pinouts
+    href: https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/pinouts
+  - title: Adafruit STEMMA relay usage
+    href: https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/usage
+  - title: Espressif Arduino I2S API
+    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/i2s.html
+  - title: Arduino-ESP32 3.0.7 ESP_I2S header
+    href: https://github.com/espressif/arduino-esp32/blob/3.0.7/libraries/ESP_I2S/src/ESP_I2S.h
+  - title: TDK InvenSense INMP441 datasheet
+    href: https://invensense.tdk.com/wp-content/uploads/2015/02/INMP441.pdf
