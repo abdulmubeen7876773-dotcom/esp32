@@ -132,55 +132,86 @@
     return path;
   }
 
+  var consentKey = 'cookie-consent-v2';
+  var consentChoice = null;
+  var analyticsStarted = false;
+  function savedConsent() {
+    try { return localStorage.getItem(consentKey); } catch (e) { return null; }
+  }
   function loadAnalytics() {
     var id = window.SITE_GA4;
-    if (!id) return;
-    if (document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) return;
+    if (consentChoice !== 'accepted' || analyticsStarted || !id) return;
+    if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+    analyticsStarted = true;
+    window['ga-disable-' + id] = false;
     window.dataLayer = window.dataLayer || [];
-    window.gtag = function () {
-      window.dataLayer.push(arguments);
-    };
-    var s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
-    document.head.appendChild(s);
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('consent', 'default', {
+      analytics_storage: 'granted', ad_storage: 'denied',
+      ad_user_data: 'denied', ad_personalization: 'denied'
+    });
     window.gtag('js', new Date());
     window.gtag('config', id, {
-      anonymize_ip: true,
+      allow_google_signals: false, allow_ad_personalization_signals: false,
       page_path: canonicalPath(location.pathname),
       page_location: 'https://esp32engine.com' + canonicalPath(location.pathname) + (location.search || ''),
-      page_title: document.title,
+      page_title: document.title
+    });
+    var script = document.createElement('script');
+    script.id = 'ga4-gtag-js'; script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+    document.head.appendChild(script);
+  }
+  function clearAnalyticsCookies() {
+    document.cookie.split(';').forEach(function (cookie) {
+      var name = cookie.split('=')[0].trim();
+      if (!/^_ga(?:_|$)|^_gid$|^_gat(?:_|$)/.test(name)) return;
+      ['', '; domain=' + location.hostname, '; domain=.esp32engine.com'].forEach(function (domain) {
+        document.cookie = name + '=; Max-Age=0; path=/' + domain;
+      });
     });
   }
-
-  function initCookieConsent() {
-    var key = 'cookie-consent';
-    if (localStorage.getItem(key) === 'accepted') {
-      loadAnalytics();
-      return;
-    }
-    if (localStorage.getItem(key) === 'rejected') return;
-
+  function showCookieConsent() {
+    if (document.querySelector('.cookie-consent')) return;
     var bar = document.createElement('div');
-    bar.className = 'cookie-consent';
-    bar.setAttribute('role', 'dialog');
+    bar.className = 'cookie-consent'; bar.setAttribute('role', 'dialog');
     bar.setAttribute('aria-label', 'Cookie consent');
-    bar.innerHTML =
-      '<div class="cookie-consent-inner"><p>We use optional cookies for analytics and advertising to improve tutorials. See our <a href="privacy.html">Privacy Policy</a>.</p><div class="cookie-actions"><button type="button" class="btn btn-secondary cookie-reject">Reject optional</button><button type="button" class="btn btn-primary cookie-accept">Accept</button></div></div>';
+    bar.innerHTML = '<div class="cookie-consent-inner"><p>Allow optional Google Analytics usage measurement? Advertising is disabled. YouTube embeds load separately; see our <a href="/privacy.html">Privacy Policy</a>. Change your choice using Privacy choices in the footer. Rejecting after acceptance reloads this page to stop the loaded analytics tag.</p><div class="cookie-actions"><button type="button" class="btn btn-secondary cookie-reject">Reject optional</button><button type="button" class="btn btn-primary cookie-accept">Accept</button></div></div>';
     document.body.appendChild(bar);
-
-    bar.querySelector('.cookie-accept').addEventListener('click', function () {
-      localStorage.setItem(key, 'accepted');
+    function choose(choice) {
+      consentChoice = choice;
+      try { localStorage.setItem(consentKey, choice); } catch (e) {}
       bar.remove();
-      loadAnalytics();
-    });
-    bar.querySelector('.cookie-reject').addEventListener('click', function () {
-      localStorage.setItem(key, 'rejected');
-      bar.remove();
-    });
+      if (choice === 'accepted') { loadAnalytics(); return; }
+      window['ga-disable-' + window.SITE_GA4] = true;
+      clearAnalyticsCookies();
+      // Reload removes running third-party code; removing a script node cannot.
+      if (analyticsStarted) location.reload();
+      else document.querySelector('[data-cookie-settings]')?.focus();
+    }
+    bar.querySelector('.cookie-accept').addEventListener('click', function () { choose('accepted'); });
+    bar.querySelector('.cookie-reject').addEventListener('click', function () { choose('rejected'); });
+    bar.querySelector('.cookie-reject').focus({ preventScroll: true });
   }
-
-  initCookieConsent();
+  consentChoice = savedConsent();
+  if (consentChoice === 'accepted') loadAnalytics();
+  else { clearAnalyticsCookies(); if (consentChoice !== 'rejected') showCookieConsent(); }
+  document.querySelectorAll('[data-cookie-settings]').forEach(function (button) {
+    button.addEventListener('click', showCookieConsent);
+  });
+  window.addEventListener('storage', function (event) {
+    if (event.key !== consentKey && event.key !== null) return;
+    var next = savedConsent();
+    if (consentChoice === 'accepted' && next !== 'accepted') {
+      window['ga-disable-' + window.SITE_GA4] = true;
+      location.reload();
+    } else {
+      consentChoice = next;
+      if (next === 'accepted') loadAnalytics();
+      document.querySelector('.cookie-consent')?.remove();
+      if (next !== 'accepted' && next !== 'rejected') showCookieConsent();
+    }
+  });
 
   var btt = document.createElement('button');
   btt.type = 'button';

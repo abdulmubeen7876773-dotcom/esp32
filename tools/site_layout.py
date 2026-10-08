@@ -10,7 +10,7 @@ from site_counts import site_counts
 _cfg = load_site_settings()
 CSS_VERSION = _cfg["css_version"]
 JS_VERSION = _cfg.get("js_version", CSS_VERSION)
-UI_JS_SRC = f"/ui.js?v={JS_VERSION}"
+UI_JS_SRC = "/ui.js?v=20261008-consent-v2"
 SEARCH_JS_SRC = f"/search.js?v={JS_VERSION}"
 SITE_DOMAIN = _cfg["site_domain"]
 SITE_NAME = _cfg["site_name"]
@@ -142,53 +142,10 @@ CANONICAL_ROUTE_SCRIPT = """<script>(function(){
   }
 })();</script>"""
 
-GOOGLE_TAG_HTML = f"""<!-- Google tag (gtag.js) -->
-<script>
-(function(){{
-  var productionHosts = {{ "esp32engine.com": true, "www.esp32engine.com": true }};
-  var measurementId = "{GA4_MEASUREMENT_ID}";
-  var scriptId = "ga4-gtag-js";
-  if (!productionHosts[window.location.hostname]) return;
-  if (window.__esp32EngineGa4Initialized) return;
-  window.__esp32EngineGa4Initialized = true;
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || function(){{dataLayer.push(arguments);}};
-  if (!document.getElementById(scriptId)) {{
-    var script = document.createElement("script");
-    script.id = scriptId;
-    script.async = true;
-    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId);
-    document.head.appendChild(script);
-  }}
-  window.gtag("js", new Date());
-  window.gtag("config", measurementId);
-}})();
-</script>"""
-
-ADSENSE_SITE_VERIFICATION_HTML = f"""<script>
-(function(){{
-  var productionHosts = {{ "esp32engine.com": true, "www.esp32engine.com": true }};
-  var publisherId = "{ADSENSE_PUBLISHER_ID}";
-  var scriptId = "adsbygoogle-js";
-  if (!productionHosts[window.location.hostname]) return;
-  if (window.__esp32EngineAdsenseInitialized) return;
-  window.__esp32EngineAdsenseInitialized = true;
-  function loadAdsense(){{
-    if (document.getElementById(scriptId)) return;
-    var script = document.createElement("script");
-    script.id = scriptId;
-    script.async = true;
-    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(publisherId);
-    script.crossOrigin = "anonymous";
-    document.head.appendChild(script);
-  }}
-  if ("requestIdleCallback" in window) {{
-    window.addEventListener("load", function(){{ requestIdleCallback(loadAdsense, {{ timeout: 3500 }}); }}, {{ once: true }});
-  }} else {{
-    window.addEventListener("load", function(){{ setTimeout(loadAdsense, 1200); }}, {{ once: true }});
-  }}
-}})();
-</script>"""
+# Configuration only; ui.js owns consent-gated initialization.
+GOOGLE_TAG_HTML = f'<script>window.SITE_GA4 = "{GA4_MEASUREMENT_ID}";</script>'
+# Disabled pending verified certified CMP integration.
+ADSENSE_SITE_VERIFICATION_HTML = ""
 
 HERO_BOARD_SVG = """<svg class="hero-board-svg" viewBox="0 0 280 280" fill="none" aria-hidden="true"><defs><linearGradient id="heroGrad" x1="50" y1="70" x2="230" y2="210"><stop stop-color="#1488A6"/><stop offset="1" stop-color="#081D3A"/></linearGradient><filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="50" y="72" width="180" height="116" rx="20" stroke="url(#heroGrad)" stroke-width="3" filter="url(#heroGlow)"/><rect x="78" y="98" width="124" height="64" rx="12" fill="rgba(20,136,166,.08)" stroke="rgba(20,136,166,.26)" stroke-width="1.5"/><path d="M50 98h-20M50 130h-20M50 162h-20M230 98h20M230 130h20M230 162h20M98 72V48M140 72V48M182 72V48M98 188V212M140 188V212M182 188V212" stroke="#1488A6" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="140" cy="130" r="10" fill="#1488A6"/><circle cx="140" cy="130" r="20" stroke="#1488A6" stroke-width="1.5" opacity=".35"/><text x="140" y="136" text-anchor="middle" fill="#081D3A" font-size="18" font-weight="700" font-family="Poppins,Inter,sans-serif">ESP32</text><circle cx="210" cy="60" r="6" fill="#F59E0B" opacity=".86"/><circle cx="70" cy="220" r="5" fill="#EF4444" opacity=".68"/><path d="M200 220l20-16 12 20" stroke="#1488A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>"""
 
@@ -2132,7 +2089,7 @@ def footer_html(base: str = "") -> str:
     <div class="footer-col"><p class="footer-col-title">Resources</p><a href="{site_href('parents.html')}">For Parents</a><a href="{site_href('teachers.html')}">For Teachers</a><a href="{site_href('downloads.html')}">Learning Resources</a><a href="{site_href('tools.html')}">Tools</a><a href="{site_href('testing-methodology.html')}">Testing Methodology</a></div>
     <div class="footer-col"><p class="footer-col-title">Company</p><a href="{site_href('about.html')}">About</a><a href="{site_href('author.html')}">Author</a><a href="{site_href('editorial-policy.html')}">Editorial Policy</a><a href="{site_href('contact.html')}">Contact</a><a href="{site_href('privacy.html')}">Privacy</a><a href="{site_href('terms.html')}">Terms</a><a href="{site_href('disclaimer.html')}">Disclaimer</a></div>
   </div>
-  <div class="wrap footer-bottom"><p>© 2026 {SITE_NAME}. All rights reserved.</p></div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Privacy choices</button><p>© 2026 {SITE_NAME}. All rights reserved.</p></div>
 </footer>"""
 
 

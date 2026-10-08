@@ -61,7 +61,7 @@ async function preparePage(page: Page, testInfo: TestInfo) {
   await mockAdsense(page);
 
   await page.addInitScript(() => {
-    localStorage.setItem('cookie-consent', 'rejected');
+    localStorage.setItem('cookie-consent-v2', 'rejected');
   });
 
   await testInfo.attach('runtime-watchers', {
@@ -660,16 +660,18 @@ test('public counts and section headings stay consistent', async ({ page }, test
   const visibleText = await page.locator('body').innerText();
   expect(visibleText).not.toMatch(/PARTSComponents|ENGEngineering|CODECode|GPIOGPIO|SAFETYSafety|WIRINGWiring/);
 
+});
+
+test('production GA requires consent and initializes once', async ({ page }) => {
   const productionGaRequests: string[] = [];
   const prodPage = await page.context().newPage();
   await fulfillProductionHostFromLocalBuild(prodPage, productionGaRequests);
   await prodPage.goto('https://esp32engine.com/about.html', { waitUntil: 'networkidle' });
+  await expect(prodPage.locator('#ga4-gtag-js')).toHaveCount(0);
+  await prodPage.getByRole('button', { name: 'Accept', exact: true }).click();
+  await prodPage.getByRole('button', { name: 'Privacy choices', exact: true }).click();
+  await prodPage.getByRole('button', { name: 'Accept', exact: true }).click();
   const productionGaState = await prodPage.evaluate(() => {
-    const initScript = [...document.scripts].find((script) => script.textContent?.includes('__esp32EngineGa4Initialized'));
-    if (initScript?.textContent) {
-      new Function(initScript.textContent)();
-      new Function(initScript.textContent)();
-    }
     return {
       scriptCount: document.querySelectorAll('#ga4-gtag-js').length,
       configCount: (window.dataLayer || []).filter((entry: unknown[]) => entry[0] === 'config' && entry[1] === 'G-WLHZKSEFP3').length,
