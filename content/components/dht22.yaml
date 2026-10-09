@@ -6,7 +6,7 @@ icon: 🌡
 image: /assets/visuals/components/photos/dht22-photo.webp
 summary: Read air temperature and humidity with a DHT22 on ESP32. Identify bare sensors and modules, wire a
   3.3 V data pull-up, and diagnose failed readings.
-date_modified: '2026-10-08'
+date_modified: '2026-10-10'
 experience_required: Basic Arduino upload, breadboard wiring, and Serial Monitor
 applications:
 - Room comfort monitor
@@ -33,7 +33,7 @@ how_it_works: 'The sensor exchanges timed pulses on DATA; this is not I2C and no
   quick build now deliberately uses DHT11 and a DHT11 video; it is labeled that way in the links below.
 
 
-  The library limits both sensor types to one new cached measurement per 2 seconds. Updating the screen faster
+  Without force mode, Adafruit DHT 1.4.6 reuses the previous transaction result for calls within 2000 ms. This cache policy is separate from the DHT22 manufacturer’s greater-than-2-second collecting period. Updating the screen faster
   does not make the sensor sample faster. Avoid breathing directly on it when comparing readings; nearby heat
   and moisture affect local air conditions.'
 specs:
@@ -113,8 +113,8 @@ wiring:
   - Disconnect USB and identify the actual package/module labels.
   - Wire supply, ground and DATA as listed; add the bare-sensor pull-up.
   - Reconnect USB, install the libraries and upload the DHT22 sketch.
-  - Open Serial Monitor at 115200 baud and wait at least 2 seconds.
-library: DHT sensor library by Adafruit plus Adafruit Unified Sensor
+  - Open Serial Monitor at 115200 baud and wait for the first reading after the sketch’s 2.5-second delay.
+library: DHT sensor library by Adafruit 1.4.6 plus Adafruit Unified Sensor
 code:
   title: DHT22 on GPIO4
   filename: esp32_dht22_readings.ino
@@ -142,7 +142,7 @@ troubleshooting:
     the sketch and compile again.
 - problem: Values repeat
   cause: Read caching or slowly changing room conditions.
-  fix: Keep at least 2 seconds between samples. Repeated values are normal; do not force reads faster to seek
+  fix: Keep the sketch’s 2.5-second interval, exceeding the linked manufacturer’s greater-than-2-second collecting period. Repeated values are normal; do not force reads faster to seek
     variation.
 - problem: Temperature too warm / humidity unexpected
   cause: Nearby regulator heat, enclosure airflow, condensation or an uncalibrated part.
