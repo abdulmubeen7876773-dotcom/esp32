@@ -2038,7 +2038,7 @@ def home_v3_why() -> str:
         ("Open forever", "No paywalls. No login required. No premium tier. Every guide, project, and component page is free."),
         ("Clear difficulty labels", "Each public project shows the difficulty level supported by its wiring, code, and source content."),
         ("Built for parents", "Safety notes, simple explanations, and age-appropriate language. Designed for supervised learning from age 10+."),
-        ("Ready for classrooms", "Structured missions, printable notes, and content aligned to hands-on STEM learning standards."),
+        ("Ready for classrooms", "Structured missions, printable notes, and content that supports hands-on STEM learning."),
         ("Works on any device", "Every page is mobile-first — follow a guide on your phone while you build at the bench."),
         ("Made for real making", "Every guide has wiring tables, copy-paste Arduino code, a troubleshooting section, and a real working output."),
     ]
