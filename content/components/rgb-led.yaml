@@ -1,0 +1,181 @@
+slug: rgb-led
+name: 'Four-Lead RGB LED: Common Terminal and ESP32 Color Test'
+category: Output Devices
+difficulty: Beginner
+image: /assets/visuals/components/photos/rgb-led-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Four-Lead RGB LED; not a verified part or physical pin layout
+summary: Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels
+  on a classic ESP32.
+date_modified: '2026-10-09'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the specified unused GPIOs exposed; Arduino IDE 2.x and Arduino-ESP32
+      3.x. Other families require their own pin map. Serial Monitor: 115200 baud. No extra library.'
+  - label: Supported hardware
+    value: A documented bare four-lead common-cathode RGB LED whose channels tolerate the resistor-limited 3.3 V
+      test. Confirm actual R/G/B/common leads before wiring. The illustration cannot establish common-terminal type
+      or package size.
+  - label: Prerequisites and parts
+    value: IDE setup, Blink, RGB LED and three known 470 ohm / 0.25 W resistors; breadboard, wires and part documentation.
+  - label: Expected result
+    value: Red, green and blue channels are requested in turn for one second, with an all-off pause. Blue/green
+      brightness at 3.3 V is not guaranteed; it depends on actual forward voltage.
+  - label: Verification limits
+    value: Documentation and automated content/browser checks only in this update. No ESP32 compilation or physical
+      hardware testing. The approved image depicts a component family; it does not authenticate a model, rating
+      or terminal order.
+related_components:
+- title: ESP32 DevKit assumptions
+  href: /components/esp32-devkit.html
+  description: Check board family, power and usable GPIOs.
+sources:
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: Pin modes and digital output on Arduino-ESP32.
+- title: Kingbright RGB LED datasheet
+  url: https://www.kingbrightusa.com/images/catalog/spec/WP154A4SUREQBFZGC.pdf
+  note: Example electrical characteristics and package circuit; not identification of the generic illustration.
+eli12: |-
+  Three LED junctions share one terminal. Common cathode joins their negative terminals; common anode joins their positive terminals. This example supports common cathode only. It is not a WS2812/addressable LED.
+
+  Find the actual circuit symbol and lead order in the datasheet. Do not treat the longest lead, the artwork or another LED's pin order as proof. Kingbright's RGB datasheet is a reference example, not a match to this illustration.
+electrical:
+  supply: No separate rail in this common-cathode example; each GPIO drives a color through 470 ohms.
+  signal: GPIO25/26/27 are 3.3 V outputs; HIGH turns the selected channel on.
+  protection: One resistor per channel. Never connect a common anode to 5 V and return its channels directly to
+    ESP32 pins.
+  basis: Actual LED datasheet required; this page assumes common cathode and qualified 3.3 V operation.
+specs:
+- name: Common terminal
+  value: Common cathode for example
+  why: Other types need a different circuit and inverted logic.
+- name: Color resistors
+  value: Three separate 470 ohm resistors
+  why: Limits each independent junction; no shared common-terminal resistor.
+- name: Voltage headroom
+  value: Part-dependent
+  why: Some blue/green channels need more than a 3.3 V rail for useful brightness.
+- name: Supply in this example
+  value: No separate rail in this common-cathode example; each GPIO drives a color through 470 ohms.
+  why: Applies only to the supported hardware assumptions above.
+- name: ESP32 signal compatibility
+  value: GPIO25/26/27 are 3.3 V outputs; HIGH turns the selected channel on.
+  why: Applies only to the supported hardware assumptions above.
+- name: Required protection
+  value: One resistor per channel. Never connect a common anode to 5 V and return its channels directly to ESP32
+    pins.
+  why: Applies only to the supported hardware assumptions above.
+pinout:
+- pin: Common cathode
+  role: Verified by the real part datasheet; no physical lead order assumed.
+  connects: ESP32 GND
+  note: Verified by the real part datasheet; no physical lead order assumed.
+- pin: Red anode
+  role: One resistor for this channel.
+  connects: GPIO25 through 470 ohms
+  note: One resistor for this channel.
+- pin: Green anode
+  role: One resistor for this channel.
+  connects: GPIO26 through 470 ohms
+  note: One resistor for this channel.
+- pin: Blue anode
+  role: One resistor for this channel.
+  connects: GPIO27 through 470 ohms
+  note: One resistor for this channel.
+wiring:
+  summary: Verified common cathode → GND; R/G/B anodes → separate 470 ohm resistors → GPIO25/26/27.
+  table_columns:
+  - Identified terminal
+  - Connection
+  - Qualification
+  table_rows:
+  - component_pin: Common cathode
+    esp32_pin: ESP32 GND
+    notes: Verified by the real part datasheet; no physical lead order assumed.
+  - component_pin: Red anode
+    esp32_pin: GPIO25 through 470 ohms
+    notes: One resistor for this channel.
+  - component_pin: Green anode
+    esp32_pin: GPIO26 through 470 ohms
+    notes: One resistor for this channel.
+  - component_pin: Blue anode
+    esp32_pin: GPIO27 through 470 ohms
+    notes: One resistor for this channel.
+  steps:
+  - Power off and identify common-terminal type and all four leads.
+  - Wire one resistor in each color path; connect common cathode to GND.
+  - Upload, then compare Serial channel labels with the actual emitted colors.
+  image: /assets/visuals/components/wiring/rgb-led-wiring.svg
+  illustration_alt: Logical rgb led terminal connections; not a physical pin-position diagram. See the wiring table
+    for qualifications.
+  open_full_size: true
+code:
+  title: One color at a time
+  filename: rgb_led_esp32.ino
+  wiring: Verified common cathode → GND; R/G/B anodes → separate 470 ohm resistors → GPIO25/26/27.
+  content: |
+    #include <Arduino.h>
+    constexpr uint8_t RED_PIN = 25, GREEN_PIN = 26, BLUE_PIN = 27;
+    const uint8_t pins[] = {RED_PIN, GREEN_PIN, BLUE_PIN};
+    const char* names[] = {"RED", "GREEN", "BLUE"};
+    void allOff() { for (uint8_t pin : pins) digitalWrite(pin, LOW); }
+    void setup() {
+      Serial.begin(115200);
+      for (uint8_t pin : pins) { pinMode(pin, OUTPUT); digitalWrite(pin, LOW); }
+    }
+    void loop() {
+      for (uint8_t i = 0; i < 3; ++i) {
+        allOff();
+        digitalWrite(pins[i], HIGH);
+        Serial.println(names[i]);
+        delay(1000);
+        allOff();
+        delay(300);
+      }
+    }
+  notes: Common-cathode only. Begin with one active color to identify leads; this is not calibrated color mixing
+    or a brightness measurement.
+library: Arduino-ESP32 3.x; no additional library
+output: Red, green and blue channels are requested in turn for one second, with an all-off pause. Blue/green brightness
+  at 3.3 V is not guaranteed; it depends on actual forward voltage.
+how_it_works: Each GPIO controls one LED junction. Resistor values and different forward voltages affect balance,
+  so equal drive does not imply equal brightness. This simple digital test avoids PWM setup. The linked controller
+  introduces PWM using its own hardware assumptions. If higher voltage is needed, design a separate transistor/driver
+  interface rather than feeding 5 V into ESP32 GPIO.
+applications:
+- Three-state indicator
+- Color pattern learning
+- RGB PWM project preparation
+troubleshooting:
+- problem: Colors do not match Serial labels
+  cause: Lead order differs from the assumed assignment.
+  fix: Power off and remap leads from the actual datasheet.
+- problem: All colors stay dark
+  cause: Common-anode device, incorrect common wire or unsuitable voltage.
+  fix: Identify topology first; do not randomly attach a supply rail.
+- problem: Only red is bright
+  cause: Blue/green forward voltage or resistor/part differences.
+  fix: Check actual forward-voltage data. Do not remove the resistors to force brightness.
+faqs:
+- question: Can I use common anode unchanged?
+  answer: No. A 3.3 V common-anode circuit uses GPIO sinking with LOW meaning on, and needs verified pin/current
+    limits. The provided code and wiring are common-cathode only.
+- question: Is this an addressable RGB LED?
+  answer: No. Four-lead analog RGB LEDs need three separate color outputs. WS2812-style parts use a different power
+    and data interface.
+related_guides:
+- title: PWM fundamentals
+  href: /guides/pwm-fundamentals.html
+  description: Learn the current Arduino-ESP32 PWM APIs.
+related_projects:
+- title: RGB LED pattern controller
+  href: /projects/esp32-rgb-led-pattern-controller.html
+  description: Move from one-color testing to PWM patterns with the project's own pin map.

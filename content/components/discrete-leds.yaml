@@ -1,0 +1,164 @@
+slug: discrete-leds
+name: 'Discrete LEDs: Polarity, Resistors and ESP32 Blink'
+category: Output Devices
+difficulty: Beginner
+image: /assets/visuals/components/photos/discrete-leds-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Discrete LEDs; not a verified part or physical pin layout
+summary: Identify an ordinary two-lead indicator LED and blink a red LED through a 470 ohm resistor. Check polarity
+  and current limits before connecting it.
+date_modified: '2026-10-09'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the specified unused GPIOs exposed; Arduino IDE 2.x and Arduino-ESP32
+      3.x. Other families require their own pin map. Serial Monitor: 115200 baud. No extra library.'
+  - label: Supported hardware
+    value: One documented low-current red indicator LED suitable for a 3.3 V resistor-limited GPIO circuit. Kingbright
+      WP7113ID is a datasheet example, not identification of the illustrated assortment. Excludes high-power LEDs,
+      built-in-resistor lamps and addressable LEDs.
+  - label: Prerequisites and parts
+    value: Complete IDE setup and Blink first. Red LED, known 470 ohm / 0.25 W resistor, breadboard and wires. Confirm
+      the LED datasheet and polarity.
+  - label: Expected result
+    value: Red LED alternates one second on and one second off; Serial reports ON and OFF. Brightness is part-dependent.
+  - label: Verification limits
+    value: Documentation and automated content/browser checks only in this update. No ESP32 compilation or physical
+      hardware testing. The approved image depicts a component family; it does not authenticate a model, rating
+      or terminal order.
+related_components:
+- title: ESP32 DevKit assumptions
+  href: /components/esp32-devkit.html
+  description: Check board family, power and usable GPIOs.
+sources:
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: Pin modes and digital output on Arduino-ESP32.
+- title: Kingbright WP7113ID datasheet
+  url: https://www.kingbrightusa.com/images/catalog/SPEC/WP7113ID.pdf
+  note: Example red indicator LED; not identification of the artwork.
+eli12: |-
+  An LED conducts mainly in one direction and converts some electrical energy into light. A series resistor limits current. Lens color alone does not establish emitted color, forward voltage, current rating or package size.
+
+  Use the actual datasheet or a power-off diode test to identify anode and cathode. A longer lead or flat case edge can be a clue, but cut leads and unusual packages make those clues unreliable. The illustration is not a polarity diagram.
+electrical:
+  supply: GPIO25 supplies the example through 470 ohms; no 5 V connection.
+  signal: 3.3 V GPIO output; HIGH lights the correctly oriented LED.
+  protection: One series resistor per LED; choose from actual forward-voltage/current limits. Never connect an LED
+    directly across a GPIO and ground.
+  basis: Kingbright indicator-LED documentation; GPIO compatibility is conditional on the selected LED.
+specs:
+- name: Example resistor
+  value: 470 ohm, 0.25 W
+  why: At 3.3 V the resistor limits even a shorted LED to about 7 mA; actual LED current is lower.
+- name: Polarity
+  value: Anode toward GPIO; cathode to GND
+  why: Identify from the actual datasheet or diode test.
+- name: Illustrated colors
+  value: Red / green / yellow lenses
+  why: No exact part ratings or dimensions inferred.
+- name: Supply in this example
+  value: GPIO25 supplies the example through 470 ohms; no 5 V connection.
+  why: Applies only to the supported hardware assumptions above.
+- name: ESP32 signal compatibility
+  value: 3.3 V GPIO output; HIGH lights the correctly oriented LED.
+  why: Applies only to the supported hardware assumptions above.
+- name: Required protection
+  value: One series resistor per LED; choose from actual forward-voltage/current limits. Never connect an LED directly
+    across a GPIO and ground.
+  why: Applies only to the supported hardware assumptions above.
+pinout:
+- pin: Anode
+  role: Identify the real anode; resistor can be on either side of a single series circuit.
+  connects: GPIO25 through 470 ohms
+  note: Identify the real anode; resistor can be on either side of a single series circuit.
+- pin: Cathode
+  role: Do not infer lead identity from artwork.
+  connects: ESP32 GND
+  note: Do not infer lead identity from artwork.
+wiring:
+  summary: GPIO25 → 470 ohm resistor → LED anode; LED cathode → GND.
+  table_columns:
+  - Identified terminal
+  - Connection
+  - Qualification
+  table_rows:
+  - component_pin: Anode
+    esp32_pin: GPIO25 through 470 ohms
+    notes: Identify the real anode; resistor can be on either side of a single series circuit.
+  - component_pin: Cathode
+    esp32_pin: ESP32 GND
+    notes: Do not infer lead identity from artwork.
+  steps:
+  - Unplug USB before wiring; identify polarity using documentation or a diode test.
+  - Build the series circuit; confirm breadboard rows do not bypass the resistor.
+  - Upload and open Serial Monitor at 115200 baud.
+  image: /assets/visuals/components/wiring/discrete-leds-wiring.svg
+  illustration_alt: Logical discrete leds terminal connections; not a physical pin-position diagram. See the wiring
+    table for qualifications.
+  open_full_size: true
+code:
+  title: External red LED blink
+  filename: discrete_leds_esp32.ino
+  wiring: GPIO25 → 470 ohm resistor → LED anode; LED cathode → GND.
+  content: |
+    #include <Arduino.h>
+    constexpr uint8_t LED_PIN = 25;
+    void setup() {
+      pinMode(LED_PIN, OUTPUT);
+      digitalWrite(LED_PIN, LOW);
+      Serial.begin(115200);
+    }
+    void loop() {
+      digitalWrite(LED_PIN, HIGH);
+      Serial.println("ON");
+      delay(1000);
+      digitalWrite(LED_PIN, LOW);
+      Serial.println("OFF");
+      delay(1000);
+    }
+  notes: This GPIO differs from some linked tutorials; follow this page's wiring. No onboard LED assumed.
+library: Arduino-ESP32 3.x; no additional library
+output: Red LED alternates one second on and one second off; Serial reports ON and OFF. Brightness is part-dependent.
+how_it_works: HIGH places about 3.3 V across the series path. Estimate current with I=(VGPIO−VF)/R, then check the
+  actual part limits. A red LED at an illustrative 2.0 V forward drop draws roughly 2.8 mA through 470 ohms; this
+  is a calculation, not a measurement. Green or blue parts with higher forward voltage may be dim or fail to light
+  on this rail.
+applications:
+- Blink learning exercise
+- Low-current status indication
+- Button-controlled LED
+troubleshooting:
+- problem: Serial changes but LED stays dark
+  cause: Reversed LED, wrong row or unsupported forward voltage.
+  fix: Power off; confirm polarity and series path. Try the documented red indicator LED, not a higher-voltage lamp.
+- problem: LED stays on
+  cause: Wrong GPIO or wiring to the supply instead of GPIO25.
+  fix: Trace GPIO25 to the resistor and check the uploaded sketch.
+- problem: LED is unexpectedly bright or hot
+  cause: Missing/bypassed resistor or unsuitable part.
+  fix: Disconnect immediately; verify resistance and actual LED limits before retrying.
+faqs:
+- question: Can three LEDs share one resistor?
+  answer: Use one resistor for each independently driven LED. A shared resistor makes current and brightness depend
+    on which LEDs are on.
+- question: Does the longer lead always mean anode?
+  answer: It is a common clue, not a universal guarantee. Use the actual datasheet or a diode test, especially with
+    trimmed leads.
+related_guides:
+- title: Blink an external LED
+  href: /guides/blink-led-esp32.html
+  description: Follow the beginner lesson; its own pin map remains authoritative.
+- title: Button controls LED
+  href: /guides/button-led-control.html
+  description: Add a defined button input.
+related_projects:
+- title: RGB pattern controller
+  href: /projects/esp32-rgb-led-pattern-controller.html
+  description: Continue with three color channels.

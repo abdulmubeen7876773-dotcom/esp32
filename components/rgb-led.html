@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Four-Lead RGB LED: Common Terminal and ESP32 Color Test — Component Guide | ESP32 Engine</title>
+<meta name="description" content="Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels on a classic ESP32.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/components/rgb-led.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="Four-Lead RGB LED: Common Terminal and ESP32 Color Test — Component Guide | ESP32 Engine">
+<meta property="og:description" content="Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels on a classic ESP32.">
+<meta property="og:url" content="https://esp32engine.com/components/rgb-led.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Four-Lead RGB LED: Common Terminal and ESP32 Color Test — Component Guide | ESP32 Engine">
+<meta name="twitter:description" content="Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels on a classic ESP32.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Four-Lead RGB LED: Common Terminal and ESP32 Color Test — Component Guide | ESP32 Engine","description":"Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels on a classic ESP32.","url":"https://esp32engine.com/components/rgb-led.html","isPartOf":{"@type":"WebSite","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://esp32engine.com/components.html"},{"@type":"ListItem","position":3,"name":"Four-Lead RGB LED: Common Terminal and ESP32 Color Test","item":"https://esp32engine.com/components/rgb-led.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Four-Lead RGB LED: Common Terminal and ESP32 Color Test","description":"Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels on a classic ESP32.","dateModified":"2026-10-09","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/components/rgb-led.html"},"proficiencyLevel":"Beginner"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I use common anode unchanged?","acceptedAnswer":{"@type":"Answer","text":"No. A 3.3 V common-anode circuit uses GPIO sinking with LOW meaning on, and needs verified pin/current limits. The provided code and wiring are common-cathode only."}},{"@type":"Question","name":"Is this an addressable RGB LED?","acceptedAnswer":{"@type":"Answer","text":"No. Four-lead analog RGB LEDs need three separate color outputs. WS2812-style parts use a different power and data interface."}}]}</script>
+</head>
+<body class="component-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html" class="active">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="component-hero-band">
+  <section class="wrap component-hero component-hero--concise">
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/components.html">Components</a></li><li aria-current="page">Four-Lead RGB LED: Common Terminal and ESP32 Color Test</li></ol></nav>
+    <div class="component-hero-grid">
+      <div class="component-hero-copy">
+        <p class="hero-eyebrow component-hero-eyebrow">Component Guide</p>
+        <div class="component-hero-badges">
+          <span class="badge badge-cat">Output Devices</span>
+          <span class="badge badge-beginner">Beginner</span>
+        </div>
+        <h1 class="component-hero-title">Four-Lead RGB LED: Common Terminal and ESP32 Color Test</h1>
+        <p class="component-hero-summary">Identify common-cathode versus common-anode RGB LEDs, use a resistor for each color, and cycle three channels on a classic ESP32.</p>
+        <div class="component-meta-strip" aria-label="Guide metadata">
+  <span><strong>Beginner</strong><small>Difficulty</small></span>
+  <span><strong>Classic ESP32</strong><small>Compatible</small></span>
+</div>
+        <div class="component-share" aria-label="Share this component guide">
+  <a class="component-share-btn" href="https://twitter.com/intent/tweet?url=https://esp32engine.com/components/rgb-led.html&text=Four-Lead RGB LED: Common Terminal and ESP32 Color Test" rel="noopener" target="_blank">Share</a>
+  <button class="component-share-btn" type="button" data-copy-url="https://esp32engine.com/components/rgb-led.html">Copy link</button>
+</div>
+      </div>
+      <div class="component-hero-media"><div class="component-hero-photo"><img src="/assets/visuals/components/photos/rgb-led-illustration.webp" alt="Product-style illustration of Four-Lead RGB LED; not a verified part or physical pin layout" loading="eager" width="1408" height="768"></div><div class="component-hero-illustration" aria-hidden="true"><svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="Four-Lead RGB LED: Common Terminal and ESP32 Color Test illustration">
+  <defs>
+    <linearGradient id="ca-board-rgb-led-1" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081D3A"/><stop offset="1" stop-color="#1488A6"/>
+    </linearGradient>
+    <radialGradient id="ca-glow-rgb-led-1" cx="50%" cy="50%" r="60%">
+      <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ca-shadow-rgb-led-1" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#081D3A" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
+  <circle cx="260" cy="178" r="168" fill="url(#ca-glow-rgb-led-1)"/>
+  <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+  <g filter="url(#ca-shadow-rgb-led-1)">
+    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#ca-board-rgb-led-1)"/>
+    <rect x="174" y="124" width="116" height="78" rx="14" fill="#081D3A" opacity=".88"/>
+    <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
+    <circle cx="327" cy="183" r="19" fill="#FBBF24"/>
+    <text x="232" y="174" text-anchor="middle" fill="#E0F2FE" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800">FR</text>
+    <text x="260" y="282" text-anchor="middle" fill="#475569" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700">Output Devices</text>
+    <g stroke="#DBEAFE" stroke-width="5" stroke-linecap="round" opacity=".95">
+      <path d="M138 120h-28M138 154h-28M138 188h-28M382 120h28M382 154h28M382 188h28"/>
+    </g>
+  </g>
+</svg></div></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap component-guide-shell component-guide-shell--concise">
+
+<article class="component-journey article-concise"><details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#eli12-heading">Overview</a><a href="#specs-heading">Technical Specifications</a><a href="#pinout-heading">Pinout</a><a href="#wiring-heading">Wiring Diagram</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#output-heading">Expected Output</a><a href="#how-it-works-heading">How it works</a><a href="#troubleshooting-heading">Troubleshooting</a><a href="#applications-heading">Where you use it</a><a href="#guides-heading">Continue learning</a><a href="#projects-heading">Related projects</a><a href="#related-components-heading">Related components</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a></nav></details><section class="component-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Board and software</dt><dd>Classic ESP32-WROOM-32/32E DevKit with the specified unused GPIOs exposed; Arduino IDE 2.x and Arduino-ESP32 3.x. Other families require their own pin map. Serial Monitor: 115200 baud. No extra library.</dd><dt>Supported hardware</dt><dd>A documented bare four-lead common-cathode RGB LED whose channels tolerate the resistor-limited 3.3 V test. Confirm actual R/G/B/common leads before wiring. The illustration cannot establish common-terminal type or package size.</dd><dt>Prerequisites and parts</dt><dd>IDE setup, Blink, RGB LED and three known 470 ohm / 0.25 W resistors; breadboard, wires and part documentation.</dd><dt>Expected result</dt><dd>Red, green and blue channels are requested in turn for one second, with an all-off pause. Blue/green brightness at 3.3 V is not guaranteed; it depends on actual forward voltage.</dd><dt>Verification limits</dt><dd>Documentation and automated content/browser checks only in this update. No ESP32 compilation or physical hardware testing. The approved image depicts a component family; it does not authenticate a model, rating or terminal order.</dd></dl></section>
+<section class="component-section" id="eli12" aria-labelledby="eli12-heading">
+  <h2 tabindex="-1" id="eli12-heading"><span class="component-section-title">Overview</span></h2>
+  <div class="component-section-prose"><p>Three LED junctions share one terminal. Common cathode joins their negative terminals; common anode joins their positive terminals. This example supports common cathode only. It is not a WS2812/addressable LED.</p><p>Find the actual circuit symbol and lead order in the datasheet. Do not treat the longest lead, the artwork or another LED&#x27;s pin order as proof. Kingbright&#x27;s RGB datasheet is a reference example, not a match to this illustration.</p></div>
+</section>
+<section class="component-section" id="specs" aria-labelledby="specs-heading">
+  <h2 tabindex="-1" id="specs-heading"><span class="component-section-icon" aria-hidden="true">02</span><span class="component-section-title">Technical Specifications</span></h2>
+  <p class="component-section-lead">Arduino library: <strong>Arduino-ESP32 3.x; no additional library</strong></p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Common terminal</th>
+  <td>Common cathode for example</td>
+  <td>Other types need a different circuit and inverted logic.</td>
+</tr><tr>
+  <th scope="row">Color resistors</th>
+  <td>Three separate 470 ohm resistors</td>
+  <td>Limits each independent junction; no shared common-terminal resistor.</td>
+</tr><tr>
+  <th scope="row">Voltage headroom</th>
+  <td>Part-dependent</td>
+  <td>Some blue/green channels need more than a 3.3 V rail for useful brightness.</td>
+</tr><tr>
+  <th scope="row">Supply in this example</th>
+  <td>No separate rail in this common-cathode example; each GPIO drives a color through 470 ohms.</td>
+  <td>Applies only to the supported hardware assumptions above.</td>
+</tr><tr>
+  <th scope="row">ESP32 signal compatibility</th>
+  <td>GPIO25/26/27 are 3.3 V outputs; HIGH turns the selected channel on.</td>
+  <td>Applies only to the supported hardware assumptions above.</td>
+</tr><tr>
+  <th scope="row">Required protection</th>
+  <td>One resistor per channel. Never connect a common anode to 5 V and return its channels directly to ESP32 pins.</td>
+  <td>Applies only to the supported hardware assumptions above.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section" id="pinout" aria-labelledby="pinout-heading">
+  <h2 tabindex="-1" id="pinout-heading"><span class="component-section-icon" aria-hidden="true">03</span><span class="component-section-title">Pinout</span></h2>
+  <ul class="component-pinout-list"><li class="component-pin-row">
+  <span class="component-pin-name">Common cathode</span>
+  <span class="component-pin-role">Verified by the real part datasheet; no physical lead order assumed.</span>
+  <span class="component-pin-connects">ESP32 GND</span>
+  <span class="component-pin-note">Verified by the real part datasheet; no physical lead order assumed.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Red anode</span>
+  <span class="component-pin-role">One resistor for this channel.</span>
+  <span class="component-pin-connects">GPIO25 through 470 ohms</span>
+  <span class="component-pin-note">One resistor for this channel.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Green anode</span>
+  <span class="component-pin-role">One resistor for this channel.</span>
+  <span class="component-pin-connects">GPIO26 through 470 ohms</span>
+  <span class="component-pin-note">One resistor for this channel.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Blue anode</span>
+  <span class="component-pin-role">One resistor for this channel.</span>
+  <span class="component-pin-connects">GPIO27 through 470 ohms</span>
+  <span class="component-pin-note">One resistor for this channel.</span>
+</li></ul>
+</section>
+<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 tabindex="-1" id="wiring-heading"><span class="component-section-icon" aria-hidden="true">04</span><span class="component-section-title">Wiring Diagram</span></h2>
+  <p>Verified common cathode → GND; R/G/B anodes → separate 470 ohm resistors → GPIO25/26/27.</p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Identified terminal</th><th scope="col">Connection</th><th scope="col">Qualification</th></tr></thead>
+    <tbody><tr><td>Common cathode</td><td>ESP32 GND</td><td>Verified by the real part datasheet; no physical lead order assumed.</td></tr><tr><td>Red anode</td><td>GPIO25 through 470 ohms</td><td>One resistor for this channel.</td></tr><tr><td>Green anode</td><td>GPIO26 through 470 ohms</td><td>One resistor for this channel.</td></tr><tr><td>Blue anode</td><td>GPIO27 through 470 ohms</td><td>One resistor for this channel.</td></tr></tbody>
+  </table>
+</div>
+  <div class="component-wiring-art"><figure class="component-visual-art component-wiring-image">
+  <img src="/assets/visuals/components/wiring/rgb-led-wiring.svg" alt="Logical rgb led terminal connections; not a physical pin-position diagram. See the wiring table for qualifications." loading="lazy" decoding="async">
+</figure></div>
+  <p><a class="btn btn-secondary" href="/assets/visuals/components/wiring/rgb-led-wiring.svg" target="_blank" rel="noopener">Open wiring diagram at full size (new tab)</a></p>
+  <ol class="component-steps-list"><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">1</span>
+    <p class="component-step-text">Power off and identify common-terminal type and all four leads.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">2</span>
+    <p class="component-step-text">Wire one resistor in each color path; connect common cathode to GND.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">3</span>
+    <p class="component-step-text">Upload, then compare Serial channel labels with the actual emitted colors.</p>
+  </div>
+</li></ol>
+</section>
+<section class="component-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>One color at a time</h3><p>Verified common cathode → GND; R/G/B anodes → separate 470 ohm resistors → GPIO25/26/27.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">rgb_led_esp32.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+constexpr <span class="tok-kw">uint8_t</span> RED_PIN = <span class="tok-num">25</span>, GREEN_PIN = <span class="tok-num">26</span>, BLUE_PIN = <span class="tok-num">27</span>;
+const <span class="tok-kw">uint8_t</span> pins[] = {RED_PIN, GREEN_PIN, BLUE_PIN};
+const <span class="tok-kw">char</span>* names[] = {&quot;RED&quot;, &quot;GREEN&quot;, &quot;BLUE&quot;};
+<span class="tok-kw">void</span> allOff() { <span class="tok-kw">for</span> (<span class="tok-kw">uint8_t</span> pin : pins) <span class="tok-fn">digitalWrite</span>(pin, <span class="tok-const">LOW</span>); }
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-kw">for</span> (<span class="tok-kw">uint8_t</span> pin : pins) { <span class="tok-fn">pinMode</span>(pin, <span class="tok-const">OUTPUT</span>); <span class="tok-fn">digitalWrite</span>(pin, <span class="tok-const">LOW</span>); }
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">for</span> (<span class="tok-kw">uint8_t</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">3</span>; ++i) {
+    allOff();
+    <span class="tok-fn">digitalWrite</span>(pins[i], <span class="tok-const">HIGH</span>);
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(names[i]);
+    <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+    allOff();
+    <span class="tok-fn">delay</span>(<span class="tok-num">300</span>);
+  }
+}</code></pre>
+</div><p>Common-cathode only. Begin with one active color to identify leads; this is not calibrated color mixing or a brightness measurement.</p></section>
+<section class="component-section component-output" id="output" aria-labelledby="output-heading">
+  <h2 tabindex="-1" id="output-heading"><span class="component-section-icon" aria-hidden="true">OK</span><span class="component-section-title">Expected Output</span></h2>
+  <div class="component-output-body"><p>Red, green and blue channels are requested in turn for one second, with an all-off pause. Blue/green brightness at 3.3 V is not guaranteed; it depends on actual forward voltage.</p></div>
+</section>
+<section class="component-section" id="how-it-works" aria-labelledby="how-it-works-heading">
+  <h2 tabindex="-1" id="how-it-works-heading"><span class="component-section-title">How it works</span></h2>
+  <div class="component-section-prose"><p>Each GPIO controls one LED junction. Resistor values and different forward voltages affect balance, so equal drive does not imply equal brightness. This simple digital test avoids PWM setup. The linked controller introduces PWM using its own hardware assumptions. If higher voltage is needed, design a separate transistor/driver interface rather than feeding 5 V into ESP32 GPIO.</p></div>
+</section>
+<section class="component-section component-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 tabindex="-1" id="troubleshooting-heading"><span class="component-section-icon" aria-hidden="true">06</span><span class="component-section-title">Troubleshooting</span></h2>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Problem</th><th scope="col">Possible cause</th><th scope="col">Solution</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Colors do not match Serial labels</th>
+  <td>Lead order differs from the assumed assignment.</td>
+  <td>Power off and remap leads from the actual datasheet.</td>
+</tr><tr>
+  <th scope="row">All colors stay dark</th>
+  <td>Common-anode device, incorrect common wire or unsuitable voltage.</td>
+  <td>Identify topology first; do not randomly attach a supply rail.</td>
+</tr><tr>
+  <th scope="row">Only red is bright</th>
+  <td>Blue/green forward voltage or resistor/part differences.</td>
+  <td>Check actual forward-voltage data. Do not remove the resistors to force brightness.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section component-applications" id="applications" aria-labelledby="applications-heading">
+  <h2 tabindex="-1" id="applications-heading"><span class="component-section-title">Where you use it</span></h2>
+  <ul class="component-callout-list"><li>Three-state indicator</li><li>Color pattern learning</li><li>RGB PWM project preparation</li></ul>
+</section>
+<section class="component-section component-guides" id="guides" aria-labelledby="guides-heading">
+  <h2 tabindex="-1" id="guides-heading"><span class="component-section-title">Continue learning</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/guides/pwm-fundamentals.html">
+  <h3>PWM fundamentals</h3>
+  <p>Learn the current Arduino-ESP32 PWM APIs.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-projects" id="projects" aria-labelledby="projects-heading">
+  <h2 tabindex="-1" id="projects-heading"><span class="component-section-title">Related projects</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/projects/esp32-rgb-led-pattern-controller.html">
+  <h3>RGB LED pattern controller</h3>
+  <p>Move from one-color testing to PWM patterns with the project&#x27;s own pin map.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-related-components" id="related-components" aria-labelledby="related-components-heading">
+  <h2 tabindex="-1" id="related-components-heading"><span class="component-section-title">Related components</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/components/esp32-devkit.html">
+  <h3>ESP32 DevKit assumptions</h3>
+  <p>Check board family, power and usable GPIOs.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Can I use common anode unchanged?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. A 3.3 V common-anode circuit uses GPIO sinking with LOW meaning on, and needs verified pin/current limits. The provided code and wiring are common-cathode only.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Is this an addressable RGB LED?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Four-lead analog RGB LEDs need three separate color outputs. WS2812-style parts use a different power and data interface.</p></div></div></div>
+</section>
+<section class="component-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html">Espressif GPIO API</a> — Pin modes and digital output on Arduino-ESP32.</li><li><a href="https://www.kingbrightusa.com/images/catalog/spec/WP154A4SUREQBFZGC.pdf">Kingbright RGB LED datasheet</a> — Example electrical characteristics and package circuit; not identification of the generic illustration.</li></ul></section>
+</article>
+<nav class="component-prevnext" aria-label="Previous and next component"><a class="component-prevnext-card" href="/components/relay-module.html"><span>Previous</span><strong>1-Channel Relay Module</strong></a><a class="component-prevnext-card is-next" href="/components/sg90-micro-servo.html"><span>Next</span><strong>SG90 Micro Servo: External Power and ESP32 Pulses</strong></a></nav>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

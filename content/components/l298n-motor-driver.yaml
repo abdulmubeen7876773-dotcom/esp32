@@ -1,0 +1,242 @@
+slug: l298n-motor-driver
+name: 'L298N Motor Driver: Power, Enable and Safe Direction Test'
+category: Motors
+difficulty: Intermediate
+image: /assets/visuals/components/photos/l298n-motor-driver-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of L298N Motor Driver; not a verified part or physical pin layout
+summary: Understand separate motor and logic supplies, 3.3 V control and enable inputs. Try one unloaded low-voltage
+  motor only after verifying the actual board schematic.
+date_modified: '2026-10-09'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the specified unused GPIOs exposed; Arduino IDE 2.x and Arduino-ESP32
+      3.x. Other families require their own pin map. Serial Monitor: 115200 baud. No extra library.'
+  - label: Supported hardware
+    value: A documented L298N breakout exposing ENA, IN1, IN2, OUT1/OUT2, motor supply, logic supply and ground.
+      It must include correctly rated flyback diodes, decoupling, heatsinking and sense connections. The illustrated
+      dual-chip board is not a verified breakout or pin map.
+  - label: Prerequisites and parts
+    value: IDE setup; verified module schematic; documented low-current 6 V brushed motor; current-limited external
+      6 V motor supply and regulated 5 V logic supply; three 10 kiloohm pull-downs. Motor starting/stall current,
+      voltage drop and thermal limits must fit the actual board. Secure the motor with no attached load.
+  - label: Expected result
+    value: Motor turns one way for one second, coasts for two seconds, then turns the other way. ENA stays LOW at
+      startup and between changes. Rotation direction depends on motor lead order; never stall it for testing.
+  - label: Verification limits
+    value: Documentation and automated content/browser checks only in this update. No ESP32 compilation or physical
+      hardware testing. The approved image depicts a component family; it does not authenticate a model, rating
+      or terminal order.
+related_components:
+- title: ESP32 DevKit assumptions
+  href: /components/esp32-devkit.html
+  description: Check board family, power and usable GPIOs.
+sources:
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: Pin modes and digital output on Arduino-ESP32.
+- title: ST L298 datasheet
+  url: https://www.st.com/resource/en/datasheet/cd00000240.pdf
+  note: Chip logic thresholds, supply separation, enable truth table, inductive protection and thermal limits; not
+    an unknown module schematic.
+eli12: |-
+  An H-bridge reverses current through a motor. ENA disables bridge A independently of its two direction inputs. With ENA enabled, opposite input levels drive opposite directions; disabling ENA leaves the outputs inactive for a coast stop.
+
+  The L298 is a bipolar driver with appreciable voltage loss and heating. Its chip limits are not the continuous safe ratings of an unidentified board. For a small battery-powered robot, a suitable modern MOSFET driver may waste less power; verify that alternative separately.
+electrical:
+  supply: 'Example motor rail: external 6 V; logic rail: regulated 5 V through a board-documented external-input
+    configuration. Never power the motor from ESP32 3.3 V or GPIO.'
+  signal: L298 chip IN/EN HIGH threshold is 2.3 V minimum; 3.3 V control is suitable only if the board has no conflicting
+    5 V pull-ups or interface. Common ground required.
+  protection: Disable the onboard regulator only by the exact board instructions before applying external logic
+    power. Remove any documented ENA-to-5 V jumper before GPIO control. Add 10 kiloohm IN1/IN2/ENA pull-downs; qualify
+    protection, supply current and temperature.
+  basis: ST L298 datasheet establishes chip behavior; the exact module schematic remains mandatory.
+specs:
+- name: Logic supply
+  value: 5 V regulated in this example
+  why: Distinct from 3.3 V input logic; regulator arrangements are board-specific.
+- name: Motor rail
+  value: 6 V example, current-limited
+  why: Must match motor/board ratings and account for driver loss.
+- name: Startup
+  value: ENA LOW with external pull-down
+  why: Keeps motor disabled while ESP32 pins are high impedance.
+- name: Current capacity
+  value: Not inferred from illustration
+  why: Check stall/start current, diode, PCB, heatsink and thermal ratings.
+- name: Supply in this example
+  value: 'Example motor rail: external 6 V; logic rail: regulated 5 V through a board-documented external-input
+    configuration. Never power the motor from ESP32 3.3 V or GPIO.'
+  why: Applies only to the supported hardware assumptions above.
+- name: ESP32 signal compatibility
+  value: L298 chip IN/EN HIGH threshold is 2.3 V minimum; 3.3 V control is suitable only if the board has no conflicting
+    5 V pull-ups or interface. Common ground required.
+  why: Applies only to the supported hardware assumptions above.
+- name: Required protection
+  value: Disable the onboard regulator only by the exact board instructions before applying external logic power.
+    Remove any documented ENA-to-5 V jumper before GPIO control. Add 10 kiloohm IN1/IN2/ENA pull-downs; qualify
+    protection, supply current and temperature.
+  why: Applies only to the supported hardware assumptions above.
+pinout:
+- pin: ENA
+  role: Remove only the documented ENA-high jumper; never join GPIO to a 5 V pull-up.
+  connects: GPIO25 with 10 kiloohm pull-down to GND
+  note: Remove only the documented ENA-high jumper; never join GPIO to a 5 V pull-up.
+- pin: IN1 / IN2
+  role: 3.3 V control after schematic verification.
+  connects: GPIO26 / GPIO27, each with 10 kiloohm pull-down
+  note: 3.3 V control after schematic verification.
+- pin: OUT1 / OUT2
+  role: Swapping leads swaps direction; neither goes to ESP32 ground.
+  connects: Two motor leads
+  note: Swapping leads swaps direction; neither goes to ESP32 ground.
+- pin: Motor supply / GND
+  role: Current-limited supply; motor ratings and driver drop constrain operation.
+  connects: External 6 V / common GND
+  note: Current-limited supply; motor ratings and driver drop constrain operation.
+- pin: Logic supply
+  role: Only in the documented external-input mode; isolate onboard regulator output. Never connect to ESP32 3.3
+    V.
+  connects: External regulated 5 V
+  note: Only in the documented external-input mode; isolate onboard regulator output. Never connect to ESP32 3.3
+    V.
+- pin: Unused bridge B
+  role: Tie unused inputs to ground as board documentation permits; do not leave floating.
+  connects: ENB LOW; IN3/IN4 LOW; outputs unconnected
+  note: Tie unused inputs to ground as board documentation permits; do not leave floating.
+wiring:
+  summary: 'Verified module: ENA/IN1/IN2 → GPIO25/26/27 with 10 kiloohm pull-downs; motor → OUT1/OUT2; separate
+    6 V motor and 5 V logic supplies; shared ground.'
+  table_columns:
+  - Identified terminal
+  - Connection
+  - Qualification
+  table_rows:
+  - component_pin: ENA
+    esp32_pin: GPIO25 with 10 kiloohm pull-down to GND
+    notes: Remove only the documented ENA-high jumper; never join GPIO to a 5 V pull-up.
+  - component_pin: IN1 / IN2
+    esp32_pin: GPIO26 / GPIO27, each with 10 kiloohm pull-down
+    notes: 3.3 V control after schematic verification.
+  - component_pin: OUT1 / OUT2
+    esp32_pin: Two motor leads
+    notes: Swapping leads swaps direction; neither goes to ESP32 ground.
+  - component_pin: Motor supply / GND
+    esp32_pin: External 6 V / common GND
+    notes: Current-limited supply; motor ratings and driver drop constrain operation.
+  - component_pin: Logic supply
+    esp32_pin: External regulated 5 V
+    notes: Only in the documented external-input mode; isolate onboard regulator output. Never connect to ESP32
+      3.3 V.
+  - component_pin: Unused bridge B
+    esp32_pin: ENB LOW; IN3/IN4 LOW; outputs unconnected
+    notes: Tie unused inputs to ground as board documentation permits; do not leave floating.
+  steps:
+  - With all power disconnected, find the real module schematic and regulator/jumper instructions. Stop if any terminal
+    function or GPIO-facing voltage is unknown.
+  - Confirm diodes, bypass capacitors, current/thermal limits and common ground; fit the three pull-downs and secure
+    the unloaded motor.
+  - Configure external logic power and ENA control only as documented; set the motor supply current limit below
+    the verified circuit limit.
+  - Power and upload with ENA held LOW; observe the standalone sequence. Disconnect power before touching wiring.
+  image: /assets/visuals/components/wiring/l298n-motor-driver-wiring.svg
+  illustration_alt: Logical l298n motor driver terminal connections; not a physical pin-position diagram. See the
+    wiring table for qualifications.
+  open_full_size: true
+code:
+  title: One motor, disabled before reversal
+  filename: l298n_motor_driver_esp32.ino
+  wiring: 'Verified module: ENA/IN1/IN2 → GPIO25/26/27 with 10 kiloohm pull-downs; motor → OUT1/OUT2; separate 6
+    V motor and 5 V logic supplies; shared ground.'
+  content: |
+    #include <Arduino.h>
+    constexpr uint8_t ENA = 25, IN1 = 26, IN2 = 27;
+    void coast() {
+      digitalWrite(ENA, LOW);
+      digitalWrite(IN1, LOW);
+      digitalWrite(IN2, LOW);
+    }
+    void runMotor(bool reverse) {
+      coast();
+      digitalWrite(IN1, reverse ? LOW : HIGH);
+      digitalWrite(IN2, reverse ? HIGH : LOW);
+      digitalWrite(ENA, HIGH);
+    }
+    void setup() {
+      pinMode(ENA, OUTPUT);
+      digitalWrite(ENA, LOW);
+      pinMode(IN1, OUTPUT);
+      pinMode(IN2, OUTPUT);
+      coast();
+      Serial.begin(115200);
+      Serial.println("Disabled at startup; unloaded low-voltage motor only.");
+      delay(2000);
+    }
+    void loop() {
+      Serial.println("Direction A");
+      runMotor(false);
+      delay(1000);
+      coast();
+      Serial.println("Coast");
+      delay(2000);
+      Serial.println("Direction B");
+      runMotor(true);
+      delay(1000);
+      coast();
+      Serial.println("Coast");
+      delay(2000);
+    }
+  notes: Coast is not braking or guaranteed standstill. Increase the off interval for actual inertia; never reverse
+    a still-spinning loaded motor with this demonstration. Software does not replace pull-downs or protection.
+library: Arduino-ESP32 3.x; no additional library
+output: Motor turns one way for one second, coasts for two seconds, then turns the other way. ENA stays LOW at startup
+  and between changes. Rotation direction depends on motor lead order; never stall it for testing.
+how_it_works: Direction changes occur while ENA is LOW, after a coast interval. The example provides no closed-loop
+  speed control, current sensing or fault handling. A stopped sketch cannot guarantee a safe motor; external enable
+  bias, current limiting and an accessible power disconnect are required. Do not interpret a nominal chip current
+  figure as a safe module operating current.
+applications:
+- Understanding enable versus direction
+- Unloaded DC motor experiment
+- Preparation for a documented robot driver interface
+troubleshooting:
+- problem: Motor does not turn
+  cause: ENA disabled, missing logic rail, supply current limit or driver voltage drop.
+  fix: Check terminal voltages and configuration against the board schematic with motor power disconnected first.
+    Do not raise supply above motor ratings to compensate blindly.
+- problem: ESP32 resets when motor starts
+  cause: Supply droop, motor noise or poor ground routing.
+  fix: Keep motor current out of ESP32 supply paths; use documented decoupling and suitable separate rails.
+- problem: Driver heats quickly
+  cause: Excess load/current, short or inadequate heatsink.
+  fix: Disconnect. Check motor stall current and board thermal ratings; reduce load or select a more appropriate
+    driver.
+- problem: Motor moves at startup
+  cause: ENA pull-down missing or still tied to 5 V.
+  fix: Power off; check the enable jumper/interface and external pull-down before another attempt.
+faqs:
+- question: Is the picture a pinout?
+  answer: No. Its dual-chip layout is illustrative and not a documented module. Use the schematic and terminal labels
+    of the actual purchased board.
+- question: Can I use the board 5 V terminal to power ESP32?
+  answer: Not assumed here. It may be a regulator output or logic input depending on board/jumpers. ESP32 stays
+    on its own USB supply; only grounds are shared.
+- question: Does this cover a two-motor robot unchanged?
+  answer: No. It tests bridge A only; bridge B is disabled. The linked robot has a different pin map and requires
+    its own verified enable and power design.
+related_guides:
+- title: Arduino IDE setup
+  href: /guides/installing-arduino-ide-esp32.html
+  description: First verify upload and Serial on the supported board.
+related_projects:
+- title: Line-following robot
+  href: /projects/esp32-line-following-robot.html
+  description: Review its separate two-motor interface and power assumptions.

@@ -1,0 +1,178 @@
+slug: passive-buzzer
+name: 'Passive Buzzer: Piezo Assumptions and ESP32 Tones'
+category: Output Devices
+difficulty: Beginner
+image: /assets/visuals/components/photos/passive-buzzer-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Passive Buzzer; not a verified part or physical pin layout
+summary: Distinguish passive sounders from active buzzers and play a short tone with Arduino-ESP32 3.x. The example
+  is for a documented piezo, not an unidentified magnetic buzzer.
+date_modified: '2026-10-09'
+concise_layout: true
+show_time_estimates: false
+board_family: Classic ESP32
+curated_faqs: true
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the specified unused GPIOs exposed; Arduino IDE 2.x and Arduino-ESP32
+      3.x. Other families require their own pin map. Serial Monitor: 115200 baud. No extra library.'
+  - label: Supported hardware
+    value: A two-terminal external-drive piezo sounder rated for a 0–3.3 V square-wave drive, with its manufacturer-approved
+      drive circuit. The illustration's passive label does not prove piezo construction, resonance or current. A
+      magnetic sounder needs a separate documented driver and inductive protection.
+  - label: Prerequisites and parts
+    value: Complete IDE setup. Qualified piezo sounder, known 1 kiloohm series resistor, wires and breadboard. Check
+      the actual sounder's permitted voltage, frequency and driver requirements.
+  - label: Expected result
+    value: A 2 kHz tone lasts 250 ms, followed by silence for one second. Serial prints TONE and SILENT. Volume
+      depends on the sounder and the series resistor.
+  - label: Verification limits
+    value: Documentation and automated content/browser checks only in this update. No ESP32 compilation or physical
+      hardware testing. The approved image depicts a component family; it does not authenticate a model, rating
+      or terminal order.
+related_components:
+- title: ESP32 DevKit assumptions
+  href: /components/esp32-devkit.html
+  description: Check board family, power and usable GPIOs.
+sources:
+- title: Espressif GPIO API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html
+  note: Pin modes and digital output on Arduino-ESP32.
+- title: Murata piezoelectric sound components
+  url: https://www.murata.com/en-global/products/sound/sounder
+  note: Manufacturer guidance on external versus self-drive sounders; not a model identification.
+- title: Espressif LEDC API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/ledc.html
+  note: ledcAttach, pin-based ledcWriteTone and zero-frequency behavior.
+eli12: |-
+  A passive sounder needs an alternating drive waveform. An active buzzer contains an oscillator and can sound from DC. Neither its round case nor a plus mark identifies its internal construction.
+
+  The example deliberately supports only an external-drive piezo qualified for this circuit. Do not connect an unknown magnetic coil, speaker or active module directly to the GPIO. The approved illustration is a category image, not a verified electrical model.
+electrical:
+  supply: Piezo receives only the GPIO25 waveform through 1 kiloohm; no external power rail in this example.
+  signal: LEDC produces a 0–3.3 V, 50% duty waveform. GPIO is LOW during silence.
+  protection: The 1 kiloohm series resistor limits edge/short-circuit current to about 3.3 mA at 3.3 V. It does
+    not make an unknown magnetic load suitable or replace a manufacturer drive circuit.
+  basis: Murata external-drive sounder guidance and Espressif LEDC API; actual piezo suitability must be checked.
+specs:
+- name: Supported construction
+  value: External-drive piezo only
+  why: Magnetic sounders and active buzzers require different interfaces.
+- name: Example tone
+  value: 2 kHz for 250 ms
+  why: Software choice, not a claimed resonance or measured loudness.
+- name: Signal resistor
+  value: 1 kiloohm
+  why: Limits GPIO charging pulses and reduces volume; verify actual drive requirements.
+- name: Supply in this example
+  value: Piezo receives only the GPIO25 waveform through 1 kiloohm; no external power rail in this example.
+  why: Applies only to the supported hardware assumptions above.
+- name: ESP32 signal compatibility
+  value: LEDC produces a 0–3.3 V, 50% duty waveform. GPIO is LOW during silence.
+  why: Applies only to the supported hardware assumptions above.
+- name: Required protection
+  value: The 1 kiloohm series resistor limits edge/short-circuit current to about 3.3 mA at 3.3 V. It does not make
+    an unknown magnetic load suitable or replace a manufacturer drive circuit.
+  why: Applies only to the supported hardware assumptions above.
+pinout:
+- pin: Piezo drive terminal
+  role: Use the actual documented drive terminal; artwork is not pin identification.
+  connects: GPIO25 through 1 kiloohm
+  note: Use the actual documented drive terminal; artwork is not pin identification.
+- pin: Piezo return terminal
+  role: Follow manufacturer polarity/drive instructions if present.
+  connects: ESP32 GND
+  note: Follow manufacturer polarity/drive instructions if present.
+wiring:
+  summary: Qualified piezo drive terminal → 1 kiloohm → GPIO25; return → GND. No magnetic or active sounder substitution.
+  table_columns:
+  - Identified terminal
+  - Connection
+  - Qualification
+  table_rows:
+  - component_pin: Piezo drive terminal
+    esp32_pin: GPIO25 through 1 kiloohm
+    notes: Use the actual documented drive terminal; artwork is not pin identification.
+  - component_pin: Piezo return terminal
+    esp32_pin: ESP32 GND
+    notes: Follow manufacturer polarity/drive instructions if present.
+  steps:
+  - Disconnect power and confirm external-drive piezo construction and permitted waveform.
+  - Wire the series resistor and common return; keep sounder away from ears.
+  - Upload and open Serial Monitor; if silent, verify construction and frequency requirements before changing the
+    circuit.
+  image: /assets/visuals/components/wiring/passive-buzzer-wiring.svg
+  illustration_alt: Logical passive buzzer terminal connections; not a physical pin-position diagram. See the wiring
+    table for qualifications.
+  open_full_size: true
+code:
+  title: Short tone with pin-based LEDC
+  filename: passive_buzzer_esp32.ino
+  wiring: Qualified piezo drive terminal → 1 kiloohm → GPIO25; return → GND. No magnetic or active sounder substitution.
+  content: |
+    #include <Arduino.h>
+    constexpr uint8_t BUZZER_PIN = 25;
+    bool ready = false;
+    void setup() {
+      Serial.begin(115200);
+      pinMode(BUZZER_PIN, OUTPUT);
+      digitalWrite(BUZZER_PIN, LOW);
+      ready = ledcAttach(BUZZER_PIN, 2000, 8);
+      if (!ready) Serial.println("LEDC attach failed; check board and resources.");
+    }
+    void loop() {
+      if (!ready) { delay(1000); return; }
+      if (ledcWriteTone(BUZZER_PIN, 2000) == 0) {
+        ledcWriteTone(BUZZER_PIN, 0);
+        Serial.println("Tone setup failed.");
+        delay(1000);
+        return;
+      }
+      Serial.println("TONE");
+      delay(250);
+      ledcWriteTone(BUZZER_PIN, 0);
+      Serial.println("SILENT");
+      delay(1000);
+    }
+  notes: Arduino-ESP32 3.x APIs take the pin, not an old channel number. No tone library required. Zero frequency
+    sets duty to zero; sounder ratings must be checked separately.
+library: Arduino-ESP32 3.x; no additional library
+output: A 2 kHz tone lasts 250 ms, followed by silence for one second. Serial prints TONE and SILENT. Volume depends
+  on the sounder and the series resistor.
+how_it_works: The LEDC peripheral toggles the output at the selected frequency; tone generation continues during
+  delay. Setting frequency to zero stops the drive. Resonance affects acoustic output, so a working Serial message
+  is not proof that the sounder is suitable or audible. A series resistor trades volume for lower GPIO charging
+  current.
+applications:
+- Short status tone
+- Digital piano preparation
+- Low-volume user feedback
+troubleshooting:
+- problem: Serial works but no sound
+  cause: Wrong sounder type, unsuitable frequency or wiring.
+  fix: Confirm an external-drive piezo and its data. Check GPIO25 and ground; do not bypass protection on an unknown
+    load.
+- problem: Sound pitch does not change
+  cause: An active buzzer may have its own oscillator.
+  fix: Identify the actual part; active-buzzer control is a different example.
+- problem: LEDC attach fails
+  cause: Wrong core/board or peripheral resources occupied.
+  fix: Use Arduino-ESP32 3.x, a valid unused output pin and the standalone sketch.
+faqs:
+- question: Can a passive magnetic buzzer use this wiring?
+  answer: No. Its coil current and inductive switching require a selected transistor/driver and appropriate protection.
+    This illustration does not establish that interface.
+- question: Why not supply constant HIGH?
+  answer: An external-drive piezo needs a changing waveform for a sustained tone. DC is not the provided operating
+    mode.
+related_guides:
+- title: PWM fundamentals
+  href: /guides/pwm-fundamentals.html
+  description: Understand frequency, duty cycle and the 3.x API.
+related_projects:
+- title: ESP32 digital piano
+  href: /projects/esp32-digital-piano.html
+  description: The project has its own sounder assumptions and pin assignments.
