@@ -240,7 +240,10 @@ def render_concise_reference(guide: dict) -> str:
     sections = [setup_section(guide.get("setup", {}))]
     for section in guide.get("sections", []):
         section_id = esc(section["id"])
-        sections.append(f'<section class="mission-section" id="{section_id}" aria-labelledby="{section_id}-heading"><h2 id="{section_id}-heading">{esc(section["heading"])}</h2>' + _rich_content(section["text"]) + '</section>')
+        # Opt-in authored HTML for diagnostic tables; plain-text sections retain
+        # their existing escaping and paragraph rendering.
+        content = section["html"] if "html" in section else _rich_content(section["text"])
+        sections.append(f'<section class="mission-section" id="{section_id}" aria-labelledby="{section_id}-heading"><h2 id="{section_id}-heading">{esc(section["heading"])}</h2>' + content + '</section>')
         if section["id"] == "upload-steps":
             sections.append(examples_section(guide.get("code_examples", [])))
     sections.append('<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 id="next-steps-heading">Next steps</h2>' + _rich_content(guide.get("conclusion", "")) + '</section>')

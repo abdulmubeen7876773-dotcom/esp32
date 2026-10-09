@@ -1,0 +1,151 @@
+slug: esp32-ble-fundamentals
+phase: 3
+sort_order: 23
+guide_type: reference
+concise_layout: true
+title: 'ESP32 BLE Fundamentals: Services, UUIDs and a Readable Characteristic | ESP32 Engine'
+headline: 'ESP32 BLE Fundamentals: Services, UUIDs and a Readable Characteristic'
+meta_description: Connect a BLE client to a classic ESP32 and read an uptime characteristic. Learn services,
+  UUIDs, read properties and why advertising is different from connected data access.
+lead: Connect a BLE client to a classic ESP32 and read an uptime characteristic. Learn services, UUIDs,
+  read properties and why advertising is different from connected data access.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and phone/computer with a BLE GATT client such as
+      nRF Connect. No GPIO wiring.
+  - label: Software
+    value: Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Bundled
+      BLE library from Arduino-ESP32 3.3.2; do not install the old standalone ESP32 BLE Arduino library.
+  - label: Prerequisite
+    value: Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic
+      WROOM board.
+  - label: Expected result
+    value: A BLE client discovers ESP32-Read-Demo, connects to its custom service and reads uptime_ms
+      text; it can reconnect after disconnect.
+  - label: Review limits
+    value: Documentation/API review and local content/browser checks only. Sketch compilation, physical
+      hardware and playback testing were not performed.
+sections:
+- id: hardware
+  heading: BLE capability is board-specific
+  text: 'Classic ESP32 has Bluetooth Classic and Bluetooth LE, but this example uses BLE only. ESP32-S2
+    has no Bluetooth radio. Other ESP32 variants have different Bluetooth capabilities and USB/board settings;
+    this review targets classic WROOM with its bundled BLE implementation, not every ESP32-family build.
+    Upload the IDE Serial test first.
+
+
+    BLE advertising lets a nearby client discover a device. GATT is the connected attribute interface
+    used to read the value here. The existing iBeacon project demonstrates advertising identifiers without
+    this service/characteristic workflow; it is a separate learning goal.'
+- id: gatt
+  heading: A small data model
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th scope="col">Term</th><th
+    scope="col">Role in this example</th></tr></thead><tbody><tr><td>Peripheral / GATT server</td><td>ESP32
+    advertises and hosts the attributes.</td></tr><tr><td>Central / GATT client</td><td>Phone or computer
+    connects and requests a read.</td></tr><tr><td>Service UUID</td><td>Groups the demo’s attributes under
+    a custom 128-bit identifier.</td></tr><tr><td>Characteristic UUID</td><td>Identifies the readable
+    uptime value within that service.</td></tr><tr><td>PROPERTY_READ</td><td>Permits explicit reads; no
+    write or notify property is provided.</td></tr></tbody></table></div><p>The two UUIDs are custom example
+    identifiers, not assigned Bluetooth standard services or security tokens. Keep them the same in the
+    sketch and client. A device name is a discovery aid, not a unique or trusted identity. The characteristic
+    value is UTF-8/ASCII text such as uptime_ms=4200, not a binary sensor measurement.</p>
+- id: upload-steps
+  heading: Upload the read-only service
+  text: Use the complete sketch and the bundled BLE library. Select the correct classic ESP32 board and
+    open Serial at 115200. No pairing, GPIO output or router is required. The sketch updates the stored
+    value every two seconds and restarts advertising after a disconnect. The callback signals loop through
+    an atomic flag rather than delaying inside the Bluetooth task.
+- id: verify
+  heading: Read it from a BLE client
+  html: <ol><li>Enable Bluetooth and grant the scanner permissions required by your operating system.
+    On some Android versions nearby-device/location permissions affect scanning.</li><li>Scan in a BLE
+    GATT client, not only the phone’s paired-device settings. Look for ESP32-Read-Demo or the service
+    UUID.</li><li>Connect, discover services and expand the service ending in 8721.</li><li>Read the characteristic
+    ending in 59e1. Select text/UTF-8 display if the client shows hexadecimal bytes.</li><li>Read again
+    after a few seconds. The value should increase; it is updated every two seconds, so rapid reads may
+    repeat.</li><li>Disconnect, rescan and reconnect. Advertising should restart. These are checks for
+    you to perform, not claimed hardware results.</li></ol><p>Changing the stored value does not push
+    a notification. Press Read again; this example intentionally omits notify/indicate and writes. millis
+    is time since reset, wraps after about 49.7 days and is not a wall clock.</p>
+- id: troubleshoot
+  heading: If discovery or reading fails
+  text: 'No advertising: check board radio support, correct library selection, successful upload and scanner
+    permissions. A second client may already be connected. Move closer without assuming a guaranteed range.
+
+
+    No service/value: match the UUIDs and perform service discovery; a client may cache old attributes
+    after you change firmware. Disconnect/reconnect and refresh its service cache using the app’s controls.
+    A grey Write/Notify control is expected because this characteristic is read-only. A constant value
+    across rapid reads is expected until the two-second update.
+
+
+    A long name can appear in scan-response data rather than the first advertisement. Discovery by service
+    UUID can still work. Do not mistake a scan listing for a successful characteristic read.'
+- id: security
+  heading: This is not a secure control channel
+  text: The characteristic requires no pairing, bonding, encrypted link or application authentication.
+    A nearby client can connect and read it. UUIDs and MAC/device names do not authenticate a person.
+    Send no private data and attach no safety-critical controls. A product needs a separate, reviewed
+    security and authorization design. No Wi-Fi, internet or advertising consent change is involved in
+    this board demonstration.
+code_examples:
+- title: Complete GATT read-only uptime example
+  filename: ble-read-demo.ino
+  content: "#include <BLEDevice.h>\n#include <BLEServer.h>\n#include <BLEUtils.h>\n#include <atomic>\n\
+    \nconst char* SERVICE_UUID = \"63c80f8e-71b1-4ee8-973e-68e9182b8721\";\nconst char* VALUE_UUID = \"\
+    88c78480-46d5-4a48-a57c-cb7fc0ea59e1\";\nBLECharacteristic* value;\nstd::atomic<bool> disconnected{false};\n\
+    class Callbacks : public BLEServerCallbacks {\n  void onDisconnect(BLEServer*) override { disconnected.store(true);\
+    \ }\n};\nCallbacks callbacks;\n\nvoid setup() {\n  Serial.begin(115200);\n  BLEDevice::init(\"ESP32-Read-Demo\"\
+    );\n  BLEServer* server = BLEDevice::createServer();\n  server->setCallbacks(&callbacks);\n  BLEService*\
+    \ service = server->createService(SERVICE_UUID);\n  value = service->createCharacteristic(VALUE_UUID,\
+    \ BLECharacteristic::PROPERTY_READ);\n  value->setValue(\"uptime_ms=0\");\n  service->start();\n \
+    \ BLEAdvertising* advertising = BLEDevice::getAdvertising();\n  advertising->addServiceUUID(SERVICE_UUID);\n\
+    \  advertising->setScanResponse(true);\n  BLEDevice::startAdvertising();\n  Serial.println(\"Scan\
+    \ for ESP32-Read-Demo; connect and read the custom characteristic.\");\n}\nvoid loop() {\n  static\
+    \ uint32_t updated = 0, restartAt = 0;\n  static bool restartPending = false;\n  const uint32_t now\
+    \ = millis();\n  if (disconnected.exchange(false)) { restartAt = now; restartPending = true; }\n \
+    \ if (restartPending && now - restartAt >= 200) {\n    BLEDevice::startAdvertising(); restartPending\
+    \ = false;\n    Serial.println(\"Advertising restarted after disconnect.\");\n  }\n  if (now - updated\
+    \ >= 2000) {\n    updated = now;\n    value->setValue(String(\"uptime_ms=\") + String(now));\n  }\n\
+    \  delay(10);\n}\n"
+  wiring: Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.
+  notes: ''
+faqs: []
+sources:
+- title: BLE Server example at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/BLE/examples/Server/Server.ino
+  note: Service, characteristic, advertising and discovery pattern.
+- title: BLECharacteristic API at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/BLE/src/BLECharacteristic.h
+  note: Read properties and Arduino String value API.
+- title: BLEServer callbacks at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/BLE/src/BLEServer.h
+  note: Disconnect callback used by the example.
+- title: Classic ESP32 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  note: Classic chip Bluetooth capabilities.
+- title: ESP32-S2 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32-s2_datasheet_en.pdf
+  note: S2 radio capability; no Bluetooth.
+- title: Nordic nRF Connect for Mobile
+  url: https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-mobile
+  note: Client scanning, service discovery and characteristic reading.
+related_guides:
+- title: BLE beacon / iBeacon project
+  href: /projects/esp32-ble-beacon.html
+  description: Contrast advertising identifiers with connected GATT reads.
+- title: ESP-NOW sender/receiver
+  href: /guides/esp32-esp-now.html
+  description: Compare a Wi-Fi-based board-to-board packet protocol.
+- title: Arduino IDE first upload
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Check board and Serial configuration first.
+conclusion: Start with one service and one explicit read. Add notifications, writes or security only when
+  the data model and actual client behavior are understood.
+learning_resource_type: Guide
+keywords: 'ESP32 BLE Fundamentals: Services, UUIDs and a Readable Characteristic'

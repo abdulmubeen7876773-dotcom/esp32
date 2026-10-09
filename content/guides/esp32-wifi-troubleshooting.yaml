@@ -1,0 +1,151 @@
+slug: esp32-wifi-troubleshooting
+phase: 3
+sort_order: 20
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries | ESP32 Engine'
+headline: 'ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries'
+meta_description: Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application
+  failures. Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.
+lead: Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application failures.
+  Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and a known 2.4 GHz WPA2-Personal router/network.
+      No sensor required.
+  - label: Software
+    value: Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Built-in
+      WiFi and FreeRTOS only.
+  - label: Prerequisite
+    value: Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic
+      WROOM board.
+  - label: Expected result
+    value: Serial at 115200 reports events, IP/gateway/DNS, channel and RSSI; three failed connection
+      windows pause until you send r.
+  - label: Review limits
+    value: Documentation/API review and local content/browser checks only. Sketch compilation, physical
+      hardware and playback testing were not performed.
+sections:
+- id: radio
+  heading: Start with the actual radio and network
+  text: 'Classic ESP32-WROOM uses 2.4 GHz 802.11b/g/n Wi-Fi; it cannot join a 5 GHz-only SSID. A dual-band
+    router is fine if its 2.4 GHz network is enabled. This demonstration uses WPA2-Personal credentials,
+    not enterprise login, captive-portal authentication or an open public hotspot. Check the router mode
+    as well as the password.
+
+
+    Other ESP32 families differ: a board name alone does not establish bands or native Wi-Fi support.
+    Check the chip/module documentation before adapting this example. Start close to the router with stable
+    USB power and keep the antenna away from metal. Do not print or publish your real password.'
+- id: diagnostic-stages
+  heading: Find the layer that failed
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th scope="col">Observation</th><th
+    scope="col">What it establishes</th><th scope="col">Useful next check</th></tr></thead><tbody><tr><td>No
+    association / disconnected event</td><td>No usable station connection yet</td><td>SSID spelling, 2.4
+    GHz availability, security mode, password, signal and reason code.</td></tr><tr><td>STA_CONNECTED,
+    no GOT_IP</td><td>Radio association succeeded; DHCP may still be pending</td><td>Router DHCP/address
+    pool and restrictions; do not call this internet access.</td></tr><tr><td>GOT_IP and a local address</td><td>The
+    station has an IP configuration</td><td>Gateway/DNS and application destination; router client isolation
+    can still block local devices.</td></tr><tr><td>Local connection works, remote hostname fails</td><td>Radio
+    alone is not the whole problem</td><td>DNS, captive portal, firewall, internet availability and service
+    credentials.</td></tr></tbody></table></div><p>A disconnect reason is diagnostic evidence, not a unique
+    verdict. Authentication failures can involve router policy as well as credentials. Interpret the code
+    with the linked ESP-IDF 5.5 reference. RSSI is a signal clue, not a guaranteed throughput or distance
+    measurement.</p>
+- id: upload-steps
+  heading: Run the bounded diagnostic
+  text: 'Replace SSID and PASSWORD, upload the complete sketch and open Serial Monitor at 115200. The
+    connection call starts an attempt; loop keeps running. Each unsuccessful window lasts 20 seconds,
+    followed by a five-second gap. After three windows it pauses; send lowercase r after correcting settings.
+    A later loss of a working connection starts another bounded budget.
+
+
+    Callbacks run in a different task. They copy event IDs/reasons into a small queue; loop prints and
+    controls retries. A full diagnostic queue can drop logs during an event storm, so current WiFi.status()
+    also drives the policy. This sketch is a bench diagnostic, not a production reconnection supervisor.'
+- id: expected
+  heading: Interpret the result
+  text: 'Expect association before GOT_IP, then IP, gateway, DNS, channel and RSSI. Values and event ordering
+    beyond that depend on the router. No output here is a recorded hardware measurement. Try a wrong password,
+    then restore it and send r; the loop should remain responsive throughout the retry budget.
+
+
+    A reset or brownout message is a power/reset problem, not a Wi-Fi reason code. Check the cable and
+    supply before adding reconnect logic. If a valid IP cannot reach another local device, check that
+    both use the same network and that guest/client isolation is disabled for your trusted test devices.'
+- id: application-recovery
+  heading: Recover the application too
+  text: Losing Wi-Fi invalidates network sockets. MQTT clients must reconnect and resubscribe; an IP address
+    after reconnection may change. Use the printed address rather than remembering an old one. A local
+    HTTP page does not need internet, while NTP or a cloud broker may need DNS and an external route.
+    Do not solve credential or DHCP failures with an endless while loop.
+code_examples:
+- title: Station diagnostic with three connection windows
+  filename: wifi-diagnostics.ino
+  content: "#include <WiFi.h>\n#include <freertos/FreeRTOS.h>\n#include <freertos/queue.h>\n\nconst char*\
+    \ SSID = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconstexpr uint32_t ATTEMPT_MS\
+    \ = 20000, RETRY_MS = 5000;\nconstexpr uint8_t MAX_ATTEMPTS = 3;\nstruct Event { WiFiEvent_t id; uint16_t\
+    \ reason; };\nQueueHandle_t events;\nbool ready = false, trying = false, paused = false, wasConnected\
+    \ = false;\nuint8_t attempts = 0;\nuint32_t started = 0, lastEnded = 0, lastStats = 0;\n\nvoid onWiFi(WiFiEvent_t\
+    \ id, WiFiEventInfo_t info) {\n  Event e{id, 0};\n  if (id == ARDUINO_EVENT_WIFI_STA_DISCONNECTED)\n\
+    \    e.reason = info.wifi_sta_disconnected.reason;\n  xQueueSend(events, &e, 0); // Callback task:\
+    \ copy only; never wait here.\n}\nvoid startAttempt() {\n  ++attempts;\n  started = millis(); trying\
+    \ = true;\n  Serial.printf(\"Wi-Fi attempt %u/%u\\n\", attempts, MAX_ATTEMPTS);\n  WiFi.begin(SSID,\
+    \ PASSWORD); // Starts connection; no waiting loop.\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  events = xQueueCreate(12, sizeof(Event));\n  if (!events || !WiFi.mode(WIFI_STA)) {\n    Serial.println(\"\
+    Queue/Wi-Fi initialization failed; reset after checking board.\");\n    return;\n  }\n  WiFi.setAutoReconnect(false);\
+    \ // This sketch owns the bounded retry policy.\n  WiFi.onEvent(onWiFi);\n  ready = true;\n  startAttempt();\n\
+    }\nvoid loop() {\n  if (!ready) { delay(10); return; }\n  const uint32_t now = millis();\n  Event\
+    \ e;\n  while (xQueueReceive(events, &e, 0) == pdTRUE) {\n    if (e.id == ARDUINO_EVENT_WIFI_STA_CONNECTED)\n\
+    \      Serial.println(\"Associated with AP; still waiting for an IP address.\");\n    if (e.id ==\
+    \ ARDUINO_EVENT_WIFI_STA_GOT_IP)\n      Serial.println(\"GOT_IP: IP networking can start.\");\n  \
+    \  if (e.id == ARDUINO_EVENT_WIFI_STA_DISCONNECTED)\n      Serial.printf(\"Disconnected: reason=%u\
+    \ (see version-matched Wi-Fi reference)\\n\", e.reason);\n  }\n  const bool connected = WiFi.status()\
+    \ == WL_CONNECTED;\n  if (connected) {\n    trying = false; attempts = 0; paused = false;\n    if\
+    \ (!wasConnected || now - lastStats >= 10000) {\n      lastStats = now;\n      Serial.print(\"IP:\
+    \ \"); Serial.println(WiFi.localIP());\n      Serial.print(\"Gateway: \"); Serial.println(WiFi.gatewayIP());\n\
+    \      Serial.print(\"DNS: \"); Serial.println(WiFi.dnsIP());\n      Serial.printf(\"Channel: %d,\
+    \ RSSI: %d dBm\\n\", WiFi.channel(), WiFi.RSSI());\n    }\n  } else {\n    if (wasConnected) lastEnded\
+    \ = now;\n    if (trying && now - started >= ATTEMPT_MS) {\n      WiFi.disconnect(false); trying =\
+    \ false; lastEnded = now;\n      Serial.println(\"20-second connection window ended.\");\n    }\n\
+    \    if (!trying && attempts < MAX_ATTEMPTS && now - lastEnded >= RETRY_MS)\n      startAttempt();\n\
+    \    if (!trying && attempts >= MAX_ATTEMPTS && !paused) {\n      paused = true;\n      Serial.println(\"\
+    Retries paused. Correct network settings; send r to retry.\");\n    }\n  }\n  wasConnected = connected;\n\
+    \  if (Serial.available() && Serial.read() == 'r' && !connected) {\n    WiFi.disconnect(false); attempts\
+    \ = 0; paused = false; trying = false;\n    lastEnded = now - RETRY_MS;\n  }\n  delay(10); // Yield\
+    \ without an endless connection wait.\n}\n"
+  wiring: Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.
+  notes: ''
+faqs: []
+sources:
+- title: Classic ESP32 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  note: Classic radio/band capabilities.
+- title: WiFiClientEvents at Arduino-ESP32 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/examples/WiFiClientEvents/WiFiClientEvents.ino
+  note: Event signatures and callback task context.
+- title: WiFiSTA API at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/src/WiFiSTA.h
+  note: Station, diagnostics and reconnection API.
+- title: ESP-IDF 5.5 Wi-Fi events and reason codes
+  url: https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-guides/wifi.html
+  note: Association, IP acquisition and disconnect recovery.
+related_guides:
+- title: Arduino IDE first upload
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Start with its Serial-only sketch.
+- title: Basic local web server
+  href: /guides/esp32-web-server.html
+  description: Use access-point mode to separate HTTP from router problems.
+- title: MQTT sensor dashboard
+  href: /projects/esp32-mqtt-sensor-dashboard.html
+  description: Recover broker sockets after Wi-Fi loss.
+conclusion: 'Use the last successful layer to choose your next check: radio, IP configuration, then the
+  application. Keep retries bounded and preserve useful diagnostics.'
+learning_resource_type: Guide
+keywords: 'ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries'

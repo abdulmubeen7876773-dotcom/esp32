@@ -1,6 +1,10 @@
 GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 
 GUIDE_IMAGE_BY_SLUG = {
+    "esp32-wifi-troubleshooting": "/assets/visuals/guides/concepts/esp32-wifi-troubleshooting-concept.svg",
+    "esp32-web-server": "/assets/visuals/guides/concepts/esp32-web-server-concept.svg",
+    "esp32-esp-now": "/assets/visuals/guides/concepts/esp32-esp-now-concept.svg",
+    "esp32-ble-fundamentals": "/assets/visuals/guides/concepts/esp32-ble-fundamentals-concept.svg",
     "analog-inputs": "/assets/images/generated/guides/analog-inputs-1200.webp",
     "analog-inputs-reading-real-world": "/assets/images/generated/guides/analog-inputs-reading-real-world-1200.webp",
     "blink-led-esp32": "/assets/images/generated/guides/blink-led-esp32-1200.webp",

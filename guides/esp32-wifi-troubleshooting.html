@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries | ESP32 Engine</title>
+<meta name="description" content="Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application failures. Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-wifi-troubleshooting.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries | ESP32 Engine">
+<meta property="og:description" content="Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application failures. Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-wifi-troubleshooting.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries | ESP32 Engine">
+<meta name="twitter:description" content="Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application failures. Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries","description":"Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application failures. Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.","datePublished":"2026-10-10","dateModified":"2026-10-10","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-wifi-troubleshooting.html"},"proficiencyLevel":"Intermediate","keywords":"ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries","item":"https://esp32engine.com/guides/esp32-wifi-troubleshooting.html"}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries</h1>
+<p class="article-lead">Diagnose classic ESP32 Wi-Fi by separating radio association, IP allocation and application failures. Use a bounded Serial diagnostic sketch before debugging MQTT or HTTP.</p>
+<p class="meta guide-meta">Reference guide · Updated 2026-10-10</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/esp32-wifi-troubleshooting-concept.svg" alt="ESP32 Wi-Fi Troubleshooting: Events, IP and Bounded Retries guide illustration" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+
+<article class="mission-journey article-concise">
+<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#radio-heading">Start with the actual radio and network</a><a href="#diagnostic-stages-heading">Find the layer that failed</a><a href="#upload-steps-heading">Run the bounded diagnostic</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#expected-heading">Interpret the result</a><a href="#application-recovery-heading">Recover the application too</a><a href="#next-steps-heading">Next steps</a><a href="#sources-heading">Technical references</a><a href="#related-guides">Related Guides</a></nav></details>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Hardware</dt><dd>Classic ESP32-WROOM DevKit, USB data cable and a known 2.4 GHz WPA2-Personal router/network. No sensor required.</dd><dt>Software</dt><dd>Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Built-in WiFi and FreeRTOS only.</dd><dt>Prerequisite</dt><dd>Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic WROOM board.</dd><dt>Expected result</dt><dd>Serial at 115200 reports events, IP/gateway/DNS, channel and RSSI; three failed connection windows pause until you send r.</dd><dt>Review limits</dt><dd>Documentation/API review and local content/browser checks only. Sketch compilation, physical hardware and playback testing were not performed.</dd></dl></section>
+<section class="mission-section" id="radio" aria-labelledby="radio-heading"><h2 tabindex="-1" id="radio-heading">Start with the actual radio and network</h2><p>Classic ESP32-WROOM uses 2.4 GHz 802.11b/g/n Wi-Fi; it cannot join a 5 GHz-only SSID. A dual-band router is fine if its 2.4 GHz network is enabled. This demonstration uses WPA2-Personal credentials, not enterprise login, captive-portal authentication or an open public hotspot. Check the router mode as well as the password.</p><p>Other ESP32 families differ: a board name alone does not establish bands or native Wi-Fi support. Check the chip/module documentation before adapting this example. Start close to the router with stable USB power and keep the antenna away from metal. Do not print or publish your real password.</p></section>
+<section class="mission-section" id="diagnostic-stages" aria-labelledby="diagnostic-stages-heading"><h2 tabindex="-1" id="diagnostic-stages-heading">Find the layer that failed</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="wiring-table"><thead><tr><th scope="col">Observation</th><th scope="col">What it establishes</th><th scope="col">Useful next check</th></tr></thead><tbody><tr><td>No association / disconnected event</td><td>No usable station connection yet</td><td>SSID spelling, 2.4 GHz availability, security mode, password, signal and reason code.</td></tr><tr><td>STA_CONNECTED, no GOT_IP</td><td>Radio association succeeded; DHCP may still be pending</td><td>Router DHCP/address pool and restrictions; do not call this internet access.</td></tr><tr><td>GOT_IP and a local address</td><td>The station has an IP configuration</td><td>Gateway/DNS and application destination; router client isolation can still block local devices.</td></tr><tr><td>Local connection works, remote hostname fails</td><td>Radio alone is not the whole problem</td><td>DNS, captive portal, firewall, internet availability and service credentials.</td></tr></tbody></table></div><p>A disconnect reason is diagnostic evidence, not a unique verdict. Authentication failures can involve router policy as well as credentials. Interpret the code with the linked ESP-IDF 5.5 reference. RSSI is a signal clue, not a guaranteed throughput or distance measurement.</p></section>
+<section class="mission-section" id="upload-steps" aria-labelledby="upload-steps-heading"><h2 tabindex="-1" id="upload-steps-heading">Run the bounded diagnostic</h2><p>Replace SSID and PASSWORD, upload the complete sketch and open Serial Monitor at 115200. The connection call starts an attempt; loop keeps running. Each unsuccessful window lasts 20 seconds, followed by a five-second gap. After three windows it pauses; send lowercase r after correcting settings. A later loss of a working connection starts another bounded budget.</p><p>Callbacks run in a different task. They copy event IDs/reasons into a small queue; loop prints and controls retries. A full diagnostic queue can drop logs during an event storm, so current WiFi.status() also drives the policy. This sketch is a bench diagnostic, not a production reconnection supervisor.</p></section>
+<section class="mission-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Station diagnostic with three connection windows</h3><p>Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">wifi-diagnostics.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;WiFi.h&gt;</span>
+<span class="tok-pre">#include &lt;freertos/FreeRTOS.h&gt;</span>
+<span class="tok-pre">#include &lt;freertos/queue.h&gt;</span>
+
+const <span class="tok-kw">char</span>* SSID = &quot;YOUR_WIFI_SSID&quot;;
+const <span class="tok-kw">char</span>* PASSWORD = &quot;YOUR_WIFI_PASSWORD&quot;;
+constexpr <span class="tok-kw">uint32_t</span> ATTEMPT_MS = <span class="tok-num">20000</span>, RETRY_MS = <span class="tok-num">5000</span>;
+constexpr <span class="tok-kw">uint8_t</span> MAX_ATTEMPTS = <span class="tok-num">3</span>;
+struct Event { WiFiEvent_t id; <span class="tok-kw">uint16_t</span> reason; };
+QueueHandle_t events;
+bool ready = <span class="tok-kw">false</span>, trying = <span class="tok-kw">false</span>, paused = <span class="tok-kw">false</span>, wasConnected = <span class="tok-kw">false</span>;
+<span class="tok-kw">uint8_t</span> attempts = <span class="tok-num">0</span>;
+<span class="tok-kw">uint32_t</span> started = <span class="tok-num">0</span>, lastEnded = <span class="tok-num">0</span>, lastStats = <span class="tok-num">0</span>;
+
+<span class="tok-kw">void</span> onWiFi(WiFiEvent_t id, WiFiEventInfo_t info) {
+  Event e{id, <span class="tok-num">0</span>};
+  <span class="tok-kw">if</span> (id == ARDUINO_EVENT_WIFI_STA_DISCONNECTED)
+    e.reason = info.wifi_sta_disconnected.reason;
+  xQueueSend(events, &amp;e, <span class="tok-num">0</span>); <span class="tok-com">// Callback task: copy only; never wait here.</span>
+}
+<span class="tok-kw">void</span> startAttempt() {
+  ++attempts;
+  started = millis(); trying = <span class="tok-kw">true</span>;
+  <span class="tok-fn">Serial</span>.printf(&quot;Wi-Fi attempt %u/%u\n&quot;, attempts, MAX_ATTEMPTS);
+  WiFi.<span class="tok-fn">begin</span>(SSID, PASSWORD); <span class="tok-com">// Starts connection; no waiting loop.</span>
+}
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  events = xQueueCreate(<span class="tok-num">12</span>, sizeof(Event));
+  <span class="tok-kw">if</span> (!events || !WiFi.mode(WIFI_STA)) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Queue/Wi-Fi initialization failed; reset after checking board.&quot;);
+    <span class="tok-kw">return</span>;
+  }
+  WiFi.setAutoReconnect(<span class="tok-kw">false</span>); <span class="tok-com">// This sketch owns the bounded retry policy.</span>
+  WiFi.onEvent(onWiFi);
+  ready = <span class="tok-kw">true</span>;
+  startAttempt();
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (!ready) { <span class="tok-fn">delay</span>(<span class="tok-num">10</span>); <span class="tok-kw">return</span>; }
+  const <span class="tok-kw">uint32_t</span> now = millis();
+  Event e;
+  <span class="tok-kw">while</span> (xQueueReceive(events, &amp;e, <span class="tok-num">0</span>) == pdTRUE) {
+    <span class="tok-kw">if</span> (e.id == ARDUINO_EVENT_WIFI_STA_CONNECTED)
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Associated with AP; still waiting <span class="tok-kw">for</span> an IP address.&quot;);
+    <span class="tok-kw">if</span> (e.id == ARDUINO_EVENT_WIFI_STA_GOT_IP)
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;GOT_IP: IP networking can start.&quot;);
+    <span class="tok-kw">if</span> (e.id == ARDUINO_EVENT_WIFI_STA_DISCONNECTED)
+      <span class="tok-fn">Serial</span>.printf(&quot;Disconnected: reason=%u (see version-matched Wi-Fi reference)\n&quot;, e.reason);
+  }
+  const bool connected = WiFi.status() == WL_CONNECTED;
+  <span class="tok-kw">if</span> (connected) {
+    trying = <span class="tok-kw">false</span>; attempts = <span class="tok-num">0</span>; paused = <span class="tok-kw">false</span>;
+    <span class="tok-kw">if</span> (!wasConnected || now - lastStats &gt;= <span class="tok-num">10000</span>) {
+      lastStats = now;
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;IP: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(WiFi.localIP());
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Gateway: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(WiFi.gatewayIP());
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;DNS: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(WiFi.dnsIP());
+      <span class="tok-fn">Serial</span>.printf(&quot;Channel: %d, RSSI: %d dBm\n&quot;, WiFi.channel(), WiFi.RSSI());
+    }
+  } <span class="tok-kw">else</span> {
+    <span class="tok-kw">if</span> (wasConnected) lastEnded = now;
+    <span class="tok-kw">if</span> (trying &amp;&amp; now - started &gt;= ATTEMPT_MS) {
+      WiFi.disconnect(<span class="tok-kw">false</span>); trying = <span class="tok-kw">false</span>; lastEnded = now;
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;<span class="tok-num">20</span>-second connection window ended.&quot;);
+    }
+    <span class="tok-kw">if</span> (!trying &amp;&amp; attempts &lt; MAX_ATTEMPTS &amp;&amp; now - lastEnded &gt;= RETRY_MS)
+      startAttempt();
+    <span class="tok-kw">if</span> (!trying &amp;&amp; attempts &gt;= MAX_ATTEMPTS &amp;&amp; !paused) {
+      paused = <span class="tok-kw">true</span>;
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Retries paused. Correct network settings; send r to retry.&quot;);
+    }
+  }
+  wasConnected = connected;
+  <span class="tok-kw">if</span> (<span class="tok-fn">Serial</span>.available() &amp;&amp; <span class="tok-fn">Serial</span>.read() == &#x27;r&#x27; &amp;&amp; !connected) {
+    WiFi.disconnect(<span class="tok-kw">false</span>); attempts = <span class="tok-num">0</span>; paused = <span class="tok-kw">false</span>; trying = <span class="tok-kw">false</span>;
+    lastEnded = now - RETRY_MS;
+  }
+  <span class="tok-fn">delay</span>(<span class="tok-num">10</span>); <span class="tok-com">// Yield without an endless connection wait.</span>
+}</code></pre>
+</div></section>
+<section class="mission-section" id="expected" aria-labelledby="expected-heading"><h2 tabindex="-1" id="expected-heading">Interpret the result</h2><p>Expect association before GOT_IP, then IP, gateway, DNS, channel and RSSI. Values and event ordering beyond that depend on the router. No output here is a recorded hardware measurement. Try a wrong password, then restore it and send r; the loop should remain responsive throughout the retry budget.</p><p>A reset or brownout message is a power/reset problem, not a Wi-Fi reason code. Check the cable and supply before adding reconnect logic. If a valid IP cannot reach another local device, check that both use the same network and that guest/client isolation is disabled for your trusted test devices.</p></section>
+<section class="mission-section" id="application-recovery" aria-labelledby="application-recovery-heading"><h2 tabindex="-1" id="application-recovery-heading">Recover the application too</h2><p>Losing Wi-Fi invalidates network sockets. MQTT clients must reconnect and resubscribe; an IP address after reconnection may change. Use the printed address rather than remembering an old one. A local HTTP page does not need internet, while NTP or a cloud broker may need DNS and an external route. Do not solve credential or DHCP failures with an endless while loop.</p></section>
+<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 tabindex="-1" id="next-steps-heading">Next steps</h2><p>Use the last successful layer to choose your next check: radio, IP configuration, then the application. Keep retries bounded and preserve useful diagnostics.</p></section>
+
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf">Classic ESP32 datasheet</a> — Classic radio/band capabilities.</li><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/examples/WiFiClientEvents/WiFiClientEvents.ino">WiFiClientEvents at Arduino-ESP32 3.3.2</a> — Event signatures and callback task context.</li><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/src/WiFiSTA.h">WiFiSTA API at 3.3.2</a> — Station, diagnostics and reconnection API.</li><li><a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-guides/wifi.html">ESP-IDF 5.5 Wi-Fi events and reason codes</a> — Association, IP acquisition and disconnect recovery.</li></ul></section>
+  <h2 tabindex="-1" id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/installing-arduino-ide-esp32.html"><strong>Arduino IDE first upload</strong></a> <span class="meta">Start with its Serial-only sketch.</span></li><li><a href="/guides/esp32-web-server.html"><strong>Basic local web server</strong></a> <span class="meta">Use access-point mode to separate HTTP from router problems.</span></li><li><a href="/projects/esp32-mqtt-sensor-dashboard.html"><strong>MQTT sensor dashboard</strong></a> <span class="meta">Recover broker sockets after Wi-Fi loss.</span></li></ul>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

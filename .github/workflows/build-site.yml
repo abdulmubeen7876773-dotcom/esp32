@@ -40,7 +40,23 @@ jobs:
       - name: Install build dependencies
         run: pip install -r requirements.txt
       - name: Validate content and build static site
-        run: python tools/build_all.py
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # A changed scope manifest opts this push into selective generation.
+          # Later pushes/manual runs without a changed manifest build normally.
+          scopes=()
+          if [[ "${{ github.event_name }}" == "push" && "$BEFORE" =~ ^[0-9a-f]{40}$ && "$BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+            mapfile -t scopes < <(git diff --name-only --diff-filter=AM "$BEFORE" "$GITHUB_SHA" -- 'tools/build-scopes/*.json')
+          fi
+          if (( ${#scopes[@]} > 1 )); then
+            echo "Only one generation scope may change per publication" >&2
+            exit 1
+          elif (( ${#scopes[@]} == 1 )); then
+            python tools/build_all.py --scope "${scopes[0]}"
+          else
+            python tools/build_all.py
+          fi
       - name: Commit generated static artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

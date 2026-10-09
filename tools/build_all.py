@@ -45,6 +45,11 @@ def run_step(name: str) -> list[str]:
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Validate and generate the static site.")
+    parser.add_argument("--scope", type=Path, help="Explicit selective-generation manifest; default builds all content.")
+    args = parser.parse_args()
     cfg = ROOT / "static.config.yaml"
     if not cfg.exists():
         raise SystemExit("Missing static.config.yaml — static-first config required.")
@@ -56,8 +61,15 @@ def main():
     print("Static-first build (Phase 1) — files only, no runtime server.")
     started = time.perf_counter()
     warnings: list[str] = []
-    for step in STEPS:
-        warnings.extend(run_step(step))
+    if args.scope:
+        warnings.extend(run_step("validate_content.py"))
+        sys.path.insert(0, str(TOOLS))
+        from build_scope import generate_scope
+
+        generate_scope(args.scope)
+    else:
+        for step in STEPS:
+            warnings.extend(run_step(step))
     duration = round(time.perf_counter() - started, 2)
 
     sys.path.insert(0, str(TOOLS))

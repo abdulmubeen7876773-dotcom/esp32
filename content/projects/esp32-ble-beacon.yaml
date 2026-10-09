@@ -15,7 +15,7 @@ og_image: /assets/images/og/esp32-ble-beacon.webp
 image_alt: ESP32 BLE beacon advertising demo with phone scanner and ESP32 DevKit
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-23'
+date_modified: '2026-10-10'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
@@ -316,33 +316,54 @@ project:
   circuit_explanation: No external wiring is required because the ESP32 includes a Bluetooth radio and PCB antenna.
     USB powers the board and uploads the sketch. The important hardware rule is to keep the antenna area clear of
     metal and your hand during testing.
-  engineering_explanation: BLE advertising is designed for short, low-power messages. A phone scanner receives the
-    advertisement and estimates signal strength with RSSI. RSSI is useful for near/far behavior, but it is not a
-    precise distance measurement because walls, hands, and antenna orientation change the reading.
+  engineering_explanation: 'Review baseline: classic ESP32-WROOM DevKit, Arduino-ESP32 3.3.2 and its bundled
+    BLE library; not a latest-version claim. No external wiring is required. Do not install an old standalone
+    BLE library. ESP32-S2 has no Bluetooth; other variants require their own capability/build review.
+
+
+    BLE advertising is designed for short, low-power messages. A phone scanner receives the advertisement
+    and estimates signal strength with RSSI. RSSI is useful for near/far behavior, but it is not a precise
+    distance measurement because walls, hands, and antenna orientation change the reading.
+
+
+    The TX_POWER -59 byte is an example RSSI-at-one-metre calibration reference, not a measured value or
+    the transmitter power setting. Do not infer verified range/distance from it. Flags 0x04 means BR/EDR
+    not supported; disabling scan responses does not anonymize the transmitted identity. Compilation and
+    hardware testing were not performed for this review.'
   libraries:
-  - name: Arduino ESP32 core
-    note: Install ESP32 board support in Arduino IDE.
+  - name: Arduino-ESP32 3.3.2 bundled BLE library
+    note: Classic ESP32-WROOM / ESP32 Dev Module review baseline, not latest. No external BLE Arduino library
+      required.
   code:
     filename: esp32-ble-beacon.ino
-    content: "// ESP32 BLE Beacon - Beginner\n// Broadcasts a standard iBeacon advertisement packet\n#include <BLEDevice.h>\n\
-      #include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include <BLEBeacon.h>\n\n// iBeacon\
-      \ identity — change UUID for your deployment\n#define BEACON_UUID \"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\
-      \n#define MAJOR        1\n#define MINOR        1\n#define TX_POWER   -59  // Measured RSSI at 1 metre (calibrate\
-      \ per device)\n\nBLEAdvertising *pAdvertising;\n\nvoid setBeacon() {\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x004C);\
-      \ // Apple iBeacon manufacturer ID\n  beacon.setProximityUUID(BLEUUID(BEACON_UUID));\n  beacon.setMajor(MAJOR);\n\
-      \  beacon.setMinor(MINOR);\n  beacon.setSignalPower(TX_POWER);\n\n  BLEAdvertisementData adData;\n  adData.setFlags(0x04);\
-      \ // BR/EDR not supported, LE general discoverable\n  adData.setManufacturerData(std::string(\n    (char*)beacon.getData().data(),\
-      \ beacon.getData().size()));\n\n  pAdvertising->setAdvertisementData(adData);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  BLEDevice::init(\"ESP32-Beacon\");\n  BLEServer *pServer = BLEDevice::createServer();\n  pAdvertising =\
-      \ BLEDevice::getAdvertising();\n  setBeacon();\n  pAdvertising->setScanResponse(false);\n  pAdvertising->setMinPreferred(0x00);\n\
-      \  BLEDevice::startAdvertising();\n  Serial.println(\"iBeacon advertising — UUID: \" BEACON_UUID);\n  Serial.printf(\"\
-      Major: %d  Minor: %d  TX Power: %d dBmn\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon\
+    content: "// ESP32 BLE Beacon - Beginner\n// Broadcasts a standard iBeacon advertisement packet\n#include\
+      \ <BLEDevice.h>\n#include <BLEServer.h>\n#include <BLEUtils.h>\n#include <BLEAdvertising.h>\n#include\
+      \ <BLEBeacon.h>\n\n// iBeacon identity — change UUID for your deployment\n#define BEACON_UUID \"8ec76ea3-6668-48da-9866-75be8bc86f4d\"\
+      \n// Bundled BLEUUID stores bytes reversed; this input produces BEACON_UUID on air.\n#define BEACON_UUID_REV\
+      \ \"4d6fc88b-be75-6698-da48-6866a36ec78e\"\n#define MAJOR        1\n#define MINOR        1\n#define\
+      \ TX_POWER   -59  // Placeholder 1 m RSSI calibration byte; not a measured result.\n\nBLEAdvertising\
+      \ *pAdvertising;\n\nvoid setBeacon() {\n  BLEBeacon beacon;\n  beacon.setManufacturerId(0x4C00); //\
+      \ Setter swaps bytes: on-air Apple ID is 4C 00.\n  beacon.setProximityUUID(BLEUUID(BEACON_UUID_REV));\n\
+      \  beacon.setMajor(MAJOR);\n  beacon.setMinor(MINOR);\n  beacon.setSignalPower(TX_POWER);\n\n  BLEAdvertisementData\
+      \ adData;\n  adData.setFlags(0x04); // BR/EDR not supported; not a general-discoverable flag.\n  adData.setManufacturerData(beacon.getData());\n\
+      \n  pAdvertising->setAdvertisementData(adData);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  BLEDevice::init(\"\
+      ESP32-Beacon\");\n  BLEServer *pServer = BLEDevice::createServer();\n  pAdvertising = BLEDevice::getAdvertising();\n\
+      \  setBeacon();\n  pAdvertising->setScanResponse(false);\n  pAdvertising->setAdvertisementType(ADV_TYPE_NONCONN_IND);\
+      \ // Classic Bluedroid baseline.\n  pAdvertising->setMinPreferred(0x00);\n  BLEDevice::startAdvertising();\n\
+      \  Serial.println(\"iBeacon advertising — UUID: \" BEACON_UUID);\n  Serial.printf(\"Major: %d  Minor:\
+      \ %d  Reference RSSI: %d dBm\\n\",MAJOR,MINOR,TX_POWER);\n}\n\nvoid loop() {\n  delay(1000); // Beacon\
       \ advertises continuously in background\n}"
-  code_explanation: The sketch initializes BLE as ESP32-Beacon, builds a standard iBeacon manufacturer-data payload,
-    sets the UUID, major, minor, and calibrated TX power fields, disables scan response, and starts non-connectable
-    BLE advertising. No pairing, Bluetooth Classic connection, or GATT service is used.
-  expected_output: Serial Monitor prints the iBeacon UUID plus major, minor, and TX power values. A phone BLE scanner
-    should show the advertisement and changing RSSI while the ESP32 continues advertising in the background.
+  code_explanation: The sketch advertises an iBeacon manufacturer payload without a GATT data service. The
+    3.3.2 BLEBeacon getter returns Arduino String, passed directly to setManufacturerData. This implementation
+    swaps the manufacturer-ID setter argument and stores BLEUUID bytes in reverse order, so 0x4C00 and the
+    reversed UUID input produce Apple company bytes 4C 00 and the printed BEACON_UUID on air. Major/minor
+    use their setters. The -59 calibration byte is a placeholder, not a measured value. The sketch explicitly
+    selects non-connectable ADV_TYPE_NONCONN_IND for the classic Bluedroid baseline; disabling scan response
+    alone does not select that type or make the packet anonymous.
+  expected_output: 'Illustrative expectations, not recorded hardware results: Serial prints BEACON_UUID,
+    major/minor and the placeholder reference RSSI. A BLE scanner should decode the same UUID and show changing
+    received RSSI. No connection or pairing is needed; the calibration byte is not transmitter power or
+    a verified distance measurement.'
   common_mistakes:
   - text: Expecting RSSI to behave like a tape measure.
   - text: Holding the ESP32 antenna while testing signal strength.
@@ -362,7 +383,8 @@ project:
     fix: Forget the device or restart the scanner app because BLE scan results can be cached.
   testing_checklist:
   - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Upload the beacon sketch and confirm Serial Monitor prints the UUID, major, minor, and TX power.
+  - Upload the beacon sketch and compare the scanner-decoded UUID/major/minor with Serial. Verify manufacturer
+    bytes 4C 00 and treat -59 as an uncalibrated example reference.
   - Scan from a phone BLE scanner app while the board is on a table.
   - Move the phone slowly closer and farther away and watch RSSI change without expecting exact distance.
   - Power-cycle the ESP32 and confirm the beacon appears again without pairing.
@@ -389,6 +411,9 @@ project:
   - text: Bench test checklist
     note: Follow the testing checklist before permanent installation.
   related_guides:
+  - title: BLE services and characteristics
+    href: /guides/esp32-ble-fundamentals.html
+    description: Connect and read a GATT value; a different workflow from this beacon advertisement.
   - title: Mission 01 - Blink LED
     href: /guides/blink-led-esp32.html
     description: Verify uploads and simple outputs before adding hardware.
@@ -425,6 +450,12 @@ project:
     href: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/bluetooth/
   - title: Arduino ESP32 Core Documentation
     href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  - title: BLE advertising String API at 3.3.2
+    href: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/BLE/src/BLEAdvertising.h
+  - title: BLEBeacon source at 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/BLE/src/BLEBeacon.cpp
+  - title: Pinned 3.3.2 iBeacon example and UUID byte order
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/BLE/examples/iBeacon/iBeacon.ino
   complete:
     summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
     skills:

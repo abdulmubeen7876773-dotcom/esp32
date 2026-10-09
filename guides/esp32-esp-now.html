@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK | ESP32 Engine</title>
+<meta name="description" content="Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC peers and distinguish local queueing, MAC delivery status and a matching application acknowledgement.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-esp-now.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK | ESP32 Engine">
+<meta property="og:description" content="Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC peers and distinguish local queueing, MAC delivery status and a matching application acknowledgement.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-esp-now.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK | ESP32 Engine">
+<meta name="twitter:description" content="Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC peers and distinguish local queueing, MAC delivery status and a matching application acknowledgement.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK","description":"Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC peers and distinguish local queueing, MAC delivery status and a matching application acknowledgement.","datePublished":"2026-10-10","dateModified":"2026-10-10","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-esp-now.html"},"proficiencyLevel":"Intermediate","keywords":"ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK","item":"https://esp32engine.com/guides/esp32-esp-now.html"}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK</h1>
+<p class="article-lead">Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC peers and distinguish local queueing, MAC delivery status and a matching application acknowledgement.</p>
+<p class="meta guide-meta">Reference guide · Updated 2026-10-10</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/esp32-esp-now-concept.svg" alt="ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK guide illustration" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+
+<article class="mission-journey article-concise">
+<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#compatibility-heading">Use a compatible pair and one channel</a><a href="#upload-steps-heading">Set peers and upload the two sketches</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#delivery-heading">Three different meanings of success</a><a href="#callbacks-heading">Keep callback work short</a><a href="#verify-heading">Expected result and troubleshooting</a><a href="#next-steps-heading">Next steps</a><a href="#sources-heading">Technical references</a><a href="#related-guides">Related Guides</a></nav></details>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Hardware</dt><dd>Two classic ESP32-WROOM DevKits, two USB data cables and Serial access to both. No router, GPIO wires or sensors required.</dd><dt>Software</dt><dd>Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Built-in WiFi, esp_now/esp_wifi and FreeRTOS from core 3.3.2.</dd><dt>Prerequisite</dt><dd>Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic WROOM board.</dd><dt>Expected result</dt><dd>Receiver prints a counter; sender reports a matching application ACK or a timeout. This is an unencrypted bench pair.</dd><dt>Review limits</dt><dd>Documentation/API review and local content/browser checks only. Sketch compilation, physical hardware and playback testing were not performed.</dd></dl></section>
+<section class="mission-section" id="compatibility" aria-labelledby="compatibility-heading"><h2 tabindex="-1" id="compatibility-heading">Use a compatible pair and one channel</h2><p>This example is reviewed for two classic WROOM boards with native Wi-Fi using core 3.3.2. ESP-NOW is an Espressif Wi-Fi protocol, not BLE; a normal phone is not an ESP-NOW receiver. Do not infer compatibility merely because a board has ESP32 in its name. Check native radio support, firmware version and matching packet format when mixing families.</p><p>Both examples use STA mode without joining a router, channel 6, five-byte unencrypted unicast messages and the other board’s station MAC. Set the same legal channel on both. If you later join a router, its channel constrains the station radio; do not keep assuming a separate ESP-NOW channel.</p></section>
+<section class="mission-section" id="upload-steps" aria-labelledby="upload-steps-heading"><h2 tabindex="-1" id="upload-steps-heading">Set peers and upload the two sketches</h2><p>First upload each complete sketch with the zero MAC placeholder. It prints its own STA MAC and stops sending. Copy the receiver MAC into the sender PEER_MAC and the sender MAC into the receiver PEER_MAC, then upload both again. Use the station address printed by these sketches, not a Bluetooth or AP address. Open both Serial Monitors at 115200. No external signal wiring is involved.</p><p>Both sides add the other peer because both transmit: the receiver sends application ACKs back. A receiver of unencrypted unicast alone does not require a peer, but replying does. Initialization, channel and peer/callback registration results are checked. Older core examples use different callback signatures: the send callback here uses esp_now_send_info_t for the 3.3.2/IDF 5.5 baseline.</p></section>
+<section class="mission-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Sender: counter and matching-ACK timeout</h3><p>Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">esp-now-sender.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;WiFi.h&gt;</span>
+<span class="tok-pre">#include &lt;esp_now.h&gt;</span>
+<span class="tok-pre">#include &lt;esp_wifi.h&gt;</span>
+<span class="tok-pre">#include &lt;freertos/FreeRTOS.h&gt;</span>
+<span class="tok-pre">#include &lt;freertos/queue.h&gt;</span>
+<span class="tok-pre">#include &lt;cstring&gt;</span>
+
+constexpr <span class="tok-kw">uint8_t</span> CHANNEL = <span class="tok-num">6</span>;
+<span class="tok-kw">uint8_t</span> PEER_MAC[<span class="tok-num">6</span>] = {<span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>}; <span class="tok-com">// Replace with OTHER board&#x27;s printed STA MAC.</span>
+bool ready = <span class="tok-kw">false</span>;
+QueueHandle_t events;
+struct Event { <span class="tok-kw">uint8_t</span> kind; <span class="tok-kw">uint8_t</span> bytes[<span class="tok-num">5</span>]; };
+<span class="tok-kw">void</span> pack(<span class="tok-kw">uint8_t</span>* b, <span class="tok-kw">uint8_t</span> kind, <span class="tok-kw">uint32_t</span> seq) {
+  b[<span class="tok-num">0</span>] = kind;
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">4</span>; ++i) b[i + <span class="tok-num">1</span>] = (seq &gt;&gt; (<span class="tok-num">8</span> * i)) &amp; 0xFF;
+}
+<span class="tok-kw">uint32_t</span> sequence(const <span class="tok-kw">uint8_t</span>* b) {
+  <span class="tok-kw">uint32_t</span> n = <span class="tok-num">0</span>;
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">4</span>; ++i) n |= <span class="tok-kw">uint32_t</span>(b[i + <span class="tok-num">1</span>]) &lt;&lt; (<span class="tok-num">8</span> * i);
+  <span class="tok-kw">return</span> n;
+}
+<span class="tok-kw">void</span> onReceive(const esp_now_recv_info_t* info, const <span class="tok-kw">uint8_t</span>* data, <span class="tok-kw">int</span> len) {
+  <span class="tok-kw">if</span> (!info || len != <span class="tok-num">5</span> || memcmp(info-&gt;src_addr, PEER_MAC, <span class="tok-num">6</span>) != <span class="tok-num">0</span>) <span class="tok-kw">return</span>;
+  Event e{<span class="tok-num">2</span>, {<span class="tok-num">0</span>}}; memcpy(e.bytes, data, <span class="tok-num">5</span>);
+  xQueueSend(events, &amp;e, <span class="tok-num">0</span>); <span class="tok-com">// Copy callback data; never keep info/data pointers.</span>
+}
+<span class="tok-kw">void</span> onSent(const esp_now_send_info_t* info, esp_now_send_status_t status) {
+  Event e{<span class="tok-kw">uint8_t</span>(status == ESP_NOW_SEND_SUCCESS ? <span class="tok-num">0</span> : <span class="tok-num">1</span>), {<span class="tok-num">0</span>}};
+  xQueueSend(events, &amp;e, <span class="tok-num">0</span>); <span class="tok-com">// No Serial or retry work in the Wi-Fi callback.</span>
+}
+bool beginLink() {
+  events = xQueueCreate(<span class="tok-num">12</span>, sizeof(Event));
+  <span class="tok-kw">if</span> (!events || !WiFi.mode(WIFI_STA)) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  WiFi.setAutoReconnect(<span class="tok-kw">false</span>);
+  WiFi.disconnect(<span class="tok-kw">false</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;This board STA MAC: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(WiFi.macAddress());
+  <span class="tok-kw">uint8_t</span> sum = <span class="tok-num">0</span>; <span class="tok-kw">for</span> (<span class="tok-kw">uint8_t</span> b : PEER_MAC) sum |= b;
+  <span class="tok-kw">if</span> (sum == <span class="tok-num">0</span>) { <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Set PEER_MAC to the other board and upload again.&quot;); <span class="tok-kw">return</span> <span class="tok-kw">false</span>; }
+  <span class="tok-kw">if</span> (esp_wifi_set_channel(CHANNEL, WIFI_SECOND_CHAN_NONE) != ESP_OK ||
+      esp_now_init() != ESP_OK) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  esp_now_peer_info_t peer{};
+  memcpy(peer.peer_addr, PEER_MAC, <span class="tok-num">6</span>);
+  peer.channel = CHANNEL; peer.ifidx = WIFI_IF_STA; peer.encrypt = <span class="tok-kw">false</span>;
+  <span class="tok-kw">return</span> esp_now_add_peer(&amp;peer) == ESP_OK &amp;&amp;
+         esp_now_register_recv_cb(onReceive) == ESP_OK &amp;&amp;
+         esp_now_register_send_cb(onSent) == ESP_OK;
+}
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  ready = beginLink();
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(ready ? &quot;ESP-NOW ready on channel <span class="tok-num">6</span>&quot; : &quot;Link not ready; check <span class="tok-fn">setup</span> and reset.&quot;);
+}
+
+<span class="tok-kw">uint32_t</span> seq = <span class="tok-num">0</span>, sentAt = <span class="tok-num">0</span>, lastStart = <span class="tok-num">0</span>;
+bool waitingAck = <span class="tok-kw">false</span>, txBusy = <span class="tok-kw">false</span>;
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (!ready) { <span class="tok-fn">delay</span>(<span class="tok-num">10</span>); <span class="tok-kw">return</span>; }
+  Event e;
+  <span class="tok-kw">while</span> (xQueueReceive(events, &amp;e, <span class="tok-num">0</span>) == pdTRUE) {
+    <span class="tok-kw">if</span> (e.kind &lt; <span class="tok-num">2</span>) {
+      txBusy = <span class="tok-kw">false</span>;
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(e.kind == <span class="tok-num">0</span> ? &quot;MAC delivery success; not an application ACK&quot; : &quot;MAC delivery failed&quot;);
+    } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (e.bytes[<span class="tok-num">0</span>] == <span class="tok-num">2</span> &amp;&amp; waitingAck &amp;&amp; sequence(e.bytes) == seq) {
+      waitingAck = <span class="tok-kw">false</span>;
+      <span class="tok-fn">Serial</span>.printf(&quot;Application ACK <span class="tok-kw">for</span> sequence %lu\n&quot;, (unsigned <span class="tok-kw">long</span>)seq);
+    }
+  }
+  const <span class="tok-kw">uint32_t</span> now = millis();
+  <span class="tok-kw">if</span> (waitingAck &amp;&amp; now - sentAt &gt;= <span class="tok-num">1000</span>) {
+    waitingAck = <span class="tok-kw">false</span>;
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;No matching application ACK within <span class="tok-num">1</span> second.&quot;);
+  }
+  <span class="tok-kw">if</span> (txBusy &amp;&amp; now - sentAt &gt;= <span class="tok-num">2000</span>) {
+    ready = <span class="tok-kw">false</span>; <span class="tok-com">// Do not overlap sends if the completion event was lost.</span>
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Send completion missing; stop and inspect/reset the pair.&quot;);
+    <span class="tok-kw">return</span>;
+  }
+  <span class="tok-kw">if</span> (!waitingAck &amp;&amp; !txBusy &amp;&amp; now - lastStart &gt;= <span class="tok-num">5000</span>) {
+    lastStart = now;
+    <span class="tok-kw">uint8_t</span> data[<span class="tok-num">5</span>]; pack(data, <span class="tok-num">1</span>, ++seq);
+    const esp_err_t result = esp_now_send(PEER_MAC, data, sizeof(data));
+    <span class="tok-kw">if</span> (result == ESP_OK) {
+      sentAt = now; waitingAck = <span class="tok-kw">true</span>; txBusy = <span class="tok-kw">true</span>;
+      <span class="tok-fn">Serial</span>.printf(&quot;Queued sequence %lu\n&quot;, (unsigned <span class="tok-kw">long</span>)seq);
+    } <span class="tok-kw">else</span> <span class="tok-fn">Serial</span>.printf(&quot;Send rejected locally: %d\n&quot;, <span class="tok-kw">int</span>(result));
+  }
+  <span class="tok-fn">delay</span>(<span class="tok-num">10</span>);
+}</code></pre>
+</div><h3>Receiver: parse and acknowledge the counter</h3><p>Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">esp-now-receiver.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;WiFi.h&gt;</span>
+<span class="tok-pre">#include &lt;esp_now.h&gt;</span>
+<span class="tok-pre">#include &lt;esp_wifi.h&gt;</span>
+<span class="tok-pre">#include &lt;freertos/FreeRTOS.h&gt;</span>
+<span class="tok-pre">#include &lt;freertos/queue.h&gt;</span>
+<span class="tok-pre">#include &lt;cstring&gt;</span>
+
+constexpr <span class="tok-kw">uint8_t</span> CHANNEL = <span class="tok-num">6</span>;
+<span class="tok-kw">uint8_t</span> PEER_MAC[<span class="tok-num">6</span>] = {<span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">0</span>}; <span class="tok-com">// Replace with OTHER board&#x27;s printed STA MAC.</span>
+bool ready = <span class="tok-kw">false</span>;
+QueueHandle_t events;
+struct Event { <span class="tok-kw">uint8_t</span> kind; <span class="tok-kw">uint8_t</span> bytes[<span class="tok-num">5</span>]; };
+<span class="tok-kw">void</span> pack(<span class="tok-kw">uint8_t</span>* b, <span class="tok-kw">uint8_t</span> kind, <span class="tok-kw">uint32_t</span> seq) {
+  b[<span class="tok-num">0</span>] = kind;
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">4</span>; ++i) b[i + <span class="tok-num">1</span>] = (seq &gt;&gt; (<span class="tok-num">8</span> * i)) &amp; 0xFF;
+}
+<span class="tok-kw">uint32_t</span> sequence(const <span class="tok-kw">uint8_t</span>* b) {
+  <span class="tok-kw">uint32_t</span> n = <span class="tok-num">0</span>;
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">4</span>; ++i) n |= <span class="tok-kw">uint32_t</span>(b[i + <span class="tok-num">1</span>]) &lt;&lt; (<span class="tok-num">8</span> * i);
+  <span class="tok-kw">return</span> n;
+}
+<span class="tok-kw">void</span> onReceive(const esp_now_recv_info_t* info, const <span class="tok-kw">uint8_t</span>* data, <span class="tok-kw">int</span> len) {
+  <span class="tok-kw">if</span> (!info || len != <span class="tok-num">5</span> || memcmp(info-&gt;src_addr, PEER_MAC, <span class="tok-num">6</span>) != <span class="tok-num">0</span>) <span class="tok-kw">return</span>;
+  Event e{<span class="tok-num">2</span>, {<span class="tok-num">0</span>}}; memcpy(e.bytes, data, <span class="tok-num">5</span>);
+  xQueueSend(events, &amp;e, <span class="tok-num">0</span>); <span class="tok-com">// Copy callback data; never keep info/data pointers.</span>
+}
+<span class="tok-kw">void</span> onSent(const esp_now_send_info_t* info, esp_now_send_status_t status) {
+  Event e{<span class="tok-kw">uint8_t</span>(status == ESP_NOW_SEND_SUCCESS ? <span class="tok-num">0</span> : <span class="tok-num">1</span>), {<span class="tok-num">0</span>}};
+  xQueueSend(events, &amp;e, <span class="tok-num">0</span>); <span class="tok-com">// No Serial or retry work in the Wi-Fi callback.</span>
+}
+bool beginLink() {
+  events = xQueueCreate(<span class="tok-num">12</span>, sizeof(Event));
+  <span class="tok-kw">if</span> (!events || !WiFi.mode(WIFI_STA)) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  WiFi.setAutoReconnect(<span class="tok-kw">false</span>);
+  WiFi.disconnect(<span class="tok-kw">false</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;This board STA MAC: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(WiFi.macAddress());
+  <span class="tok-kw">uint8_t</span> sum = <span class="tok-num">0</span>; <span class="tok-kw">for</span> (<span class="tok-kw">uint8_t</span> b : PEER_MAC) sum |= b;
+  <span class="tok-kw">if</span> (sum == <span class="tok-num">0</span>) { <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Set PEER_MAC to the other board and upload again.&quot;); <span class="tok-kw">return</span> <span class="tok-kw">false</span>; }
+  <span class="tok-kw">if</span> (esp_wifi_set_channel(CHANNEL, WIFI_SECOND_CHAN_NONE) != ESP_OK ||
+      esp_now_init() != ESP_OK) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  esp_now_peer_info_t peer{};
+  memcpy(peer.peer_addr, PEER_MAC, <span class="tok-num">6</span>);
+  peer.channel = CHANNEL; peer.ifidx = WIFI_IF_STA; peer.encrypt = <span class="tok-kw">false</span>;
+  <span class="tok-kw">return</span> esp_now_add_peer(&amp;peer) == ESP_OK &amp;&amp;
+         esp_now_register_recv_cb(onReceive) == ESP_OK &amp;&amp;
+         esp_now_register_send_cb(onSent) == ESP_OK;
+}
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  ready = beginLink();
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(ready ? &quot;ESP-NOW ready on channel <span class="tok-num">6</span>&quot; : &quot;Link not ready; check <span class="tok-fn">setup</span> and reset.&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (!ready) { <span class="tok-fn">delay</span>(<span class="tok-num">10</span>); <span class="tok-kw">return</span>; }
+  Event e;
+  <span class="tok-kw">while</span> (xQueueReceive(events, &amp;e, <span class="tok-num">0</span>) == pdTRUE) {
+    <span class="tok-kw">if</span> (e.kind &lt; <span class="tok-num">2</span>) {
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(e.kind == <span class="tok-num">0</span> ? &quot;ACK MAC delivery success&quot; : &quot;ACK MAC delivery failed&quot;);
+    } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (e.bytes[<span class="tok-num">0</span>] == <span class="tok-num">1</span>) {
+      const <span class="tok-kw">uint32_t</span> seq = sequence(e.bytes);
+      <span class="tok-fn">Serial</span>.printf(&quot;Processed counter sequence %lu\n&quot;, (unsigned <span class="tok-kw">long</span>)seq);
+      <span class="tok-kw">uint8_t</span> ack[<span class="tok-num">5</span>]; pack(ack, <span class="tok-num">2</span>, seq);
+      const esp_err_t result = esp_now_send(PEER_MAC, ack, sizeof(ack));
+      <span class="tok-kw">if</span> (result != ESP_OK) <span class="tok-fn">Serial</span>.printf(&quot;ACK send rejected: %d\n&quot;, <span class="tok-kw">int</span>(result));
+    }
+  }
+  <span class="tok-fn">delay</span>(<span class="tok-num">10</span>);
+}</code></pre>
+</div></section>
+<section class="mission-section" id="delivery" aria-labelledby="delivery-heading"><h2 tabindex="-1" id="delivery-heading">Three different meanings of success</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="wiring-table"><thead><tr><th scope="col">Signal</th><th scope="col">What it means</th><th scope="col">What it does not prove</th></tr></thead><tbody><tr><td>esp_now_send returns ESP_OK</td><td>The local API accepted the packet for sending</td><td>The other board received or processed it.</td></tr><tr><td>ESP_NOW_SEND_SUCCESS callback</td><td>MAC-layer delivery succeeded</td><td>Application parsing or an actuator action succeeded.</td></tr><tr><td>ACK packet with matching sequence</td><td>This demo receiver parsed the counter and reached its ACK code</td><td>An arbitrary physical action worked, or the packet is authenticated.</td></tr></tbody></table></div><p>The wire format is one type byte plus a four-byte little-endian sequence, avoiding C++ struct padding assumptions. Type 1 is a counter; type 2 is its ACK. Sender waits one second for a matching ACK and starts a new counter no more often than every five seconds. It does not retransmit lost counters or guarantee exactly-once processing.</p></section>
+<section class="mission-section" id="callbacks" aria-labelledby="callbacks-heading"><h2 tabindex="-1" id="callbacks-heading">Keep callback work short</h2><p>Wi-Fi task callbacks copy data/results into queues with zero wait; loop prints, parses and sends ACKs. Received pointers are callback-local and are not retained. A full queue can lose events; the sender stops if send completion is absent for two seconds. This small demo is not a reliable-delivery library. A production command protocol needs bounded retries, duplicate suppression, session IDs across resets and appropriate authentication/encryption.</p></section>
+<section class="mission-section" id="verify" aria-labelledby="verify-heading"><h2 tabindex="-1" id="verify-heading">Expected result and troubleshooting</h2><p>After five seconds the sender should report Queued sequence 1; the receiver should print Processed counter sequence 1 and the sender should report Application ACK for sequence 1. These are expected messages, not recorded hardware results. Unplug the receiver: local queue acceptance may still occur, MAC delivery may fail, and no matching ACK should arrive.</p><p>If nothing arrives, check both STA MACs, channel, board selection and initialization messages. If MAC delivery succeeds but ACK times out, inspect receiver parsing/queue logs and its return peer configuration. A source-MAC filter is not cryptographic authentication. Keep this encrypt=false example on a bench and send no secrets or safety-critical commands.</p></section>
+<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 tabindex="-1" id="next-steps-heading">Next steps</h2><p>Treat a matching application ACK as evidence of the receiver’s explicit processing step, not as proof of hardware action. Keep the channel, peer addresses and wire format explicit.</p></section>
+
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-reference/network/esp_now.html">ESP-NOW in ESP-IDF 5.5</a> — Channels, peer setup, callback task context and delivery versus application ACK.</li><li><a href="https://raw.githubusercontent.com/espressif/esp-idf/v5.5/components/esp_wifi/include/esp_now.h">esp_now.h at IDF 5.5</a> — Exact callback types and return codes.</li><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/ESP_NOW/src/ESP32_NOW.cpp">Arduino ESP-NOW implementation at 3.3.2</a> — Version-specific send callback signature and native Wi-Fi restriction.</li></ul></section>
+  <h2 tabindex="-1" id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/esp32-wifi-troubleshooting.html"><strong>Wi-Fi diagnostics</strong></a> <span class="meta">Understand radio channels before sharing ESP-NOW with a router.</span></li><li><a href="/guides/esp32-ble-fundamentals.html"><strong>BLE fundamentals</strong></a> <span class="meta">A different local-radio model: services read by a phone.</span></li></ul>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

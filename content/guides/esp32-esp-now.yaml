@@ -1,0 +1,182 @@
+slug: esp32-esp-now
+phase: 3
+sort_order: 22
+guide_type: reference
+concise_layout: true
+title: 'ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK | ESP32 Engine'
+headline: 'ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK'
+meta_description: Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC
+  peers and distinguish local queueing, MAC delivery status and a matching application acknowledgement.
+lead: Send a counter between two classic ESP32 boards on one fixed channel. Set station MAC peers and
+  distinguish local queueing, MAC delivery status and a matching application acknowledgement.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Two classic ESP32-WROOM DevKits, two USB data cables and Serial access to both. No router,
+      GPIO wires or sensors required.
+  - label: Software
+    value: Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Built-in
+      WiFi, esp_now/esp_wifi and FreeRTOS from core 3.3.2.
+  - label: Prerequisite
+    value: Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic
+      WROOM board.
+  - label: Expected result
+    value: Receiver prints a counter; sender reports a matching application ACK or a timeout. This is
+      an unencrypted bench pair.
+  - label: Review limits
+    value: Documentation/API review and local content/browser checks only. Sketch compilation, physical
+      hardware and playback testing were not performed.
+sections:
+- id: compatibility
+  heading: Use a compatible pair and one channel
+  text: 'This example is reviewed for two classic WROOM boards with native Wi-Fi using core 3.3.2. ESP-NOW
+    is an Espressif Wi-Fi protocol, not BLE; a normal phone is not an ESP-NOW receiver. Do not infer compatibility
+    merely because a board has ESP32 in its name. Check native radio support, firmware version and matching
+    packet format when mixing families.
+
+
+    Both examples use STA mode without joining a router, channel 6, five-byte unencrypted unicast messages
+    and the other board’s station MAC. Set the same legal channel on both. If you later join a router,
+    its channel constrains the station radio; do not keep assuming a separate ESP-NOW channel.'
+- id: upload-steps
+  heading: Set peers and upload the two sketches
+  text: 'First upload each complete sketch with the zero MAC placeholder. It prints its own STA MAC and
+    stops sending. Copy the receiver MAC into the sender PEER_MAC and the sender MAC into the receiver
+    PEER_MAC, then upload both again. Use the station address printed by these sketches, not a Bluetooth
+    or AP address. Open both Serial Monitors at 115200. No external signal wiring is involved.
+
+
+    Both sides add the other peer because both transmit: the receiver sends application ACKs back. A receiver
+    of unencrypted unicast alone does not require a peer, but replying does. Initialization, channel and
+    peer/callback registration results are checked. Older core examples use different callback signatures:
+    the send callback here uses esp_now_send_info_t for the 3.3.2/IDF 5.5 baseline.'
+- id: delivery
+  heading: Three different meanings of success
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th scope="col">Signal</th><th
+    scope="col">What it means</th><th scope="col">What it does not prove</th></tr></thead><tbody><tr><td>esp_now_send
+    returns ESP_OK</td><td>The local API accepted the packet for sending</td><td>The other board received
+    or processed it.</td></tr><tr><td>ESP_NOW_SEND_SUCCESS callback</td><td>MAC-layer delivery succeeded</td><td>Application
+    parsing or an actuator action succeeded.</td></tr><tr><td>ACK packet with matching sequence</td><td>This
+    demo receiver parsed the counter and reached its ACK code</td><td>An arbitrary physical action worked,
+    or the packet is authenticated.</td></tr></tbody></table></div><p>The wire format is one type byte
+    plus a four-byte little-endian sequence, avoiding C++ struct padding assumptions. Type 1 is a counter;
+    type 2 is its ACK. Sender waits one second for a matching ACK and starts a new counter no more often
+    than every five seconds. It does not retransmit lost counters or guarantee exactly-once processing.</p>
+- id: callbacks
+  heading: Keep callback work short
+  text: Wi-Fi task callbacks copy data/results into queues with zero wait; loop prints, parses and sends
+    ACKs. Received pointers are callback-local and are not retained. A full queue can lose events; the
+    sender stops if send completion is absent for two seconds. This small demo is not a reliable-delivery
+    library. A production command protocol needs bounded retries, duplicate suppression, session IDs across
+    resets and appropriate authentication/encryption.
+- id: verify
+  heading: Expected result and troubleshooting
+  text: 'After five seconds the sender should report Queued sequence 1; the receiver should print Processed
+    counter sequence 1 and the sender should report Application ACK for sequence 1. These are expected
+    messages, not recorded hardware results. Unplug the receiver: local queue acceptance may still occur,
+    MAC delivery may fail, and no matching ACK should arrive.
+
+
+    If nothing arrives, check both STA MACs, channel, board selection and initialization messages. If
+    MAC delivery succeeds but ACK times out, inspect receiver parsing/queue logs and its return peer configuration.
+    A source-MAC filter is not cryptographic authentication. Keep this encrypt=false example on a bench
+    and send no secrets or safety-critical commands.'
+code_examples:
+- title: 'Sender: counter and matching-ACK timeout'
+  filename: esp-now-sender.ino
+  content: "#include <WiFi.h>\n#include <esp_now.h>\n#include <esp_wifi.h>\n#include <freertos/FreeRTOS.h>\n\
+    #include <freertos/queue.h>\n#include <cstring>\n\nconstexpr uint8_t CHANNEL = 6;\nuint8_t PEER_MAC[6]\
+    \ = {0, 0, 0, 0, 0, 0}; // Replace with OTHER board's printed STA MAC.\nbool ready = false;\nQueueHandle_t\
+    \ events;\nstruct Event { uint8_t kind; uint8_t bytes[5]; };\nvoid pack(uint8_t* b, uint8_t kind,\
+    \ uint32_t seq) {\n  b[0] = kind;\n  for (int i = 0; i < 4; ++i) b[i + 1] = (seq >> (8 * i)) & 0xFF;\n\
+    }\nuint32_t sequence(const uint8_t* b) {\n  uint32_t n = 0;\n  for (int i = 0; i < 4; ++i) n |= uint32_t(b[i\
+    \ + 1]) << (8 * i);\n  return n;\n}\nvoid onReceive(const esp_now_recv_info_t* info, const uint8_t*\
+    \ data, int len) {\n  if (!info || len != 5 || memcmp(info->src_addr, PEER_MAC, 6) != 0) return;\n\
+    \  Event e{2, {0}}; memcpy(e.bytes, data, 5);\n  xQueueSend(events, &e, 0); // Copy callback data;\
+    \ never keep info/data pointers.\n}\nvoid onSent(const esp_now_send_info_t* info, esp_now_send_status_t\
+    \ status) {\n  Event e{uint8_t(status == ESP_NOW_SEND_SUCCESS ? 0 : 1), {0}};\n  xQueueSend(events,\
+    \ &e, 0); // No Serial or retry work in the Wi-Fi callback.\n}\nbool beginLink() {\n  events = xQueueCreate(12,\
+    \ sizeof(Event));\n  if (!events || !WiFi.mode(WIFI_STA)) return false;\n  WiFi.setAutoReconnect(false);\n\
+    \  WiFi.disconnect(false);\n  Serial.print(\"This board STA MAC: \"); Serial.println(WiFi.macAddress());\n\
+    \  uint8_t sum = 0; for (uint8_t b : PEER_MAC) sum |= b;\n  if (sum == 0) { Serial.println(\"Set PEER_MAC\
+    \ to the other board and upload again.\"); return false; }\n  if (esp_wifi_set_channel(CHANNEL, WIFI_SECOND_CHAN_NONE)\
+    \ != ESP_OK ||\n      esp_now_init() != ESP_OK) return false;\n  esp_now_peer_info_t peer{};\n  memcpy(peer.peer_addr,\
+    \ PEER_MAC, 6);\n  peer.channel = CHANNEL; peer.ifidx = WIFI_IF_STA; peer.encrypt = false;\n  return\
+    \ esp_now_add_peer(&peer) == ESP_OK &&\n         esp_now_register_recv_cb(onReceive) == ESP_OK &&\n\
+    \         esp_now_register_send_cb(onSent) == ESP_OK;\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  ready = beginLink();\n  Serial.println(ready ? \"ESP-NOW ready on channel 6\" : \"Link not ready;\
+    \ check setup and reset.\");\n}\n\nuint32_t seq = 0, sentAt = 0, lastStart = 0;\nbool waitingAck =\
+    \ false, txBusy = false;\nvoid loop() {\n  if (!ready) { delay(10); return; }\n  Event e;\n  while\
+    \ (xQueueReceive(events, &e, 0) == pdTRUE) {\n    if (e.kind < 2) {\n      txBusy = false;\n     \
+    \ Serial.println(e.kind == 0 ? \"MAC delivery success; not an application ACK\" : \"MAC delivery failed\"\
+    );\n    } else if (e.bytes[0] == 2 && waitingAck && sequence(e.bytes) == seq) {\n      waitingAck\
+    \ = false;\n      Serial.printf(\"Application ACK for sequence %lu\\n\", (unsigned long)seq);\n  \
+    \  }\n  }\n  const uint32_t now = millis();\n  if (waitingAck && now - sentAt >= 1000) {\n    waitingAck\
+    \ = false;\n    Serial.println(\"No matching application ACK within 1 second.\");\n  }\n  if (txBusy\
+    \ && now - sentAt >= 2000) {\n    ready = false; // Do not overlap sends if the completion event was\
+    \ lost.\n    Serial.println(\"Send completion missing; stop and inspect/reset the pair.\");\n    return;\n\
+    \  }\n  if (!waitingAck && !txBusy && now - lastStart >= 5000) {\n    lastStart = now;\n    uint8_t\
+    \ data[5]; pack(data, 1, ++seq);\n    const esp_err_t result = esp_now_send(PEER_MAC, data, sizeof(data));\n\
+    \    if (result == ESP_OK) {\n      sentAt = now; waitingAck = true; txBusy = true;\n      Serial.printf(\"\
+    Queued sequence %lu\\n\", (unsigned long)seq);\n    } else Serial.printf(\"Send rejected locally:\
+    \ %d\\n\", int(result));\n  }\n  delay(10);\n}\n"
+  wiring: Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.
+  notes: ''
+- title: 'Receiver: parse and acknowledge the counter'
+  filename: esp-now-receiver.ino
+  content: "#include <WiFi.h>\n#include <esp_now.h>\n#include <esp_wifi.h>\n#include <freertos/FreeRTOS.h>\n\
+    #include <freertos/queue.h>\n#include <cstring>\n\nconstexpr uint8_t CHANNEL = 6;\nuint8_t PEER_MAC[6]\
+    \ = {0, 0, 0, 0, 0, 0}; // Replace with OTHER board's printed STA MAC.\nbool ready = false;\nQueueHandle_t\
+    \ events;\nstruct Event { uint8_t kind; uint8_t bytes[5]; };\nvoid pack(uint8_t* b, uint8_t kind,\
+    \ uint32_t seq) {\n  b[0] = kind;\n  for (int i = 0; i < 4; ++i) b[i + 1] = (seq >> (8 * i)) & 0xFF;\n\
+    }\nuint32_t sequence(const uint8_t* b) {\n  uint32_t n = 0;\n  for (int i = 0; i < 4; ++i) n |= uint32_t(b[i\
+    \ + 1]) << (8 * i);\n  return n;\n}\nvoid onReceive(const esp_now_recv_info_t* info, const uint8_t*\
+    \ data, int len) {\n  if (!info || len != 5 || memcmp(info->src_addr, PEER_MAC, 6) != 0) return;\n\
+    \  Event e{2, {0}}; memcpy(e.bytes, data, 5);\n  xQueueSend(events, &e, 0); // Copy callback data;\
+    \ never keep info/data pointers.\n}\nvoid onSent(const esp_now_send_info_t* info, esp_now_send_status_t\
+    \ status) {\n  Event e{uint8_t(status == ESP_NOW_SEND_SUCCESS ? 0 : 1), {0}};\n  xQueueSend(events,\
+    \ &e, 0); // No Serial or retry work in the Wi-Fi callback.\n}\nbool beginLink() {\n  events = xQueueCreate(12,\
+    \ sizeof(Event));\n  if (!events || !WiFi.mode(WIFI_STA)) return false;\n  WiFi.setAutoReconnect(false);\n\
+    \  WiFi.disconnect(false);\n  Serial.print(\"This board STA MAC: \"); Serial.println(WiFi.macAddress());\n\
+    \  uint8_t sum = 0; for (uint8_t b : PEER_MAC) sum |= b;\n  if (sum == 0) { Serial.println(\"Set PEER_MAC\
+    \ to the other board and upload again.\"); return false; }\n  if (esp_wifi_set_channel(CHANNEL, WIFI_SECOND_CHAN_NONE)\
+    \ != ESP_OK ||\n      esp_now_init() != ESP_OK) return false;\n  esp_now_peer_info_t peer{};\n  memcpy(peer.peer_addr,\
+    \ PEER_MAC, 6);\n  peer.channel = CHANNEL; peer.ifidx = WIFI_IF_STA; peer.encrypt = false;\n  return\
+    \ esp_now_add_peer(&peer) == ESP_OK &&\n         esp_now_register_recv_cb(onReceive) == ESP_OK &&\n\
+    \         esp_now_register_send_cb(onSent) == ESP_OK;\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  ready = beginLink();\n  Serial.println(ready ? \"ESP-NOW ready on channel 6\" : \"Link not ready;\
+    \ check setup and reset.\");\n}\n\nvoid loop() {\n  if (!ready) { delay(10); return; }\n  Event e;\n\
+    \  while (xQueueReceive(events, &e, 0) == pdTRUE) {\n    if (e.kind < 2) {\n      Serial.println(e.kind\
+    \ == 0 ? \"ACK MAC delivery success\" : \"ACK MAC delivery failed\");\n    } else if (e.bytes[0] ==\
+    \ 1) {\n      const uint32_t seq = sequence(e.bytes);\n      Serial.printf(\"Processed counter sequence\
+    \ %lu\\n\", (unsigned long)seq);\n      uint8_t ack[5]; pack(ack, 2, seq);\n      const esp_err_t\
+    \ result = esp_now_send(PEER_MAC, ack, sizeof(ack));\n      if (result != ESP_OK) Serial.printf(\"\
+    ACK send rejected: %d\\n\", int(result));\n    }\n  }\n  delay(10);\n}\n"
+  wiring: Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.
+  notes: ''
+faqs: []
+sources:
+- title: ESP-NOW in ESP-IDF 5.5
+  url: https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-reference/network/esp_now.html
+  note: Channels, peer setup, callback task context and delivery versus application ACK.
+- title: esp_now.h at IDF 5.5
+  url: https://raw.githubusercontent.com/espressif/esp-idf/v5.5/components/esp_wifi/include/esp_now.h
+  note: Exact callback types and return codes.
+- title: Arduino ESP-NOW implementation at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/ESP_NOW/src/ESP32_NOW.cpp
+  note: Version-specific send callback signature and native Wi-Fi restriction.
+related_guides:
+- title: Wi-Fi diagnostics
+  href: /guides/esp32-wifi-troubleshooting.html
+  description: Understand radio channels before sharing ESP-NOW with a router.
+- title: BLE fundamentals
+  href: /guides/esp32-ble-fundamentals.html
+  description: 'A different local-radio model: services read by a phone.'
+conclusion: Treat a matching application ACK as evidence of the receiver’s explicit processing step, not
+  as proof of hardware action. Keep the channel, peer addresses and wire format explicit.
+learning_resource_type: Guide
+keywords: 'ESP-NOW with ESP32: Complete Sender, Receiver and Application ACK'

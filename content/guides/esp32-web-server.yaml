@@ -1,0 +1,119 @@
+slug: esp32-web-server
+phase: 3
+sort_order: 21
+guide_type: reference
+concise_layout: true
+title: 'Basic ESP32 Web Server: A Local Access-Point Example | ESP32 Engine'
+headline: 'Basic ESP32 Web Server: A Local Access-Point Example'
+meta_description: Serve a page and an uptime route from a classic ESP32 access point. Connect directly
+  to the board, use its printed HTTP address and learn the limits of this local demo.
+lead: Serve a page and an uptime route from a classic ESP32 access point. Connect directly to the board,
+  use its printed HTTP address and learn the limits of this local demo.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and Wi-Fi-capable phone/computer. No LED or router
+      required.
+  - label: Software
+    value: Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Built-in
+      WiFi and WebServer; no async-server library.
+  - label: Prerequisite
+    value: Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic
+      WROOM board.
+  - label: Expected result
+    value: A browser connected to ESP32-Lab displays a page; /uptime returns milliseconds and unknown
+      paths return 404.
+  - label: Review limits
+    value: Documentation/API review and local content/browser checks only. Sketch compilation, physical
+      hardware and playback testing were not performed.
+sections:
+- id: mode
+  heading: Choose AP deliberately
+  text: 'This example uses WIFI_AP: the ESP32 creates its own small Wi-Fi network. It does not join your
+    home router or provide internet access. Classic WROOM uses 2.4 GHz; consult the actual chip documentation
+    for other boards. Change the placeholder passphrase before use.
+
+
+    STA mode instead joins an existing router and uses WiFi.localIP(). AP mode uses WiFi.softAPIP(). These
+    addresses belong to different interfaces; do not mix them. Learn STA diagnostics in the Wi-Fi troubleshooting
+    guide before combining modes.'
+- id: upload-steps
+  heading: Upload and connect locally
+  text: Upload the complete sketch, open Serial at 115200 and read the printed network name/address. Join
+    ESP32-Lab from your phone or computer. Accept staying on a network without internet if the operating
+    system asks; otherwise it may switch away. Type the printed address with http://, not https://, into
+    the browser address bar. Do not use a search result or guess an old DHCP address.
+- id: requests
+  heading: Understand each route
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th scope="col">Request</th><th
+    scope="col">Response</th><th scope="col">Purpose</th></tr></thead><tbody><tr><td>GET /</td><td>200,
+    HTML</td><td>Small page with a link; no remote dependencies.</td></tr><tr><td>GET /uptime</td><td>200,
+    text/plain</td><td>Milliseconds since this board reset; millis wraps after about 49.7 days.</td></tr><tr><td>Unknown
+    route</td><td>404, text/plain</td><td>An HTTP result, distinct from a radio connection failure.</td></tr></tbody></table></div><p>server.on
+    registers handlers; server.begin starts the listener. handleClient must run regularly in loop. This
+    synchronous WebServer is suitable for a small bench demonstration, not high concurrency. Long delays
+    or lengthy sensor work in a handler make other requests wait.</p>
+- id: verify
+  heading: Verify without extra hardware
+  text: 'Open /uptime twice a few seconds apart; its value should increase unless the board reset. Open
+    /missing and expect No such route. No readings or successful uploads are claimed here. The page does
+    not control actuators, so a browser refresh cannot unexpectedly start a motor.
+
+
+    If the browser cannot connect, first confirm it is still on ESP32-Lab. Temporarily disconnect a VPN
+    or route-changing mobile connection for this local test. Use the actual printed AP IP. If only the
+    page stalls, check that loop calls handleClient and has no endless wait.'
+- id: security
+  heading: Security boundary
+  text: The passphrase limits entry to the Wi-Fi network; it is not HTTP login or application authorization.
+    The example has no TLS, user authentication, rate limiting or safe remote-control design. Anyone admitted
+    to that network can request the routes. Do not expose this port through a router, send secrets in
+    URLs or reuse this design for locks/heaters. An access point is not automatically an internet gateway.
+    Secure deployments require a reviewed authentication and transport design beyond this example.
+code_examples:
+- title: Complete AP-only HTTP example
+  filename: local-web-server.ino
+  content: "#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* AP_SSID = \"ESP32-Lab\";\nconst char*\
+    \ AP_PASSWORD = \"CHANGE_ME_1234\"; // Replace with your own 8-63 character passphrase.\nWebServer\
+    \ server(80);\nbool ready = false;\n\nvoid setup() {\n  Serial.begin(115200);\n  if (!WiFi.mode(WIFI_AP)\
+    \ || !WiFi.softAP(AP_SSID, AP_PASSWORD, 6)) {\n    Serial.println(\"AP start failed; check board and\
+    \ passphrase length, then reset.\");\n    return;\n  }\n  server.on(\"/\", HTTP_GET, []() {\n    server.send(200,\
+    \ \"text/html; charset=utf-8\",\n      \"<!DOCTYPE html><html lang='en'><meta name='viewport' content='width=device-width,initial-scale=1'>\"\
+    \n      \"<title>ESP32 Lab</title><h1>ESP32 local server</h1>\"\n      \"<p>This page came from the\
+    \ board.</p><p><a href='/uptime'>Read uptime</a></p></html>\");\n  });\n  server.on(\"/uptime\", HTTP_GET,\
+    \ []() {\n    server.send(200, \"text/plain\", String(millis()) + \" ms since reset\\n\");\n  });\n\
+    \  server.onNotFound([]() { server.send(404, \"text/plain\", \"No such route\\n\"); });\n  server.begin();\
+    \ ready = true;\n  Serial.print(\"Join \"); Serial.println(AP_SSID);\n  Serial.print(\"Open http://\"\
+    ); Serial.println(WiFi.softAPIP());\n}\nvoid loop() {\n  if (ready) server.handleClient();\n  delay(2);\n\
+    }\n"
+  wiring: Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.
+  notes: ''
+faqs: []
+sources:
+- title: WebServer HelloServer at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WebServer/examples/HelloServer/HelloServer.ino
+  note: Built-in request registration, responses and loop servicing.
+- title: WiFi AP API at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/src/WiFiAP.h
+  note: AP startup and interface address.
+- title: ESP-IDF 5.5 Wi-Fi modes
+  url: https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-guides/wifi.html
+  note: AP versus station behavior.
+- title: Classic ESP32 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  note: 2.4 GHz radio assumption.
+related_guides:
+- title: Wi-Fi troubleshooting
+  href: /guides/esp32-wifi-troubleshooting.html
+  description: Diagnose router association and IP configuration.
+- title: MQTT sensor dashboard
+  href: /projects/esp32-mqtt-sensor-dashboard.html
+  description: Compare local request/response with brokered publish/subscribe.
+conclusion: Keep the first server local and read-only. Prove network access and routes before adding documented
+  sensors or authenticated control.
+learning_resource_type: Guide
+keywords: 'Basic ESP32 Web Server: A Local Access-Point Example'

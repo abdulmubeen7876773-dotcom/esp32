@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Basic ESP32 Web Server: A Local Access-Point Example | ESP32 Engine</title>
+<meta name="description" content="Serve a page and an uptime route from a classic ESP32 access point. Connect directly to the board, use its printed HTTP address and learn the limits of this local demo.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-web-server.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="Basic ESP32 Web Server: A Local Access-Point Example | ESP32 Engine">
+<meta property="og:description" content="Serve a page and an uptime route from a classic ESP32 access point. Connect directly to the board, use its printed HTTP address and learn the limits of this local demo.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-web-server.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Basic ESP32 Web Server: A Local Access-Point Example | ESP32 Engine">
+<meta name="twitter:description" content="Serve a page and an uptime route from a classic ESP32 access point. Connect directly to the board, use its printed HTTP address and learn the limits of this local demo.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"Basic ESP32 Web Server: A Local Access-Point Example","description":"Serve a page and an uptime route from a classic ESP32 access point. Connect directly to the board, use its printed HTTP address and learn the limits of this local demo.","datePublished":"2026-10-10","dateModified":"2026-10-10","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-web-server.html"},"proficiencyLevel":"Intermediate","keywords":"Basic ESP32 Web Server: A Local Access-Point Example"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"Basic ESP32 Web Server: A Local Access-Point Example","item":"https://esp32engine.com/guides/esp32-web-server.html"}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">Basic ESP32 Web Server: A Local Access-Point Example</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>Basic ESP32 Web Server: A Local Access-Point Example</h1>
+<p class="article-lead">Serve a page and an uptime route from a classic ESP32 access point. Connect directly to the board, use its printed HTTP address and learn the limits of this local demo.</p>
+<p class="meta guide-meta">Reference guide · Updated 2026-10-10</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/esp32-web-server-concept.svg" alt="Basic ESP32 Web Server: A Local Access-Point Example guide illustration" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+
+<article class="mission-journey article-concise">
+<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#mode-heading">Choose AP deliberately</a><a href="#upload-steps-heading">Upload and connect locally</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#requests-heading">Understand each route</a><a href="#verify-heading">Verify without extra hardware</a><a href="#security-heading">Security boundary</a><a href="#next-steps-heading">Next steps</a><a href="#sources-heading">Technical references</a><a href="#related-guides">Related Guides</a></nav></details>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Hardware</dt><dd>Classic ESP32-WROOM DevKit, USB data cable and Wi-Fi-capable phone/computer. No LED or router required.</dd><dt>Software</dt><dd>Arduino-ESP32 3.3.2 is the explicit API review baseline, not a latest-release claim. Built-in WiFi and WebServer; no async-server library.</dd><dt>Prerequisite</dt><dd>Complete the Arduino IDE Serial-only first upload; select ESP32 Dev Module for the stated classic WROOM board.</dd><dt>Expected result</dt><dd>A browser connected to ESP32-Lab displays a page; /uptime returns milliseconds and unknown paths return 404.</dd><dt>Review limits</dt><dd>Documentation/API review and local content/browser checks only. Sketch compilation, physical hardware and playback testing were not performed.</dd></dl></section>
+<section class="mission-section" id="mode" aria-labelledby="mode-heading"><h2 tabindex="-1" id="mode-heading">Choose AP deliberately</h2><p>This example uses WIFI_AP: the ESP32 creates its own small Wi-Fi network. It does not join your home router or provide internet access. Classic WROOM uses 2.4 GHz; consult the actual chip documentation for other boards. Change the placeholder passphrase before use.</p><p>STA mode instead joins an existing router and uses WiFi.localIP(). AP mode uses WiFi.softAPIP(). These addresses belong to different interfaces; do not mix them. Learn STA diagnostics in the Wi-Fi troubleshooting guide before combining modes.</p></section>
+<section class="mission-section" id="upload-steps" aria-labelledby="upload-steps-heading"><h2 tabindex="-1" id="upload-steps-heading">Upload and connect locally</h2><p>Upload the complete sketch, open Serial at 115200 and read the printed network name/address. Join ESP32-Lab from your phone or computer. Accept staying on a network without internet if the operating system asks; otherwise it may switch away. Type the printed address with http://, not https://, into the browser address bar. Do not use a search result or guess an old DHCP address.</p></section>
+<section class="mission-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Complete AP-only HTTP example</h3><p>Power the stated DevKit from USB. No GPIO wiring or onboard LED is required.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">local-web-server.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;WiFi.h&gt;</span>
+<span class="tok-pre">#include &lt;WebServer.h&gt;</span>
+
+const <span class="tok-kw">char</span>* AP_SSID = &quot;ESP32-Lab&quot;;
+const <span class="tok-kw">char</span>* AP_PASSWORD = &quot;CHANGE_ME_1234&quot;; <span class="tok-com">// Replace with your own 8-63 character passphrase.</span>
+WebServer server(<span class="tok-num">80</span>);
+bool ready = <span class="tok-kw">false</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-kw">if</span> (!WiFi.mode(WIFI_AP) || !WiFi.softAP(AP_SSID, AP_PASSWORD, <span class="tok-num">6</span>)) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;AP start failed; check board and passphrase length, then reset.&quot;);
+    <span class="tok-kw">return</span>;
+  }
+  server.on(&quot;/&quot;, HTTP_GET, []() {
+    server.send(<span class="tok-num">200</span>, &quot;text/html; charset=utf-<span class="tok-num">8</span>&quot;,
+      &quot;&lt;!DOCTYPE html&gt;&lt;html lang=&#x27;en&#x27;&gt;&lt;meta name=&#x27;viewport&#x27; content=&#x27;width=device-width,initial-scale=<span class="tok-num">1</span>&#x27;&gt;&quot;
+      &quot;&lt;title&gt;ESP32 Lab&lt;/title&gt;&lt;h1&gt;ESP32 local server&lt;/h1&gt;&quot;
+      &quot;&lt;p&gt;This page came from the board.&lt;/p&gt;&lt;p&gt;&lt;a href=&#x27;/uptime&#x27;&gt;Read uptime&lt;/a&gt;&lt;/p&gt;&lt;/html&gt;&quot;);
+  });
+  server.on(&quot;/uptime&quot;, HTTP_GET, []() {
+    server.send(<span class="tok-num">200</span>, &quot;text/plain&quot;, String(millis()) + &quot; ms since reset\n&quot;);
+  });
+  server.onNotFound([]() { server.send(<span class="tok-num">404</span>, &quot;text/plain&quot;, &quot;No such route\n&quot;); });
+  server.<span class="tok-fn">begin</span>(); ready = <span class="tok-kw">true</span>;
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Join &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(AP_SSID);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;Open http:<span class="tok-com">//&quot;); Serial.println(WiFi.softAPIP());</span>
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (ready) server.handleClient();
+  <span class="tok-fn">delay</span>(<span class="tok-num">2</span>);
+}</code></pre>
+</div></section>
+<section class="mission-section" id="requests" aria-labelledby="requests-heading"><h2 tabindex="-1" id="requests-heading">Understand each route</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="wiring-table"><thead><tr><th scope="col">Request</th><th scope="col">Response</th><th scope="col">Purpose</th></tr></thead><tbody><tr><td>GET /</td><td>200, HTML</td><td>Small page with a link; no remote dependencies.</td></tr><tr><td>GET /uptime</td><td>200, text/plain</td><td>Milliseconds since this board reset; millis wraps after about 49.7 days.</td></tr><tr><td>Unknown route</td><td>404, text/plain</td><td>An HTTP result, distinct from a radio connection failure.</td></tr></tbody></table></div><p>server.on registers handlers; server.begin starts the listener. handleClient must run regularly in loop. This synchronous WebServer is suitable for a small bench demonstration, not high concurrency. Long delays or lengthy sensor work in a handler make other requests wait.</p></section>
+<section class="mission-section" id="verify" aria-labelledby="verify-heading"><h2 tabindex="-1" id="verify-heading">Verify without extra hardware</h2><p>Open /uptime twice a few seconds apart; its value should increase unless the board reset. Open /missing and expect No such route. No readings or successful uploads are claimed here. The page does not control actuators, so a browser refresh cannot unexpectedly start a motor.</p><p>If the browser cannot connect, first confirm it is still on ESP32-Lab. Temporarily disconnect a VPN or route-changing mobile connection for this local test. Use the actual printed AP IP. If only the page stalls, check that loop calls handleClient and has no endless wait.</p></section>
+<section class="mission-section" id="security" aria-labelledby="security-heading"><h2 tabindex="-1" id="security-heading">Security boundary</h2><p>The passphrase limits entry to the Wi-Fi network; it is not HTTP login or application authorization. The example has no TLS, user authentication, rate limiting or safe remote-control design. Anyone admitted to that network can request the routes. Do not expose this port through a router, send secrets in URLs or reuse this design for locks/heaters. An access point is not automatically an internet gateway. Secure deployments require a reviewed authentication and transport design beyond this example.</p></section>
+<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 tabindex="-1" id="next-steps-heading">Next steps</h2><p>Keep the first server local and read-only. Prove network access and routes before adding documented sensors or authenticated control.</p></section>
+
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WebServer/examples/HelloServer/HelloServer.ino">WebServer HelloServer at 3.3.2</a> — Built-in request registration, responses and loop servicing.</li><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/src/WiFiAP.h">WiFi AP API at 3.3.2</a> — AP startup and interface address.</li><li><a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-guides/wifi.html">ESP-IDF 5.5 Wi-Fi modes</a> — AP versus station behavior.</li><li><a href="https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf">Classic ESP32 datasheet</a> — 2.4 GHz radio assumption.</li></ul></section>
+  <h2 tabindex="-1" id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/esp32-wifi-troubleshooting.html"><strong>Wi-Fi troubleshooting</strong></a> <span class="meta">Diagnose router association and IP configuration.</span></li><li><a href="/projects/esp32-mqtt-sensor-dashboard.html"><strong>MQTT sensor dashboard</strong></a> <span class="meta">Compare local request/response with brokered publish/subscribe.</span></li></ul>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>
