@@ -1,0 +1,127 @@
+slug: esp32-ota-updates
+phase: 3
+sort_order: 25
+guide_type: reference
+concise_layout: true
+title: 'ESP32 OTA Updates: First USB Upload and Local Recovery | ESP32 Engine'
+headline: 'ESP32 OTA Updates: First USB Upload and Local Recovery'
+meta_description: Install a complete ArduinoOTA sketch by USB, then update it on a trusted local network.
+  Check OTA partitions, password authentication and USB recovery limits.
+lead: Install a complete ArduinoOTA sketch by USB, then update it on a trusted local network. Check OTA
+  partitions, password authentication and USB recovery limits.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit with verified 4 MB flash, USB data cable and a trusted 2.4 GHz Wi-Fi
+      LAN shared with the upload computer. No external actuators.
+  - label: Software
+    value: Arduino-ESP32 3.3.2 and its bundled ArduinoOTA/espota uploader. ESP32 Dev Module, 4 MB flash
+      and default OTA-capable partition scheme.
+  - label: Prerequisite
+    value: Identify the exact board and use a known USB data cable. Arduino examples follow the Serial-only
+      IDE first-upload guide; CircuitPython uses its separate firmware workflow.
+  - label: Expected result
+    value: After the first USB install, a network port becomes available. A second build changes the Serial
+      build ID after successful OTA/restart; this is an expected test, not a recorded upload.
+  - label: Review limits
+    value: Documentation review and automated content/browser checks only. Examples have not been compiled,
+      uploaded or tested on physical hardware.
+sections:
+- id: prerequisites
+  heading: USB, partitions and a reachable network
+  text: 'OTA cannot install its own first firmware on a blank board. Upload this sketch over USB first.
+    Keep that cable and the correct board profile available for recovery. The pinned default 4 MB partition
+    table has otadata plus app0/ota_0 and app1/ota_1, each 0x140000 bytes (1.25 MiB). The new binary must
+    fit an app slot. A No OTA/Huge APP scheme with one application slot does not meet this example’s requirements.
+
+
+    Use the core 3.3.2 uploader as well as its library; old host tools can have incompatible authentication.
+    The computer and board need mutual LAN reachability. Guest isolation/VPNs/firewalls can block discovery
+    or the upload connection; internet access is not required.'
+- id: upload-steps
+  heading: Install by USB, then change the build ID
+  text: 'Replace all three credential placeholders and upload by USB. Verify the printed IP at 115200.
+    In the IDE port menu select the discovered esp32-ota-lab network port while keeping the same board,
+    flash and partition settings. Change BUILD_ID to ota-test-2 and upload, supplying the OTA password
+    when prompted. After reboot reconnect to the USB Serial port and confirm the new build ID. A successful
+    transfer message alone is not a functional test of the new application.
+
+
+    Keep Wi-Fi settings and ArduinoOTA setup/handle in future builds or you can lose the network update
+    route. Network-port discovery uses mDNS; if the port is missing inspect local discovery/firewall first
+    rather than changing partitions blindly. Different boards should have distinct hostnames.'
+- id: recovery
+  heading: Bounded connections and a real recovery route
+  text: 'The loop allows a 20-second Wi-Fi window and starts attempts no more often than every 30 seconds.
+    It starts/stops the OTA service as Wi-Fi availability changes. ArduinoOTA.handle must run regularly;
+    synchronous transfer handling can occupy the loop, so this is not a real-time control design.
+
+
+    For authentication errors check the password and core/uploader version. Begin failures can indicate
+    a missing OTA partition or oversized sketch; connection/receive failures need network and power checks.
+    If the new sketch crashes or removes OTA, restore a known build over USB. Do not advertise automatic
+    rollback: the default example does not implement application health validation or a guaranteed rollback
+    policy. Avoid changing the partition layout through this ordinary sketch update.'
+- id: security
+  heading: Password protection is not an encrypted update system
+  text: 'setPassword enables the pinned library’s challenge/response authentication; it does not encrypt
+    the firmware transport or enable secure boot, firmware signing or flash encryption. Do not describe
+    this as HTTPS/TLS OTA. Use a unique password, an isolated trusted LAN and no router port forwarding.
+    Keep secrets out of public repositories. Production remote updates need a separate reviewed authenticity,
+    transport, key-management and recovery design.
+
+
+    Keep stable power during flashing. This no-actuator example does not establish safe behavior for heaters
+    or motors during reboot or failed updates.'
+code_examples:
+- title: Complete local-network ArduinoOTA example
+  filename: ota-local-classic.ino
+  content: "#include <WiFi.h>\n#include <ArduinoOTA.h>\n\nconst char* SSID = \"YOUR_WIFI_SSID\";\nconst\
+    \ char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconst char* OTA_PASSWORD = \"REPLACE_WITH_A_UNIQUE_OTA_PASSWORD\"\
+    ;\nconst char* BUILD_ID = \"usb-baseline-1\"; // Change to ota-test-2 for the next upload.\nconstexpr\
+    \ uint32_t WINDOW_MS = 20000, RETRY_MS = 30000;\nbool trying = false, otaReady = false;\nuint32_t\
+    \ attemptAt = 0;\nvoid startWiFi() {\n  attemptAt = millis(); trying = true;\n  WiFi.begin(SSID, PASSWORD);\n\
+    \  Serial.println(\"Starting bounded Wi-Fi window\");\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  Serial.print(\"Build: \"); Serial.println(BUILD_ID);\n  WiFi.mode(WIFI_STA); WiFi.setAutoReconnect(false);\n\
+    \  ArduinoOTA.setHostname(\"esp32-ota-lab\"); // Use a different name per board.\n  ArduinoOTA.setPassword(OTA_PASSWORD);\n\
+    \  ArduinoOTA.onStart([]() { Serial.println(\"OTA starting; keep power on\"); });\n  ArduinoOTA.onEnd([]()\
+    \ { Serial.println(\"OTA transfer finished\"); });\n  ArduinoOTA.onError([](ota_error_t error) {\n\
+    \    Serial.printf(\"OTA error code: %u\\n\", unsigned(error));\n  });\n  startWiFi();\n}\nvoid loop()\
+    \ {\n  const uint32_t now = millis();\n  if (WiFi.status() == WL_CONNECTED) {\n    trying = false;\n\
+    \    if (!otaReady) {\n      ArduinoOTA.begin(); otaReady = true;\n      Serial.print(\"OTA host esp32-ota-lab,\
+    \ IP: \"); Serial.println(WiFi.localIP());\n    }\n    ArduinoOTA.handle(); // Regular service; transfer\
+    \ processing can block.\n  } else {\n    if (otaReady) { ArduinoOTA.end(); otaReady = false; }\n \
+    \   if (trying && now - attemptAt >= WINDOW_MS) {\n      WiFi.disconnect(false); trying = false;\n\
+    \      Serial.println(\"Wi-Fi window expired; USB recovery remains available\");\n    }\n    if (!trying\
+    \ && now - attemptAt >= RETRY_MS) startWiFi();\n  }\n  delay(2);\n}"
+  wiring: USB powers/programs the stated board. No GPIO wiring required; credentials are placeholders.
+  notes: ''
+faqs: []
+sources:
+- title: BasicOTA at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/ArduinoOTA/examples/BasicOTA/BasicOTA.ino
+  note: Callbacks and authentication baseline.
+- title: ArduinoOTA 3.3.2 implementation
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/ArduinoOTA/src/ArduinoOTA.cpp
+  note: Authentication and service lifecycle.
+- title: Default 4 MB partition table
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/tools/partitions/default.csv
+  note: Two application slots and OTA data.
+- title: ESP-IDF 5.5 OTA reference
+  url: https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-reference/system/ota.html
+  note: Partition/recovery architecture; not a claim this sketch enables rollback.
+related_guides:
+- title: Arduino IDE first upload
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Keep a working USB path.
+- title: Wi-Fi troubleshooting
+  href: /guides/esp32-wifi-troubleshooting.html
+  description: Separate IP/discovery failures from upload errors.
+conclusion: Use the stated board and firmware assumptions. Compare actual observations with Expected result
+  before extending the example.
+learning_resource_type: Guide
+keywords: 'ESP32 OTA Updates: First USB Upload and Local Recovery'

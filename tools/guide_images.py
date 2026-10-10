@@ -1,6 +1,10 @@
 GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 
 GUIDE_IMAGE_BY_SLUG = {
+    "esp32-deep-sleep": "/assets/visuals/guides/concepts/esp32-deep-sleep-concept.svg",
+    "esp32-ota-updates": "/assets/visuals/guides/concepts/esp32-ota-updates-concept.svg",
+    "esp32-vs-esp32-s3": "/assets/visuals/guides/concepts/esp32-vs-esp32-s3-concept.svg",
+    "circuitpython-esp32-s3-feather": "/assets/visuals/guides/concepts/circuitpython-esp32-s3-feather-concept.svg",
     "esp32-wifi-troubleshooting": "/assets/visuals/guides/concepts/esp32-wifi-troubleshooting-concept.svg",
     "esp32-web-server": "/assets/visuals/guides/concepts/esp32-web-server-concept.svg",
     "esp32-esp-now": "/assets/visuals/guides/concepts/esp32-esp-now-concept.svg",

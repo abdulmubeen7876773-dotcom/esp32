@@ -32,7 +32,8 @@ def examples_section(examples: list, css: str = "mission-section") -> str:
     for example in examples:
         title = example.get("title", "Arduino example")
         parts.append(f'<h3>{esc(title)}</h3>' + _rich_content(example.get("wiring", "")) + code_panel(example) + _rich_content(example.get("notes", "")))
-    return f'<section class="{css}" id="code" aria-labelledby="code-heading"><h2 id="code-heading">Wiring and matching Arduino code</h2>' + ''.join(parts) + '</section>'
+    heading = "CircuitPython code and USB connection" if all(e.get("language") == "python" for e in examples) else "Wiring and matching Arduino code"
+    return f'<section class="{css}" id="code" aria-labelledby="code-heading"><h2 id="code-heading">{heading}</h2>' + ''.join(parts) + '</section>'
 
 
 def sources_section(sources: list, css: str = "mission-section") -> str:

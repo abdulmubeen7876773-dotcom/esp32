@@ -395,7 +395,12 @@ def _highlight_tokens(code: str) -> str:
 def code_panel(code: dict) -> str:
     filename = code.get("filename", "sketch.ino")
     content = (code.get("content") or "").strip("\n")
-    highlighted = highlight_arduino(content)
+    language = code.get("language", "arduino")
+    if language not in ("arduino", "python"):
+        raise ValueError(f"Unsupported code language: {language}")
+    highlighted = esc(content) if language == "python" else highlight_arduino(content)
+    pre = ('<pre class="code-block" tabindex="0" role="region" aria-label="Python code; scroll horizontally if needed">'
+           if language == "python" else '<pre class="code-block">')
     return f"""<div class="code-panel">
   <div class="code-panel-head">
     <div class="code-panel-chrome" aria-hidden="true">
@@ -409,7 +414,7 @@ def code_panel(code: dict) -> str:
       <span class="btn-copy-label">Copy</span>
     </button>
   </div>
-  <pre class="code-block"><code class="language-arduino">{highlighted}</code></pre>
+  {pre}<code class="language-{language}">{highlighted}</code></pre>
 </div>"""
 
 

@@ -1,0 +1,108 @@
+slug: esp32-vs-esp32-s3
+phase: 3
+sort_order: 26
+guide_type: reference
+concise_layout: true
+title: 'Classic ESP32 versus ESP32-S3: Chip and Board Differences | ESP32 Engine'
+headline: 'Classic ESP32 versus ESP32-S3: Chip and Board Differences'
+meta_description: Compare CPU, Bluetooth, USB and GPIO capabilities before choosing a board. A shared
+  ESP32 name does not make classic pin maps or USB workflows portable.
+lead: Compare CPU, Bluetooth, USB and GPIO capabilities before choosing a board. A shared ESP32 name does
+  not make classic pin maps or USB workflows portable.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Comparison of a dual-core classic ESP32-WROOM DevKit and an ESP32-S3 development board whose
+      module/flash/PSRAM/USB routing are documented.
+  - label: Software
+    value: Datasheet comparison; site Arduino examples use the explicit 3.3.2 review baseline. Firmware/board-menu
+      choices remain target-specific.
+  - label: Prerequisite
+    value: Identify the exact board and use a known USB data cable. Arduino examples follow the Serial-only
+      IDE first-upload guide; CircuitPython uses its separate firmware workflow.
+  - label: Expected result
+    value: Choose a board by the required radio, USB workflow and usable pins rather than by its family
+      name.
+  - label: Review limits
+    value: Documentation review and automated content/browser checks only. Examples have not been compiled,
+      uploaded or tested on physical hardware.
+sections:
+- id: comparison
+  heading: Compare chips before comparing boards
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><thead><tr><th scope="col">Capability</th><th
+    scope="col">Classic ESP32 (dual-core WROOM example)</th><th scope="col">ESP32-S3</th></tr></thead><tbody><tr><th
+    scope="row">CPU</th><td>Xtensa LX6, two cores, up to 240 MHz for the stated dual-core part; classic
+    series also contains single-core variants.</td><td>Xtensa LX7, two cores, up to 240 MHz, vector instructions.</td></tr><tr><th
+    scope="row">Radio</th><td>2.4 GHz Wi-Fi; Bluetooth 4.2 Classic BR/EDR and LE.</td><td>2.4 GHz Wi-Fi;
+    Bluetooth 5 LE, no Bluetooth Classic.</td></tr><tr><th scope="row">USB</th><td>No native USB peripheral;
+    typical DevKit uses a separate USB-UART bridge.</td><td>Full-speed USB OTG and USB Serial/JTAG controllers.
+    Board routing and firmware determine available USB functions.</td></tr><tr><th scope="row">GPIO</th><td>34
+    programmable GPIOs at chip level; GPIO34–39 input-only. Six pins may serve external flash.</td><td>45
+    programmable GPIOs at chip level (0–21 and 26–48); flash/PSRAM, strapping and USB can reserve pins.</td></tr><tr><th
+    scope="row">Analog output</th><td>Two DAC channels on classic GPIO25/26.</td><td>No equivalent built-in
+    DAC; PWM is not a DAC.</td></tr></tbody></table></div><p>Counts are chip capabilities, not the number
+    of freely usable header pins. Both use 3.3 V GPIO logic; a board’s 5 V USB/VIN input does not make
+    signal pins 5 V tolerant.</p>
+- id: boards
+  heading: What the development board adds
+  text: 'A module can include flash, PSRAM and an antenna; a development board adds regulators, connectors,
+    USB routing, buttons and sometimes a bridge or LED. An S3 chip feature is not proof that a particular
+    USB socket connects to its native USB pins. Read the schematic and connector labels. Memory capacity
+    and antenna type depend on the actual module.
+
+
+    Classic GPIO restrictions do not transfer numerically to S3. S3 native USB uses GPIO19/20, while its
+    strapping pins include 0, 3, 45 and 46. GPIO46 remains a strapping pin; do not infer its restrictions
+    from older pinout summaries. Flash/PSRAM package configurations reserve additional pins. Check the
+    exact board schematic before selecting output, wake or analog pins.'
+- id: choice
+  heading: Choose by the job
+  text: 'For existing classic-WROOM wiring, the classic DevKit is the shortest path through this site’s
+    GPIO and sensor examples. A Bluetooth Classic/SPP requirement rules out S3. For supported native USB
+    device workflows or vector-oriented processing, consider S3, then verify firmware support and memory.
+    Vector instructions do not automatically turn an arbitrary sketch into a faster or validated AI application.
+
+
+    Both listed chips use 2.4 GHz Wi-Fi; neither comparison implies 5 GHz support. Bluetooth version labels
+    do not prove that every optional feature is exposed by your selected Arduino library.'
+- id: migration
+  heading: A small migration checklist
+  text: 'Identify the module, not just the seller’s board title. Select the matching IDE target and USB
+    options. Re-map every GPIO against the schematic; check boot straps, flash/PSRAM and USB pins. Re-check
+    ADC, sleep, LEDC, camera and Bluetooth APIs for the target/core. Keep a USB/bootloader recovery method.
+    An S3 native USB cable may disappear/re-enumerate when firmware changes; a classic USB-UART bridge
+    has a different role.
+
+
+    Use the specific CircuitPython Feather workflow linked below only on that supported board. Do not
+    expect a CIRCUITPY drive from a generic classic WROOM board.'
+code_examples: []
+faqs: []
+sources:
+- title: ESP32 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  note: LX6/radio/GPIO/DAC and series qualifications.
+- title: ESP32-S3 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf
+  note: LX7, LE-only Bluetooth, USB controllers, GPIO/strap restrictions.
+- title: ESP32-S3 capabilities at IDF 5.5
+  url: https://raw.githubusercontent.com/espressif/esp-idf/v5.5/components/soc/esp32s3/include/soc/soc_caps.h
+  note: Version-pinned valid GPIO/output masks; GPIO46 is not marked input-only in this baseline.
+related_guides:
+- title: Classic DevKit pin reference
+  href: /components/esp32-devkit.html
+  description: Board-specific reference retained.
+- title: CircuitPython on a supported S3 Feather
+  href: /guides/circuitpython-esp32-s3-feather.html
+  description: Native USB setup for one explicit board.
+- title: BLE fundamentals
+  href: /guides/esp32-ble-fundamentals.html
+  description: Classic-WROOM GATT example; review the target before porting.
+conclusion: Use the stated board and firmware assumptions. Compare actual observations with Expected result
+  before extending the example.
+learning_resource_type: Guide
+keywords: 'Classic ESP32 versus ESP32-S3: Chip and Board Differences'

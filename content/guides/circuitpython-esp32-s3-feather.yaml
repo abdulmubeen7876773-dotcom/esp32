@@ -1,0 +1,120 @@
+slug: circuitpython-esp32-s3-feather
+phase: 3
+sort_order: 27
+guide_type: reference
+concise_layout: true
+title: 'CircuitPython Setup: ESP32-S3 Feather with Native USB | ESP32 Engine'
+headline: 'CircuitPython Setup: ESP32-S3 Feather with Native USB'
+meta_description: Install CircuitPython 9.2.8 on the Adafruit Feather ESP32-S3 4 MB Flash / 2 MB PSRAM.
+  Use its UF2 bootloader, CIRCUITPY drive and Serial-only first program.
+lead: Install CircuitPython 9.2.8 on the Adafruit Feather ESP32-S3 4 MB Flash / 2 MB PSRAM. Use its UF2
+  bootloader, CIRCUITPY drive and Serial-only first program.
+proficiency_level: Intermediate
+reading_time: Reference guide
+date_published: '2026-10-10'
+date_modified: '2026-10-10'
+setup:
+  items:
+  - label: Hardware
+    value: Adafruit Feather ESP32-S3 4 MB Flash / 2 MB PSRAM, native USB data cable and computer. Not
+      the 8 MB/no-PSRAM, TFT, Reverse TFT or generic WROOM variants.
+  - label: Software
+    value: CircuitPython 9.2.8 en_US UF2 for the stated 4 MB Flash / 2 MB PSRAM Feather; reviewed version,
+      not latest. Match the exact board ID and firmware link below. Existing working TinyUF2 bootloader
+      required. Only built-in time/os/sys modules.
+  - label: Prerequisite
+    value: Identify the exact board and use a known USB data cable. Arduino examples follow the Serial-only
+      IDE first-upload guide; CircuitPython uses its separate firmware workflow.
+  - label: Expected result
+    value: After installing the matching UF2, CIRCUITPY mounts. Saving code.py prints firmware/board details
+      and a changing counter on the USB Serial console.
+  - label: Review limits
+    value: Documentation review and automated content/browser checks only. Examples have not been compiled,
+      uploaded or tested on physical hardware.
+sections:
+- id: firmware
+  heading: Pick the exact firmware before flashing
+  html: '<p>Back up any existing files first; replacing firmware can destroy the previous filesystem/application.
+    Use the 9.2.8 en_US UF2 for <code style="overflow-wrap:anywhere">adafruit_feather_esp32s3_4mbflash_2mbpsram</code>
+    from the official download link below. The flash/PSRAM sizes are part of the board identity, not interchangeable
+    download choices. This pinned 9.x workflow is not advice to use an arbitrary current 10.x image: the
+    manufacturer documents additional bootloader/partition steps for 10.x on the 4 MB board.</p>'
+- id: install
+  heading: Install through the existing UF2 bootloader
+  text: 'With a data cable, tap Reset and tap again during the purple status-light interval. The expected
+    bootloader volume is FTHRS3BOOT. Copy the matching UF2 there; after reboot the application volume
+    should be CIRCUITPY. These are different volumes with different jobs.
+
+
+    If FTHRS3BOOT is absent, first check cable, direct USB connection and Reset timing. A ROM bootloader
+    serial port is not a UF2 filesystem. For missing/replaced TinyUF2 use the exact board’s manufacturer
+    Factory Reset/bootloader-repair instructions; that recovery can erase files. Do not flash a different
+    board’s bootloader or invent a generic drag-and-drop procedure for every ESP32.'
+- id: upload-steps
+  heading: Save code.py and open the USB console
+  text: 'Open CIRCUITPY and save the complete program below as code.py in its root, not code.py.txt. Use
+    a plain-text editor. Open the board’s USB Serial console with a CircuitPython-capable editor or terminal;
+    115200 is a common terminal setting for this USB CDC console. If you missed startup text, press Ctrl-D
+    to reload from the REPL. Ctrl-C interrupts the program; Ctrl-D starts it again. Saving code.py normally
+    triggers auto-reload.
+
+
+    No external library bundle or LED pin assumption is needed for this first program. For future third-party
+    drivers select the 9.x .mpy bundle matching CircuitPython 9.2.8 and install only required files under
+    lib/.'
+- id: verify
+  heading: Check the result and diagnose missing storage
+  text: 'Expected output includes the firmware release, board machine name and an increasing counter about
+    once per second. sys.implementation identifies CircuitPython; the release should match the pinned
+    install. No successful board execution is claimed here.
+
+
+    No output: verify the selected USB console and file extension; inspect the traceback instead of deleting
+    files blindly. BOOT drive only: firmware may not have installed or matched the board. CIRCUITPY absent:
+    check cable, USB port, safe-mode guidance and whether boot.py disabled USB storage. Arduino flashing
+    can replace this firmware/USB behavior; reinstall through the documented recovery route. Eject the
+    drive before unplugging to reduce filesystem corruption.'
+- id: usb
+  heading: Why this board can expose CIRCUITPY
+  text: This S3 Feather routes native USB and has a supported CircuitPython build. Classic ESP32 has no
+    native USB peripheral; its typical USB-UART bridge cannot become a USB mass-storage drive by installing
+    Python firmware. Supported classic boards may use Serial or web workflows instead. Keep supply/GPIO
+    at the board’s documented levels; this setup needs only USB and makes no universal claim about other
+    ESP32 boards.
+code_examples:
+- title: Serial-only CircuitPython first program
+  filename: code.py
+  content: "import os\nimport sys\nimport time\n\nprint(\"Implementation:\", sys.implementation.name)\n\
+    print(\"Firmware:\", os.uname().release)\nprint(\"Board:\", os.uname().machine)\ncounter = 0\nwhile\
+    \ True:\n    print(\"Counter:\", counter)\n    counter += 1\n    time.sleep(1)"
+  wiring: Native USB data cable to the stated Feather. No GPIO or LED wiring required.
+  notes: ''
+  language: python
+faqs: []
+sources:
+- title: Adafruit Feather installation
+  url: https://learn.adafruit.com/adafruit-esp32-s3-feather/circuitpython
+  note: Exact variants and UF2/USB workflow.
+- title: Manufacturer recovery and 4 MB upgrades
+  url: https://learn.adafruit.com/adafruit-esp32-s3-feather/factory-reset
+  note: Bootloader recovery; consult exact variant before erasing.
+- title: Board build at 9.2.8
+  url: https://raw.githubusercontent.com/adafruit/circuitpython/9.2.8/ports/espressif/boards/adafruit_feather_esp32s3_4mbflash_2mbpsram/mpconfigboard.mk
+  note: 4 MB flash / 2 MB PSRAM board support.
+- title: Exact 9.2.8 UF2
+  url: https://downloads.circuitpython.org/bin/adafruit_feather_esp32s3_4mbflash_2mbpsram/en_US/adafruit-circuitpython-adafruit_feather_esp32s3_4mbflash_2mbpsram-en_US-9.2.8.uf2
+  note: Availability verified by HTTP HEAD; not installed on a board.
+- title: CircuitPython 9.2.x os API
+  url: https://docs.circuitpython.org/en/9.2.x/shared-bindings/os/index.html
+  note: uname used in the first program.
+related_guides:
+- title: Classic ESP32 versus S3
+  href: /guides/esp32-vs-esp32-s3.html
+  description: Separate chip USB features from board support.
+- title: Arduino IDE setup
+  href: /guides/installing-arduino-ide-esp32.html
+  description: A different firmware workflow, not a CircuitPython prerequisite.
+conclusion: Use the stated board and firmware assumptions. Compare actual observations with Expected result
+  before extending the example.
+learning_resource_type: Guide
+keywords: 'CircuitPython Setup: ESP32-S3 Feather with Native USB'
