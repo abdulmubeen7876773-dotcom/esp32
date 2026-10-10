@@ -1,0 +1,198 @@
+slug: mfrc522-rfid-reader
+name: 'MFRC522 RFID Reader: Read a Tag UID with ESP32'
+category: Communication Modules
+difficulty: Beginner
+summary: Connect a documented 3.3 V RC522 SPI reader, check its register response and print a compatible tag UID.
+  A UID is identification data, not secure authentication.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/mfrc522-rfid-reader-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of MFRC522 RFID Reader; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: A documented RC522/MFRC522 board configured for SPI with 3.3 V, GND, SCK, MOSI, MISO, SS (often SDA),
+      RST and optional IRQ. Supply and host logic must both be 3.3 V. The illustration does not prove genuine NXP
+      silicon or a board schematic.
+  - label: Prerequisites and parts
+    value: Complete IDE setup and Blink. Reader, short wires and a known ISO/IEC 14443 Type A test tag, such as
+      MIFARE Classic. A generic RFID card/fob or phone is not automatically compatible.
+  - label: Libraries
+    value: Install MFRC522 by GithubCommunity 1.4.12 from Library Manager. SPI is bundled with Arduino-ESP32 3.3.2.
+  - label: Expected result
+    value: A version byte appears, then UID bytes when a compatible card is presented. Remove and present it again
+      for another read.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'The reader energizes a nearby passive 13.56 MHz tag and exchanges data. This example prints the UID without
+  writing the card. It is useful for learning SPI or labelling classroom objects.
+
+
+  The RC522 pin labelled SDA is chip select in this SPI example, not ESP32 I2C SDA. Match labels, not the artwork’s
+  pin order. UID-only access control is easy to spoof and is not a secure lock design.'
+electrical:
+  supply: ESP32 3.3 V only for this documented 3.3 V module; check the DevKit regulator budget.
+  signal: SPI and reset use 3.3 V logic; common ground.
+  protection: No 5 V supply or host signals. Disconnect before wiring and keep SPI wires short.
+  basis: NXP MFRC522 datasheet and pinned library; unknown module designs need their own documentation.
+specs:
+- name: RF interface
+  value: 13.56 MHz, ISO/IEC 14443 A
+  why: Frequency alone does not establish tag compatibility.
+- name: Host interface
+  value: SPI with explicit pins
+  why: Not I2C despite the SDA header label.
+- name: UID
+  value: Variable-length hexadecimal bytes
+  why: Not a secret or proof of authorized ownership.
+pinout:
+- pin: 3.3 V
+  role: Supply
+  connects: ESP32 3.3 V
+  note: Only a documented 3.3 V board; no 5 V.
+- pin: GND
+  role: Return
+  connects: ESP32 GND
+  note: Common ground.
+- pin: SCK
+  role: SPI clock
+  connects: GPIO18
+  note: Explicit in SPI.begin.
+- pin: MISO
+  role: Reader to ESP32
+  connects: GPIO19
+  note: 3.3 V signal.
+- pin: MOSI
+  role: ESP32 to reader
+  connects: GPIO23
+  note: 3.3 V signal.
+- pin: SDA / SS
+  role: SPI select
+  connects: GPIO27
+  note: Active LOW; not I2C SDA.
+- pin: RST
+  role: Reset
+  connects: GPIO26
+  note: Library-controlled reset.
+- pin: IRQ
+  role: Optional interrupt
+  connects: Not connected
+  note: Polling example.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/mfrc522-rfid-reader-wiring.svg
+  illustration_alt: Logical wiring for MFRC522 RFID Reader; terminal labels rather than physical pin positions
+  summary: Reader 3.3 V and common GND; SCK18, MISO19, MOSI23, SS27 and RST26. IRQ unused.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: 3.3 V
+    esp32_pin: ESP32 3.3 V
+    notes: Only a documented 3.3 V board; no 5 V.
+  - component_pin: GND
+    esp32_pin: ESP32 GND
+    notes: Common ground.
+  - component_pin: SCK
+    esp32_pin: GPIO18
+    notes: Explicit in SPI.begin.
+  - component_pin: MISO
+    esp32_pin: GPIO19
+    notes: 3.3 V signal.
+  - component_pin: MOSI
+    esp32_pin: GPIO23
+    notes: 3.3 V signal.
+  - component_pin: SDA / SS
+    esp32_pin: GPIO27
+    notes: Active LOW; not I2C SDA.
+  - component_pin: RST
+    esp32_pin: GPIO26
+    notes: Library-controlled reset.
+  - component_pin: IRQ
+    esp32_pin: Not connected
+    notes: Polling example.
+  steps:
+  - Disconnect USB and verify SPI configuration and 3.3 V power requirements.
+  - Connect named signals, install MFRC522 1.4.12 and upload.
+  - Open Serial Monitor at 115200 and present a known compatible tag; remove it before another presentation.
+code:
+  title: SPI reader check and tag UID
+  filename: mfrc522_rfid_reader.ino
+  wiring: Reader 3.3 V and common GND; SCK18, MISO19, MOSI23, SS27 and RST26. IRQ unused.
+  content: "#include <Arduino.h>\n#include <SPI.h>\n#include <MFRC522.h>\nconstexpr uint8_t SS_PIN = 27;\nconstexpr\
+    \ uint8_t RST_PIN = 26;\nMFRC522 reader(SS_PIN, RST_PIN);\nbool ready = false;\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  if (!SPI.begin(18, 19, 23, SS_PIN)) {\n    Serial.println(\"SPI initialization failed\");\n    return;\n\
+    \  }\n  reader.PCD_Init();\n  delay(4);\n  byte version = reader.PCD_ReadRegister(MFRC522::VersionReg);\n  Serial.print(\"\
+    Reader version byte: 0x\");\n  Serial.println(version, HEX);\n  if (version == 0x00 || version == 0xFF) {\n\
+    \    Serial.println(\"No usable reader response; check power, SS and SPI wiring\");\n    return;\n  }\n  ready\
+    \ = true;\n  Serial.println(\"Present a compatible Type A test card\");\n}\nvoid loop() {\n  if (!ready) { delay(100);\
+    \ return; }\n  if (reader.PICC_IsNewCardPresent() && reader.PICC_ReadCardSerial()) {\n    Serial.print(\"UID:\"\
+    );\n    for (byte i = 0; i < reader.uid.size; ++i) {\n      Serial.print(' ');\n      if (reader.uid.uidByte[i]\
+    \ < 0x10) Serial.print('0');\n      Serial.print(reader.uid.uidByte[i], HEX);\n    }\n    Serial.println();\n\
+    \    reader.PICC_HaltA();\n    reader.PCD_StopCrypto1();\n  }\n  delay(10);\n}\n"
+  notes: The version read detects a missing SPI response, not authenticity. A halted stationary card need not produce
+    repeated lines. This reads UID only, with no authentication or protected data access.
+output: Expect one version line and UID bytes for a successful presentation. Bytes and length depend on the tag;
+  no fixed sample UID is promised. A silent tag can be an unsupported protocol rather than a wiring fault.
+how_it_works: SPI commands control the reader; its antenna handles the RF exchange. The library requests a new card,
+  selects it and exposes its UID. Card halt and crypto cleanup finish the transaction.
+applications:
+- Classroom object identification
+- SPI communication practice
+- Non-security inventory prototype
+troubleshooting:
+- problem: Version 00 or FF
+  cause: Missing power, wrong SPI pins or unsoldered header.
+  fix: Disconnect power; trace 3.3 V, GND and every named signal. Check the actual module schematic.
+- problem: Reader responds but no UID
+  cause: Wrong tag protocol or poor antenna coupling.
+  fix: Use a known Type A test card, short wires and avoid metal beside the antenna. No universal read distance
+    is promised.
+- problem: No repeat UID while held still
+  cause: The example halts the selected card.
+  fix: Remove and present it again; transaction handling is deliberate.
+faqs:
+- question: Can the SDA pin use an I2C scanner?
+  answer: Not in this SPI-configured example. SDA means SS/NSS here; another interface needs different hardware
+    configuration and software.
+- question: Can a UID safely unlock a real door?
+  answer: UIDs can be copied or changed on some tags. This is a reading demonstration, not secure authentication.
+sources:
+- title: NXP MFRC522 datasheet Rev. 3.9
+  url: https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf
+  note: RF protocols, supply and host interfaces; not authenticity of the artwork.
+- title: MFRC522 library 1.4.12
+  url: https://github.com/miguelbalboa/rfid/tree/1.4.12
+  note: SPI API, cleanup and security limitations.
+- title: Arduino-ESP32 3.3.2 SPI implementation
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/SPI/src/SPI.cpp
+  note: Explicit pins and boolean begin result.
+related_guides:
+- title: Arduino IDE setup
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Install the board package before the reader library.
+related_projects:
+- title: RFID Inventory Tracker
+  href: /projects/esp32-rfid-inventory-tracker.html
+  description: Continue to its separate inventory workflow and hardware assumptions.
+- title: RFID Access Control System
+  href: /projects/esp32-rfid-access-control-system.html
+  description: Educational prototype; UID-only logic is not a secure production lock.
+library: MFRC522 1.4.12

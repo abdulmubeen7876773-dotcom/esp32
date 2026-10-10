@@ -1,0 +1,155 @@
+slug: tsop38238-ir-receiver
+name: 'TSOP38238 IR Receiver: Decode a Remote with ESP32'
+category: Input Devices
+difficulty: Beginner
+summary: Power a documented TSOP38238 at 3.3 V and decode a compatible 38 kHz remote on GPIO27. Follow the manufacturer
+  pin drawing, not the illustration.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/tsop38238-ir-receiver-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of TSOP38238 IR Receiver; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: Bare Vishay TSOP38238, not an arbitrary IR module. Vishay numbers leads 1 OUT, 2 GND, 3 VS; confirm orientation
+      in its package drawing.
+  - label: Prerequisites and parts
+    value: Complete IDE setup and Blink. Receiver, short wires, 100 nF ceramic bypass capacitor and a known 38 kHz
+      remote with working batteries.
+  - label: Libraries
+    value: Install IRremote by Armin Joachimsmeyer 4.4.1. Use IRremote.hpp, not legacy IRremote.h examples. The
+      pinned library includes an ESP32 3.x timer branch.
+  - label: Expected result
+    value: Serial prints protocol/address/command information for decodable frames. Unsupported patterns can appear
+      UNKNOWN; held keys can produce repeats.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'The receiver filters infrared bursts near 38 kHz and outputs their envelope as active-LOW pulses. It is
+  not a raw photodiode, obstacle sensor or transmitter. A protocol decoder interprets the pulse pattern.
+
+
+  Use a known compatible remote first. Decoding depends on protocol, lighting and placement; the artwork cannot
+  establish the authenticity of a physical part.'
+electrical:
+  supply: 3.3 V to VS here; documented operating range 2.0–5.5 V.
+  signal: OUT to GPIO27; powering at 3.3 V references the output to the ESP32 logic rail.
+  protection: Do not use 5 V supply with OUT directly attached to ESP32. Fit 100 nF near VS/GND; assess extra filtering
+    for noisy supplies.
+  basis: Vishay TSOP382.. datasheet and IRremote 4.4.1.
+specs:
+- name: Carrier
+  value: 38 kHz nominal
+  why: Other carrier frequencies are not assumed compatible.
+- name: Output
+  value: Demodulated active-LOW pulses
+  why: Not a steady button state.
+- name: Pin numbering
+  value: 1 OUT; 2 GND; 3 VS
+  why: Use the manufacturer package view, not another receiver’s pin order.
+pinout:
+- pin: Pin 1 OUT
+  role: Signal
+  connects: GPIO27
+  note: Match the numbered manufacturer package view.
+- pin: Pin 2 GND
+  role: Return
+  connects: ESP32 GND
+  note: Common ground.
+- pin: Pin 3 VS
+  role: Supply
+  connects: ESP32 3.3 V
+  note: No 5 V supply in this circuit.
+- pin: 100 nF capacitor
+  role: Bypass
+  connects: Between VS and GND
+  note: Unpolarized ceramic; close to receiver.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/tsop38238-ir-receiver-wiring.svg
+  illustration_alt: Logical wiring for TSOP38238 IR Receiver; terminal labels rather than physical pin positions
+  summary: Pin1 OUT to GPIO27, pin2 GND to GND, pin3 VS to 3.3 V; 100 nF across VS/GND.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Pin 1 OUT
+    esp32_pin: GPIO27
+    notes: Match the numbered manufacturer package view.
+  - component_pin: Pin 2 GND
+    esp32_pin: ESP32 GND
+    notes: Common ground.
+  - component_pin: Pin 3 VS
+    esp32_pin: ESP32 3.3 V
+    notes: No 5 V supply in this circuit.
+  - component_pin: 100 nF capacitor
+    esp32_pin: Between VS and GND
+    notes: Unpolarized ceramic; close to receiver.
+  steps:
+  - Disconnect USB; identify the exact receiver and check numbered package orientation.
+  - Connect the named leads and capacitor; install IRremote 4.4.1.
+  - Upload, open Serial Monitor at 115200 and aim a compatible remote at the receiver.
+code:
+  title: Receive and print decoded frames
+  filename: tsop38238_ir_receiver.ino
+  wiring: Pin1 OUT to GPIO27, pin2 GND to GND, pin3 VS to 3.3 V; 100 nF across VS/GND.
+  content: "#include <Arduino.h>\n#include <IRremote.hpp>\nconstexpr uint8_t IR_PIN = 27;\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  IrReceiver.begin(IR_PIN, DISABLE_LED_FEEDBACK);\n  Serial.println(\"Aim a compatible 38 kHz remote and press\
+    \ a key\");\n}\nvoid loop() {\n  if (IrReceiver.decode()) {\n    IrReceiver.printIRResultShort(&Serial);\n \
+    \   IrReceiver.resume();\n  }\n}\n"
+  notes: Feedback is disabled so no onboard LED is assumed. Resume reception after each frame. Test alone before
+    adding code that blocks interrupts and interferes with timing.
+output: Supported protocols produce decoded fields, not a universal button number. UNKNOWN need not mean a defective
+  receiver. Repeated frames while holding a key are normal for many remotes.
+how_it_works: The receiver removes the optical carrier. IRremote samples the envelope with a timer and attempts
+  supported decoders. Bright illumination and supply noise can reduce reception.
+applications:
+- Remote-controlled low-voltage indicator
+- Protocol exploration
+- Alternative input to a push button
+troubleshooting:
+- problem: Nothing prints after startup
+  cause: Wrong lead order, remote batteries or carrier mismatch.
+  fix: Recheck the package view and 3.3 V; try a known 38 kHz remote close to the receiver.
+- problem: UNKNOWN or unreliable frames
+  cause: Protocol mismatch, strong illumination or timing noise.
+  fix: Shade the receiver, check bypassing and short wires; test without interrupt-blocking additions.
+- problem: Legacy sketch will not compile
+  cause: Old IRremote API mixed with version 4.4.1.
+  fix: Use IRremote.hpp and IrReceiver begin/decode/resume; confirm the selected library version.
+faqs:
+- question: Does a held button keep OUT LOW?
+  answer: The remote sends pulse frames. Decode them rather than treating OUT as a mechanical switch.
+- question: Do all three-pin IR receivers share this order?
+  answer: No. This diagram is for the documented TSOP38238 package; check your actual part or module.
+sources:
+- title: Vishay TSOP382.. datasheet
+  url: https://www.vishay.com/docs/82491/tsop382.pdf
+  note: Pin numbering, supply, demodulation and disturbance guidance.
+- title: IRremote 4.4.1
+  url: https://github.com/Arduino-IRremote/Arduino-IRremote/tree/v4.4.1
+  note: Receive API and protocols.
+- title: IRremote 4.4.1 ESP32 timer code
+  url: https://github.com/Arduino-IRremote/Arduino-IRremote/blob/v4.4.1/src/private/IRTimer.hpp
+  note: Core 3.x branch reviewed; not compiled.
+related_guides:
+- title: Button input
+  href: /guides/button-led-control.html
+  description: Compare stable mechanical inputs with pulse decoding.
+library: Arduino-IRremote 4.4.1

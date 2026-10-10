@@ -91,10 +91,10 @@ for (const width of [320, 768, 1440]) {
   }
 }
 
-test('Component listing exposes 18 entries and the first six and next four approved pages, with usable keyboard search', async ({ page }) => {
+test('Component listing exposes 22 entries and all integrated approved pages, with usable keyboard search', async ({ page }) => {
   await page.goto('/components.html');
-  await expect(page.locator('#component-grid .component-card')).toHaveCount(18);
-  for (const slug of [...slugs, 'discrete-leds', 'rgb-led', 'passive-buzzer', 'l298n-motor-driver']) await expect(page.locator(`#component-grid .component-card[href="/components/${slug}.html"]`)).toHaveCount(1);
+  await expect(page.locator('#component-grid .component-card')).toHaveCount(22);
+  for (const slug of [...slugs, 'discrete-leds', 'rgb-led', 'passive-buzzer', 'l298n-motor-driver', 'mfrc522-rfid-reader', 'tsop38238-ir-receiver', 'mpu6050-motion-sensor', 'apds9960-sensor']) await expect(page.locator(`#component-grid .component-card[href="/components/${slug}.html"]`)).toHaveCount(1);
   const search = page.locator('#component-search');
   await search.focus();
   await page.keyboard.type('SG90');
@@ -107,12 +107,12 @@ test('Component listing exposes 18 entries and the first six and next four appro
 
 test('Dependent count pages and search contain the expanded catalog, with no DHT11 image entry', async ({ page }) => {
   await page.goto('/learning.html');
-  await expect(page.locator('#explorer')).toContainText('18 components');
+  await expect(page.locator('#explorer')).toContainText('22 components');
   await page.goto('/about.html');
-  await expect(page.locator('.premium-stats').first()).toContainText('18');
+  await expect(page.locator('.premium-stats').first()).toContainText('22');
   const search = JSON.parse(await fs.readFile(path.join(process.cwd(), 'search-index.json'), 'utf8'));
   const components = search.filter((item: { type: string }) => item.type === 'Component');
-  expect(components).toHaveLength(18);
+  expect(components).toHaveLength(22);
   for (const slug of slugs) expect(components.filter((item: { slug: string }) => item.slug === slug)).toHaveLength(1);
   expect(components.some((item: { slug: string }) => item.slug === 'dht11')).toBe(false);
 });

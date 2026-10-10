@@ -1,0 +1,179 @@
+slug: mpu6050-motion-sensor
+name: 'MPU6050 Motion Sensor: ESP32 Acceleration and Gyroscope'
+category: Sensors
+difficulty: Beginner
+summary: Read acceleration in m/s² and angular velocity in rad/s over I2C. Distinguish gravity, gyro bias and chip
+  temperature from calibrated orientation.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/mpu6050-motion-sensor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of MPU6050 Motion Sensor; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: 'Reference circuit: documented Adafruit MPU6050 breakout with VIN, GND, SDA, SCL and AD0. VIN accepts
+      3–5 V; use 3.3 V here. The approved illustration depicts a generic GY-521-style family, not this exact Adafruit
+      board. Unknown regulators, pull-ups and header order require separate checks.'
+  - label: Prerequisites and parts
+    value: Complete IDE setup and I2C scanner lesson. Documented breakout, short wires and breadboard; secure it
+      against shorts while moving.
+  - label: Libraries
+    value: Install Adafruit MPU6050 2.2.6 plus Adafruit BusIO and Unified Sensor. Accept Library Manager dependencies;
+      this release also declares GFX/SSD1306 for packaged display examples, although this sketch uses no display.
+  - label: Expected result
+    value: Six motion axes and chip temperature print every 200 ms. A stationary sensor still measures gravity;
+      rotation changes the gyro readings.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'MPU6050 combines three-axis acceleration and three-axis angular-rate sensing. Gravity is part of acceleration.
+  It has no built-in magnetometer, so six-axis readings do not provide a drift-free compass heading.
+
+
+  Start with Serial values before adding displays or motion control. The Adafruit interface reports SI units; this
+  example does not calculate position or fused orientation.'
+electrical:
+  supply: Reference Adafruit VIN to 3.3 V; bare-chip and unknown GY-521 requirements are separate.
+  signal: GPIO21/22 I2C at 3.3 V; reference breakout has level shifting and pull-ups.
+  protection: Keep ESP32-side pulls at 3.3 V. Do not infer 5 V tolerance from a generic VCC label or bypass an undocumented
+    regulator.
+  basis: Documented Adafruit breakout and pinned library; manufacturer documents linked through its downloads.
+specs:
+- name: Address
+  value: 0x68 default; 0x69 with AD0 HIGH
+  why: ACK alone does not establish identity.
+- name: Example ranges
+  value: ±2 g; ±250 degrees/s
+  why: Large motion can saturate these selected ranges.
+- name: Reported units
+  value: m/s²; rad/s; °C chip temperature
+  why: Not degrees/s, calibrated ambient temperature or orientation.
+pinout:
+- pin: VIN (reference breakout)
+  role: Supply
+  connects: ESP32 3.3 V
+  note: Adafruit reference; generic GY-521 needs its own schematic.
+- pin: GND
+  role: Return
+  connects: ESP32 GND
+  note: Common ground.
+- pin: SDA
+  role: I2C data
+  connects: GPIO21
+  note: ESP32-side pull-ups to 3.3 V.
+- pin: SCL
+  role: I2C clock
+  connects: GPIO22
+  note: 100 kHz in this example.
+- pin: AD0 (reference breakout)
+  role: Address select
+  connects: Leave at default LOW
+  note: 0x68; HIGH needs a sketch change to 0x69.
+- pin: INT / auxiliary pins
+  role: Unused features
+  connects: Not connected
+  note: Polling; no auxiliary sensor.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/mpu6050-motion-sensor-wiring.svg
+  illustration_alt: Logical wiring for MPU6050 Motion Sensor; terminal labels rather than physical pin positions
+  summary: Reference Adafruit VIN to 3.3 V, common GND, SDA21, SCL22 and default AD0 LOW for 0x68. INT unused.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: VIN (reference breakout)
+    esp32_pin: ESP32 3.3 V
+    notes: Adafruit reference; generic GY-521 needs its own schematic.
+  - component_pin: GND
+    esp32_pin: ESP32 GND
+    notes: Common ground.
+  - component_pin: SDA
+    esp32_pin: GPIO21
+    notes: ESP32-side pull-ups to 3.3 V.
+  - component_pin: SCL
+    esp32_pin: GPIO22
+    notes: 100 kHz in this example.
+  - component_pin: AD0 (reference breakout)
+    esp32_pin: Leave at default LOW
+    notes: 0x68; HIGH needs a sketch change to 0x69.
+  - component_pin: INT / auxiliary pins
+    esp32_pin: Not connected
+    notes: Polling; no auxiliary sensor.
+  steps:
+  - Disconnect power and confirm actual breakout supply and pull-up rails.
+  - Connect named reference terminals; do not infer the illustrated GY-521 header order.
+  - Install library dependencies, upload and observe the stationary sensor before rotating it gently.
+code:
+  title: Read motion axes and chip temperature
+  filename: mpu6050_motion_sensor.ino
+  wiring: Reference Adafruit VIN to 3.3 V, common GND, SDA21, SCL22 and default AD0 LOW for 0x68. INT unused.
+  content: "#include <Arduino.h>\n#include <Wire.h>\n#include <Adafruit_MPU6050.h>\n#include <Adafruit_Sensor.h>\n\
+    Adafruit_MPU6050 mpu;\nbool ready = false;\nvoid setup() {\n  Serial.begin(115200);\n  if (!Wire.begin(21, 22,\
+    \ 100000)) {\n    Serial.println(\"I2C bus initialization failed\");\n    return;\n  }\n  if (!mpu.begin(0x68,\
+    \ &Wire)) {\n    Serial.println(\"MPU6050 initialization failed; check wiring and AD0/address\");\n    return;\n\
+    \  }\n  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);\n  mpu.setGyroRange(MPU6050_RANGE_250_DEG);\n  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);\n\
+    \  ready = true;\n}\nvoid loop() {\n  if (!ready) { delay(100); return; }\n  sensors_event_t a, g, t;\n  mpu.getEvent(&a,\
+    \ &g, &t);\n  Serial.printf(\"Accel m/s^2: %.2f %.2f %.2f | Gyro rad/s: %.2f %.2f %.2f | Chip C: %.2f\\n\",\n\
+    \    a.acceleration.x, a.acceleration.y, a.acceleration.z,\n    g.gyro.x, g.gyro.y, g.gyro.z, t.temperature);\n\
+    \  delay(200);\n}\n"
+  notes: getEvent is not a robust continuous bus-health check. If disconnected after initialization, stop and diagnose
+    instead of trusting repeated values. No fusion or calibration is performed.
+output: At rest, acceleration magnitude is roughly one g (about 9.8 m/s²), distributed among axes by orientation.
+  Gyro values may have bias near zero. These are expected relationships, not measured results. Chip temperature
+  reflects the device and board, not calibrated air temperature.
+how_it_works: Tilting changes gravity on each axis; rotation changes angular rate. Integrating gyro values accumulates
+  bias and drift. Position inference from acceleration requires gravity removal and calibration; this demonstration
+  does neither.
+applications:
+- Tilt and movement visualization
+- Motion-input experiments
+- Data for a separately designed orientation filter
+troubleshooting:
+- problem: Initialization fails
+  cause: Wrong address, chip or wiring.
+  fix: Scan the 3.3 V bus, check AD0 and actual markings; change to 0x69 only if appropriate.
+- problem: Nonzero acceleration at rest
+  cause: Gravity is included.
+  fix: Compare vector magnitude and rotate the board; do not zero every axis and remove useful gravity information.
+- problem: Gyro bias or saturation
+  cause: Uncalibrated offset or range too small.
+  fix: Estimate bias while still; choose a wider documented range for large motion. Do not claim compass accuracy.
+faqs:
+- question: Is it a nine-axis compass?
+  answer: No. It has three acceleration and three gyro axes, without a magnetometer.
+- question: Do all GY-521 boards accept the same power?
+  answer: No schematic is established by this artwork. The worked circuit uses the documented Adafruit board; other
+    regulators and pull-ups require checks.
+sources:
+- title: Adafruit MPU6050 breakout pinouts
+  url: https://learn.adafruit.com/mpu6050-6-dof-accelerometer-and-gyro/pinouts
+  note: Reference supply, level shifting and address selection.
+- title: Adafruit MPU6050 2.2.6
+  url: https://github.com/adafruit/Adafruit_MPU6050/tree/2.2.6
+  note: Range/filter API, event units, initialization and dependencies.
+- title: InvenSense MPU-6000/MPU-6050 product specification Rev. 3.4
+  url: https://cdn.sparkfun.com/assets/a/4/6/8/e/MPU_6050.pdf
+  note: 'Manufacturer-authored document mirrored by SparkFun: axes, ranges, I2C address and bare-chip voltage. Not
+    a generic GY-521 schematic.'
+related_guides:
+- title: I2C bus and scanner
+  href: /guides/i2c-communication.html
+  description: Check addresses without mistaking an ACK for device identity.
+library: Adafruit MPU6050 2.2.6

@@ -1,0 +1,189 @@
+slug: apds9960-sensor
+name: 'APDS-9960 Sensor: ESP32 RGB, Light and Gesture Inputs'
+category: Sensors
+difficulty: Beginner
+summary: Start with raw RGB and clear-channel readings at I2C address 0x39. Gesture and proximity modes need their
+  own setup and interpretation.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/apds9960-sensor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of APDS-9960 Sensor; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: 'Reference circuit: documented Adafruit APDS9960 breakout powered at VIN 3.3 V, with level-shifted SDA/SCL.
+      The illustrated generic board is not identified as Adafruit. Generic regulators, pull-ups and level shifting
+      must be checked separately.'
+  - label: Prerequisites and parts
+    value: Complete IDE setup and I2C scanner lesson. Documented breakout, short wires and colored objects under
+      consistent lighting; leave the optical window uncovered.
+  - label: Libraries
+    value: Install Adafruit APDS9960 1.3.1 and Adafruit BusIO. Wire is bundled with core 3.3.2. Use this Adafruit
+      API, not SparkFun gesture examples.
+  - label: Expected result
+    value: Raw R/G/B/C counts print when ready. Lighting and objects change them; they are not calibrated display
+      RGB, lux or distance.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'APDS-9960 combines ambient/color channels with infrared proximity and directional gesture sensing. Clear
+  is a broad light-intensity channel, not transparency or distance. Start with color to check the bus before enabling
+  the gesture engine.
+
+
+  The example enables color only, leaving proximity and gestures off. It does not promise swipe recognition. The
+  linked gesture project has its own mode, wiring and library assumptions.'
+electrical:
+  supply: Reference Adafruit VIN to 3.3 V. Bare-chip VDD is 2.4–3.6 V; its LED supply is separate.
+  signal: SDA21/SCL22 with ESP32-side pulls at 3.3 V, even if a different board accepts 5 V supply.
+  protection: No 5 V on an undocumented generic board. Reference regulation/level shifting is not inferred from
+    artwork.
+  basis: Broadcom datasheet, documented Adafruit breakout and pinned library.
+specs:
+- name: Address
+  value: 0x39 fixed
+  why: Address conflicts require separate buses or a suitable multiplexer.
+- name: Example mode
+  value: Color only
+  why: A color read is not gesture classification.
+- name: Output
+  value: 16-bit R/G/B/clear counts
+  why: Exposure and lighting matter; not calibrated lux or distance.
+pinout:
+- pin: VIN (reference breakout)
+  role: Supply
+  connects: ESP32 3.3 V
+  note: Adafruit reference; check generic board separately.
+- pin: GND
+  role: Return
+  connects: ESP32 GND
+  note: Common ground.
+- pin: SDA
+  role: I2C data
+  connects: GPIO21
+  note: ESP32-side pulls at 3.3 V.
+- pin: SCL
+  role: I2C clock
+  connects: GPIO22
+  note: 100 kHz here.
+- pin: INT
+  role: Optional interrupt
+  connects: Not connected
+  note: Color data-ready is polled.
+- pin: 3Vo (reference breakout)
+  role: Regulator output
+  connects: Not connected
+  note: Do not tie output rails together or use as VIN.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/apds9960-sensor-wiring.svg
+  illustration_alt: Logical wiring for APDS-9960 Sensor; terminal labels rather than physical pin positions
+  summary: Reference Adafruit VIN to 3.3 V, common GND, SDA21/SCL22; INT and 3Vo unused. Generic board circuitry
+    is not inferred.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: VIN (reference breakout)
+    esp32_pin: ESP32 3.3 V
+    notes: Adafruit reference; check generic board separately.
+  - component_pin: GND
+    esp32_pin: ESP32 GND
+    notes: Common ground.
+  - component_pin: SDA
+    esp32_pin: GPIO21
+    notes: ESP32-side pulls at 3.3 V.
+  - component_pin: SCL
+    esp32_pin: GPIO22
+    notes: 100 kHz here.
+  - component_pin: INT
+    esp32_pin: Not connected
+    notes: Color data-ready is polled.
+  - component_pin: 3Vo (reference breakout)
+    esp32_pin: Not connected
+    notes: Do not tie output rails together or use as VIN.
+  steps:
+  - Disconnect power and confirm actual board supply/pull-up rails.
+  - Connect named reference terminals; leave the optical window clear.
+  - Install the library, upload and open Serial Monitor at 115200. Compare covered and illuminated colored objects
+    under consistent lighting.
+code:
+  title: Raw RGB/clear counts and bounded data-ready diagnostic
+  filename: apds9960_sensor.ino
+  wiring: Reference Adafruit VIN to 3.3 V, common GND, SDA21/SCL22; INT and 3Vo unused. Generic board circuitry
+    is not inferred.
+  content: "#include <Arduino.h>\n#include <Wire.h>\n#include <Adafruit_APDS9960.h>\nAdafruit_APDS9960 apds;\nbool\
+    \ ready = false;\nuint32_t lastReady = 0;\nuint32_t lastSample = 0;\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  if (!Wire.begin(21, 22, 100000)) {\n    Serial.println(\"I2C bus initialization failed\");\n    return;\n\
+    \  }\n  if (!apds.begin(50, APDS9960_AGAIN_4X, 0x39, &Wire)) {\n    Serial.println(\"APDS9960 initialization\
+    \ failed; check board, power and I2C\");\n    return;\n  }\n  apds.enableProximity(false);\n  apds.enableGesture(false);\n\
+    \  apds.enableColor(true);\n  ready = true;\n  lastReady = millis();\n}\nvoid loop() {\n  if (!ready) { delay(100);\
+    \ return; }\n  uint32_t now = millis();\n  if (now - lastSample >= 500) {\n    lastSample = now;\n    if (apds.colorDataReady())\
+    \ {\n      uint16_t r, g, b, c;\n      apds.getColorData(&r, &g, &b, &c);\n      Serial.printf(\"R=%u G=%u B=%u\
+    \ Clear=%u\\n\",\n        unsigned(r), unsigned(g), unsigned(b), unsigned(c));\n      lastReady = now;\n   \
+    \ }\n  }\n  if (now - lastReady >= 3000) {\n    Serial.println(\"No ready color data for 3 s; check bus and\
+    \ sensor mode\");\n    lastReady = now;\n  }\n  delay(1);\n}\n"
+  notes: The diagnostic does not wait forever. The pinned begin implementation checks chip ID; ACK alone is insufficient.
+    Data-ready and getColorData do not guarantee continuing bus health after unplugging the sensor.
+output: Counts change with light, surface color, geometry and exposure/gain. No fixed numbers are promised. Saturated
+  counts suggest excessive exposure; low counts can mean little light or an obstructed window. This sketch reports
+  neither gestures nor centimetres.
+how_it_works: Color sensing integrates light for the configured interval; data-ready gates reading the four channel
+  registers. Gesture mode instead uses reflected infrared patterns and a separate engine/FIFO workflow. Keep those
+  tasks distinct.
+applications:
+- Relative color/light experiments
+- Brightness input after calibration
+- Prerequisite for gesture-control experiments
+troubleshooting:
+- problem: Initialization fails despite 0x39 ACK
+  cause: Wiring, chip variant or identification failure.
+  fix: Check supply/pulls and markings; another device can ACK this address. Do not bypass the ID check.
+- problem: No ready data diagnostic
+  cause: Mode, power or bus failure.
+  fix: Check connections, then restart. Do not block indefinitely waiting for data.
+- problem: Saturation or unstable comparisons
+  cause: High gain/exposure or changing lighting.
+  fix: Use consistent geometry; reduce gain/integration using the documented API. Calibrate before claiming physical
+    units.
+faqs:
+- question: Does Clear mean distance?
+  answer: No. It is a light channel; proximity is separate and not automatically calibrated distance.
+- question: Why are no hand swipes reported?
+  answer: Only color is enabled. Gesture recognition needs a different engine and setup; follow the separate project’s
+    workflow.
+sources:
+- title: Broadcom APDS-9960 datasheet
+  url: https://docs.broadcom.com/doc/AV02-4191EN
+  note: Chip modes, RGBC output and separate supplies.
+- title: Adafruit APDS9960 pinouts
+  url: https://learn.adafruit.com/adafruit-apds9960-breakout/pinouts
+  note: Reference power and level shifting.
+- title: Adafruit APDS9960 1.3.1
+  url: https://github.com/adafruit/Adafruit_APDS9960/tree/1.3.1
+  note: begin, color mode, data-ready and read API.
+related_guides:
+- title: I2C bus and scanner
+  href: /guides/i2c-communication.html
+  description: Check wiring and addresses before sensor-specific initialization.
+related_projects:
+- title: APDS-9960 Gesture Control Demo
+  href: /projects/esp32-gesture-recognition.html
+  description: Separate gesture mode; follow that project’s library and wiring.
+library: Adafruit APDS9960 1.3.1
