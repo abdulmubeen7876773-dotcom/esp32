@@ -1,0 +1,198 @@
+slug: sw420-vibration-sensor
+name: 'SW-420: Observe Digital Vibration Events'
+category: Sensors
+difficulty: Beginner
+summary: Capture short digital pulses from a documented SW-420 comparator module. Treat the event count as electrical
+  transitions, not calibrated acceleration or independent impacts.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/sw420-vibration-sensor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of SW-420; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: 'Worked reference: Seeed Grove Vibration Sensor (SW-420), documented for 3.3 V, quiet HIGH and vibration
+      LOW. Generic modules may invert polarity or have different pull-ups. The approved SW-420-labelled illustration
+      is not the Grove board or a verified schematic; its AO label is not evidence of an analog acceleration output.'
+  - label: Prerequisites and parts
+    value: IDE setup and digital-input lesson. The documented Seeed reference or a carrier proven electrically equivalent
+      for this wiring/polarity, short wires and GPIO27 free. Check the actual connector labels and signal voltage.
+      No 5 V rail or external load required.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 GPIO interrupts; no sensor library.
+  - label: Expected result
+    value: Serial reports accumulated falling edges once per second. Multiple pulses may follow one disturbance;
+      counts do not measure force or displacement.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: MPU6050 motion readings
+  href: /components/mpu6050-motion-sensor.html
+  description: A documented accelerometer/gyro for a different measurement need.
+library: Arduino-ESP32 3.3.2 built-in GPIO interrupts; no extra library.
+eli12: 'SW-420 is a mechanical vibration-sensitive switch used with a comparator to create short digital changes.
+  A trimmer changes the comparator threshold. It does not turn the switch into an accelerometer or establish a distance,
+  force or vibration spectrum.
+
+
+  The supported Seeed circuit is HIGH while quiet and briefly LOW when disturbed. This example captures falling
+  edges because a slow polling sketch can miss a pulse. Verify the actual carrier’s supply, output pull-up and quiet/active
+  states before using this code on a different board. A four-pin illustration is not evidence that the documented
+  Grove reference has an AO connector.'
+electrical:
+  supply: 3.3 V from a DevKit with enough regulator budget for the documented Seeed module; its 5 V capability is
+    not permission to expose ESP32 GPIO to 5 V.
+  signal: Documented 3.3 V SIG/DO → GPIO27, quiet HIGH and event LOW in the worked reference. Other output polarities
+    need an explicitly matched circuit/code.
+  protection: Common ground, short wires and verified pin labels. Do not connect unknown AO/DO or 5 V pull-ups directly;
+    use actual schematic and measured levels.
+specs:
+- name: Worked hardware
+  value: Seeed Grove SW-420 at 3.3 V
+  why: Generic artwork does not establish equivalence.
+- name: Output meaning
+  value: Short HIGH-to-LOW transitions
+  why: Mechanical bounce and comparator chatter can create multiple events.
+- name: GPIO27 interrupt
+  value: FALLING; count in ISR
+  why: No printing or delays inside the interrupt.
+- name: Reported quantity
+  value: Edges per reporting interval
+  why: Not acceleration, force or distinct-impact count.
+pinout:
+- pin: Reference VCC
+  role: Supply
+  connects: ESP32 3.3 V
+  note: Only documented 3.3 V operation.
+- pin: Reference GND
+  role: Reference
+  connects: ESP32 GND
+  note: Check connector orientation with power off.
+- pin: Reference SIG / digital output
+  role: Input
+  connects: GPIO27
+  note: Quiet HIGH/event LOW; 3.3 V signal.
+- pin: NC / unused connector position
+  role: Unused
+  connects: Leave disconnected
+  note: Use exact reference pin labels, not header order.
+- pin: AO on a different module
+  role: Unsupported
+  connects: Leave disconnected
+  note: Illustration does not establish its meaning or voltage.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/sw420-vibration-sensor-wiring.svg
+  illustration_alt: Logical wiring for SW-420; terminal labels rather than physical pin positions
+  summary: Documented reference VCC → 3.3 V, GND → GND, SIG → GPIO27. Leave unused pins disconnected. FALLING edges
+    represent the reference LOW pulses.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Reference VCC
+    esp32_pin: ESP32 3.3 V
+    notes: Only documented 3.3 V operation.
+  - component_pin: Reference GND
+    esp32_pin: ESP32 GND
+    notes: Check connector orientation with power off.
+  - component_pin: Reference SIG / digital output
+    esp32_pin: GPIO27
+    notes: Quiet HIGH/event LOW; 3.3 V signal.
+  - component_pin: NC / unused connector position
+    esp32_pin: Leave disconnected
+    notes: Use exact reference pin labels, not header order.
+  - component_pin: AO on a different module
+    esp32_pin: Leave disconnected
+    notes: Illustration does not establish its meaning or voltage.
+  steps:
+  - Disconnect power; verify actual supply, connector pin map and comparator/output pull-up rail. For an unknown
+    module, establish equivalence before connecting.
+  - Upload and open 115200 baud. Let the assembly sit still, then gently disturb the supporting surface; do not
+    strike the electronics.
+  - Adjust the actual reference trimmer gradually if needed. Compare quiet/event behavior and keep pulse counts
+    separate from impact counts.
+code:
+  title: Count brief digital pulses
+  filename: sw420_vibration_sensor.ino
+  wiring: Documented reference VCC → 3.3 V, GND → GND, SIG → GPIO27. Leave unused pins disconnected. FALLING edges
+    represent the reference LOW pulses.
+  content: "#include <Arduino.h>\nconstexpr uint8_t VIBRATION_PIN = 27;\nvolatile uint32_t edgeCount = 0;\nportMUX_TYPE\
+    \ counterMux = portMUX_INITIALIZER_UNLOCKED;\nuint32_t lastReport = 0;\nvoid ARDUINO_ISR_ATTR onFallingEdge()\
+    \ {\n  portENTER_CRITICAL_ISR(&counterMux);\n  ++edgeCount;\n  portEXIT_CRITICAL_ISR(&counterMux);\n}\nvoid\
+    \ setup() {\n  Serial.begin(115200);\n  pinMode(VIBRATION_PIN, INPUT);\n  attachInterrupt(digitalPinToInterrupt(VIBRATION_PIN),\
+    \ onFallingEdge, FALLING);\n  Serial.println(\"Reference: quiet HIGH, disturbance LOW; counts are edges.\");\n\
+    }\nvoid loop() {\n  const uint32_t now = millis();\n  if (now - lastReport >= 1000) {\n    lastReport = now;\n\
+    \    portENTER_CRITICAL(&counterMux);\n    const uint32_t captured = edgeCount;\n    edgeCount = 0;\n    portEXIT_CRITICAL(&counterMux);\n\
+    \    Serial.printf(\"falling_edges=%lu level=%d\\n\",\n                  static_cast<unsigned long>(captured),\
+    \ digitalRead(VIBRATION_PIN));\n  }\n  delay(1);\n}\n"
+  notes: Critical sections protect a shared ISR counter; serial output occurs outside them. No universal debounce
+    interval is asserted. Group pulses into application events only after observing the actual switch and deciding
+    a suitable time window.
+output: Quiet reference hardware should usually report HIGH and few/no edges. A disturbance can produce LOW pulses
+  and multiple falling edges, even if the sampled level is HIGH by print time. These are expected behaviors for
+  the stated circuit, not hardware measurements from this update.
+how_it_works: In the Seeed circuit, mechanical contact changes move one comparator input relative to the trimmer
+  reference. The comparator produces a pulse rather than a calibrated analog quantity. An interrupt records the
+  transition and the loop reports the snapshot. Pulse grouping for a mailbox/knock detector is an application decision;
+  one mechanical disturbance may contain several electrical edges.
+applications:
+- Learning pulse capture with GPIO interrupts
+- A relative disturbance indicator with verified sensitivity
+troubleshooting:
+- problem: No counts despite a visible pulse
+  cause: Wrong signal pin/polarity or GPIO map.
+  fix: Verify output level safely against GND and the documented quiet/active states; a rising-active carrier requires
+    a separately matched example.
+- problem: Counts while untouched
+  cause: Threshold too sensitive, contact chatter or noise.
+  fix: Use short wires and adjust the documented trimmer; distinguish environmental movement from wiring noise.
+- problem: Printed level HIGH but count nonzero
+  cause: Short LOW pulses ended before the report.
+  fix: That is why the ISR is used. Do not expect a once-per-second level sample to preserve pulse duration.
+- problem: Many counts for one knock
+  cause: Switch bounce/comparator chatter.
+  fix: Do not call them impacts. Add a documented application grouping window only after observation.
+faqs:
+- question: Can AO measure acceleration?
+  answer: Not from the illustration or this digital reference circuit. Use a documented accelerometer when physical
+    acceleration is required.
+- question: Can I copy a generic pin order?
+  answer: No. Check purchased module labels/schematic and output pull-ups. The logical diagram identifies connections,
+    not a physical orientation.
+sources:
+- title: Seeed Grove SW-420 documentation and schematic
+  url: https://wiki.seeedstudio.com/Grove-Vibration_Sensor_SW-420/
+  note: 3.3 V option, quiet/event polarity and comparator operation for this reference only.
+- title: Arduino-ESP32 3.3.2 GPIO implementation
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
+  note: Pinned attachInterrupt and GPIO APIs.
+- title: Arduino-ESP32 3.3.2 HAL definitions
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal.h
+  note: ISR placement attribute. Critical sections follow Espressif FreeRTOS spinlock guidance.
+- title: Espressif ESP-IDF 5.5 FreeRTOS critical sections
+  url: https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-reference/system/freertos_idf.html
+  note: Matched ISR/task portMUX critical sections on classic ESP32.
+related_guides:
+- title: Floating inputs
+  href: /guides/digital-inputs-floating-pins.html
+  description: Why unknown input levels need a circuit check.
+- title: Debouncing buttons
+  href: /guides/debouncing-buttons.html
+  description: Distinguish transitions from stable application events.

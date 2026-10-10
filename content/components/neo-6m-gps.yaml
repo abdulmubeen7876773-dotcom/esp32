@@ -1,0 +1,199 @@
+slug: neo-6m-gps
+name: 'NEO-6M GPS: Read UART Sentences Before Parsing'
+category: Communication Modules
+difficulty: Beginner
+summary: Check a documented NEO-6M UART connection and inspect raw NMEA sentences. Serial activity and a valid satellite
+  fix are different results.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/neo-6m-gps-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of NEO-6M GPS; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: Documented NEO-6M carrier with a 3.3 V-compatible supply input and native 3.3 V UART TX, configured for
+      default 9600 8N1 NMEA output. Check carrier regulator/input requirements and antenna before wiring; the illustration
+      cannot identify a revision or authentic silicon. Not a NEO-6G or an RS-232 output.
+  - label: Prerequisites and parts
+    value: IDE setup first. Documented compatible antenna/carrier, short wires and a regulated external 3.3 V source
+      with budget for receiver, carrier and antenna. GPS TX → GPIO16, shared ground. WROOM GPIO16/17 must be exposed
+      and unused; PSRAM boards can reserve them. ESP32 stays on USB.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 built-in HardwareSerial; no NMEA parsing library required.
+  - label: Expected result
+    value: Serial Monitor at 115200 shows receiver bytes; readable NMEA may be emitted even when there is no valid
+      position fix.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: FT232R UART diagnostics
+  href: /components/ft232r-usb-ttl.html
+  description: Compare supply selection with actual UART logic levels.
+library: Arduino-ESP32 3.3.2 built-in HardwareSerial; no extra library.
+eli12: 'A GPS receiver computes a position from satellite signals and sends status over UART. Start by reading that
+  stream before adding a parser or a map: this separates wiring and baud problems from sky-view problems.
+
+
+  NEO-6M is a GPS receiver family, not a guarantee about a generic breakout’s voltage input. The module itself operates
+  from 2.7–3.6 V; a carrier may put a regulator between its header and the receiver. This worked connection requires
+  a header documented for 3.3 V input. Do not blindly apply 5 V to the module or assume 3.3 V reaches it through
+  every carrier regulator.'
+electrical:
+  supply: External regulated 3.3 V to the carrier’s documented compatible input. Budget for carrier and antenna
+    in addition to receiver; no GPIO power and no inferred universal board current rating.
+  signal: Verified native 3.3 V UART TX to ESP32 GPIO16 RX. GPS RX is unused; ESP32 GPIO17 is configured TX but
+    left unwired.
+  protection: Common GND; separate positive rails. Do not connect GPS TX while ESP32 is unpowered. Antenna and connector
+    require the purchased board documentation; not interchangeable by appearance.
+specs:
+- name: Receiver identity
+  value: NEO-6M; UART NMEA demonstration
+  why: Different families/configurations need their own documentation.
+- name: Receiver supply versus carrier
+  value: Module 2.7–3.6 V; worked header 3.3 V
+  why: Carrier regulators can require different header voltages.
+- name: UART setup
+  value: 9600 baud, 8N1
+  why: Default NEO-6 settings; saved/custom settings may differ.
+- name: Host Serial Monitor
+  value: 115200 baud
+  why: Independent of receiver-side UART baud.
+pinout:
+- pin: GPS documented 3.3 V input
+  role: Supply
+  connects: External regulated 3.3 V
+  note: Check actual carrier input and current/antenna budget.
+- pin: GPS GND / supply minus
+  role: Reference
+  connects: ESP32 GND
+  note: Keep positive rails separate.
+- pin: GPS TXD / TX
+  role: UART output
+  connects: GPIO16 (ESP32 RX)
+  note: Verify 3.3 V TTL; follow labels, not pin order.
+- pin: GPS RXD / RX
+  role: UART input
+  connects: Leave disconnected
+  note: No receiver commands in this read-only exercise.
+- pin: ESP32 GPIO17
+  role: UART TX
+  connects: Leave disconnected
+  note: Explicit Serial2 TX assignment; not wired to GPS.
+- pin: GPS antenna connector
+  role: RF
+  connects: Documented compatible antenna
+  note: No antenna pin guessing from artwork.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/neo-6m-gps-wiring.svg
+  illustration_alt: Logical wiring for NEO-6M GPS; terminal labels rather than physical pin positions
+  summary: GPS TX → GPIO16, common GND. Separate documented 3.3 V GPS supply; ESP32 USB. GPS RX and GPIO17 unwired.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: GPS documented 3.3 V input
+    esp32_pin: External regulated 3.3 V
+    notes: Check actual carrier input and current/antenna budget.
+  - component_pin: GPS GND / supply minus
+    esp32_pin: ESP32 GND
+    notes: Keep positive rails separate.
+  - component_pin: GPS TXD / TX
+    esp32_pin: GPIO16 (ESP32 RX)
+    notes: Verify 3.3 V TTL; follow labels, not pin order.
+  - component_pin: GPS RXD / RX
+    esp32_pin: Leave disconnected
+    notes: No receiver commands in this read-only exercise.
+  - component_pin: ESP32 GPIO17
+    esp32_pin: Leave disconnected
+    notes: Explicit Serial2 TX assignment; not wired to GPS.
+  - component_pin: GPS antenna connector
+    esp32_pin: Documented compatible antenna
+    notes: No antenna pin guessing from artwork.
+  steps:
+  - Verify actual carrier power input, TTL signal and antenna documentation, then disconnect supplies before wiring.
+  - Upload and open Serial Monitor at 115200. GPS side starts at 9600 8N1; correct only if the receiver is documented
+    at another baud.
+  - Place the matched antenna with unobstructed sky view without touching RF contacts. Inspect sentence validity
+    separately from whether bytes arrive.
+code:
+  title: Read-only receiver UART bridge
+  filename: neo_6m_gps.ino
+  wiring: GPS TX → GPIO16, common GND. Separate documented 3.3 V GPS supply; ESP32 USB. GPS RX and GPIO17 unwired.
+  content: "#include <Arduino.h>\nconstexpr int8_t GPS_RX = 16;\nconstexpr int8_t UNUSED_TX = 17;\nuint32_t bytesSeen\
+    \ = 0;\nuint32_t lastCheck = 0;\nvoid setup() {\n  Serial.begin(115200);\n  Serial2.begin(9600, SERIAL_8N1,\
+    \ GPS_RX, UNUSED_TX);\n  Serial.println(\"GPS TX -> GPIO16; Monitor 115200, GPS 9600.\");\n}\nvoid loop() {\n\
+    \  for (uint8_t n = 0; n < 64 && Serial2.available() > 0; ++n) {\n    const int value = Serial2.read();\n  \
+    \  if (value >= 0) {\n      Serial.write(static_cast<uint8_t>(value));\n      ++bytesSeen;\n    }\n  }\n  const\
+    \ uint32_t now = millis();\n  if (now - lastCheck >= 5000) {\n    lastCheck = now;\n    if (bytesSeen == 0)\
+    \ Serial.println(\"No UART bytes: check power, RX wiring and baud.\");\n    bytesSeen = 0;\n  }\n  delay(1);\n\
+    }\n"
+  notes: A bounded receive loop and five-second no-byte diagnostic; no blocking wait for satellites. Does not parse/validate
+    checksums, coordinates or a fix. No commands sent; attach a version-pinned parser with validation before using
+    coordinates in an application.
+output: Expect lines beginning with sentence identifiers such as $GPRMC or $GPGGA for default NMEA output. No fix
+  is still compatible with readable sentences. Receiver configurations can change talker IDs/messages; this sketch
+  makes no location or accuracy assertion.
+how_it_works: 'The two UARTs have different baud rates: the receiver sends slowly to Serial2 while the USB debugging
+  port prints at 115200. The program forwards bytes only, so corrupt data is not silently converted into plausible
+  coordinates.
+
+
+  For NMEA navigation, inspect RMC status (A valid / V void) and GGA fix-quality (0 means no fix) with checksum
+  validation in a parser. Latitude/longitude fields use degrees and minutes, not ready-made decimal degrees. A first-byte
+  check is a communications check; it is not a satellite-fix test.'
+applications:
+- UART bring-up before adding a NMEA parser
+- Learning the difference between serial output and navigation validity
+troubleshooting:
+- problem: No bytes
+  cause: Wrong RX pin, missing supply/ground or disabled UART output.
+  fix: Check the actual header voltage, GPS TX to GPIO16 and receiver configuration; sky view alone does not fix
+    a silent UART.
+- problem: Unreadable characters
+  cause: Wrong GPS baud/protocol or signal level.
+  fix: Keep Monitor at 115200; verify receiver baud separately. UBX binary output will not look like NMEA text.
+- problem: Sentences but no fix
+  cause: Poor antenna/sky view, startup acquisition or receiver configuration.
+  fix: Use a documented antenna and open sky; check status with validation. Do not promise a universal acquisition
+    time.
+- problem: Works on one board only
+  cause: GPIO16/17 reserved or board family differs.
+  fix: Use the stated WROOM map; choose available UART pins from the actual board documentation.
+faqs:
+- question: Can I use a 5 V GPS breakout?
+  answer: Only if its carrier documentation permits that supply and confirms ESP32-safe UART levels. That is a different
+    supply connection from this worked 3.3 V example.
+- question: Does printing coordinates prove a fix?
+  answer: No. A parser must check status, age and checksum; old or invalid fields must not be treated as a current
+    position.
+sources:
+- title: u-blox NEO-6 datasheet
+  url: https://content.u-blox.com/sites/default/files/products/documents/NEO-6_DataSheet_(GPS.G6-HW-09005).pdf
+  note: NEO-6M module operating conditions, UART levels/default settings; not identification of an unknown carrier.
+- title: u-blox 6 receiver protocol specification
+  url: https://content.u-blox.com/sites/default/files/products/documents/u-blox6_ReceiverDescrProtSpec_%28GPS.G6-SW-10018%29_Public.pdf
+  note: NMEA RMC/GGA fields and validity; no parser library used.
+- title: Arduino-ESP32 3.3.2 HardwareSerial
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/HardwareSerial.h
+  note: Pinned begin/read/write APIs and explicit RX/TX assignment.
+related_guides:
+- title: IDE and first upload
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Use the Serial-only setup check first.

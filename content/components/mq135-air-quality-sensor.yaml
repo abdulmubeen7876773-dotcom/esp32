@@ -1,0 +1,210 @@
+slug: mq135-air-quality-sensor
+name: 'MQ-135: Protected ESP32 Analog Readings'
+category: Sensors
+difficulty: Beginner
+summary: Read an MQ-135 analog signal without exposing ESP32 GPIO to 5 V. Separate broad gas sensitivity from a
+  selective CO2 measurement or an air-quality index.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/mq135-air-quality-sensor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of MQ-135; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: Documented MQ-135 analog breakout with VCC, GND and AO, a 5.0 V heater/circuit supply and a nonnegative
+      AO bounded by that supply. Verify the purchased schematic, labels and load resistor. Not a bare six-pin sensor
+      circuit; no exact carrier revision or authenticity established by the illustration.
+  - label: Prerequisites and parts
+    value: Complete IDE setup and analog-input lesson. Regulated external 5.0 V ±0.1 V supply sized for the heater
+      plus actual carrier load, two 10 kohm 1% resistors, 100 nF ceramic capacitor, meter and short wires. DevKit
+      stays on USB; do not join its positive power rail to the sensor supply. Heater alone can require about 190
+      mA at 5 V from the 950 mW limit; account for carrier overhead. GPIO32 must be free.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 built-in ADC; no gas-concentration library.
+  - label: Expected result
+    value: Once powered, Serial reports raw ADC counts and calibrated estimates of divider-node millivolts once
+      per second. There is no ppm, AQI or alarm result.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: Compare the other MQ family
+  href: /components/mq2-gas-smoke-sensor.html
+  description: Keep MQ-2 and MQ-135 labels and intended measurements distinct.
+- title: Resistor identification
+  href: /components/through-hole-resistors.html
+  description: Choose and verify the divider resistors.
+library: Arduino-ESP32 3.3.2 built-in ADC; no additional library.
+eli12: 'MQ-135 responds to several gases rather than identifying one of them. Its resistance-based signal cannot
+  by itself distinguish ammonia, smoke or other vapors. The approved image is correctly assigned to MQ-135, not
+  MQ-2.
+
+
+  A number from this module is not a CO2 concentration or an AQI. Neither a clean-air assumption nor an internet
+  conversion formula supplies the missing reference gas, actual load resistance and calibration conditions. This
+  page exposes the electrical reading without labeling it as a health measurement.'
+electrical:
+  supply: External regulated 5.0 V ±0.1 V for this documented carrier; heater and loop requirements differ from
+    ESP32 logic. Never power the heater from a GPIO or assume the DevKit 3.3 V regulator can supply it.
+  signal: AO → 10 kohm → node → GPIO32; node → 10 kohm → GND. At AO=5.1 V, ideal node=2.55 V; with 1% resistor worst-case
+    ratio, about 2.576 V. Verify with meter before connecting ESP32. DO is unused.
+  protection: 100 nF from node to GND, shared ground and separate positive supplies. Divider is required even with
+    high ADC attenuation. Avoid powered signals into an unpowered ESP32; disconnect together. This is not a safety
+    gas alarm.
+specs:
+- name: Heater/circuit reference
+  value: 5.0 V ±0.1 V
+  why: Winsen conditions for the stated sensor; check the carrier schematic.
+- name: AO interface
+  value: Two 10 kohm 1% resistors + 100 nF
+  why: Divider reduces voltage; it also loads AO by 20 kohm.
+- name: ADC input
+  value: GPIO32, ADC1, ADC_11db
+  why: 12-bit raw counts; calibrated millivolts are a separate conversion.
+- name: Initial conditioning
+  value: 'MQ-135: over 48 hours'
+  why: Manufacturer test preheat, not a sketch delay or guaranteed stabilization time.
+pinout:
+- pin: Sensor VCC
+  role: Supply
+  connects: External regulated 5.0 V
+  note: Only the documented 5 V carrier; not ESP32 3.3 V.
+- pin: Sensor GND / supply minus
+  role: Reference
+  connects: ESP32 GND
+  note: Common reference; positive supplies stay separate.
+- pin: Sensor AO
+  role: Analog output
+  connects: 10 kohm R1 then node N
+  note: Never connect AO directly to GPIO.
+- pin: Node N
+  role: Divider
+  connects: GPIO32; 10 kohm R2 to GND
+  note: Both resistors 1%; verify voltage before attachment.
+- pin: 100 nF ceramic capacitor
+  role: Filter
+  connects: Node N to GND
+  note: Place close to ADC input; no polarity.
+- pin: Sensor DO, if fitted
+  role: Comparator
+  connects: Leave disconnected
+  note: Threshold/polarity and pull-up rail are carrier-specific.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/mq135-air-quality-sensor-wiring.svg
+  illustration_alt: Logical wiring for MQ-135; terminal labels rather than physical pin positions
+  summary: External 5 V → sensor VCC; all grounds common. AO → R1 10 kohm → N → GPIO32. R2 10 kohm and 100 nF both
+    connect N to GND. DO unused.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Sensor VCC
+    esp32_pin: External regulated 5.0 V
+    notes: Only the documented 5 V carrier; not ESP32 3.3 V.
+  - component_pin: Sensor GND / supply minus
+    esp32_pin: ESP32 GND
+    notes: Common reference; positive supplies stay separate.
+  - component_pin: Sensor AO
+    esp32_pin: 10 kohm R1 then node N
+    notes: Never connect AO directly to GPIO.
+  - component_pin: Node N
+    esp32_pin: GPIO32; 10 kohm R2 to GND
+    notes: Both resistors 1%; verify voltage before attachment.
+  - component_pin: 100 nF ceramic capacitor
+    esp32_pin: Node N to GND
+    notes: Place close to ADC input; no polarity.
+  - component_pin: Sensor DO, if fitted
+    esp32_pin: Leave disconnected
+    notes: Threshold/polarity and pull-up rail are carrier-specific.
+  steps:
+  - Unplug both supplies; identify AO/VCC/GND from the actual schematic. Verify the divider and capacitor node;
+    do not copy physical pin positions from the artwork.
+  - With ESP32 signal disconnected, power the sensor, check supply and node voltages. Disconnect power again before
+    attaching GPIO32.
+  - Upload, power both systems and open 115200 baud. Follow manufacturer conditioning for any repeatable study;
+    startup readings are not readiness evidence. Do not introduce hazardous test gases.
+code:
+  title: MQ-135 divided-voltage logger
+  filename: mq135_air_quality_sensor.ino
+  wiring: External 5 V → sensor VCC; all grounds common. AO → R1 10 kohm → N → GPIO32. R2 10 kohm and 100 nF both
+    connect N to GND. DO unused.
+  content: "#include <Arduino.h>\nconstexpr uint8_t SENSOR_ADC = 32;\nuint32_t lastReport = 0;\nvoid setup() {\n\
+    \  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(SENSOR_ADC, ADC_11db);\n  Serial.println(\"\
+    AO through 10k/10k divider; readings are not ppm.\");\n}\nvoid loop() {\n  const uint32_t now = millis();\n\
+    \  if (now - lastReport >= 1000) {\n    lastReport = now;\n    const uint16_t raw = analogRead(SENSOR_ADC);\n\
+    \    const uint32_t nodeMv = analogReadMilliVolts(SENSOR_ADC);\n    Serial.printf(\"raw=%u node_mV=%lu\\n\"\
+    ,\n                  static_cast<unsigned>(raw),\n                  static_cast<unsigned long>(nodeMv));\n \
+    \ }\n  delay(1);\n}\n"
+  notes: Raw counts and calibrated millivolts are two successive samples, not one identical sample converted twice.
+    No voltage-to-ppm formula, automatic alarm threshold or sensor-ready indication. GPIO32 avoids classic ESP32
+    ADC2/Wi-Fi contention.
+output: Lines such as raw=<count> node_mV=<estimate> should appear once a second; these are format placeholders,
+  not measured values. Compare node_mV with a meter. The signal may drift during heating. The sketch does not declare
+  the sensor conditioned or identify a gas.
+how_it_works: 'The equal-resistor divider halves the connected AO voltage in the ideal circuit. Its 20 kohm load
+  can change an unbuffered carrier’s effective load resistance and therefore its transfer curve; do not reuse the
+  bare-sensor calibration curve unchanged. The capacitor helps slow noise at the ADC node. Calibrated ADC millivolts
+  are still an estimate, not a calibration of the gas sensor.
+
+
+  Follow the actual sensor’s storage/reconditioning and manufacturer test conditions for later studies. Initial
+  48-hour-class conditioning is not a promise that every power-up requires exactly that delay or that subsequent
+  readings are accurate. There is no defensible universal clean-air count.'
+applications:
+- Comparing repeated relative readings under documented conditions
+- Learning why cross-sensitive sensors cannot identify gases
+troubleshooting:
+- problem: ADC stays near full scale
+  cause: Missing divider, wrong node or excessive voltage.
+  fix: Disconnect GPIO first and measure N; verify R1/R2 and supply. Attenuation does not protect an overvoltage
+    input.
+- problem: Baseline keeps moving
+  cause: Heater conditioning, environment or supply changes.
+  fix: Check actual conditioning procedure and stable power; log context rather than converting drift to ppm.
+- problem: ESP32 resets
+  cause: Heater shares an inadequate supply path or ground wiring.
+  fix: Use the qualified external source, check its current budget and keep positive rails separate.
+- problem: DO LED disagrees with AO
+  cause: Comparator threshold or output circuit differs.
+  fix: DO is not read here. Check the actual schematic; its LED is not a calibrated alarm.
+- problem: Reading seems too low
+  cause: Divider loading or ADC response.
+  fix: Measure both AO and N; characterize the connected circuit before any conversion. Do not assume AO is unchanged
+    by added resistors.
+faqs:
+- question: Can I power it at 3.3 V to avoid a divider?
+  answer: Not for the specified 5 V heater/circuit conditions. Lowering heater voltage changes operation; use the
+    documented supply and protected input.
+- question: Can the sketch report CO2 or a safe/unsafe level?
+  answer: No. It reports electrical readings only; gas-specific calibration and a suitable validated system are
+    separate requirements.
+sources:
+- title: Winsen MQ-135 manufacturer manual
+  url: https://www.winsen-sensor.com/d/files/manual/mq135.pdf
+  note: Sensor supply, heater, conditioning and sensitivity; not authentication or a schematic for an unknown breakout.
+- title: Arduino-ESP32 3.3.2 ADC declarations
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.h
+  note: Pinned raw/calibrated readings, resolution and attenuation API.
+- title: Espressif ADC guidance
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/adc.html
+  note: ADC semantics and classic ESP32 range; API checked against 3.3.2.
+related_guides:
+- title: ADC and analog inputs
+  href: /guides/analog-inputs.html
+  description: Raw counts, calibrated voltage and electrical limits.
