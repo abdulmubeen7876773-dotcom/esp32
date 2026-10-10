@@ -1,0 +1,162 @@
+slug: electrolytic-capacitors
+name: 'Electrolytic Capacitors: Polarity and Low-Voltage Power Support'
+category: Power Components
+difficulty: Beginner
+summary: Read capacitance and voltage ratings, identify polarity and try a low-voltage charge/discharge exercise.
+  A capacitor supports a supply; it cannot replace one.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/electrolytic-capacitors-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Electrolytic Capacitors; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: Known radial aluminum electrolytic, 100 µF rated at least 10 V, documented for the temperature/circuit.
+      The assortment artwork does not authenticate values, series, ESR or lifetime.
+  - label: Prerequisites and parts
+    value: Regulated current-limited 5 V supply, known 100 µF / ≥10 V capacitor, 1 kOhm 0.25 W resistor, voltmeter
+      and insulated connections. Read the actual part datasheet; keep this exercise separate from ESP32 GPIO and
+      USB rails.
+  - label: Libraries
+    value: No firmware/library required for the meter exercise. Arduino-ESP32 3.3.2 is the site example baseline,
+      not a dependency of this passive part.
+  - label: Expected result
+    value: A voltmeter shows charging toward 5 V and discharge toward zero after supply removal. No timing/ripple
+      measurement performed.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: A4988 supply
+  href: /components/a4988-stepper-driver.html
+  description: Separate VMOT capacitor/current-limit requirements.
+- title: WS2812B supply
+  href: /components/ws2812b-rgb-led-strip.html
+  description: Use the pixel-specific power instructions.
+eli12: 'A capacitor stores charge and supports brief current changes near a load. Capacitance is given in microfarads
+  (µF); the voltage marking is a limit, not a voltage it generates. Polarized aluminum electrolytics require correct
+  polarity.
+
+
+  A minus stripe commonly identifies the negative lead on radial parts. Follow the manufacturer drawing; trimmed
+  lead length is not reliable identification. The picture is a generic assortment, not verified ratings. For an
+  actual supply, also check ripple current, ESR, temperature and lifetime requirements.'
+electrical:
+  supply: 'Passive part used within rated DC voltage/polarity/temperature/ripple current. Exercise: 5 V on a ≥10
+    V part.'
+  signal: No signal output or GPIO connection. A capacitor does not level-shift or protect ESP32 from overvoltage.
+  protection: Charge through 1 kOhm in this exercise. Disconnect supply before resistor discharge and check residual
+    voltage. Do not short leads or use salvaged mains/high-voltage parts.
+specs:
+- name: Worked capacitance
+  value: 100 µF
+  why: Verify actual part label/datasheet; tolerance applies.
+- name: Voltage rating
+  value: ≥10 V for this 5 V exercise
+  why: Example margin, not a universal design rule.
+- name: Series resistor
+  value: 1 kOhm, 0.25 W
+  why: Initial current about 5 mA; initial resistor power about 25 mW.
+- name: Ideal time constant
+  value: RC = 0.1 s
+  why: Five time constants ≈0.5 s; tolerance/leakage/meter update rate affect observation.
+pinout:
+- pin: Supply +5 V
+  role: Charge
+  connects: 1 kOhm → capacitor +
+  note: No ESP32 GPIO/USB positive rail connected.
+- pin: Capacitor −
+  role: Return
+  connects: Supply negative / meter −
+  note: Identify polarity from manufacturer marking.
+- pin: Voltmeter +
+  role: Measure
+  connects: Capacitor +
+  note: DC voltage mode; meter − at capacitor −.
+- pin: 'After supply removal: 1 kOhm'
+  role: Discharge
+  connects: Across capacitor + and −
+  note: Disconnect supply first; check near-zero voltage.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/electrolytic-capacitors-wiring.svg
+  illustration_alt: Logical wiring for Electrolytic Capacitors; terminal labels rather than physical pin positions
+  summary: 'Charge: +5 V → 1 kOhm → capacitor +; capacitor − → supply negative. Meter across capacitor. After removing
+    supply, discharge through 1 kOhm.'
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Supply +5 V
+    esp32_pin: 1 kOhm → capacitor +
+    notes: No ESP32 GPIO/USB positive rail connected.
+  - component_pin: Capacitor −
+    esp32_pin: Supply negative / meter −
+    notes: Identify polarity from manufacturer marking.
+  - component_pin: Voltmeter +
+    esp32_pin: Capacitor +
+    notes: DC voltage mode; meter − at capacitor −.
+  - component_pin: 'After supply removal: 1 kOhm'
+    esp32_pin: Across capacitor + and −
+    notes: Disconnect supply first; check near-zero voltage.
+  steps:
+  - With power off and capacitor discharged, verify polarity/ratings. Wire the charge circuit and meter in DC voltage
+    mode.
+  - Apply regulated 5 V through 1 kOhm. Settled voltage should approach 5 V; a slow meter may miss the short transient.
+  - Switch off and disconnect the supply connection. Put the resistor across capacitor leads to discharge. Check
+    voltage before handling and recheck for returning residual charge.
+output: Settled voltage should approach 5 V; discharge should move it toward zero. The ideal 0.1 s time constant
+  is calculated, not measured. Voltage alone cannot establish capacitance, ESR, ripple rating or health.
+how_it_works: 'Charge current falls as capacitor voltage approaches the supply. Removing the supply and adding a
+  resistor across the terminals gives a controlled discharge path. This is a small low-voltage circuit; high-energy
+  storage needs separate resistor power/energy design.
+
+
+  A real load often needs local bulk capacitance across supply/ground plus specified high-frequency bypassing. The
+  exercise resistor is not a rule for a finished motor/LED supply. A4988 and WS2812B have different required values/placement;
+  follow those complete circuits. Extra capacitance cannot fix an undersized supply, poor ground or unsafe signal
+  voltage.'
+applications:
+- Learning polarity, units and stored charge
+- Choosing documented bulk support for LED/motor supplies
+troubleshooting:
+- problem: Warming, swelling or leakage
+  cause: Reverse polarity or unsuitable/stressed part.
+  fix: Remove power safely; do not reuse a damaged part. Check actual circuit/ratings.
+- problem: Voltage stays low
+  cause: Wrong connection, supply absent or leaking/damaged part.
+  fix: Disconnect/discharge before inspection; a voltmeter cannot diagnose every fault.
+- problem: Transient not visible
+  cause: Meter slower than charging.
+  fix: Use settled voltage for connection checking; do not claim timing from a slow display.
+- problem: ESP32 resets despite added capacitance
+  cause: Supply/wiring/placement issue remains.
+  fix: Follow load power budgeting; do not add unknown capacitance to regulator outputs without documentation.
+faqs:
+- question: Does 100 µF mean 100 V?
+  answer: No. Capacitance and voltage rating are separate markings.
+- question: Can it replace ceramic bypassing?
+  answer: No blanket substitution; follow the load datasheet for bulk and high-frequency bypassing.
+sources:
+- title: Nichicon application guidelines
+  url: https://www.nichicon.co.jp/english/products/pdf/aluminum-e.pdf
+  note: Polarity, electrical stress, residual voltage and resistor discharge; not authentication of the assortment.
+- title: Panasonic polarity explanation
+  url: https://industrial.panasonic.com/ww/ds/glossary/capacitors/nonpolar-capacitor
+  note: Polarized aluminum electrolytics and reverse voltage.
+library: No software library required for the passive meter exercise.

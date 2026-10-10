@@ -91,10 +91,10 @@ for (const width of [320, 768, 1440]) {
   }
 }
 
-test('Component listing exposes 26 entries and all integrated approved pages, with usable keyboard search', async ({ page }) => {
+test('Component listing exposes 30 entries and all integrated approved pages, with usable keyboard search', async ({ page }) => {
   await page.goto('/components.html');
-  await expect(page.locator('#component-grid .component-card')).toHaveCount(26);
-  for (const slug of [...slugs, 'discrete-leds', 'rgb-led', 'passive-buzzer', 'l298n-motor-driver', 'mfrc522-rfid-reader', 'tsop38238-ir-receiver', 'mpu6050-motion-sensor', 'apds9960-sensor', '2n2222-npn-transistor', 'active-buzzer-module', 'irlb8721-mosfet', 'ws2812b-rgb-led-strip']) await expect(page.locator(`#component-grid .component-card[href="/components/${slug}.html"]`)).toHaveCount(1);
+  await expect(page.locator('#component-grid .component-card')).toHaveCount(30);
+  for (const slug of [...slugs, 'discrete-leds', 'rgb-led', 'passive-buzzer', 'l298n-motor-driver', 'mfrc522-rfid-reader', 'tsop38238-ir-receiver', 'mpu6050-motion-sensor', 'apds9960-sensor', '2n2222-npn-transistor', 'active-buzzer-module', 'irlb8721-mosfet', 'ws2812b-rgb-led-strip', 'ft232r-usb-ttl', 'electrolytic-capacitors', 'a4988-stepper-driver', 'solderless-breadboard']) await expect(page.locator(`#component-grid .component-card[href="/components/${slug}.html"]`)).toHaveCount(1);
   const search = page.locator('#component-search');
   await search.focus();
   await page.keyboard.type('SG90');
@@ -107,12 +107,12 @@ test('Component listing exposes 26 entries and all integrated approved pages, wi
 
 test('Dependent count pages and search contain the expanded catalog, with no DHT11 image entry', async ({ page }) => {
   await page.goto('/learning.html');
-  await expect(page.locator('#explorer')).toContainText('26 components');
+  await expect(page.locator('#explorer')).toContainText('30 components');
   await page.goto('/about.html');
-  await expect(page.locator('.premium-stats').first()).toContainText('26');
+  await expect(page.locator('.premium-stats').first()).toContainText('30');
   const search = JSON.parse(await fs.readFile(path.join(process.cwd(), 'search-index.json'), 'utf8'));
   const components = search.filter((item: { type: string }) => item.type === 'Component');
-  expect(components).toHaveLength(26);
+  expect(components).toHaveLength(30);
   for (const slug of slugs) expect(components.filter((item: { slug: string }) => item.slug === slug)).toHaveLength(1);
   expect(components.some((item: { slug: string }) => item.slug === 'dht11')).toBe(false);
 });

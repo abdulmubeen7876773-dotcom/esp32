@@ -1,0 +1,180 @@
+slug: solderless-breadboard
+name: 'Solderless Breadboard: Connections and First LED Circuit'
+category: Miscellaneous
+difficulty: Beginner
+summary: Trace terminal strips and split rails before building. Assemble GPIO25 Blink using separate electrical
+  nodes and a current-limiting resistor.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/solderless-breadboard-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Solderless Breadboard; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: Conventional solderless breadboard with documented arrangement, checked by continuity before power. No
+      exact tie-point count, rail continuity or current rating inferred from the illustration.
+  - label: Prerequisites and parts
+    value: Complete IDE setup. Known red indicator LED suitable for a few mA, 470 ohm 0.25 W resistor, jumpers and
+      continuity meter. GPIO25 exposed/unused. No assumed onboard LED.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 GPIO only; no breadboard library.
+  - label: Expected result
+    value: External red LED blinks one second on/off with its terminals in separate nodes.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: Resistor values
+  href: /components/through-hole-resistors.html
+  description: Choose the actual series resistor.
+- title: Button terminal pairs
+  href: /components/tactile-push-button.html
+  description: Identify connections before insertion.
+eli12: 'A solderless breadboard holds leads in spring contacts so a circuit can be rearranged. Holes on one internal
+  strip are one electrical node; spacing alone does not tell you where connections go.
+
+
+  Conventional boards connect each five-hole terminal group, with the center trench separating sides. Power rails
+  may split midway and opposite-side rails are usually independent. Letters, numbers and red/blue lines are labels,
+  not a continuity test. Map the actual board with all power removed. A wide DevKit may cover usable holes; use
+  jumper leads or two boards rather than force a fit.'
+electrical:
+  supply: Passive contacts, not a regulator. LED example uses DevKit USB and GPIO25; no breadboard power module
+    needed.
+  signal: GPIO25 is 3.3 V logic. Separate nodes and 470 ohm series resistor required; rail color does not protect
+    GPIO from 5 V.
+  protection: Continuity only with all power removed. Keep motor/heater/high-current LED power off unspecified breadboard
+    rails; never mains wiring.
+specs:
+- name: Connection pattern
+  value: Verify strips and rails
+  why: Five-hole groups/split rails are typical, not universal.
+- name: LED circuit
+  value: GPIO25 → 470 ohm → anode; cathode → GND
+  why: Each component end needs a different node except intended junctions.
+- name: Estimated current
+  value: About 2.8 mA assuming 2.0 V LED
+  why: (3.3−2.0)/470; actual brightness/voltage varies.
+- name: Pin label
+  value: GPIO25, not a hole number
+  why: Breadboard row numbers are placement labels only.
+pinout:
+- pin: GPIO25 + resistor end 1
+  role: Output
+  connects: Verified terminal node A
+  note: A is a logical node name, not column A.
+- pin: Resistor end 2 + LED anode
+  role: Junction
+  connects: Separate terminal node B
+  note: Must not share metal strip with A.
+- pin: LED cathode + GND wire
+  role: Return
+  connects: Separate terminal node C
+  note: C connects to DevKit GND.
+- pin: Optional ground rail
+  role: Distribution
+  connects: Node C after continuity check
+  note: Bridge splits only when needed.
+- pin: Unused power rails
+  role: Unused
+  connects: Leave unpowered
+  note: No supply module required.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/solderless-breadboard-wiring.svg
+  illustration_alt: Logical wiring for Solderless Breadboard; terminal labels rather than physical pin positions
+  summary: GPIO25 → A → 470 ohm → B → LED anode; cathode → C → GND. A/B/C are separate verified electrical nodes.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: GPIO25 + resistor end 1
+    esp32_pin: Verified terminal node A
+    notes: A is a logical node name, not column A.
+  - component_pin: Resistor end 2 + LED anode
+    esp32_pin: Separate terminal node B
+    notes: Must not share metal strip with A.
+  - component_pin: LED cathode + GND wire
+    esp32_pin: Separate terminal node C
+    notes: C connects to DevKit GND.
+  - component_pin: Optional ground rail
+    esp32_pin: Node C after continuity check
+    notes: Bridge splits only when needed.
+  - component_pin: Unused power rails
+    esp32_pin: Leave unpowered
+    notes: No supply module required.
+  steps:
+  - Unplug all supplies. Check terminal-group, cross-trench and rail continuity; record which holes share a node.
+  - Place resistor across A/B, LED across B/C, GPIO25 wire to A and GND to C. Confirm LED polarity from actual markings/datasheet,
+    not trimmed lead length.
+  - Check no GPIO-to-GND short and no component has both leads in one strip. Upload complete sketch and observe
+    external LED.
+code:
+  title: External LED on separate nodes
+  filename: solderless_breadboard.ino
+  wiring: GPIO25 → A → 470 ohm → B → LED anode; cathode → C → GND. A/B/C are separate verified electrical nodes.
+  content: "#include <Arduino.h>\nconstexpr uint8_t LED_PIN = 25;\nvoid setup() {\n  pinMode(LED_PIN, OUTPUT);\n\
+    \  digitalWrite(LED_PIN, LOW);\n}\nvoid loop() {\n  digitalWrite(LED_PIN, HIGH);\n  delay(1000);\n  digitalWrite(LED_PIN,\
+    \ LOW);\n  delay(1000);\n}\n"
+  notes: Complete external LED example; pinMode before digitalWrite. Delay is suitable for this single-task first
+    exercise, not a multitask application. Row labels do not change code.
+output: LED should alternate on/off each second. Darkness, constant light or resets need inspection, not congratulations.
+  The 2.8 mA value is calculated using an assumed red-LED voltage, not measured.
+how_it_works: Resistor and LED share only their intended junction B, so current passes through the resistor. Both
+  resistor ends in one strip bypass it; both LED leads in one strip short the LED. Routing is a translation of electrical
+  nodes, not an illustration to copy without connectivity checks.
+applications:
+- Low-current Blink/button lessons
+- Sensor prototypes with verified rails
+- Mapping wiring tables to electrical nodes
+troubleshooting:
+- problem: No light
+  cause: Reversed LED, wrong GPIO, bad contact or same-node leads.
+  fix: Unplug and trace A/B/C and polarity.
+- problem: Reset or warming
+  cause: Power/GPIO short or unsafe supply module.
+  fix: Disconnect and inspect unpowered; do not use a bigger source.
+- problem: Half a rail is dead
+  cause: Rail center split.
+  fix: Check unpowered continuity; bridge only intended matching nodes.
+- problem: Works only when pressed
+  cause: Bad contact or jumper.
+  fix: Replace suspect parts and secure leads; one brief result does not prove stability.
+faqs:
+- question: Are colored rails powered automatically?
+  answer: No. They label passive contacts; supply and continuity must be checked.
+- question: Can motor power use this board?
+  answer: Not on an unspecified board. Use actual connector/current ratings and suitable direct power paths.
+sources:
+- title: SparkFun breadboard anatomy
+  url: https://learn.sparkfun.com/tutorials/how-to-use-a-breadboard/all
+  note: Manufacturer teaching material on strips, trench and split rails.
+- title: SparkFun reference board
+  url: https://www.sparkfun.com/breadboard-full-size-bare.html
+  note: A documented board with split buses, not identification of the artwork.
+- title: Arduino-ESP32 3.3.2 GPIO
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
+  note: Pinned GPIO implementation.
+related_guides:
+- title: Blink LED
+  href: /guides/blink-led-esp32.html
+  description: Existing beginner lesson/video.
+- title: Button input
+  href: /guides/button-led-control.html
+  description: Apply the same verified-node approach.
+library: Arduino-ESP32 3.3.2 built-in GPIO; no breadboard library.

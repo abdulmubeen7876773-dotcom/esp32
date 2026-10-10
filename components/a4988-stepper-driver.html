@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A4988 Stepper Driver: Current Limit and First Steps — Component Guide | ESP32 Engine</title>
+<meta name="description" content="Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier color cannot identify a driver or sense resistors.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/components/a4988-stepper-driver.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="A4988 Stepper Driver: Current Limit and First Steps — Component Guide | ESP32 Engine">
+<meta property="og:description" content="Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier color cannot identify a driver or sense resistors.">
+<meta property="og:url" content="https://esp32engine.com/components/a4988-stepper-driver.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A4988 Stepper Driver: Current Limit and First Steps — Component Guide | ESP32 Engine">
+<meta name="twitter:description" content="Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier color cannot identify a driver or sense resistors.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"A4988 Stepper Driver: Current Limit and First Steps — Component Guide | ESP32 Engine","description":"Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier color cannot identify a driver or sense resistors.","url":"https://esp32engine.com/components/a4988-stepper-driver.html","isPartOf":{"@type":"WebSite","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://esp32engine.com/components.html"},{"@type":"ListItem","position":3,"name":"A4988 Stepper Driver: Current Limit and First Steps","item":"https://esp32engine.com/components/a4988-stepper-driver.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"A4988 Stepper Driver: Current Limit and First Steps","description":"Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier color cannot identify a driver or sense resistors.","dateModified":"2026-10-10","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/components/a4988-stepper-driver.html"},"proficiencyLevel":"Beginner"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does purple mean DRV8825?","acceptedAnswer":{"@type":"Answer","text":"No. Identify real IC/carrier from documentation, not color."}},{"@type":"Question","name":"Is 100 steps half a turn?","acceptedAnswer":{"@type":"Answer","text":"Only for a 200-step/revolution motor without missed steps; no universal angle claim."}}]}</script>
+</head>
+<body class="component-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html" class="active">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="component-hero-band">
+  <section class="wrap component-hero component-hero--concise">
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/components.html">Components</a></li><li aria-current="page">A4988 Stepper Driver: Current Limit and First Steps</li></ol></nav>
+    <div class="component-hero-grid">
+      <div class="component-hero-copy">
+        <p class="hero-eyebrow component-hero-eyebrow">Component Guide</p>
+        <div class="component-hero-badges">
+          <span class="badge badge-cat">Motors</span>
+          <span class="badge badge-beginner">Beginner</span>
+        </div>
+        <h1 class="component-hero-title">A4988 Stepper Driver: Current Limit and First Steps</h1>
+        <p class="component-hero-summary">Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier color cannot identify a driver or sense resistors.</p>
+        <div class="component-meta-strip" aria-label="Guide metadata">
+  <span><strong>Beginner</strong><small>Difficulty</small></span>
+  <span><strong>Classic ESP32</strong><small>Compatible</small></span>
+</div>
+        <div class="component-share" aria-label="Share this component guide">
+  <a class="component-share-btn" href="https://twitter.com/intent/tweet?url=https://esp32engine.com/components/a4988-stepper-driver.html&text=A4988 Stepper Driver: Current Limit and First Steps" rel="noopener" target="_blank">Share</a>
+  <button class="component-share-btn" type="button" data-copy-url="https://esp32engine.com/components/a4988-stepper-driver.html">Copy link</button>
+</div>
+      </div>
+      <div class="component-hero-media"><div class="component-hero-photo"><img src="/assets/visuals/components/photos/a4988-stepper-driver-illustration.webp" alt="Product-style illustration of A4988 Stepper Driver; not a verified physical pin layout" loading="eager" width="1408" height="768"></div><div class="component-hero-illustration" aria-hidden="true"><svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="A4988 Stepper Driver: Current Limit and First Steps illustration">
+  <defs>
+    <linearGradient id="ca-board-a4988-stepper-driver-1" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081D3A"/><stop offset="1" stop-color="#1488A6"/>
+    </linearGradient>
+    <radialGradient id="ca-glow-a4988-stepper-driver-1" cx="50%" cy="50%" r="60%">
+      <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ca-shadow-a4988-stepper-driver-1" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#081D3A" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
+  <circle cx="260" cy="178" r="168" fill="url(#ca-glow-a4988-stepper-driver-1)"/>
+  <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+  <g filter="url(#ca-shadow-a4988-stepper-driver-1)">
+    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#ca-board-a4988-stepper-driver-1)"/>
+    <rect x="174" y="124" width="116" height="78" rx="14" fill="#081D3A" opacity=".88"/>
+    <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
+    <circle cx="327" cy="183" r="19" fill="#FBBF24"/>
+    <text x="232" y="174" text-anchor="middle" fill="#E0F2FE" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800">AS</text>
+    <text x="260" y="282" text-anchor="middle" fill="#475569" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700">Motors</text>
+    <g stroke="#DBEAFE" stroke-width="5" stroke-linecap="round" opacity=".95">
+      <path d="M138 120h-28M138 154h-28M138 188h-28M382 120h28M382 154h28M382 188h28"/>
+    </g>
+  </g>
+</svg></div></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap component-guide-shell component-guide-shell--concise">
+
+<article class="component-journey article-concise"><details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#eli12-heading">Overview</a><a href="#specs-heading">Technical Specifications</a><a href="#pinout-heading">Pinout</a><a href="#wiring-heading">Wiring Diagram</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#output-heading">Expected Output</a><a href="#how-it-works-heading">How it works</a><a href="#troubleshooting-heading">Troubleshooting</a><a href="#applications-heading">Where you use it</a><a href="#guides-heading">Continue learning</a><a href="#related-components-heading">Related components</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a></nav></details><section class="component-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Board and software</dt><dd>Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32 Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.</dd><dt>Supported hardware</dt><dd>Worked carrier: Pololu A4988 item 1182 with published schematic/labels, not unidentified purple artwork. Four-wire bipolar motor with documented coil pairs and rated phase current at least 0.5 A. Set driver limit ≤0.5 A and ≤motor rating. No universal size or step angle assumed.</dd><dt>Prerequisites and parts</dt><dd>Complete Blink and board pin checks. Reference carrier, documented motor, current-limited regulated 12 V supply sized for actual load, ≥47 µF / ≥25 V capacitor near VMOT, meter, short suitable power wiring and 10 kOhm resistors. Set VREF first. Keep motor power paths off ordinary breadboard rails.</dd><dt>Libraries</dt><dd>Arduino-ESP32 3.3.2 GPIO and delay only; no extra library.</dd><dt>Expected result</dt><dd>After command g, 100 full-step pulses in one direction, then outputs disabled. Angle depends on actual motor; software count does not prove motion.</dd><dt>Verification status</dt><dd>Documentation and source review only. Not compiled or tested on hardware. The approved product-style illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board. Follow the logical diagram and documentation for your actual part.</dd></dl></section>
+<section class="component-section" id="eli12" aria-labelledby="eli12-heading">
+  <h2 tabindex="-1" id="eli12-heading"><span class="component-section-title">Overview</span></h2>
+  <div class="component-section-prose"><p>A4988 turns STEP pulses and a DIR level into controlled currents in two windings. ESP32 sends commands; external supply and driver provide motor current. It is for bipolar steppers, not servos or the separate DC-motor example.</p><p>Purple board color does not prove DRV8825, revision, pin order or current-sense resistance. The approved image depicts A4988 family only; use the documented Pololu item 1182 reference or verify another carrier schematic. Never connect/disconnect the motor while powered.</p></div>
+</section>
+<section class="component-section" id="specs" aria-labelledby="specs-heading">
+  <h2 tabindex="-1" id="specs-heading"><span class="component-section-icon" aria-hidden="true">02</span><span class="component-section-title">Technical Specifications</span></h2>
+  <p class="component-section-lead">Arduino library: <strong>Arduino-ESP32 3.3.2 built-in GPIO and timing; no extra library.</strong></p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Mode</th>
+  <td>Full step; MS1/MS2/MS3 LOW</td>
+  <td>No universal angle per pulse.</td>
+</tr><tr>
+  <th scope="row">Current limit</th>
+  <td>Imax ≤0.5 A and ≤motor rating</td>
+  <td>VREF = 8 × Imax × Rs; supply current is not coil current.</td>
+</tr><tr>
+  <th scope="row">Reference calculation</th>
+  <td>Rs=0.068 ohm: 0.5 A → 0.272 V</td>
+  <td>Only for that verified revision, not another carrier preset.</td>
+</tr><tr>
+  <th scope="row">STEP timing</th>
+  <td>5 µs HIGH; about 10 ms LOW</td>
+  <td>Datasheet minimum HIGH/LOW is 1 µs; no acceleration profile.</td>
+</tr><tr>
+  <th scope="row">Reference supply limits</th>
+  <td>VDD 3–5.5 V; VMOT 8–35 V</td>
+  <td>Worked VDD is 3.3 V and VMOT is 12 V; ESP32 uses separate USB power.</td>
+</tr><tr>
+  <th scope="row">Control versus winding voltage</th>
+  <td>3.3 V control with VDD at 3.3 V</td>
+  <td>Motor outputs and the 12 V supply never connect to ESP32 GPIO. Common ground does not mean joining positive rails.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section" id="pinout" aria-labelledby="pinout-heading">
+  <h2 tabindex="-1" id="pinout-heading"><span class="component-section-icon" aria-hidden="true">03</span><span class="component-section-title">Pinout</span></h2>
+  <ul class="component-pinout-list"><li class="component-pin-row">
+  <span class="component-pin-name">VDD</span>
+  <span class="component-pin-role">Logic</span>
+  <span class="component-pin-connects">ESP32 3V3</span>
+  <span class="component-pin-note">Reference VDD, not VMOT.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Logic and motor GND</span>
+  <span class="component-pin-role">Reference</span>
+  <span class="component-pin-connects">ESP32 GND / supply negative</span>
+  <span class="component-pin-note">Motor return directly to supply, not GPIO wiring.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">VMOT</span>
+  <span class="component-pin-role">Power</span>
+  <span class="component-pin-connects">External regulated +12 V</span>
+  <span class="component-pin-note">Never connect to ESP32.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">≥47 µF / ≥25 V capacitor</span>
+  <span class="component-pin-role">Bulk</span>
+  <span class="component-pin-connects">+ VMOT; − motor GND</span>
+  <span class="component-pin-note">Close to carrier; not a guarantee against all spikes.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">STEP</span>
+  <span class="component-pin-role">Pulses</span>
+  <span class="component-pin-connects">GPIO25 + 10 kOhm to GND</span>
+  <span class="component-pin-note">Hardware pull-down.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">DIR</span>
+  <span class="component-pin-role">Direction</span>
+  <span class="component-pin-connects">GPIO26 + 10 kOhm to GND</span>
+  <span class="component-pin-note">LOW for the example.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">/ENABLE</span>
+  <span class="component-pin-role">Enable</span>
+  <span class="component-pin-connects">GPIO27 + 10 kOhm to 3V3</span>
+  <span class="component-pin-note">Active LOW; reset pull-up disables outputs.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">/RESET and /SLEEP</span>
+  <span class="component-pin-role">Run</span>
+  <span class="component-pin-connects">Both joined to VDD (3.3 V)</span>
+  <span class="component-pin-note">Actual pin labels, not artwork geometry.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">MS1, MS2, MS3</span>
+  <span class="component-pin-role">Full step</span>
+  <span class="component-pin-connects">GND</span>
+  <span class="component-pin-note">All selection inputs LOW.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">1A / 1B</span>
+  <span class="component-pin-role">Winding</span>
+  <span class="component-pin-connects">Motor coil A pair</span>
+  <span class="component-pin-note">Identify continuity with all power removed.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">2A / 2B</span>
+  <span class="component-pin-role">Winding</span>
+  <span class="component-pin-connects">Motor coil B pair</span>
+  <span class="component-pin-note">Never connect while powered.</span>
+</li></ul>
+</section>
+<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 tabindex="-1" id="wiring-heading"><span class="component-section-icon" aria-hidden="true">04</span><span class="component-section-title">Wiring Diagram</span></h2>
+  <p>VDD3.3 V; VMOT12 V with local capacitor; common GND. STEP25, DIR26, /ENABLE27. RESET/SLEEP HIGH, MS1–3 LOW; separate winding pairs to 1A/B and 2A/B.</p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Component terminal</th><th scope="col">ESP32 / circuit connection</th><th scope="col">Purpose and qualification</th></tr></thead>
+    <tbody><tr><td>VDD</td><td>ESP32 3V3</td><td>Reference VDD, not VMOT.</td></tr><tr><td>Logic and motor GND</td><td>ESP32 GND / supply negative</td><td>Motor return directly to supply, not GPIO wiring.</td></tr><tr><td>VMOT</td><td>External regulated +12 V</td><td>Never connect to ESP32.</td></tr><tr><td>≥47 µF / ≥25 V capacitor</td><td>+ VMOT; − motor GND</td><td>Close to carrier; not a guarantee against all spikes.</td></tr><tr><td>STEP</td><td>GPIO25 + 10 kOhm to GND</td><td>Hardware pull-down.</td></tr><tr><td>DIR</td><td>GPIO26 + 10 kOhm to GND</td><td>LOW for the example.</td></tr><tr><td>/ENABLE</td><td>GPIO27 + 10 kOhm to 3V3</td><td>Active LOW; reset pull-up disables outputs.</td></tr><tr><td>/RESET and /SLEEP</td><td>Both joined to VDD (3.3 V)</td><td>Actual pin labels, not artwork geometry.</td></tr><tr><td>MS1, MS2, MS3</td><td>GND</td><td>All selection inputs LOW.</td></tr><tr><td>1A / 1B</td><td>Motor coil A pair</td><td>Identify continuity with all power removed.</td></tr><tr><td>2A / 2B</td><td>Motor coil B pair</td><td>Never connect while powered.</td></tr></tbody>
+  </table>
+</div>
+  <div class="component-wiring-art"><figure class="component-visual-art component-wiring-image">
+  <img src="/assets/visuals/components/wiring/a4988-stepper-driver-wiring.svg" alt="Logical wiring for A4988 Stepper Driver; terminal labels rather than physical pin positions" loading="lazy" decoding="async">
+</figure></div>
+  <p><a class="btn btn-secondary" href="/assets/visuals/components/wiring/a4988-stepper-driver-wiring.svg" target="_blank" rel="noopener">Open wiring diagram at full size (new tab)</a></p>
+  <ol class="component-steps-list"><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">1</span>
+    <p class="component-step-text">Unpowered, identify carrier labels, Rs and motor coil pairs. Use manufacturer VREF procedure to set Imax ≤0.5 A and ≤motor rating. Rs=0.068 ohm gives 0.272 V for 0.5 A; do not copy to another Rs.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">2</span>
+    <p class="component-step-text">Adjust VREF with the motor disconnected using the manufacturer procedure, avoiding shorts/unintended outputs. Full-step coil current is about 70% of Imax; supply current is not a substitute. Remove power before attaching motor.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">3</span>
+    <p class="component-step-text">Install capacitor near VMOT, wire grounds/supplies/control pull resistors. Upload with motor power off. Keep shaft clear and unloaded.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">4</span>
+    <p class="component-step-text">Power the documented setup, send g at 115200 baud. The bounded pulse burst finishes disabled. Disconnect both supplies before wiring changes.</p>
+  </div>
+</li></ol>
+</section>
+<section class="component-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Commanded full-step pulse burst</h3><p>VDD3.3 V; VMOT12 V with local capacitor; common GND. STEP25, DIR26, /ENABLE27. RESET/SLEEP HIGH, MS1–3 LOW; separate winding pairs to 1A/B and 2A/B.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">a4988_stepper_driver.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+constexpr <span class="tok-kw">uint8_t</span> STEP_PIN = <span class="tok-num">25</span>;
+constexpr <span class="tok-kw">uint8_t</span> DIR_PIN = <span class="tok-num">26</span>;
+constexpr <span class="tok-kw">uint8_t</span> ENABLE_PIN = <span class="tok-num">27</span>; <span class="tok-com">// active LOW</span>
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">pinMode</span>(ENABLE_PIN, <span class="tok-const">OUTPUT</span>);
+  <span class="tok-fn">digitalWrite</span>(ENABLE_PIN, <span class="tok-const">HIGH</span>);
+  <span class="tok-fn">pinMode</span>(STEP_PIN, <span class="tok-const">OUTPUT</span>);
+  <span class="tok-fn">pinMode</span>(DIR_PIN, <span class="tok-const">OUTPUT</span>);
+  <span class="tok-fn">digitalWrite</span>(STEP_PIN, <span class="tok-const">LOW</span>);
+  <span class="tok-fn">digitalWrite</span>(DIR_PIN, <span class="tok-const">LOW</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Set current limit first. Send g <span class="tok-kw">for</span> <span class="tok-num">100</span> full-step pulses.&quot;);
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (<span class="tok-fn">Serial</span>.available() == <span class="tok-num">0</span>) <span class="tok-kw">return</span>;
+  <span class="tok-kw">if</span> (<span class="tok-fn">Serial</span>.read() != &#x27;g&#x27;) <span class="tok-kw">return</span>;
+  <span class="tok-fn">digitalWrite</span>(ENABLE_PIN, <span class="tok-const">LOW</span>);
+  <span class="tok-fn">delay</span>(<span class="tok-num">2</span>);
+  <span class="tok-kw">for</span> (<span class="tok-kw">uint16_t</span> n = <span class="tok-num">0</span>; n &lt; <span class="tok-num">100</span>; ++n) {
+    <span class="tok-fn">digitalWrite</span>(STEP_PIN, <span class="tok-const">HIGH</span>);
+    <span class="tok-fn">delayMicroseconds</span>(<span class="tok-num">5</span>);
+    <span class="tok-fn">digitalWrite</span>(STEP_PIN, <span class="tok-const">LOW</span>);
+    <span class="tok-fn">delay</span>(<span class="tok-num">10</span>);
+  }
+  <span class="tok-fn">digitalWrite</span>(ENABLE_PIN, <span class="tok-const">HIGH</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;<span class="tok-num">100</span> pulses sent; outputs disabled. Movement is not sensed.&quot;);
+}</code></pre>
+</div><p>Hardware /ENABLE pull-up provides reset bias. About one-second burst intentionally blocks other work: first bench test, not motion-control scheduler. Disabled motor has no holding torque; no gravity-loaded axis. Current limit is hardware setup, not code.</p></section>
+<section class="component-section component-output" id="output" aria-labelledby="output-heading">
+  <h2 tabindex="-1" id="output-heading"><span class="component-section-icon" aria-hidden="true">OK</span><span class="component-section-title">Expected Output</span></h2>
+  <div class="component-output-body"><p>Unloaded motor should move during the burst, then lose holding torque. 100 commands do not prove 100 steps or a specific angle. If it vibrates, stop and check pairs/current setup rather than increasing current blindly.</p></div>
+</section>
+<section class="component-section" id="how-it-works" aria-labelledby="how-it-works-heading">
+  <h2 tabindex="-1" id="how-it-works-heading"><span class="component-section-title">How it works</span></h2>
+  <div class="component-section-prose"><p>A rising STEP edge advances the translator; DIR chooses direction and /ENABLE gates outputs. RESET/SLEEP stay HIGH. A chopper driver can use supply voltage above motor winding nominal voltage only with correct current limiting.</p><p>Imax = VREF/(8×Rs); verify real Rs, since reference revisions differ. Thermal limits, cooling and wiring matter. Chip protection does not establish safe operation of an unknown carrier at headline maximum current.</p></div>
+</section>
+<section class="component-section component-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 tabindex="-1" id="troubleshooting-heading"><span class="component-section-icon" aria-hidden="true">06</span><span class="component-section-title">Troubleshooting</span></h2>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Problem</th><th scope="col">Possible cause</th><th scope="col">Solution</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Vibration without rotation</th>
+  <td>Mixed winding pairs, unsuitable motor or insufficient torque.</td>
+  <td>Power off, verify coils/rating and start unloaded at low rate.</td>
+</tr><tr>
+  <th scope="row">No movement</th>
+  <td>Disabled output, RESET/SLEEP LOW or missing supply.</td>
+  <td>Trace the table and command; printed count is not movement feedback.</td>
+</tr><tr>
+  <th scope="row">Excessive heat/cutout</th>
+  <td>Current too high or cooling inadequate.</td>
+  <td>Remove power and review current/thermal limits; do not raise VREF to fix wiring.</td>
+</tr><tr>
+  <th scope="row">Failure after rewiring</th>
+  <td>Hot-plugged motor or voltage spike.</td>
+  <td>No powered rewiring; use local capacitor and short supply wiring.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section component-applications" id="applications" aria-labelledby="applications-heading">
+  <h2 tabindex="-1" id="applications-heading"><span class="component-section-title">Where you use it</span></h2>
+  <ul class="component-callout-list"><li>Unloaded first stepper test</li><li>Learning STEP/DIR and hardware current limiting</li></ul>
+</section>
+<section class="component-section component-guides" id="guides" aria-labelledby="guides-heading">
+  <h2 tabindex="-1" id="guides-heading"><span class="component-section-title">Continue learning</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/guides/blink-led-esp32.html">
+  <h3>Blink LED</h3>
+  <p>First GPIO lesson before motor control.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+
+<section class="component-section component-related-components" id="related-components" aria-labelledby="related-components-heading">
+  <h2 tabindex="-1" id="related-components-heading"><span class="component-section-title">Related components</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/components/esp32-devkit.html">
+  <h3>ESP32 DevKit power and pins</h3>
+  <p>Check board labels, supply rails and GPIO restrictions.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/components/electrolytic-capacitors.html">
+  <h3>Electrolytic capacitors</h3>
+  <p>Polarity/ratings for VMOT bulk support.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/components/l298n-motor-driver.html">
+  <h3>L298N DC driver</h3>
+  <p>Separate motor type; code is not interchangeable.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does purple mean DRV8825?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Identify real IC/carrier from documentation, not color.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Is 100 steps half a turn?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>Only for a 200-step/revolution motor without missed steps; no universal angle claim.</p></div></div></div>
+</section>
+<section class="component-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://www.pololu.com/product/1182">Pololu A4988 carrier 1182</a> — Worked carrier labels, power, current limiting and thermal guidance.</li><li><a href="https://www.allegromicro.com/-/media/files/datasheets/a4988-datasheet.pdf">Allegro A4988</a> — STEP timing, current-limit equation and mode/logic requirements.</li><li><a href="https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c">Arduino-ESP32 3.3.2 GPIO</a> — Pinned GPIO output implementation.</li></ul></section>
+</article>
+<nav class="component-prevnext" aria-label="Previous and next component"><a class="component-prevnext-card" href="/components/2n2222-npn-transistor.html"><span>Previous</span><strong>2N2222 NPN Transistor: Switch a Small LED with ESP32</strong></a><a class="component-prevnext-card is-next" href="/components/active-buzzer-module.html"><span>Next</span><strong>Active Buzzer Module: Safe ESP32 On/Off Control</strong></a></nav>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

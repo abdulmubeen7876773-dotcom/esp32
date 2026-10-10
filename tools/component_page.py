@@ -606,7 +606,7 @@ def render_component_body(component: dict) -> str:
             specs_html(component.get("specs", []), library),
             pinout_html(component),
             wiring_html(derive_wiring(component)),
-            examples_section([component["code"]], "component-section"),
+            examples_section([component["code"]], "component-section") if component.get("code", {}).get("content") else "",
             output_html(component.get("output", "")),
             text_section_html("how-it-works", "", component.get("explanation_heading", "How it works"), component.get("how_it_works", "")),
             troubleshooting_html(component.get("troubleshooting", [])),

@@ -1,0 +1,243 @@
+slug: a4988-stepper-driver
+name: 'A4988 Stepper Driver: Current Limit and First Steps'
+category: Motors
+difficulty: Beginner
+summary: Drive a documented bipolar stepper with STEP/DIR, separate motor power and a verified current limit. Carrier
+  color cannot identify a driver or sense resistors.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/a4988-stepper-driver-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of A4988 Stepper Driver; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: 'Worked carrier: Pololu A4988 item 1182 with published schematic/labels, not unidentified purple artwork.
+      Four-wire bipolar motor with documented coil pairs and rated phase current at least 0.5 A. Set driver limit
+      ≤0.5 A and ≤motor rating. No universal size or step angle assumed.'
+  - label: Prerequisites and parts
+    value: Complete Blink and board pin checks. Reference carrier, documented motor, current-limited regulated 12
+      V supply sized for actual load, ≥47 µF / ≥25 V capacitor near VMOT, meter, short suitable power wiring and
+      10 kOhm resistors. Set VREF first. Keep motor power paths off ordinary breadboard rails.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 GPIO and delay only; no extra library.
+  - label: Expected result
+    value: After command g, 100 full-step pulses in one direction, then outputs disabled. Angle depends on actual
+      motor; software count does not prove motion.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: Electrolytic capacitors
+  href: /components/electrolytic-capacitors.html
+  description: Polarity/ratings for VMOT bulk support.
+- title: L298N DC driver
+  href: /components/l298n-motor-driver.html
+  description: Separate motor type; code is not interchangeable.
+eli12: 'A4988 turns STEP pulses and a DIR level into controlled currents in two windings. ESP32 sends commands;
+  external supply and driver provide motor current. It is for bipolar steppers, not servos or the separate DC-motor
+  example.
+
+
+  Purple board color does not prove DRV8825, revision, pin order or current-sense resistance. The approved image
+  depicts A4988 family only; use the documented Pololu item 1182 reference or verify another carrier schematic.
+  Never connect/disconnect the motor while powered.'
+electrical:
+  supply: Reference VDD 3–5.5 V, worked 3.3 V; VMOT 8–35 V, worked regulated 12 V. ESP32 remains USB powered; no
+    12 V connection to DevKit.
+  signal: 3.3 V STEP/DIR/ENABLE with VDD at 3.3 V. No motor output connects to GPIO.
+  protection: Common ground, short suitable power wiring, ≥47 µF / ≥25 V electrolytic near VMOT for this 12 V setup.
+    Set coil current from real Rs/motor rating; no blanket 2 A carrier promise. No hot-plugging.
+specs:
+- name: Mode
+  value: Full step; MS1/MS2/MS3 LOW
+  why: No universal angle per pulse.
+- name: Current limit
+  value: Imax ≤0.5 A and ≤motor rating
+  why: VREF = 8 × Imax × Rs; supply current is not coil current.
+- name: Reference calculation
+  value: 'Rs=0.068 ohm: 0.5 A → 0.272 V'
+  why: Only for that verified revision, not another carrier preset.
+- name: STEP timing
+  value: 5 µs HIGH; about 10 ms LOW
+  why: Datasheet minimum HIGH/LOW is 1 µs; no acceleration profile.
+- name: Reference supply limits
+  value: VDD 3–5.5 V; VMOT 8–35 V
+  why: Worked VDD is 3.3 V and VMOT is 12 V; ESP32 uses separate USB power.
+- name: Control versus winding voltage
+  value: 3.3 V control with VDD at 3.3 V
+  why: Motor outputs and the 12 V supply never connect to ESP32 GPIO. Common ground does not mean joining positive
+    rails.
+pinout:
+- pin: VDD
+  role: Logic
+  connects: ESP32 3V3
+  note: Reference VDD, not VMOT.
+- pin: Logic and motor GND
+  role: Reference
+  connects: ESP32 GND / supply negative
+  note: Motor return directly to supply, not GPIO wiring.
+- pin: VMOT
+  role: Power
+  connects: External regulated +12 V
+  note: Never connect to ESP32.
+- pin: ≥47 µF / ≥25 V capacitor
+  role: Bulk
+  connects: + VMOT; − motor GND
+  note: Close to carrier; not a guarantee against all spikes.
+- pin: STEP
+  role: Pulses
+  connects: GPIO25 + 10 kOhm to GND
+  note: Hardware pull-down.
+- pin: DIR
+  role: Direction
+  connects: GPIO26 + 10 kOhm to GND
+  note: LOW for the example.
+- pin: /ENABLE
+  role: Enable
+  connects: GPIO27 + 10 kOhm to 3V3
+  note: Active LOW; reset pull-up disables outputs.
+- pin: /RESET and /SLEEP
+  role: Run
+  connects: Both joined to VDD (3.3 V)
+  note: Actual pin labels, not artwork geometry.
+- pin: MS1, MS2, MS3
+  role: Full step
+  connects: GND
+  note: All selection inputs LOW.
+- pin: 1A / 1B
+  role: Winding
+  connects: Motor coil A pair
+  note: Identify continuity with all power removed.
+- pin: 2A / 2B
+  role: Winding
+  connects: Motor coil B pair
+  note: Never connect while powered.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/a4988-stepper-driver-wiring.svg
+  illustration_alt: Logical wiring for A4988 Stepper Driver; terminal labels rather than physical pin positions
+  summary: VDD3.3 V; VMOT12 V with local capacitor; common GND. STEP25, DIR26, /ENABLE27. RESET/SLEEP HIGH, MS1–3
+    LOW; separate winding pairs to 1A/B and 2A/B.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: VDD
+    esp32_pin: ESP32 3V3
+    notes: Reference VDD, not VMOT.
+  - component_pin: Logic and motor GND
+    esp32_pin: ESP32 GND / supply negative
+    notes: Motor return directly to supply, not GPIO wiring.
+  - component_pin: VMOT
+    esp32_pin: External regulated +12 V
+    notes: Never connect to ESP32.
+  - component_pin: ≥47 µF / ≥25 V capacitor
+    esp32_pin: + VMOT; − motor GND
+    notes: Close to carrier; not a guarantee against all spikes.
+  - component_pin: STEP
+    esp32_pin: GPIO25 + 10 kOhm to GND
+    notes: Hardware pull-down.
+  - component_pin: DIR
+    esp32_pin: GPIO26 + 10 kOhm to GND
+    notes: LOW for the example.
+  - component_pin: /ENABLE
+    esp32_pin: GPIO27 + 10 kOhm to 3V3
+    notes: Active LOW; reset pull-up disables outputs.
+  - component_pin: /RESET and /SLEEP
+    esp32_pin: Both joined to VDD (3.3 V)
+    notes: Actual pin labels, not artwork geometry.
+  - component_pin: MS1, MS2, MS3
+    esp32_pin: GND
+    notes: All selection inputs LOW.
+  - component_pin: 1A / 1B
+    esp32_pin: Motor coil A pair
+    notes: Identify continuity with all power removed.
+  - component_pin: 2A / 2B
+    esp32_pin: Motor coil B pair
+    notes: Never connect while powered.
+  steps:
+  - Unpowered, identify carrier labels, Rs and motor coil pairs. Use manufacturer VREF procedure to set Imax ≤0.5
+    A and ≤motor rating. Rs=0.068 ohm gives 0.272 V for 0.5 A; do not copy to another Rs.
+  - Adjust VREF with the motor disconnected using the manufacturer procedure, avoiding shorts/unintended outputs.
+    Full-step coil current is about 70% of Imax; supply current is not a substitute. Remove power before attaching
+    motor.
+  - Install capacitor near VMOT, wire grounds/supplies/control pull resistors. Upload with motor power off. Keep
+    shaft clear and unloaded.
+  - Power the documented setup, send g at 115200 baud. The bounded pulse burst finishes disabled. Disconnect both
+    supplies before wiring changes.
+code:
+  title: Commanded full-step pulse burst
+  filename: a4988_stepper_driver.ino
+  wiring: VDD3.3 V; VMOT12 V with local capacitor; common GND. STEP25, DIR26, /ENABLE27. RESET/SLEEP HIGH, MS1–3
+    LOW; separate winding pairs to 1A/B and 2A/B.
+  content: "#include <Arduino.h>\nconstexpr uint8_t STEP_PIN = 25;\nconstexpr uint8_t DIR_PIN = 26;\nconstexpr uint8_t\
+    \ ENABLE_PIN = 27; // active LOW\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(ENABLE_PIN, OUTPUT);\n\
+    \  digitalWrite(ENABLE_PIN, HIGH);\n  pinMode(STEP_PIN, OUTPUT);\n  pinMode(DIR_PIN, OUTPUT);\n  digitalWrite(STEP_PIN,\
+    \ LOW);\n  digitalWrite(DIR_PIN, LOW);\n  Serial.println(\"Set current limit first. Send g for 100 full-step\
+    \ pulses.\");\n}\nvoid loop() {\n  if (Serial.available() == 0) return;\n  if (Serial.read() != 'g') return;\n\
+    \  digitalWrite(ENABLE_PIN, LOW);\n  delay(2);\n  for (uint16_t n = 0; n < 100; ++n) {\n    digitalWrite(STEP_PIN,\
+    \ HIGH);\n    delayMicroseconds(5);\n    digitalWrite(STEP_PIN, LOW);\n    delay(10);\n  }\n  digitalWrite(ENABLE_PIN,\
+    \ HIGH);\n  Serial.println(\"100 pulses sent; outputs disabled. Movement is not sensed.\");\n}\n"
+  notes: 'Hardware /ENABLE pull-up provides reset bias. About one-second burst intentionally blocks other work:
+    first bench test, not motion-control scheduler. Disabled motor has no holding torque; no gravity-loaded axis.
+    Current limit is hardware setup, not code.'
+output: Unloaded motor should move during the burst, then lose holding torque. 100 commands do not prove 100 steps
+  or a specific angle. If it vibrates, stop and check pairs/current setup rather than increasing current blindly.
+how_it_works: 'A rising STEP edge advances the translator; DIR chooses direction and /ENABLE gates outputs. RESET/SLEEP
+  stay HIGH. A chopper driver can use supply voltage above motor winding nominal voltage only with correct current
+  limiting.
+
+
+  Imax = VREF/(8×Rs); verify real Rs, since reference revisions differ. Thermal limits, cooling and wiring matter.
+  Chip protection does not establish safe operation of an unknown carrier at headline maximum current.'
+applications:
+- Unloaded first stepper test
+- Learning STEP/DIR and hardware current limiting
+troubleshooting:
+- problem: Vibration without rotation
+  cause: Mixed winding pairs, unsuitable motor or insufficient torque.
+  fix: Power off, verify coils/rating and start unloaded at low rate.
+- problem: No movement
+  cause: Disabled output, RESET/SLEEP LOW or missing supply.
+  fix: Trace the table and command; printed count is not movement feedback.
+- problem: Excessive heat/cutout
+  cause: Current too high or cooling inadequate.
+  fix: Remove power and review current/thermal limits; do not raise VREF to fix wiring.
+- problem: Failure after rewiring
+  cause: Hot-plugged motor or voltage spike.
+  fix: No powered rewiring; use local capacitor and short supply wiring.
+faqs:
+- question: Does purple mean DRV8825?
+  answer: No. Identify real IC/carrier from documentation, not color.
+- question: Is 100 steps half a turn?
+  answer: Only for a 200-step/revolution motor without missed steps; no universal angle claim.
+sources:
+- title: Pololu A4988 carrier 1182
+  url: https://www.pololu.com/product/1182
+  note: Worked carrier labels, power, current limiting and thermal guidance.
+- title: Allegro A4988
+  url: https://www.allegromicro.com/-/media/files/datasheets/a4988-datasheet.pdf
+  note: STEP timing, current-limit equation and mode/logic requirements.
+- title: Arduino-ESP32 3.3.2 GPIO
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
+  note: Pinned GPIO output implementation.
+related_guides:
+- title: Blink LED
+  href: /guides/blink-led-esp32.html
+  description: First GPIO lesson before motor control.
+library: Arduino-ESP32 3.3.2 built-in GPIO and timing; no extra library.

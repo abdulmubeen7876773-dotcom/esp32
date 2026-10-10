@@ -1,0 +1,176 @@
+slug: ft232r-usb-ttl
+name: 'FT232R Serial Adapter: ESP32 UART Diagnostics'
+category: Communication Modules
+difficulty: Beginner
+summary: Connect a documented 3.3 V UART adapter to a separate ESP32 serial port. Check signal voltage before wiring;
+  a supply jumper is not proof of safe TX levels.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/ft232r-usb-ttl-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of FT232R Serial Adapter; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: FT232R-family USB-UART carrier with manufacturer schematic confirming VCCIO at 3.3 V and non-inverted
+      TTL UART TX/RX. Artwork is not an identified board revision; RL suffix, jumper behavior and authenticity are
+      unverified. No RS-232 adapter.
+  - label: Prerequisites and parts
+    value: Upload through the DevKit USB first. Two data-capable USB cables, documented 3.3 V adapter, signal/ground
+      wires and terminal program. GPIO16/17 must be available on this WROOM board; other modules may use them for
+      PSRAM.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 built-in HardwareSerial only. FTDI VCP driver if needed for the actual bridge.
+  - label: Expected result
+    value: Short text sent through the adapter terminal is echoed there; the ESP32 USB Serial Monitor also shows
+      each received byte.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'A USB-UART adapter gives a computer a serial port with TX, RX and ground. It is useful when the ESP32 USB
+  port already carries debugging output. It does not turn arbitrary voltage levels into safe inputs.
+
+
+  FT232R separates its main supply from VCCIO, which sets interface levels. A header marked 3.3V may be a power
+  output while TX uses another voltage. Read the actual carrier schematic/configuration; disconnected from ESP32,
+  check idle TX against GND. If its signal level cannot be established, stop before connecting. The illustration
+  cannot establish a jumper position or header order.'
+electrical:
+  supply: Adapter uses its USB; ESP32 uses DevKit USB. Leave adapter VCC/3V3/5V outputs disconnected.
+  signal: Documented 3.3 V non-inverted TTL UART only; ESP32 GPIO is not 5 V tolerant. Main chip supply is not the
+    UART signal voltage.
+  protection: Common ground, crossed TX/RX; no RS-232 levels or adapter DTR/RTS/reset/power connections in this
+    exercise.
+specs:
+- name: UART format
+  value: 115200 baud, 8N1
+  why: 'Both terminals: flow control and local echo off.'
+- name: WROOM pins
+  value: GPIO16 RX, GPIO17 TX
+  why: Explicit Serial2 assignment; separate from board USB/UART0.
+- name: Adapter signal
+  value: Documented 3.3 V VCCIO
+  why: Verify the carrier schematic; illustration is not a circuit reference.
+- name: ESP32 signal protection
+  value: 3.3 V UART only; no 5 V signal
+  why: Do not connect an unknown-voltage TX output; leave adapter power outputs disconnected.
+pinout:
+- pin: Adapter TXD / TXO
+  role: Output
+  connects: GPIO16 (ESP32 RX)
+  note: Manufacturer-confirmed 3.3 V UART.
+- pin: Adapter RXD / RXI
+  role: Input
+  connects: GPIO17 (ESP32 TX)
+  note: Crossed, from adapter perspective.
+- pin: Adapter GND
+  role: Reference
+  connects: ESP32 GND
+  note: Wire with both USB cables removed.
+- pin: VCC / 3V3 / 5V
+  role: Power
+  connects: Leave disconnected
+  note: ESP32 has its own USB supply.
+- pin: DTR / RTS / CTS
+  role: Control
+  connects: Leave disconnected
+  note: Flow control off; no reset wiring.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/ft232r-usb-ttl-wiring.svg
+  illustration_alt: Logical wiring for FT232R Serial Adapter; terminal labels rather than physical pin positions
+  summary: Adapter TX → GPIO16, RX ← GPIO17, GND ↔ GND. Separate USB power; no positive-rail connection.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Adapter TXD / TXO
+    esp32_pin: GPIO16 (ESP32 RX)
+    notes: Manufacturer-confirmed 3.3 V UART.
+  - component_pin: Adapter RXD / RXI
+    esp32_pin: GPIO17 (ESP32 TX)
+    notes: Crossed, from adapter perspective.
+  - component_pin: Adapter GND
+    esp32_pin: ESP32 GND
+    notes: Wire with both USB cables removed.
+  - component_pin: VCC / 3V3 / 5V
+    esp32_pin: Leave disconnected
+    notes: ESP32 has its own USB supply.
+  - component_pin: DTR / RTS / CTS
+    esp32_pin: Leave disconnected
+    notes: Flow control off; no reset wiring.
+  steps:
+  - Upload through DevKit USB before attaching the adapter. Confirm voltage configuration and pin availability.
+  - Unplug both devices, wire only TX/RX/GND and check for shorts. Identify separate OS ports by unplugging one
+    device at a time.
+  - Open both terminals at 115200 8N1, flow control/local echo off. Send a short line from the adapter terminal.
+code:
+  title: Separate UART byte echo
+  filename: ft232r_usb_ttl.ino
+  wiring: Adapter TX → GPIO16, RX ← GPIO17, GND ↔ GND. Separate USB power; no positive-rail connection.
+  content: "#include <Arduino.h>\nconstexpr int8_t UART_RX = 16;\nconstexpr int8_t UART_TX = 17;\nvoid setup() {\n\
+    \  Serial.begin(115200);\n  Serial2.begin(115200, SERIAL_8N1, UART_RX, UART_TX);\n  Serial.println(\"Adapter\
+    \ terminal: 115200 8N1, flow control off\");\n}\nvoid loop() {\n  for (uint8_t n = 0; n < 32 && Serial2.available()\
+    \ > 0; ++n) {\n    const int value = Serial2.read();\n    if (value >= 0) {\n      Serial2.write(static_cast<uint8_t>(value));\n\
+    \      Serial.write(static_cast<uint8_t>(value));\n    }\n  }\n  delay(1);\n}\n"
+  notes: 'Pinned HardwareSerial begin(baud, config, RX, TX) API. Short-line diagnostic, not a high-rate bridge:
+    long streams can overflow buffers. No automatic boot/reset or voltage measurement.'
+output: A short line should echo once in the adapter terminal and appear in DevKit Serial Monitor. Local echo can
+  produce duplicate text even with bad wiring; turn it off before interpreting the result.
+how_it_works: Serial2 receives on GPIO16, echoes on GPIO17 and copies each byte to Serial on the board USB bridge.
+  Enumeration, UART communication and flashing are separate tasks. This tests communication after a normal USB upload,
+  not an adapter-specific boot circuit.
+applications:
+- A second serial diagnostic console
+- Checking a documented adapter before adding a UART peripheral
+troubleshooting:
+- problem: No adapter port
+  cause: Charge-only cable, missing driver or wrong assumed bridge.
+  fix: Identify the device; use FTDI drivers only for FTDI hardware and try a data cable.
+- problem: Port opens but no echo
+  cause: TX/RX not crossed, no ground or wrong pins.
+  fix: Check the table and available WROOM pins; confirm baud/framing and flow control.
+- problem: Garbled text
+  cause: Framing mismatch, noise or unsafe signal voltage.
+  fix: Verify 115200 8N1 and carrier documentation before reconnecting; idle voltage alone is not a schematic.
+- problem: Resets or upload failures
+  cause: Power/modem-control outputs accidentally connected.
+  fix: Remove VCC/DTR/RTS wiring; upload through original board USB.
+faqs:
+- question: Does a 3.3V header prove TX voltage?
+  answer: No. Verify VCCIO and the actual carrier circuit.
+- question: Can every ESP32 use GPIO16/17?
+  answer: No. This WROOM example requires unused exposed pins; PSRAM modules and other families need their own map.
+sources:
+- title: FTDI FT232R datasheet
+  url: https://ftdichip.com/wp-content/uploads/2020/08/DS_FT232R.pdf
+  note: VCC versus VCCIO and UART roles; not identification of the artwork.
+- title: FTDI datasheet version 2.10, manufacturer-authored mirror
+  url: https://cdn.sparkfun.com/datasheets/BreakoutBoards/DS_FT232R.pdf
+  note: Reviewed VCCIO and USB-to-MCU interface; original FTDI host blocked automated retrieval.
+- title: Arduino-ESP32 3.3.2 HardwareSerial
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/HardwareSerial.h
+  note: Pinned begin/read/write interfaces.
+- title: FTDI VCP drivers
+  url: https://ftdichip.com/drivers/vcp-drivers/
+  note: Driver for the actual USB bridge.
+related_guides:
+- title: Arduino IDE setup
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Use the original board USB for the first upload.
+library: Arduino-ESP32 3.3.2 built-in HardwareSerial; no extra sketch library.
