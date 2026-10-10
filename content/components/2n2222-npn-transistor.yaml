@@ -1,0 +1,181 @@
+slug: 2n2222-npn-transistor
+name: '2N2222 NPN Transistor: Switch a Small LED with ESP32'
+category: Power Components
+difficulty: Beginner
+summary: Learn base, collector and emitter connections using a documented P2N2222A and a small 3.3 V LED load. A
+  base resistor and verified package pinout are essential.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/2n2222-npn-transistor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of 2N2222 NPN Transistor; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: 'Reference part: onsemi P2N2222A in TO-92, not every transistor sold as 2N2222 or PN2222. Its numbered
+      leads are 1 collector, 2 base, 3 emitter. Read the manufacturer package view before wiring; the approved illustration
+      does not establish manufacturer or pin order.'
+  - label: Prerequisites and parts
+    value: Complete IDE setup and Blink. Documented transistor, red indicator LED, 470 ohm LED resistor, 2.2 kOhm
+      base resistor, 100 kOhm base-emitter pull-down and a breadboard. This example uses the DevKit 3.3 V rail for
+      a few-mA LED load only.
+  - label: Libraries
+    value: No extra library. Arduino-ESP32 3.3.2 GPIO and millis APIs.
+  - label: Expected result
+    value: The external red LED switches ON for 500 ms and OFF for 1000 ms; Serial prints the commanded state, not
+      a measured result.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: Resistors
+  href: /components/through-hole-resistors.html
+  description: Identify the series and pull-down values.
+- title: Active buzzer module
+  href: /components/active-buzzer-module.html
+  description: A larger load with a separately calculated base resistor.
+library: Arduino-ESP32 3.3.2 (no additional library)
+eli12: 'A small base current controls a larger collector current. In this low-side circuit the LED connects to the
+  positive rail through its own resistor, while the emitter returns to ground. HIGH on GPIO25 supplies base current
+  and turns the LED on.
+
+
+  Use this as a first switching circuit before an IR-emitter or buzzer project. A transistor is not a replacement
+  for a motor driver or an LED current-limiting resistor. Similar part names can have opposite lead orders.'
+electrical:
+  supply: 3.3 V LED supply in this example; emitter at common GND.
+  signal: GPIO25 supplies base current through 2.2 kOhm; never connect GPIO directly to base.
+  protection: 470 ohm series LED resistor and 100 kOhm base-emitter pull-down. No inductive load in this circuit.
+  basis: onsemi P2N2222A datasheet; resistor/current calculations apply only to the small LED example.
+specs:
+- name: Reference pin numbers
+  value: 1 collector / 2 base / 3 emitter
+  why: Match onsemi package orientation; not a universal 2N2222 arrangement.
+- name: Load
+  value: One red LED, 470 ohm series resistor
+  why: (3.3 V - LED drop - transistor drop) / 470 ohm is the design estimate.
+- name: Base resistor
+  value: 2.2 kOhm
+  why: Roughly 1 mA at a 0.7 V base-emitter drop; not a measured value.
+pinout:
+- pin: P2N2222A pin3 emitter
+  role: Return
+  connects: ESP32 GND
+  note: Verify numbered package view.
+- pin: P2N2222A pin2 base
+  role: Control
+  connects: GPIO25 through 2.2 kOhm
+  note: Series base resistor required.
+- pin: 100 kOhm resistor
+  role: Pull-down
+  connects: Base to emitter
+  note: Keeps transistor off with input floating.
+- pin: ESP32 3.3 V
+  role: Load supply
+  connects: 470 ohm → LED anode
+  note: Anode to resistor; no bare LED across supply.
+- pin: LED cathode
+  role: Load return
+  connects: P2N2222A pin1 collector
+  note: Collector switches LED current to emitter.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/2n2222-npn-transistor-wiring.svg
+  illustration_alt: Logical wiring for 2N2222 NPN Transistor; terminal labels rather than physical pin positions
+  summary: GPIO25 → 2.2 kOhm → base; emitter/GND common; 100 kOhm base-emitter. 3.3 V → 470 ohm → red LED anode;
+    cathode → collector.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: P2N2222A pin3 emitter
+    esp32_pin: ESP32 GND
+    notes: Verify numbered package view.
+  - component_pin: P2N2222A pin2 base
+    esp32_pin: GPIO25 through 2.2 kOhm
+    notes: Series base resistor required.
+  - component_pin: 100 kOhm resistor
+    esp32_pin: Base to emitter
+    notes: Keeps transistor off with input floating.
+  - component_pin: ESP32 3.3 V
+    esp32_pin: 470 ohm → LED anode
+    notes: Anode to resistor; no bare LED across supply.
+  - component_pin: LED cathode
+    esp32_pin: P2N2222A pin1 collector
+    notes: Collector switches LED current to emitter.
+  steps:
+  - Unplug USB. Identify the onsemi part and its numbered leads from the package drawing.
+  - Wire the LED and both base resistors; inspect for rail shorts.
+  - Upload, then open Serial Monitor at 115200; compare LED behavior with the commands.
+code:
+  title: Small LED low-side switch
+  filename: 2n2222_npn_transistor.ino
+  wiring: GPIO25 → 2.2 kOhm → base; emitter/GND common; 100 kOhm base-emitter. 3.3 V → 470 ohm → red LED anode;
+    cathode → collector.
+  content: "#include <Arduino.h>\nconstexpr uint8_t OUTPUT_PIN = 25;\nbool active = false;\nuint32_t changedAt =\
+    \ 0;\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  digitalWrite(OUTPUT_PIN, LOW);\n\
+    \  Serial.println(\"Starts OFF; repeating on/off demonstration\");\n}\nvoid loop() {\n  const uint32_t now =\
+    \ millis();\n  const uint32_t interval = active ? 500 : 1000;\n  if (now - changedAt >= interval) {\n    changedAt\
+    \ = now;\n    active = !active;\n    digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n    Serial.println(active\
+    \ ? \"ON\" : \"OFF\");\n  }\n}\n"
+  notes: The sketch commands GPIO25, not an onboard LED. The pull-down provides hardware bias before setup. HIGH
+    is ON in this exact NPN circuit.
+output: After one second OFF, the LED should blink with a half-second ON interval. Printed ON/OFF confirms software
+  intent; it does not detect LED current, polarity or a wiring fault.
+how_it_works: The base-emitter junction needs limited current. The LED resistor determines load current; transistor
+  gain alone does not set it. Calculate base drive for a new load using saturation conditions, GPIO limits and the
+  exact datasheet. The datasheet’s 600 mA absolute maximum is not permission to switch that current from this circuit.
+  Inductive loads require appropriate suppression and a fresh electrical design.
+applications:
+- Small low-voltage indicators
+- Learning low-side switching
+- Preparation for a documented IR LED driver
+troubleshooting:
+- problem: LED never lights
+  cause: Reversed LED, wrong C/E order or missing common ground.
+  fix: Power off; check the manufacturer pin view, LED polarity and series resistors.
+- problem: LED stays on
+  cause: Collector/emitter short or base held high.
+  fix: Check breadboard rows and base pull-down; compare GPIO state with Serial.
+- problem: Part heats up
+  cause: Short, excessive load or incorrect base drive.
+  fix: Disconnect power. Return to the small LED load; do not transplant this design into a motor circuit.
+faqs:
+- question: Can I use any PN2222 or metal-can 2N2222?
+  answer: Only after checking that exact manufacturer’s pinout and electrical data. The numbered reference here
+    is onsemi P2N2222A.
+- question: Can I reuse 2.2 kOhm for a buzzer?
+  answer: Not automatically. A larger load needs different base drive; the linked buzzer example uses its own resistor
+    calculation.
+sources:
+- title: onsemi P2N2222A datasheet
+  url: https://www.onsemi.com/pdf/datasheet/p2n2222a-d.pdf
+  note: Reference lead numbering, saturation test conditions and ratings.
+- title: Arduino-ESP32 3.3.2
+  url: https://github.com/espressif/arduino-esp32/tree/3.3.2
+  note: Pinned GPIO and timing baseline; not compiled.
+- title: Arduino-ESP32 3.3.2 GPIO implementation
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
+  note: Initialize the GPIO bus with pinMode before digitalWrite; hardware pull-down provides reset bias.
+related_guides:
+- title: Blink LED
+  href: /guides/blink-led-esp32.html
+  description: Learn GPIO output and LED polarity first.
+related_projects:
+- title: IR remote control
+  href: /projects/esp32-ir-remote-control.html
+  description: A separate pulsed IR-emitter design; do not infer its load current from this LED circuit.

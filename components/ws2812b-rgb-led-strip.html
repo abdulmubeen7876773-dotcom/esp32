@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WS2812B RGB Strip: One-Pixel ESP32 Test — Component Guide | ESP32 Engine</title>
+<meta name="description" content="Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction and color order before extending the strip.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/components/ws2812b-rgb-led-strip.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="WS2812B RGB Strip: One-Pixel ESP32 Test — Component Guide | ESP32 Engine">
+<meta property="og:description" content="Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction and color order before extending the strip.">
+<meta property="og:url" content="https://esp32engine.com/components/ws2812b-rgb-led-strip.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WS2812B RGB Strip: One-Pixel ESP32 Test — Component Guide | ESP32 Engine">
+<meta name="twitter:description" content="Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction and color order before extending the strip.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"WS2812B RGB Strip: One-Pixel ESP32 Test — Component Guide | ESP32 Engine","description":"Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction and color order before extending the strip.","url":"https://esp32engine.com/components/ws2812b-rgb-led-strip.html","isPartOf":{"@type":"WebSite","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://esp32engine.com/components.html"},{"@type":"ListItem","position":3,"name":"WS2812B RGB Strip: One-Pixel ESP32 Test","item":"https://esp32engine.com/components/ws2812b-rgb-led-strip.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"WS2812B RGB Strip: One-Pixel ESP32 Test","description":"Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction and color order before extending the strip.","dateModified":"2026-10-10","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/components/ws2812b-rgb-led-strip.html"},"proficiencyLevel":"Beginner"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is every WS2812B strip a 60 mA-per-pixel load?","acceptedAnswer":{"@type":"Answer","text":"No. Revisions and products vary. Design from the actual datasheet and worst-case count; the illustration cannot establish current."}},{"@type":"Question","name":"Can ESP32 3.3 V data go straight to a 5 V strip?","acceptedAnswer":{"@type":"Answer","text":"This example deliberately uses AHCT buffering rather than assuming an unspecified revision accepts 3.3 V data."}}]}</script>
+</head>
+<body class="component-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html">Guides</a><a href="/projects.html">Projects</a><a href="/#advanced-projects">Advanced Projects</a><a href="/components.html" class="active">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">49 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="component-hero-band">
+  <section class="wrap component-hero component-hero--concise">
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/components.html">Components</a></li><li aria-current="page">WS2812B RGB Strip: One-Pixel ESP32 Test</li></ol></nav>
+    <div class="component-hero-grid">
+      <div class="component-hero-copy">
+        <p class="hero-eyebrow component-hero-eyebrow">Component Guide</p>
+        <div class="component-hero-badges">
+          <span class="badge badge-cat">Displays</span>
+          <span class="badge badge-beginner">Beginner</span>
+        </div>
+        <h1 class="component-hero-title">WS2812B RGB Strip: One-Pixel ESP32 Test</h1>
+        <p class="component-hero-summary">Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction and color order before extending the strip.</p>
+        <div class="component-meta-strip" aria-label="Guide metadata">
+  <span><strong>Beginner</strong><small>Difficulty</small></span>
+  <span><strong>Classic ESP32</strong><small>Compatible</small></span>
+</div>
+        <div class="component-share" aria-label="Share this component guide">
+  <a class="component-share-btn" href="https://twitter.com/intent/tweet?url=https://esp32engine.com/components/ws2812b-rgb-led-strip.html&text=WS2812B RGB Strip: One-Pixel ESP32 Test" rel="noopener" target="_blank">Share</a>
+  <button class="component-share-btn" type="button" data-copy-url="https://esp32engine.com/components/ws2812b-rgb-led-strip.html">Copy link</button>
+</div>
+      </div>
+      <div class="component-hero-media"><div class="component-hero-photo"><img src="/assets/visuals/components/photos/ws2812b-rgb-led-strip-illustration.webp" alt="Product-style illustration of WS2812B RGB Strip; not a verified physical pin layout" loading="eager" width="1408" height="768"></div><div class="component-hero-illustration" aria-hidden="true"><svg class="component-art-svg" viewBox="0 0 520 360" role="img" aria-label="WS2812B RGB Strip: One-Pixel ESP32 Test illustration">
+  <defs>
+    <linearGradient id="ca-board-ws2812b-rgb-led-strip-1" x1="120" y1="94" x2="392" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081D3A"/><stop offset="1" stop-color="#1488A6"/>
+    </linearGradient>
+    <radialGradient id="ca-glow-ws2812b-rgb-led-strip-1" cx="50%" cy="50%" r="60%">
+      <stop stop-color="#60A5FA" stop-opacity=".36"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ca-shadow-ws2812b-rgb-led-strip-1" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#081D3A" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="520" height="360" rx="34" fill="#F8FAFC"/>
+  <circle cx="260" cy="178" r="168" fill="url(#ca-glow-ws2812b-rgb-led-strip-1)"/>
+  <path d="M70 86h74m232 0h74M70 274h86m220 0h74M112 124v46h62m234 66v-46h-64" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+  <g filter="url(#ca-shadow-ws2812b-rgb-led-strip-1)">
+    <rect x="138" y="92" width="244" height="154" rx="26" fill="url(#ca-board-ws2812b-rgb-led-strip-1)"/>
+    <rect x="174" y="124" width="116" height="78" rx="14" fill="#081D3A" opacity=".88"/>
+    <rect x="306" y="126" width="42" height="42" rx="10" fill="#E0F2FE" opacity=".96"/>
+    <circle cx="327" cy="183" r="19" fill="#FBBF24"/>
+    <text x="232" y="174" text-anchor="middle" fill="#E0F2FE" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800">WR</text>
+    <text x="260" y="282" text-anchor="middle" fill="#475569" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700">Displays</text>
+    <g stroke="#DBEAFE" stroke-width="5" stroke-linecap="round" opacity=".95">
+      <path d="M138 120h-28M138 154h-28M138 188h-28M382 120h28M382 154h28M382 188h28"/>
+    </g>
+  </g>
+</svg></div></div>
+    </div>
+  </section>
+</div>
+<section class="section-block wrap component-guide-shell component-guide-shell--concise">
+
+<article class="component-journey article-concise"><details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#eli12-heading">Overview</a><a href="#specs-heading">Technical Specifications</a><a href="#pinout-heading">Pinout</a><a href="#wiring-heading">Wiring Diagram</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#output-heading">Expected Output</a><a href="#how-it-works-heading">How it works</a><a href="#troubleshooting-heading">Troubleshooting</a><a href="#applications-heading">Where you use it</a><a href="#guides-heading">Continue learning</a><a href="#projects-heading">Related projects</a><a href="#related-components-heading">Related components</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a></nav></details><section class="component-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Board and software</dt><dd>Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32 Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.</dd><dt>Supported hardware</dt><dd>One physical WS2812B RGB pixel cut at a permitted strip cut mark, with documented 5 V supply, 800 kbit/s data and GRB order. TI SN74AHCT125N DIP-14 buffer. The approved coil illustration does not establish strip revision, density, current, waterproofing or connector order. RGBW and clocked strips need different settings/hardware.</dd><dt>Prerequisites and parts</dt><dd>Complete Blink. One correctly identified physical pixel, regulated 5 V supply rated for that pixel’s documented maximum current plus margin, buffer, 100 nF bypass, 10 kOhm input pull-down, 330 ohm data resistor and 1000 microfarad electrolytic rated at least 6.3 V. Power ESP32 by USB; common ground only between supplies.</dd><dt>Libraries</dt><dd>Install Adafruit NeoPixel 1.12.3 by Adafruit. Its pinned ESP32 IDF5 branch uses the core 3.x RMT API; reviewed against Arduino-ESP32 3.3.2.</dd><dt>Expected result</dt><dd>The single pixel cycles dim red, green and blue, one second each; Serial identifies the commanded color.</dd><dt>Verification status</dt><dd>Documentation and source review only. Not compiled or tested on hardware. The approved product-style illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board. Follow the logical diagram and documentation for your actual part.</dd></dl></section>
+<section class="component-section" id="eli12" aria-labelledby="eli12-heading">
+  <h2 tabindex="-1" id="eli12-heading"><span class="component-section-title">Overview</span></h2>
+  <div class="component-section-prose"><p>Each addressable pixel receives color bytes and forwards the remaining stream to the next pixel. Data travels from DIN toward DOUT; a connector that looks right can still be at the wrong end. A WS2812B strip is not the same as a four-lead RGB LED whose channels you drive individually.</p><p>Begin with one physical pixel so unused downstream pixels cannot retain unknown colors. Do not leave an entire unconfigured coil attached to a supply selected for one LED. Extend only after checking strip specifications, connectors, wire ratings and voltage drop.</p></div>
+</section>
+<section class="component-section" id="specs" aria-labelledby="specs-heading">
+  <h2 tabindex="-1" id="specs-heading"><span class="component-section-icon" aria-hidden="true">02</span><span class="component-section-title">Technical Specifications</span></h2>
+  <p class="component-section-lead">Arduino library: <strong>Adafruit NeoPixel 1.12.3</strong></p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Reference format</th>
+  <td>RGB / GRB byte order / 800 kbit/s</td>
+  <td>Confirm the purchased strip; not RGBW, APA102 or 12 V strips.</td>
+</tr><tr>
+  <th scope="row">PIXEL_COUNT</th>
+  <td>1 physical pixel in this first test</td>
+  <td>Changing the constant does not resize the power supply.</td>
+</tr><tr>
+  <th scope="row">Current planning</th>
+  <td>Use the actual strip datasheet maximum</td>
+  <td>Traditional 60 mA per full-white pixel is a conservative planning rule for some parts, not a universal measured WS2812B rating.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section" id="pinout" aria-labelledby="pinout-heading">
+  <h2 tabindex="-1" id="pinout-heading"><span class="component-section-icon" aria-hidden="true">03</span><span class="component-section-title">Pinout</span></h2>
+  <ul class="component-pinout-list"><li class="component-pin-row">
+  <span class="component-pin-name">74AHCT125 pin14 VCC</span>
+  <span class="component-pin-role">Supply</span>
+  <span class="component-pin-connects">External regulated +5 V</span>
+  <span class="component-pin-note">Use SN74AHCT125N DIP-14; not an HC125.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">74AHCT125 pin7 GND</span>
+  <span class="component-pin-role">Return</span>
+  <span class="component-pin-connects">Common GND</span>
+  <span class="component-pin-note">ESP32 GND and external supply negative.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">74AHCT125 pin2 1A</span>
+  <span class="component-pin-role">Input</span>
+  <span class="component-pin-connects">GPIO25 + 10 kOhm to GND</span>
+  <span class="component-pin-note">Pull-down holds input LOW during reset.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">74AHCT125 pin1 /1OE</span>
+  <span class="component-pin-role">Enable</span>
+  <span class="component-pin-connects">GND</span>
+  <span class="component-pin-note">Active LOW; channel1 enabled.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Unused /OE: 4,10,13</span>
+  <span class="component-pin-role">Disable</span>
+  <span class="component-pin-connects">+5 V</span>
+  <span class="component-pin-note">Outputs6,8,11 left unconnected.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Unused A: 5,9,12</span>
+  <span class="component-pin-role">Input</span>
+  <span class="component-pin-connects">GND</span>
+  <span class="component-pin-note">Do not leave CMOS inputs floating.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">100 nF ceramic</span>
+  <span class="component-pin-role">Bypass</span>
+  <span class="component-pin-connects">Between pins14 and7</span>
+  <span class="component-pin-note">Close to buffer; no polarity.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">74AHCT125 pin3 1Y</span>
+  <span class="component-pin-role">Data</span>
+  <span class="component-pin-connects">330 ohm → pixel DIN</span>
+  <span class="component-pin-note">Resistor close to first pixel; follow data arrow.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Pixel +5 V</span>
+  <span class="component-pin-role">Supply</span>
+  <span class="component-pin-connects">External regulated +5 V</span>
+  <span class="component-pin-note">No connection to ESP32 3.3 V.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Pixel GND</span>
+  <span class="component-pin-role">Return</span>
+  <span class="component-pin-connects">Common GND</span>
+  <span class="component-pin-note">Connect ground first; no hot plugging.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">Pixel DOUT</span>
+  <span class="component-pin-role">Next pixel</span>
+  <span class="component-pin-connects">Not connected</span>
+  <span class="component-pin-note">One-pixel reference only.</span>
+</li><li class="component-pin-row">
+  <span class="component-pin-name">1000 microfarad capacitor</span>
+  <span class="component-pin-role">Bulk bypass</span>
+  <span class="component-pin-connects">+ to +5 V; - to GND</span>
+  <span class="component-pin-note">Rated ≥6.3 V; verify polarity before power.</span>
+</li></ul>
+</section>
+<section class="component-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 tabindex="-1" id="wiring-heading"><span class="component-section-icon" aria-hidden="true">04</span><span class="component-section-title">Wiring Diagram</span></h2>
+  <p>GPIO25 → AHCT input; output → 330 ohm → DIN. Pixel/buffer use external5 V and common GND; DOUT unused. Capacitor and buffer terminations as listed.</p>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Component terminal</th><th scope="col">ESP32 / circuit connection</th><th scope="col">Purpose and qualification</th></tr></thead>
+    <tbody><tr><td>74AHCT125 pin14 VCC</td><td>External regulated +5 V</td><td>Use SN74AHCT125N DIP-14; not an HC125.</td></tr><tr><td>74AHCT125 pin7 GND</td><td>Common GND</td><td>ESP32 GND and external supply negative.</td></tr><tr><td>74AHCT125 pin2 1A</td><td>GPIO25 + 10 kOhm to GND</td><td>Pull-down holds input LOW during reset.</td></tr><tr><td>74AHCT125 pin1 /1OE</td><td>GND</td><td>Active LOW; channel1 enabled.</td></tr><tr><td>Unused /OE: 4,10,13</td><td>+5 V</td><td>Outputs6,8,11 left unconnected.</td></tr><tr><td>Unused A: 5,9,12</td><td>GND</td><td>Do not leave CMOS inputs floating.</td></tr><tr><td>100 nF ceramic</td><td>Between pins14 and7</td><td>Close to buffer; no polarity.</td></tr><tr><td>74AHCT125 pin3 1Y</td><td>330 ohm → pixel DIN</td><td>Resistor close to first pixel; follow data arrow.</td></tr><tr><td>Pixel +5 V</td><td>External regulated +5 V</td><td>No connection to ESP32 3.3 V.</td></tr><tr><td>Pixel GND</td><td>Common GND</td><td>Connect ground first; no hot plugging.</td></tr><tr><td>Pixel DOUT</td><td>Not connected</td><td>One-pixel reference only.</td></tr><tr><td>1000 microfarad capacitor</td><td>+ to +5 V; - to GND</td><td>Rated ≥6.3 V; verify polarity before power.</td></tr></tbody>
+  </table>
+</div>
+  <div class="component-wiring-art"><figure class="component-visual-art component-wiring-image">
+  <img src="/assets/visuals/components/wiring/ws2812b-rgb-led-strip-wiring.svg" alt="Logical wiring for WS2812B RGB Strip; terminal labels rather than physical pin positions" loading="lazy" decoding="async">
+</figure></div>
+  <p><a class="btn btn-secondary" href="/assets/visuals/components/wiring/ws2812b-rgb-led-strip-wiring.svg" target="_blank" rel="noopener">Open wiring diagram at full size (new tab)</a></p>
+  <ol class="component-steps-list"><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">1</span>
+    <p class="component-step-text">Disconnect both supplies. Identify DIN from arrows/labels and use one physical documented pixel.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">2</span>
+    <p class="component-step-text">Fit the buffer, pull-down, bypass and polarized capacitor. Check supply polarity; do not tie external +5 V to the USB-powered ESP32.</p>
+  </div>
+</li><li class="component-step-wrap">
+  <div class="component-step">
+    <span class="component-step-num">3</span>
+    <p class="component-step-text">Install Adafruit NeoPixel 1.12.3; upload and open Serial at 115200. Apply regulated pixel power only after checking connections.</p>
+  </div>
+</li></ol>
+</section>
+<section class="component-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Dim red, green and blue test</h3><p>GPIO25 → AHCT input; output → 330 ohm → DIN. Pixel/buffer use external5 V and common GND; DOUT unused. Capacitor and buffer terminations as listed.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">ws2812b_rgb_led_strip.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+<span class="tok-pre">#include &lt;Adafruit_NeoPixel.h&gt;</span>
+constexpr <span class="tok-kw">uint8_t</span> DATA_PIN = <span class="tok-num">25</span>;
+constexpr <span class="tok-kw">uint16_t</span> PIXEL_COUNT = <span class="tok-num">1</span>;
+Adafruit_NeoPixel pixels(PIXEL_COUNT, DATA_PIN, NEO_GRB + NEO_KHZ800);
+<span class="tok-kw">uint8_t</span> phase = <span class="tok-num">0</span>;
+<span class="tok-kw">uint32_t</span> changedAt = <span class="tok-num">0</span>;
+bool ready = <span class="tok-kw">false</span>;
+<span class="tok-kw">void</span> setPhase() {
+  pixels.clear();
+  const <span class="tok-kw">uint8_t</span> r = phase == <span class="tok-num">0</span> ? <span class="tok-num">16</span> : <span class="tok-num">0</span>;
+  const <span class="tok-kw">uint8_t</span> g = phase == <span class="tok-num">1</span> ? <span class="tok-num">16</span> : <span class="tok-num">0</span>;
+  const <span class="tok-kw">uint8_t</span> b = phase == <span class="tok-num">2</span> ? <span class="tok-num">16</span> : <span class="tok-num">0</span>;
+  pixels.setPixelColor(<span class="tok-num">0</span>, pixels.Color(r, g, b));
+  pixels.show();
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(phase == <span class="tok-num">0</span> ? &quot;RED&quot; : (phase == <span class="tok-num">1</span> ? &quot;GREEN&quot; : &quot;BLUE&quot;));
+}
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  pixels.<span class="tok-fn">begin</span>();
+  <span class="tok-kw">if</span> (pixels.getPixels() == nullptr) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Pixel buffer allocation failed&quot;);
+    <span class="tok-kw">return</span>;
+  }
+  pixels.clear();
+  pixels.show();
+  ready = <span class="tok-kw">true</span>;
+  setPhase();
+  changedAt = millis();
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">if</span> (!ready) <span class="tok-kw">return</span>;
+  const <span class="tok-kw">uint32_t</span> now = millis();
+  <span class="tok-kw">if</span> (now - changedAt &gt;= <span class="tok-num">1000</span>) {
+    changedAt = now;
+    phase = (phase + <span class="tok-num">1</span>) % <span class="tok-num">3</span>;
+    setPhase();
+  }
+}</code></pre>
+</div><p>Low color values reduce demonstration brightness; they are not an electrical current limiter. begin() is void in 1.12.3. getPixels checks allocation only; show() does not acknowledge physical pixel receipt. Test alone before combining other RMT consumers.</p></section>
+<section class="component-section component-output" id="output" aria-labelledby="output-heading">
+  <h2 tabindex="-1" id="output-heading"><span class="component-section-icon" aria-hidden="true">OK</span><span class="component-section-title">Expected Output</span></h2>
+  <div class="component-output-body"><p>The physical pixel should cycle red, green and blue. Wrong colors suggest byte-order mismatch, not necessarily bad wiring. Printed color names only show what software sent; the one-wire interface supplies no readback.</p></div>
+</section>
+<section class="component-section" id="how-it-works" aria-labelledby="how-it-works-heading">
+  <h2 tabindex="-1" id="how-it-works-heading"><span class="component-section-title">How it works</span></h2>
+  <div class="component-section-prose"><p>The pinned library serializes color bytes using ESP32 RMT rather than LEDC PWM. The buffer raises the data level; supply and signal voltage are separate requirements. Modern WS2812B revisions vary, so do not infer an input threshold or per-pixel current from the family name. Extra pixels increase full-load current and may need distributed power injection; low software brightness does not remove the need for suitable wiring and supply protection.</p></div>
+</section>
+<section class="component-section component-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 tabindex="-1" id="troubleshooting-heading"><span class="component-section-icon" aria-hidden="true">06</span><span class="component-section-title">Troubleshooting</span></h2>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
+  <table class="wiring-table">
+    <thead><tr><th scope="col">Problem</th><th scope="col">Possible cause</th><th scope="col">Solution</th></tr></thead>
+    <tbody><tr>
+  <th scope="row">Pixel remains dark</th>
+  <td>Wrong DIN end, missing ground, buffer disabled or supply absent.</td>
+  <td>Power off and trace the arrow, 5 V rail and /1OE before changing code.</td>
+</tr><tr>
+  <th scope="row">Colors are swapped</th>
+  <td>Different color byte order.</td>
+  <td>Confirm strip specifications; choose the appropriate NEO_RGB/NEO_GRB order, not arbitrary GPIO changes.</td>
+</tr><tr>
+  <th scope="row">Random colors or ESP32 resets</th>
+  <td>Poor signal integrity, supply drop or shared power wiring.</td>
+  <td>Check the resistor/buffer/common ground and actual supply budget. Do not connect a long coil to this one-pixel circuit.</td>
+</tr><tr>
+  <th scope="row">Library or RMT errors</th>
+  <td>Wrong core/library version or peripheral resource conflict.</td>
+  <td>Verify the pinned pair and run this sketch alone; no successful compilation is claimed here.</td>
+</tr></tbody>
+  </table>
+</div>
+</section>
+<section class="component-section component-applications" id="applications" aria-labelledby="applications-heading">
+  <h2 tabindex="-1" id="applications-heading"><span class="component-section-title">Where you use it</span></h2>
+  <ul class="component-callout-list"><li>One-pixel status indicator</li><li>Addressable color lessons</li><li>Preparation for a music visualizer with separate input and power requirements</li></ul>
+</section>
+<section class="component-section component-guides" id="guides" aria-labelledby="guides-heading">
+  <h2 tabindex="-1" id="guides-heading"><span class="component-section-title">Continue learning</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/guides/blink-led-esp32.html">
+  <h3>Blink LED</h3>
+  <p>First GPIO and LED lesson.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-projects" id="projects" aria-labelledby="projects-heading">
+  <h2 tabindex="-1" id="projects-heading"><span class="component-section-title">Related projects</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/projects/esp32-neopixel-music-visualizer.html">
+  <h3>NeoPixel music visualizer</h3>
+  <p>A separate multi-pixel project; check its input, library and supply assumptions.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-related-components" id="related-components" aria-labelledby="related-components-heading">
+  <h2 tabindex="-1" id="related-components-heading"><span class="component-section-title">Related components</span></h2>
+  <div class="component-related-grid"><a class="component-related-card" href="/components/esp32-devkit.html">
+  <h3>ESP32 DevKit power and pins</h3>
+  <p>Check board labels, supply rails and GPIO restrictions.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a><a class="component-related-card" href="/components/rgb-led.html">
+  <h3>Four-lead RGB LED</h3>
+  <p>Compare individually driven channels with addressable data.</p>
+  <span class="component-related-cta">Open<span aria-hidden="true">-></span></span>
+</a></div>
+</section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Is every WS2812B strip a 60 mA-per-pixel load?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Revisions and products vary. Design from the actual datasheet and worst-case count; the illustration cannot establish current.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Can ESP32 3.3 V data go straight to a 5 V strip?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>This example deliberately uses AHCT buffering rather than assuming an unspecified revision accepts 3.3 V data.</p></div></div></div>
+</section>
+<section class="component-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://www.world-semi.com/web/index.php?classid=302&amp;id=299&amp;lanstr=en&amp;topclassid=16">Worldsemi WS2812 family</a> — Family and revision differences; verify the purchased strip documentation.</li><li><a href="https://learn.adafruit.com/adafruit-neopixel-uberguide/best-practices">Adafruit NeoPixel best practices</a> — Buffering, resistor, capacitor and safe power connections.</li><li><a href="https://github.com/adafruit/Adafruit_NeoPixel/tree/1.12.3">Adafruit NeoPixel 1.12.3</a> — Pinned constructor, color and output APIs.</li><li><a href="https://github.com/adafruit/Adafruit_NeoPixel/blob/1.12.3/esp.c">NeoPixel 1.12.3 ESP32 implementation</a> — IDF5/core3.x RMT branch reviewed.</li><li><a href="https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf">TI SN74AHCT125</a> — TTL-compatible 5 V buffer and package view.</li><li><a href="https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-rmt.h">Arduino-ESP32 3.3.2 RMT API</a> — Pinned rmtInit/rmtWrite interfaces; source review only.</li></ul></section>
+</article>
+<nav class="component-prevnext" aria-label="Previous and next component"><a class="component-prevnext-card" href="/components/tsop38238-ir-receiver.html"><span>Previous</span><strong>TSOP38238 IR Receiver: Decode a Remote with ESP32</strong></a><span></span></nav>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

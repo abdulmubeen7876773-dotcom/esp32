@@ -1,0 +1,253 @@
+slug: ws2812b-rgb-led-strip
+name: 'WS2812B RGB Strip: One-Pixel ESP32 Test'
+category: Displays
+difficulty: Beginner
+summary: Start with one documented 5 V WS2812B RGB pixel, buffered data and a correctly sized supply. Check direction
+  and color order before extending the strip.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/ws2812b-rgb-led-strip-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of WS2812B RGB Strip; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: One physical WS2812B RGB pixel cut at a permitted strip cut mark, with documented 5 V supply, 800 kbit/s
+      data and GRB order. TI SN74AHCT125N DIP-14 buffer. The approved coil illustration does not establish strip
+      revision, density, current, waterproofing or connector order. RGBW and clocked strips need different settings/hardware.
+  - label: Prerequisites and parts
+    value: Complete Blink. One correctly identified physical pixel, regulated 5 V supply rated for that pixel’s
+      documented maximum current plus margin, buffer, 100 nF bypass, 10 kOhm input pull-down, 330 ohm data resistor
+      and 1000 microfarad electrolytic rated at least 6.3 V. Power ESP32 by USB; common ground only between supplies.
+  - label: Libraries
+    value: Install Adafruit NeoPixel 1.12.3 by Adafruit. Its pinned ESP32 IDF5 branch uses the core 3.x RMT API;
+      reviewed against Arduino-ESP32 3.3.2.
+  - label: Expected result
+    value: The single pixel cycles dim red, green and blue, one second each; Serial identifies the commanded color.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: Four-lead RGB LED
+  href: /components/rgb-led.html
+  description: Compare individually driven channels with addressable data.
+library: Adafruit NeoPixel 1.12.3
+eli12: 'Each addressable pixel receives color bytes and forwards the remaining stream to the next pixel. Data travels
+  from DIN toward DOUT; a connector that looks right can still be at the wrong end. A WS2812B strip is not the same
+  as a four-lead RGB LED whose channels you drive individually.
+
+
+  Begin with one physical pixel so unused downstream pixels cannot retain unknown colors. Do not leave an entire
+  unconfigured coil attached to a supply selected for one LED. Extend only after checking strip specifications,
+  connectors, wire ratings and voltage drop.'
+electrical:
+  supply: Regulated external 5 V for the documented pixel and buffer. Do not power a strip from GPIO or the DevKit
+    3.3 V rail.
+  signal: GPIO25 at 3.3 V → 5 V AHCT buffer → 330 ohm → pixel DIN. Common ground.
+  protection: 1000 microfarad supply capacitor with correct polarity and voltage rating, short data wire, buffer
+    bypass and input pull-down.
+  basis: Worldsemi family documentation, Adafruit NeoPixel guidance and TI AHCT datasheet; current budget depends
+    on actual pixel revision/count.
+specs:
+- name: Reference format
+  value: RGB / GRB byte order / 800 kbit/s
+  why: Confirm the purchased strip; not RGBW, APA102 or 12 V strips.
+- name: PIXEL_COUNT
+  value: 1 physical pixel in this first test
+  why: Changing the constant does not resize the power supply.
+- name: Current planning
+  value: Use the actual strip datasheet maximum
+  why: Traditional 60 mA per full-white pixel is a conservative planning rule for some parts, not a universal measured
+    WS2812B rating.
+pinout:
+- pin: 74AHCT125 pin14 VCC
+  role: Supply
+  connects: External regulated +5 V
+  note: Use SN74AHCT125N DIP-14; not an HC125.
+- pin: 74AHCT125 pin7 GND
+  role: Return
+  connects: Common GND
+  note: ESP32 GND and external supply negative.
+- pin: 74AHCT125 pin2 1A
+  role: Input
+  connects: GPIO25 + 10 kOhm to GND
+  note: Pull-down holds input LOW during reset.
+- pin: 74AHCT125 pin1 /1OE
+  role: Enable
+  connects: GND
+  note: Active LOW; channel1 enabled.
+- pin: 'Unused /OE: 4,10,13'
+  role: Disable
+  connects: +5 V
+  note: Outputs6,8,11 left unconnected.
+- pin: 'Unused A: 5,9,12'
+  role: Input
+  connects: GND
+  note: Do not leave CMOS inputs floating.
+- pin: 100 nF ceramic
+  role: Bypass
+  connects: Between pins14 and7
+  note: Close to buffer; no polarity.
+- pin: 74AHCT125 pin3 1Y
+  role: Data
+  connects: 330 ohm → pixel DIN
+  note: Resistor close to first pixel; follow data arrow.
+- pin: Pixel +5 V
+  role: Supply
+  connects: External regulated +5 V
+  note: No connection to ESP32 3.3 V.
+- pin: Pixel GND
+  role: Return
+  connects: Common GND
+  note: Connect ground first; no hot plugging.
+- pin: Pixel DOUT
+  role: Next pixel
+  connects: Not connected
+  note: One-pixel reference only.
+- pin: 1000 microfarad capacitor
+  role: Bulk bypass
+  connects: + to +5 V; - to GND
+  note: Rated ≥6.3 V; verify polarity before power.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/ws2812b-rgb-led-strip-wiring.svg
+  illustration_alt: Logical wiring for WS2812B RGB Strip; terminal labels rather than physical pin positions
+  summary: GPIO25 → AHCT input; output → 330 ohm → DIN. Pixel/buffer use external5 V and common GND; DOUT unused.
+    Capacitor and buffer terminations as listed.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: 74AHCT125 pin14 VCC
+    esp32_pin: External regulated +5 V
+    notes: Use SN74AHCT125N DIP-14; not an HC125.
+  - component_pin: 74AHCT125 pin7 GND
+    esp32_pin: Common GND
+    notes: ESP32 GND and external supply negative.
+  - component_pin: 74AHCT125 pin2 1A
+    esp32_pin: GPIO25 + 10 kOhm to GND
+    notes: Pull-down holds input LOW during reset.
+  - component_pin: 74AHCT125 pin1 /1OE
+    esp32_pin: GND
+    notes: Active LOW; channel1 enabled.
+  - component_pin: 'Unused /OE: 4,10,13'
+    esp32_pin: +5 V
+    notes: Outputs6,8,11 left unconnected.
+  - component_pin: 'Unused A: 5,9,12'
+    esp32_pin: GND
+    notes: Do not leave CMOS inputs floating.
+  - component_pin: 100 nF ceramic
+    esp32_pin: Between pins14 and7
+    notes: Close to buffer; no polarity.
+  - component_pin: 74AHCT125 pin3 1Y
+    esp32_pin: 330 ohm → pixel DIN
+    notes: Resistor close to first pixel; follow data arrow.
+  - component_pin: Pixel +5 V
+    esp32_pin: External regulated +5 V
+    notes: No connection to ESP32 3.3 V.
+  - component_pin: Pixel GND
+    esp32_pin: Common GND
+    notes: Connect ground first; no hot plugging.
+  - component_pin: Pixel DOUT
+    esp32_pin: Not connected
+    notes: One-pixel reference only.
+  - component_pin: 1000 microfarad capacitor
+    esp32_pin: + to +5 V; - to GND
+    notes: Rated ≥6.3 V; verify polarity before power.
+  steps:
+  - Disconnect both supplies. Identify DIN from arrows/labels and use one physical documented pixel.
+  - Fit the buffer, pull-down, bypass and polarized capacitor. Check supply polarity; do not tie external +5 V to
+    the USB-powered ESP32.
+  - Install Adafruit NeoPixel 1.12.3; upload and open Serial at 115200. Apply regulated pixel power only after checking
+    connections.
+code:
+  title: Dim red, green and blue test
+  filename: ws2812b_rgb_led_strip.ino
+  wiring: GPIO25 → AHCT input; output → 330 ohm → DIN. Pixel/buffer use external5 V and common GND; DOUT unused.
+    Capacitor and buffer terminations as listed.
+  content: "#include <Arduino.h>\n#include <Adafruit_NeoPixel.h>\nconstexpr uint8_t DATA_PIN = 25;\nconstexpr uint16_t\
+    \ PIXEL_COUNT = 1;\nAdafruit_NeoPixel pixels(PIXEL_COUNT, DATA_PIN, NEO_GRB + NEO_KHZ800);\nuint8_t phase =\
+    \ 0;\nuint32_t changedAt = 0;\nbool ready = false;\nvoid setPhase() {\n  pixels.clear();\n  const uint8_t r\
+    \ = phase == 0 ? 16 : 0;\n  const uint8_t g = phase == 1 ? 16 : 0;\n  const uint8_t b = phase == 2 ? 16 : 0;\n\
+    \  pixels.setPixelColor(0, pixels.Color(r, g, b));\n  pixels.show();\n  Serial.println(phase == 0 ? \"RED\"\
+    \ : (phase == 1 ? \"GREEN\" : \"BLUE\"));\n}\nvoid setup() {\n  Serial.begin(115200);\n  pixels.begin();\n \
+    \ if (pixels.getPixels() == nullptr) {\n    Serial.println(\"Pixel buffer allocation failed\");\n    return;\n\
+    \  }\n  pixels.clear();\n  pixels.show();\n  ready = true;\n  setPhase();\n  changedAt = millis();\n}\nvoid\
+    \ loop() {\n  if (!ready) return;\n  const uint32_t now = millis();\n  if (now - changedAt >= 1000) {\n    changedAt\
+    \ = now;\n    phase = (phase + 1) % 3;\n    setPhase();\n  }\n}\n"
+  notes: Low color values reduce demonstration brightness; they are not an electrical current limiter. begin() is
+    void in 1.12.3. getPixels checks allocation only; show() does not acknowledge physical pixel receipt. Test alone
+    before combining other RMT consumers.
+output: The physical pixel should cycle red, green and blue. Wrong colors suggest byte-order mismatch, not necessarily
+  bad wiring. Printed color names only show what software sent; the one-wire interface supplies no readback.
+how_it_works: The pinned library serializes color bytes using ESP32 RMT rather than LEDC PWM. The buffer raises
+  the data level; supply and signal voltage are separate requirements. Modern WS2812B revisions vary, so do not
+  infer an input threshold or per-pixel current from the family name. Extra pixels increase full-load current and
+  may need distributed power injection; low software brightness does not remove the need for suitable wiring and
+  supply protection.
+applications:
+- One-pixel status indicator
+- Addressable color lessons
+- Preparation for a music visualizer with separate input and power requirements
+troubleshooting:
+- problem: Pixel remains dark
+  cause: Wrong DIN end, missing ground, buffer disabled or supply absent.
+  fix: Power off and trace the arrow, 5 V rail and /1OE before changing code.
+- problem: Colors are swapped
+  cause: Different color byte order.
+  fix: Confirm strip specifications; choose the appropriate NEO_RGB/NEO_GRB order, not arbitrary GPIO changes.
+- problem: Random colors or ESP32 resets
+  cause: Poor signal integrity, supply drop or shared power wiring.
+  fix: Check the resistor/buffer/common ground and actual supply budget. Do not connect a long coil to this one-pixel
+    circuit.
+- problem: Library or RMT errors
+  cause: Wrong core/library version or peripheral resource conflict.
+  fix: Verify the pinned pair and run this sketch alone; no successful compilation is claimed here.
+faqs:
+- question: Is every WS2812B strip a 60 mA-per-pixel load?
+  answer: No. Revisions and products vary. Design from the actual datasheet and worst-case count; the illustration
+    cannot establish current.
+- question: Can ESP32 3.3 V data go straight to a 5 V strip?
+  answer: This example deliberately uses AHCT buffering rather than assuming an unspecified revision accepts 3.3
+    V data.
+sources:
+- title: Worldsemi WS2812 family
+  url: https://www.world-semi.com/web/index.php?classid=302&id=299&lanstr=en&topclassid=16
+  note: Family and revision differences; verify the purchased strip documentation.
+- title: Adafruit NeoPixel best practices
+  url: https://learn.adafruit.com/adafruit-neopixel-uberguide/best-practices
+  note: Buffering, resistor, capacitor and safe power connections.
+- title: Adafruit NeoPixel 1.12.3
+  url: https://github.com/adafruit/Adafruit_NeoPixel/tree/1.12.3
+  note: Pinned constructor, color and output APIs.
+- title: NeoPixel 1.12.3 ESP32 implementation
+  url: https://github.com/adafruit/Adafruit_NeoPixel/blob/1.12.3/esp.c
+  note: IDF5/core3.x RMT branch reviewed.
+- title: TI SN74AHCT125
+  url: https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf
+  note: TTL-compatible 5 V buffer and package view.
+- title: Arduino-ESP32 3.3.2 RMT API
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-rmt.h
+  note: Pinned rmtInit/rmtWrite interfaces; source review only.
+related_guides:
+- title: Blink LED
+  href: /guides/blink-led-esp32.html
+  description: First GPIO and LED lesson.
+related_projects:
+- title: NeoPixel music visualizer
+  href: /projects/esp32-neopixel-music-visualizer.html
+  description: A separate multi-pixel project; check its input, library and supply assumptions.

@@ -1,0 +1,193 @@
+slug: active-buzzer-module
+name: 'Active Buzzer Module: Safe ESP32 On/Off Control'
+category: Actuators
+difficulty: Beginner
+summary: Switch a documented active buzzer through an NPN transistor. Keep buzzer power off the GPIO and distinguish
+  a powered signal terminal from a low-current logic input.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/active-buzzer-module-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Active Buzzer Module; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: 'Worked reference: Joy-IT COM-KY012APB / KY-012 as documented in its May 2024 manual: voltage between
+      S (powered terminal) and GND makes sound; middle pin is not connected. The generic approved module illustration
+      is not identified as this product. Do not transplant this wiring to a VCC/GND/IN board without its schematic.'
+  - label: Prerequisites and parts
+    value: Complete Blink and the NPN switching lesson. Documented Joy-IT module, onsemi P2N2222A, 680 ohm base
+      resistor, 100 kOhm base-emitter pull-down, short wires and a regulated 5 V supply rated for the documented
+      module current. ESP32 remains USB powered; join grounds, not positive rails.
+  - label: Libraries
+    value: No extra library. Arduino-ESP32 3.3.2 GPIO and millis APIs.
+  - label: Expected result
+    value: A fixed-pitch beep for 200 ms followed by 1800 ms silence. The sketch controls the envelope, not pitch.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: 2N2222 transistor
+  href: /components/2n2222-npn-transistor.html
+  description: Practice a smaller switched LED first.
+- title: Passive buzzer
+  href: /components/passive-buzzer.html
+  description: Understand the different drive waveform and construction assumptions.
+library: Arduino-ESP32 3.3.2 (no additional library)
+eli12: 'An active buzzer contains an oscillator, so steady power produces a tone. Turn that power on and off to
+  make alert patterns. A passive buzzer instead needs an alternating drive signal and can play different pitches.
+  The approved image depicts an active-module family but cannot verify a real unit’s oscillator or trigger polarity.
+
+
+  The reference KY-012 terminal S carries buzzer power, not just a logic command. Use the transistor below instead
+  of drawing buzzer current from ESP32 GPIO. Other active modules may have separate VCC and IN, active-LOW control
+  or different ratings.'
+electrical:
+  supply: Regulated external 5 V for the documented KY-012; reference operating range includes 3.3–5 V.
+  signal: GPIO25 → 680 ohm → NPN base. No 5 V terminal connects to ESP32 GPIO.
+  protection: Shared ground, 100 kOhm base-emitter pull-down and a documented low-side transistor. Never drive an
+    unknown buzzer load directly.
+  basis: Joy-IT KY-012 manual/sensor documentation and onsemi P2N2222A datasheet; not a rating for the illustration.
+specs:
+- name: Reference interface
+  value: S powered terminal, GND return, middle NC
+  why: Not a universal VCC/GND/IN connector.
+- name: Reference current budget
+  value: Up to 30 mA per Joy-IT sensor documentation
+  why: Check the purchased product revision and supply; no current measured here.
+- name: Base resistor
+  value: 680 ohm with P2N2222A
+  why: About 3.7 mA for a 0.8 V base-emitter estimate; sized separately from the LED lesson.
+pinout:
+- pin: KY-012 S
+  role: Power
+  connects: External regulated +5 V
+  note: Powered buzzer terminal, not GPIO.
+- pin: KY-012 GND / minus
+  role: Switched return
+  connects: P2N2222A pin1 collector
+  note: Do not also connect this terminal directly to ground.
+- pin: KY-012 middle pin
+  role: NC
+  connects: Not connected
+  note: Reference manual only; not generic module order.
+- pin: P2N2222A pin3 emitter
+  role: Return
+  connects: Common GND
+  note: External supply negative and ESP32 GND.
+- pin: P2N2222A pin2 base
+  role: Control
+  connects: GPIO25 through 680 ohm
+  note: Verify exact onsemi numbered package view.
+- pin: 100 kOhm resistor
+  role: Pull-down
+  connects: Base to emitter
+  note: Holds transistor off during reset.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/active-buzzer-module-wiring.svg
+  illustration_alt: Logical wiring for Active Buzzer Module; terminal labels rather than physical pin positions
+  summary: External +5 V → KY-012 S; KY-012 minus → NPN collector; emitter → common GND. GPIO25 → 680 ohm → base,
+    100 kOhm base-emitter; middle NC.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: KY-012 S
+    esp32_pin: External regulated +5 V
+    notes: Powered buzzer terminal, not GPIO.
+  - component_pin: KY-012 GND / minus
+    esp32_pin: P2N2222A pin1 collector
+    notes: Do not also connect this terminal directly to ground.
+  - component_pin: KY-012 middle pin
+    esp32_pin: Not connected
+    notes: Reference manual only; not generic module order.
+  - component_pin: P2N2222A pin3 emitter
+    esp32_pin: Common GND
+    notes: External supply negative and ESP32 GND.
+  - component_pin: P2N2222A pin2 base
+    esp32_pin: GPIO25 through 680 ohm
+    notes: Verify exact onsemi numbered package view.
+  - component_pin: 100 kOhm resistor
+    esp32_pin: Base to emitter
+    notes: Holds transistor off during reset.
+  steps:
+  - Unplug both supplies. Verify the exact KY-012 wiring and P2N2222A package view; never use artwork as a connector
+    map.
+  - Join ESP32 GND and external supply negative. Wire the transistor and resistors; keep the switched buzzer return
+    separate from common ground.
+  - Upload, apply regulated buzzer power and listen briefly; test away from ears.
+code:
+  title: Short beep envelope
+  filename: active_buzzer_module.ino
+  wiring: External +5 V → KY-012 S; KY-012 minus → NPN collector; emitter → common GND. GPIO25 → 680 ohm → base,
+    100 kOhm base-emitter; middle NC.
+  content: "#include <Arduino.h>\nconstexpr uint8_t OUTPUT_PIN = 25;\nbool active = false;\nuint32_t changedAt =\
+    \ 0;\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  digitalWrite(OUTPUT_PIN, LOW);\n\
+    \  Serial.println(\"Starts OFF; repeating on/off demonstration\");\n}\nvoid loop() {\n  const uint32_t now =\
+    \ millis();\n  const uint32_t interval = active ? 200 : 1800;\n  if (now - changedAt >= interval) {\n    changedAt\
+    \ = now;\n    active = !active;\n    digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n    Serial.println(active\
+    \ ? \"ON\" : \"OFF\");\n  }\n}\n"
+  notes: HIGH switches the transistor on in this circuit. No tone() or PWM is needed for the active reference. The
+    software OFF state and hardware pull-down assume correct wiring; this is not a fail-safe alarm.
+output: A short repeating beep is expected from the supported reference. A click without a steady tone during the
+  ON interval can indicate a passive device, wrong voltage or poor wiring; do not compensate by blindly changing
+  pin polarity.
+how_it_works: GPIO current enters the base through 680 ohm. The collector switches the buzzer return while its S
+  terminal remains at 5 V. The roughly 3.7 mA base-drive estimate provides margin for the documented 30 mA load
+  using an approximately 10:1 forced-gain design target. Actual junction drop and current vary; no values were measured.
+applications:
+- Non-safety-critical reminders
+- Button confirmation beeps
+- Status alerts with a fixed tone
+troubleshooting:
+- problem: Only clicks
+  cause: Passive buzzer or unsuitable supply.
+  fix: Match the exact active reference and check voltage across its S/minus terminals during ON.
+- problem: Continuous sound
+  cause: Buzzer return bypasses transistor or transistor is shorted.
+  fix: Unplug power; trace the switched return and verify the base pull-down.
+- problem: A different module behaves backwards
+  cause: Different trigger circuit or pin order.
+  fix: Stop and obtain its schematic; neither polarity nor GPIO compatibility follows from the module name.
+faqs:
+- question: Is the green illustration a Joy-IT KY-012?
+  answer: That exact model is not established. The worked reference and diagram are explicitly separate from the
+    family illustration.
+- question: Can it play the digital piano project?
+  answer: An active buzzer is unsuitable for changing musical pitch. That project uses a passive buzzer; follow
+    its separate driver guidance.
+sources:
+- title: Joy-IT KY-012 manual, May 2024
+  url: https://www.joy-it.net/files/files/Produkte/COM-KY012APB/COM-KY012APB_Manual_2024-05-06.pdf
+  note: Powered S terminal, GND, middle NC and wiring.
+- title: Joy-IT active buzzer sensor reference
+  url: https://sensorkit.joy-it.net/en/sensors/ky-012
+  note: Active operation and stated maximum current; reference product only.
+- title: onsemi P2N2222A
+  url: https://www.onsemi.com/pdf/datasheet/p2n2222a-d.pdf
+  note: Transistor lead numbering and saturation guidance.
+- title: Arduino-ESP32 3.3.2
+  url: https://github.com/espressif/arduino-esp32/tree/3.3.2
+  note: GPIO/timing review baseline.
+- title: Arduino-ESP32 3.3.2 GPIO implementation
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
+  note: Initialize the GPIO bus with pinMode before digitalWrite; hardware pull-down provides reset bias.
+related_guides:
+- title: Button input
+  href: /guides/button-led-control.html
+  description: Learn button states before adding optional beep feedback.

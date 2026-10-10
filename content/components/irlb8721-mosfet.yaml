@@ -1,0 +1,232 @@
+slug: irlb8721-mosfet
+name: 'IRLB8721 MOSFET: Buffered ESP32 Load Switching'
+category: Power Components
+difficulty: Beginner
+summary: Use an IRLB8721 as a low-side switch with a 5 V gate buffer and a small LED load. Gate threshold does not
+  guarantee low resistance at 3.3 V.
+date_modified: '2026-10-10'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/irlb8721-mosfet-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of IRLB8721 MOSFET; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: 'Classic ESP32-WROOM-32/32E DevKit with the listed GPIOs exposed and unused. Arduino IDE 2.x; esp32 by
+      Espressif Systems 3.3.2 (review baseline, not a latest-release claim). Select the documented board or ESP32
+      Dev Module for a generic WROOM board. Other families need their own pin map. Serial Monitor: 115200 baud.'
+  - label: Supported hardware
+    value: Documented Infineon IRLB8721PbF TO-220AB, plus TI SN74AHCT125N DIP-14 buffer. Confirm gate/drain/source
+      using the manufacturer package drawing; the metal tab is drain. Illustration markings do not authenticate
+      a device.
+  - label: Prerequisites and parts
+    value: Complete Blink and resistor identification. MOSFET, SN74AHCT125N, 100 nF bypass capacitor, 10 kOhm buffer-input
+      pull-down, 100 kOhm gate-source pull-down, 1 kOhm gate resistor, red LED and 1 kOhm LED resistor. External
+      regulated 5 V supply; ESP32 via USB, positive rails separate.
+  - label: Libraries
+    value: No extra library. Arduino-ESP32 3.3.2 GPIO and millis APIs.
+  - label: Expected result
+    value: The external LED is ON for 500 ms and OFF for 1000 ms; GPIO drives only the buffer input.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: 2N2222 transistor
+  href: /components/2n2222-npn-transistor.html
+  description: Compare current-driven base and voltage-driven gate.
+library: Arduino-ESP32 3.3.2 (no additional library)
+eli12: 'A MOSFET’s gate voltage controls the path from drain to source. Unlike an NPN base, it mainly draws current
+  while its gate capacitance charges or discharges. This circuit switches the ground side of a small LED load.
+
+
+  IRLB8721 is often advertised as logic-level, but its guaranteed on-resistance is specified at 4.5 V and 10 V gate
+  drive. The threshold value describes a tiny test current, not full-load conduction. A 5 V AHCT buffer accepts
+  ESP32’s 3.3 V command and gives this slow demonstration a defined higher gate drive.'
+electrical:
+  supply: External regulated 5 V for the LED and AHCT buffer; source at common GND.
+  signal: ESP32 GPIO25 drives only the TTL-compatible buffer input. The gate sees buffer output through 1 kOhm.
+  protection: 10 kOhm input pull-down, 100 kOhm gate-source pull-down, 100 nF buffer bypass and 1 kOhm LED resistor.
+    Never put 5 V on ESP32 GPIO.
+  basis: Infineon IRLB8721 and TI SN74AHCT125 datasheets; this is a slow small-load example, not a general power
+    driver.
+specs:
+- name: Guaranteed RDS(on) test points
+  value: 4.5 V and 10 V gate drive
+  why: No guaranteed 3.3 V on-resistance claimed.
+- name: Reference terminals
+  value: Gate, drain, source; tab = drain
+  why: Use the exact TO-220AB package drawing.
+- name: Example load
+  value: One red LED and 1 kOhm resistor
+  why: A few mA design estimate; no heatsink/current claim inferred from package ratings.
+pinout:
+- pin: 74AHCT125 pin14 VCC
+  role: Supply
+  connects: External regulated +5 V
+  note: Use SN74AHCT125N DIP-14; not an HC125.
+- pin: 74AHCT125 pin7 GND
+  role: Return
+  connects: Common GND
+  note: ESP32 GND and external supply negative.
+- pin: 74AHCT125 pin2 1A
+  role: Input
+  connects: GPIO25 + 10 kOhm to GND
+  note: Pull-down holds input LOW during reset.
+- pin: 74AHCT125 pin1 /1OE
+  role: Enable
+  connects: GND
+  note: Active LOW; channel1 enabled.
+- pin: 'Unused /OE: 4,10,13'
+  role: Disable
+  connects: +5 V
+  note: Outputs6,8,11 left unconnected.
+- pin: 'Unused A: 5,9,12'
+  role: Input
+  connects: GND
+  note: Do not leave CMOS inputs floating.
+- pin: 100 nF ceramic
+  role: Bypass
+  connects: Between pins14 and7
+  note: Close to buffer; no polarity.
+- pin: 74AHCT125 pin3 1Y
+  role: Gate drive
+  connects: 1 kOhm → MOSFET gate
+  note: No connection back to GPIO.
+- pin: 100 kOhm resistor
+  role: Pull-down
+  connects: MOSFET gate to source
+  note: Keeps gate discharged when buffer is unavailable.
+- pin: IRLB8721 source
+  role: Return
+  connects: Common GND
+  note: Confirm manufacturer package view.
+- pin: External +5 V
+  role: Load supply
+  connects: 1 kOhm → red LED anode
+  note: Separate LED current-limiting resistor.
+- pin: Red LED cathode
+  role: Switched load
+  connects: IRLB8721 drain
+  note: Tab is also drain; avoid accidental shorts.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/irlb8721-mosfet-wiring.svg
+  illustration_alt: Logical wiring for IRLB8721 MOSFET; terminal labels rather than physical pin positions
+  summary: GPIO25 → AHCT 1A; 1Y → 1 kOhm → gate; source → common GND. +5 V → 1 kOhm → LED → drain. Buffer5 V, enables/unused
+    inputs, bypass and pull-downs as listed.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: 74AHCT125 pin14 VCC
+    esp32_pin: External regulated +5 V
+    notes: Use SN74AHCT125N DIP-14; not an HC125.
+  - component_pin: 74AHCT125 pin7 GND
+    esp32_pin: Common GND
+    notes: ESP32 GND and external supply negative.
+  - component_pin: 74AHCT125 pin2 1A
+    esp32_pin: GPIO25 + 10 kOhm to GND
+    notes: Pull-down holds input LOW during reset.
+  - component_pin: 74AHCT125 pin1 /1OE
+    esp32_pin: GND
+    notes: Active LOW; channel1 enabled.
+  - component_pin: 'Unused /OE: 4,10,13'
+    esp32_pin: +5 V
+    notes: Outputs6,8,11 left unconnected.
+  - component_pin: 'Unused A: 5,9,12'
+    esp32_pin: GND
+    notes: Do not leave CMOS inputs floating.
+  - component_pin: 100 nF ceramic
+    esp32_pin: Between pins14 and7
+    notes: Close to buffer; no polarity.
+  - component_pin: 74AHCT125 pin3 1Y
+    esp32_pin: 1 kOhm → MOSFET gate
+    notes: No connection back to GPIO.
+  - component_pin: 100 kOhm resistor
+    esp32_pin: MOSFET gate to source
+    notes: Keeps gate discharged when buffer is unavailable.
+  - component_pin: IRLB8721 source
+    esp32_pin: Common GND
+    notes: Confirm manufacturer package view.
+  - component_pin: External +5 V
+    esp32_pin: 1 kOhm → red LED anode
+    notes: Separate LED current-limiting resistor.
+  - component_pin: Red LED cathode
+    esp32_pin: IRLB8721 drain
+    notes: Tab is also drain; avoid accidental shorts.
+  steps:
+  - Unplug USB and external supply. Match the MOSFET package and DIP-14 buffer pin drawings.
+  - Wire every buffer supply/enable/unused input and pull-down, then the LED load. Join grounds; do not join external
+    +5 V to the USB-powered board.
+  - Upload and apply regulated 5 V. Compare LED switching with Serial commands.
+code:
+  title: Slow buffered MOSFET switch
+  filename: irlb8721_mosfet.ino
+  wiring: GPIO25 → AHCT 1A; 1Y → 1 kOhm → gate; source → common GND. +5 V → 1 kOhm → LED → drain. Buffer5 V, enables/unused
+    inputs, bypass and pull-downs as listed.
+  content: "#include <Arduino.h>\nconstexpr uint8_t OUTPUT_PIN = 25;\nbool active = false;\nuint32_t changedAt =\
+    \ 0;\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n  digitalWrite(OUTPUT_PIN, LOW);\n\
+    \  Serial.println(\"Starts OFF; repeating on/off demonstration\");\n}\nvoid loop() {\n  const uint32_t now =\
+    \ millis();\n  const uint32_t interval = active ? 500 : 1000;\n  if (now - changedAt >= interval) {\n    changedAt\
+    \ = now;\n    active = !active;\n    digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n    Serial.println(active\
+    \ ? \"ON\" : \"OFF\");\n  }\n}\n"
+  notes: Do not connect GPIO directly to the gate in this reference circuit. This sketch uses ordinary HIGH/LOW,
+    not obsolete LEDC channel APIs. It is not a high-frequency PWM gate-driver design.
+output: The LED should follow the repeated ON/OFF commands. Serial is a command log, not evidence of gate voltage
+  or successful switching. If the LED stays on, inspect source/drain orientation and wiring before trying a larger
+  load.
+how_it_works: With /1OE grounded, the AHCT channel passes the command without inversion. Its 5 V output raises gate
+  voltage relative to the grounded source. The series gate resistor limits transient charging current; the pull-down
+  discharges the gate when drive is absent. Larger or faster loads need gate-charge, switching-loss, safe-operating-area,
+  thermal and supply analysis. Motors/coils also need an appropriate flyback path; the MOSFET body diode is not
+  a substitute for a diode across a low-side inductive load.
+applications:
+- Learning buffered gate drive
+- Small resistive/LED load switching
+- Preparation for a separately engineered low-voltage power stage
+troubleshooting:
+- problem: Always on
+  cause: Reversed source/drain, floating gate or load bypassing drain.
+  fix: Power off; trace the manufacturer terminals and both pull-downs.
+- problem: Never on
+  cause: Disabled buffer, wrong chip family or missing common ground.
+  fix: Verify AHCT markings, 5 V supply, /1OE and named signal paths.
+- problem: Hot transistor
+  cause: Insufficient drive, excessive load or fast switching losses.
+  fix: Disconnect. Do not extrapolate from package current ratings; return to the small LED reference.
+faqs:
+- question: Does logic-level mean guaranteed operation from 3.3 V?
+  answer: Not for every part/load. This datasheet does not guarantee low on-resistance at 3.3 V; the reference uses
+    a buffer.
+- question: Can I use HC125 instead of AHCT125?
+  answer: Do not assume it. This example relies on AHCT TTL-compatible inputs while powered at 5 V.
+sources:
+- title: Infineon IRLB8721 datasheet
+  url: https://www.infineon.com/assets/row/public/documents/24/49/infineon-irlb8721-datasheet-en.pdf
+  note: Gate-drive test points, threshold and package.
+- title: TI SN74AHCT125 datasheet
+  url: https://www.ti.com/lit/ds/symlink/sn74ahct125.pdf
+  note: 5 V operation, TTL inputs, DIP pin map and enables.
+- title: Arduino-ESP32 3.3.2
+  url: https://github.com/espressif/arduino-esp32/tree/3.3.2
+  note: GPIO/timing review baseline.
+- title: Arduino-ESP32 3.3.2 GPIO implementation
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
+  note: Initialize the GPIO bus with pinMode before digitalWrite; hardware pull-down provides reset bias.
+related_guides:
+- title: Blink LED
+  href: /guides/blink-led-esp32.html
+  description: Start with a small LED circuit.
+- title: PWM fundamentals
+  href: /guides/pwm-fundamentals.html
+  description: PWM is a later step; gate-drive design still matters.
