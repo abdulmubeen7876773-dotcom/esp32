@@ -1,0 +1,145 @@
+slug: dc-brushless-cooling-fan
+name: 'DC Brushless Fan: Separate Power and Safe Setup'
+category: Motors
+difficulty: Beginner
+summary: Identify the rated supply before powering a cooling fan. Use external power and keep fan leads away from
+  ESP32 GPIO.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Bench setup / accessory
+image: /assets/visuals/components/photos/dc-brushless-cooling-fan-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of DC Brushless Fan; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: Low-voltage bench setup as specified below. ESP32 is optional for passive exercises. Coded examples require
+      classic ESP32-WROOM-32/32E DevKit, unused exposed pins, Arduino IDE 2.x and Arduino-ESP32 3.3.2 (review baseline,
+      not a latest-release claim). Other families need their own pin map.
+  - label: Supported hardware
+    value: 'Approved illustration shows DC12V brushless fan, not a verified model or current rating. Worked reference:
+      Noctua NF-A4x10 FLX, a documented 12 V three-wire fan; artwork is not this reference model.'
+  - label: Prerequisites and parts
+    value: Reference fan, matching current-limited 12 V DC supply and suitable insulated connections. Read actual
+      connector documentation. Keep blades clear; no ESP32 or breadboard motor-power path needed.
+  - label: Libraries
+    value: No firmware or library required for this exercise. Arduino-ESP32 3.3.2 is the site review baseline, not
+      a dependency of this passive setup.
+  - label: Expected result
+    value: A documented fan spins when its rated supply is applied; no speed or airflow measurement is claimed.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: MOSFET gate-drive qualifications
+  href: /components/irlb8721-mosfet.html
+  description: Read load and gate-drive limits before selecting a switch.
+eli12: 'A brushless cooling fan includes its own commutation electronics. Its supply rating is not a GPIO voltage.
+  The approved picture identifies a 12 V fan family; it cannot establish current, connector order, airflow or PWM
+  support.
+
+
+  The worked reference has power, ground and a tachometer lead. Leave tachometer disconnected for the first constant-power
+  test. Two-, three- and four-wire fans are different interfaces; wire color alone is not a pinout. Do not reverse
+  supply to reverse rotation.'
+electrical:
+  supply: Rated external DC supply; worked reference 12 V. Never fan power from GPIO or DevKit 3V3.
+  signal: No ESP32 signal connection in this exercise. Tachometer and PWM interfaces require separate documentation
+    and compatible pull-ups.
+  protection: Confirm polarity and current budget before power. Use insulated suitable wiring; no mains supply assembly
+    or motor current through GPIO/breadboard rails.
+specs:
+- name: Illustration label
+  value: DC12V
+  why: Model/current and lead order remain unverified.
+- name: Worked reference
+  value: NF-A4x10 FLX at 12 V
+  why: Only that documented model; not a universal fan specification.
+output: With correct rated power the unloaded fan should spin. A stationary fan, noise or overheating is a reason
+  to disconnect and inspect, not increase voltage.
+how_it_works: 'A constant supply powers the fan internal controller. For ESP32 switching, use a suitably rated driver
+  and its complete power/protection circuit; do not copy a bare brushed-motor flyback circuit without checking fan/driver
+  requirements. A four-wire PWM input is separate from switching the fan supply.
+
+
+  A future non-isolated ESP32 control driver needs a common signal ground between ESP32 and fan supply, with fan
+  current returning directly to that supply. Verify startup current and driver transient protection from the actual
+  fan/driver documentation. A brushless fan has internal electronics; do not apply bare-motor stall-current or flyback
+  assumptions blindly. The separate constant-power exercise has no ESP32 connection.'
+applications:
+- Enclosure cooling with a documented fan
+- Learning separate load power before adding control
+troubleshooting:
+- problem: No rotation
+  cause: Wrong polarity, supply/current limit or obstructed rotor.
+  fix: Disconnect power, verify connector/rating and clear obstruction.
+- problem: ESP32 resets
+  cause: Fan current taken from board supply.
+  fix: Use suitable external supply and a reviewed driver circuit before connecting any control.
+- problem: Extra wire unidentified
+  cause: Tach/PWM role assumed by color.
+  fix: Leave it disconnected until model documentation establishes interface and voltage.
+faqs:
+- question: Can GPIO power the fan?
+  answer: No. GPIO is a logic output, not the fan supply.
+- question: Does 12 V identify a model?
+  answer: No. It does not establish current, dimensions or control interface.
+sources:
+- title: Noctua reference specifications
+  url: https://www.noctua.at/en/products/nf-a4x10-flx/specifications
+  note: Documented 12 V reference; not authentication of the artwork.
+- title: Noctua connector pin configuration
+  url: https://faqs.noctua.at/en/support/solutions/articles/101000081757
+  note: Identify model-specific ground, supply and tachometer.
+pinout:
+- pin: Documented fan power terminal
+  role: Connection
+  connects: Rated external +12 V
+  note: Reference model only; verify connector.
+- pin: Documented fan ground
+  role: Connection
+  connects: Supply negative
+  note: Do not infer by illustration position.
+- pin: Tachometer (reference third wire)
+  role: Connection
+  connects: Leave disconnected
+  note: No GPIO in this exercise.
+- pin: ESP32 GPIO / 3V3
+  role: Connection
+  connects: No fan connection
+  note: Separate load power required.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/dc-brushless-cooling-fan-wiring.svg
+  illustration_alt: Logical wiring for DC Brushless Fan; terminal labels rather than physical pin positions
+  summary: Rated DC supply connects only to identified fan power/ground; other leads unconnected.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Documented fan power terminal
+    esp32_pin: Rated external +12 V
+    notes: Reference model only; verify connector.
+  - component_pin: Documented fan ground
+    esp32_pin: Supply negative
+    notes: Do not infer by illustration position.
+  - component_pin: Tachometer (reference third wire)
+    esp32_pin: Leave disconnected
+    notes: No GPIO in this exercise.
+  - component_pin: ESP32 GPIO / 3V3
+    esp32_pin: No fan connection
+    notes: Separate load power required.
+  steps:
+  - Remove power, verify model, rated supply and connector drawing.
+  - Connect the two power terminals using appropriate wiring; leave tachometer insulated.
+  - Apply rated supply briefly, observe free rotation, then disconnect before changes.
+library: No firmware or library required for this exercise

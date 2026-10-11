@@ -1,0 +1,136 @@
+slug: usb-a-to-usb-c-cable
+name: 'USB-A to USB-C Cable: Power Is Not Data'
+category: Miscellaneous
+difficulty: Beginner
+summary: Choose a data-capable cable for the actual ESP32 USB port. Power indicators alone do not prove USB enumeration
+  or upload support.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Bench setup / accessory
+image: /assets/visuals/components/photos/usb-a-to-usb-c-cable-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of USB-A to USB-C Cable; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: Low-voltage bench setup as specified below. ESP32 is optional for passive exercises. Coded examples require
+      classic ESP32-WROOM-32/32E DevKit, unused exposed pins, Arduino IDE 2.x and Arduino-ESP32 3.3.2 (review baseline,
+      not a latest-release claim). Other families need their own pin map.
+  - label: Supported hardware
+    value: Approved USB-A to USB-C cable illustration. Data support, USB generation, current rating and certification
+      are not established by the image.
+  - label: Prerequisites and parts
+    value: Computer USB-A port, known data-capable A-to-C cable and a board with USB-C receptacle. Many classic
+      DevKits use Micro-B; choose the correct cable instead of forcing the connector. Follow the existing IDE setup
+      guide.
+  - label: Libraries
+    value: No firmware or library required for this exercise. Arduino-ESP32 3.3.2 is the site review baseline, not
+      a dependency of this passive setup.
+  - label: Expected result
+    value: A known data-capable cable and supported board appear as the expected USB device/port, then accept the
+      existing Serial-only first sketch.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'USB-C describes a connector. It does not, by itself, prove data speed, power capability or firmware-upload
+  support. A board may light up through a cable that cannot carry the data needed for its USB bridge.
+
+
+  On a classic WROOM DevKit, USB commonly connects through a USB-UART bridge. On some newer boards it connects to
+  native USB. Port selection and drivers depend on the actual board and bridge, not on cable shape.'
+electrical:
+  supply: USB power goes through the board designed USB connector/power circuit. Do not expose cable wires or inject
+    USB voltage into GPIO.
+  signal: USB data pins connect to the USB interface, not arbitrary ESP32 GPIO. Board GPIO remains 3.3 V logic.
+  protection: Use undamaged documented cables and board input ratings. This page does not authorize USB-PD voltages,
+    power modifications or a universal current rating.
+specs:
+- name: Illustrated ends
+  value: USB-A plug and USB-C plug
+  why: Match actual computer and board ports.
+- name: Data capability
+  value: Verify with a known working cable/device
+  why: Power light is not proof.
+- name: Upload path
+  value: Board/bridge dependent
+  why: Use correct OS port and driver.
+output: A suitable cable should allow the actual device to enumerate. Successful power-on alone does not confirm
+  data. The Serial-only example in the setup guide separates upload/serial checks from onboard LED assumptions.
+how_it_works: The cable carries power and, if supported, data between compatible ports. USB enumeration identifies
+  the interface; the IDE then uses the selected upload method. Do not install an FTDI driver for a different bridge
+  just because a port is missing.
+applications:
+- First ESP32 USB upload
+- Distinguishing cable faults from IDE or bridge-driver issues
+troubleshooting:
+- problem: Power but no port
+  cause: No data path, wrong bridge driver or connector problem.
+  fix: Try a known data cable and direct computer port; identify actual USB device.
+- problem: Upload fails after enumeration
+  cause: Wrong board/port or boot mode.
+  fix: Follow board-specific IDE/BOOT instructions rather than replacing drivers blindly.
+- problem: Cable does not fit
+  cause: Different board receptacle.
+  fix: Use matching Micro-B/C cable; never force.
+faqs:
+- question: Does USB-C mean native ESP32 USB?
+  answer: No. A USB-C board can still use a USB-UART bridge.
+- question: Does the cable set GPIO voltage?
+  answer: No. GPIO compatibility follows the chip/board circuit.
+sources:
+- title: USB-IF cable and connector specifications
+  url: https://www.usb.org/cable_connector
+  note: Connector families and specifications; no certification claim for artwork.
+- title: Espressif Arduino installation
+  url: https://docs.espressif.com/projects/arduino-esp32/en/3.3.2/installing.html
+  note: Board-package setup baseline.
+related_guides:
+- title: IDE to first Serial upload
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Correct board, port and bridge-driver qualifications.
+pinout:
+- pin: Computer USB-A port
+  role: Connection
+  connects: Cable USB-A plug
+  note: Use documented computer port.
+- pin: Cable USB-C plug
+  role: Connection
+  connects: Board USB-C receptacle
+  note: Actual board upload connector.
+- pin: Board GPIO / bare cable wires
+  role: Connection
+  connects: No connection
+  note: Keep the cable intact.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/usb-a-to-usb-c-cable-wiring.svg
+  illustration_alt: Logical wiring for USB-A to USB-C Cable; terminal labels rather than physical pin positions
+  summary: Computer USB port → intact matching cable → board designated USB connector.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Computer USB-A port
+    esp32_pin: Cable USB-A plug
+    notes: Use documented computer port.
+  - component_pin: Cable USB-C plug
+    esp32_pin: Board USB-C receptacle
+    notes: Actual board upload connector.
+  - component_pin: Board GPIO / bare cable wires
+    esp32_pin: No connection
+    notes: Keep the cable intact.
+  steps:
+  - Check actual connector and cable condition.
+  - Connect through a known data-capable cable; identify enumeration/port.
+  - Follow IDE guide Serial-only upload and verify its output.
+library: No firmware or library required for this exercise

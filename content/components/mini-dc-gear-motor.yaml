@@ -1,0 +1,139 @@
+slug: mini-dc-gear-motor
+name: 'Mini DC Gear Motor: Power and First Rotation'
+category: Motors
+difficulty: Beginner
+summary: Identify motor voltage and current before powering a gearbox. A motor needs separate power and a suitable
+  driver; GPIO cannot supply it.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Bench setup / accessory
+image: /assets/visuals/components/photos/mini-dc-gear-motor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of Mini DC Gear Motor; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: Low-voltage bench setup as specified below. ESP32 is optional for passive exercises. Coded examples require
+      classic ESP32-WROOM-32/32E DevKit, unused exposed pins, Arduino IDE 2.x and Arduino-ESP32 3.3.2 (review baseline,
+      not a latest-release claim). Other families need their own pin map.
+  - label: Supported hardware
+    value: 'Approved yellow brushed-DC gearbox illustration, model/voltage/ratio unknown. Worked reference: Adafruit
+      TT motor3777 rated3–6 V; these ratings do not identify the pictured motor.'
+  - label: Prerequisites and parts
+    value: Documented reference motor, current-limited regulated3 V bench supply, appropriate insulated motor wiring
+      and secure unloaded mount. No ESP32 or ordinary breadboard motor-power path in this first test.
+  - label: Libraries
+    value: No firmware or library required for this exercise. Arduino-ESP32 3.3.2 is the site review baseline, not
+      a dependency of this passive setup.
+  - label: Expected result
+    value: A documented unloaded motor rotates briefly from its rated external supply; reversing polarity with power
+      off reverses direction. No RPM/torque measurement claimed.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+- title: L298N limitations
+  href: /components/l298n-motor-driver.html
+  description: Review voltage drop and driver suitability; not a universal3 V solution.
+eli12: 'A brushed DC motor turns electrical power into rotation; gears trade speed for torque. Two terminals do
+  not prove supply voltage, gear ratio or available torque. The approved picture is a family illustration, not a
+  motor specification.
+
+
+  Use the actual datasheet. The worked TT reference is specified for3–6 V. Startup and stall current can far exceed
+  no-load current, so a supply and future driver must be sized for the real motor. Do not hold the shaft stalled
+  to test it.'
+electrical:
+  supply: Worked reference starts at regulated3 V within its3–6 V range; actual motor rating must be known.
+  signal: No direct GPIO connection. Future H-bridge needs compatible3.3 V inputs and separate motor power/common
+    ground.
+  protection: Suitable load wiring, secure unloaded motor, fingers clear and no stall test. Do not route motor current
+    through GPIO/unknown breadboard rails.
+specs:
+- name: Reference supply
+  value: 3–6 V for Adafruit3777 only
+  why: Not a rating inferred for artwork.
+- name: Direction
+  value: Supply polarity
+  why: Reverse only with power removed.
+- name: Feedback
+  value: None assumed
+  why: Rotation is not measured position/speed.
+output: Brief rated-power test should rotate the unloaded shaft. A supply hitting its current limit may prevent
+  startup; inspect ratings and mechanics before changing limits. Rotation alone does not establish load capability.
+how_it_works: 'For controlled speed/direction, choose an H-bridge for actual startup/stall current and low-voltage
+  operation. The existing L298N page explains voltage drop; it is not automatically suitable for a3 V motor. No
+  firmware is useful until a specific compatible driver circuit is selected.
+
+
+  For a future non-isolated driver circuit, join ESP32 signal ground to driver/supply ground while routing motor
+  current directly through the rated driver and supply wiring. The chosen H-bridge must provide documented recirculation/protection
+  paths for inductive current. A single-direction transistor circuit needs its own flyback protection; neither arrangement
+  permits motor power from GPIO.'
+applications:
+- First unloaded drivetrain check
+- Selecting a documented driver from actual motor requirements
+troubleshooting:
+- problem: No rotation
+  cause: Supply absent/current-limited or shaft obstructed.
+  fix: Disconnect, inspect and verify actual ratings; do not raise voltage blindly.
+- problem: Hot motor or gearbox noise
+  cause: Stall/load, excessive voltage or mechanical fault.
+  fix: Remove power and review motor/mechanical limits.
+- problem: ESP32 resets during later control
+  cause: Load power routed through board or poor returns.
+  fix: Use appropriate external motor supply and complete driver protection/wiring.
+faqs:
+- question: Can I drive it from3V3?
+  answer: Do not use the DevKit3V3 rail or GPIO as motor supply.
+- question: Is a yellow gearbox always6 V?
+  answer: No. Identify the actual product documentation.
+sources:
+- title: Adafruit TT motor3777
+  url: https://www.adafruit.com/product/3777
+  note: Specific3–6 V reference and load/current qualifications; not artwork authentication.
+pinout:
+- pin: Known motor terminal A
+  role: Connection
+  connects: Rated external supply positive
+  note: Reference test3 V; actual model known.
+- pin: Known motor terminal B
+  role: Connection
+  connects: Supply negative
+  note: Reverse only unpowered.
+- pin: ESP32 GPIO /3V3
+  role: Connection
+  connects: No motor connection
+  note: Driver needed for control.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/mini-dc-gear-motor-wiring.svg
+  illustration_alt: Logical wiring for Mini DC Gear Motor; terminal labels rather than physical pin positions
+  summary: A documented unloaded motor connects to rated external DC supply; no ESP32 power or signal connection.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: Known motor terminal A
+    esp32_pin: Rated external supply positive
+    notes: Reference test3 V; actual model known.
+  - component_pin: Known motor terminal B
+    esp32_pin: Supply negative
+    notes: Reverse only unpowered.
+  - component_pin: ESP32 GPIO /3V3
+    esp32_pin: No motor connection
+    notes: Driver needed for control.
+  steps:
+  - Verify model/rating, secure motor and keep shaft unloaded.
+  - With power off connect external rated supply and appropriate wiring.
+  - Apply briefly, stop, then disconnect before reversing terminals.
+library: No firmware or library required for this exercise

@@ -1,0 +1,172 @@
+slug: veml6075-uv-sensor
+name: 'VEML6075 UV Sensor: UVA, UVB and Estimated UV Index'
+category: Sensors
+difficulty: Beginner
+summary: Read compensated UVA/UVB counts and an estimated UV index with a documented 3.3 V I2C setup. Do not treat
+  the module as a calibrated exposure instrument.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/veml6075-uv-sensor-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of VEML6075 UV Sensor; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: Low-voltage bench setup as specified below. ESP32 is optional for passive exercises. Coded examples require
+      classic ESP32-WROOM-32/32E DevKit, unused exposed pins, Arduino IDE 2.x and Arduino-ESP32 3.3.2 (review baseline,
+      not a latest-release claim). Other families need their own pin map.
+  - label: Supported hardware
+    value: 'Approved VEML6075-labelled illustration, exact carrier unverified. Worked reference: Adafruit VEML6075
+      breakout powered at 3.3 V; use its documented labels, not artwork pin positions.'
+  - label: Prerequisites and parts
+    value: Classic WROOM DevKit, documented reference breakout and short wires. GPIO21 SDA / GPIO22 SCL exposed
+      and unused. I2C scanner can check response, not prove identity.
+  - label: Libraries
+    value: Adafruit VEML6075 Library 2.2.2 and its Adafruit BusIO dependency; Arduino-ESP32 3.3.2 Wire. Install
+      dependencies through Library Manager.
+  - label: Expected result
+    value: Serial prints compensated UVA/UVB counts and estimated UV index; initialization failure is reported instead
+      of invented readings.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'VEML6075 measures two ultraviolet bands and compensation channels. The library converts them to compensated
+  UVA/UVB counts and an estimated UV index using coefficients. Counts are not watts per square meter; the estimate
+  depends on optical conditions and calibration.
+
+
+  The approved marking supports the sensor family, not a verified carrier circuit. The bare sensor and breakout
+  have different supply provisions. This example uses the documented Adafruit board at 3.3 V so bus pull-ups are
+  compatible with ESP32. Do not expose yourself to UV lamps to test it; indoor/window-filtered light may give small
+  or negative compensated values.
+
+
+  This is legacy hardware: the reference breakout is listed as no longer stocked. The instructions are for an existing
+  documented board, not a claim of current availability.'
+electrical:
+  supply: Reference breakout VIN at 3.3 V; its regulator output is left disconnected. Bare-chip supply differs;
+    follow Vishay datasheet.
+  signal: I2C SDA/SCL pull-ups must reach 3.3 V, never 5 V for ESP32. Reference board powered at 3.3 V.
+  protection: Common ground. Confirm actual carrier circuit before using a different board; an I2C response does
+    not identify the sensor.
+specs:
+- name: Address
+  value: '0x10'
+  why: Fixed VEML6075 address; response alone is not identity.
+- name: Library output
+  value: Compensated counts and estimated UVI
+  why: Not calibrated irradiance or a health dosimeter.
+- name: Bus
+  value: GPIO21 SDA, GPIO22 SCL at 100 kHz
+  why: Classic WROOM reference pins only.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/veml6075-uv-sensor-wiring.svg
+  illustration_alt: Logical wiring for VEML6075 UV Sensor; terminal labels rather than physical pin positions
+  summary: Adafruit reference VIN3.3 V/GND, SDA21/SCL22; 3v3 unconnected.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: VIN
+    esp32_pin: ESP32 3V3
+    notes: Documented reference only.
+  - component_pin: GND
+    esp32_pin: ESP32 GND
+    notes: Common ground.
+  - component_pin: SDA
+    esp32_pin: GPIO21
+    notes: 3.3 V pull-up domain.
+  - component_pin: SCL
+    esp32_pin: GPIO22
+    notes: 3.3 V pull-up domain.
+  - component_pin: 3v3
+    esp32_pin: Leave disconnected
+    notes: Reference regulator output.
+  steps:
+  - Verify actual board schematic and sensor marking with all power removed.
+  - Wire labelled terminals; run scanner if initialization fails.
+  - Upload and read Serial at 115200 baud; no artificial UV source required.
+code:
+  title: Read UV channels with initialization checks
+  filename: veml6075_uv_sensor.ino
+  wiring: Adafruit reference VIN3.3 V/GND, SDA21/SCL22; 3v3 unconnected.
+  content: "#include <Arduino.h>\n#include <Wire.h>\n#include <Adafruit_VEML6075.h>\n#include <math.h>\nAdafruit_VEML6075\
+    \ uv;\nbool ready = false;\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22, 100000);\n  ready\
+    \ = uv.begin(VEML6075_100MS, false, false, &Wire);\n  if (!ready) Serial.println(\"VEML6075 init failed: check\
+    \ board, power and I2C\");\n}\nvoid loop() {\n  if (!ready) { delay(1000); return; }\n  const float a = uv.readUVA(),\
+    \ b = uv.readUVB(), index = uv.readUVI();\n  if (!isfinite(a) || !isfinite(b) || !isfinite(index))\n    Serial.println(\"\
+    Invalid UV read; check sensor/bus\");\n  else Serial.printf(\"UVA counts=%.2f UVB counts=%.2f estimated UVI=%.2f\\\
+    n\", a, b, index);\n  delay(1000);\n}\n"
+  notes: Pinned 2.2.2 begin/read APIs; default library integration and compensation settings. Sequential calls are
+    not a guaranteed simultaneous snapshot. Finite checks do not detect every I2C fault or establish calibration.
+output: Serial should show numeric compensated channels and estimated UVI under suitable illumination. Indoors,
+  low or negative compensated values can occur. No specific value, measured accuracy or sun-exposure advice is promised.
+how_it_works: The library subtracts compensation channels from UVA/UVB and applies its UV-index model. Enclosures,
+  window glass, angle, contamination and coefficients can change the result. A serial number is not evidence of
+  traceable calibration.
+applications:
+- Comparing documented sensor responses under ordinary light
+- Learning I2C initialization and unit qualifications
+troubleshooting:
+- problem: Initialization fails
+  cause: Wrong device/carrier, power or bus wiring.
+  fix: Check actual marking and 0x10 response; a scanner does not authenticate identity.
+- problem: Very low or negative reading
+  cause: Weak UV or compensation/optical conditions.
+  fix: Do not clamp away evidence or use UV lamps; review environment and library model.
+- problem: Unexpectedly high estimate
+  cause: Optical setup/coefficient mismatch or fault.
+  fix: Check raw context and documentation; do not use this as a safety instrument.
+faqs:
+- question: Are UVA counts irradiance?
+  answer: No. Library compensated counts and estimated UVI are different quantities.
+- question: Can any VEML6075 carrier use 5 V safely?
+  answer: No blanket claim. Supply and pull-up circuits must be checked for that board.
+sources:
+- title: Adafruit reference pinouts
+  url: https://learn.adafruit.com/adafruit-veml6075-uva-uvb-uv-index-sensor/pinouts
+  note: Reference carrier supply and fixed address.
+- title: Pinned Adafruit library 2.2.2
+  url: https://github.com/adafruit/Adafruit_VEML6075/tree/2.2.2
+  note: API, compensation and dependency reviewed.
+- title: Vishay VEML6075 datasheet
+  url: https://cdn.sparkfun.com/assets/3/c/3/2/f/veml6075.pdf
+  note: Chip electrical and optical limits, separate from carrier.
+related_guides:
+- title: I2C scanner
+  href: /guides/i2c-communication.html
+  description: Addresses show responses, not identities.
+pinout:
+- pin: VIN
+  role: Supply
+  connects: ESP32 3V3
+  note: Documented reference only.
+- pin: GND
+  role: Reference
+  connects: ESP32 GND
+  note: Common ground.
+- pin: SDA
+  role: Data
+  connects: GPIO21
+  note: 3.3 V pull-up domain.
+- pin: SCL
+  role: Clock
+  connects: GPIO22
+  note: 3.3 V pull-up domain.
+- pin: 3v3
+  role: Output
+  connects: Leave disconnected
+  note: Reference regulator output.
+library: Adafruit VEML6075 2.2.2; Adafruit BusIO dependency

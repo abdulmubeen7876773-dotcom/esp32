@@ -1,0 +1,178 @@
+slug: microsd-card-module
+name: 'microSD SPI Module: Read a File Safely'
+category: Communication Modules
+difficulty: Beginner
+summary: Mount a prepared card over SPI and read a small text file. Check carrier voltage circuitry before connecting
+  an ESP32.
+date_modified: '2026-10-11'
+concise_layout: true
+show_time_estimates: false
+curated_faqs: true
+board_family: Classic ESP32
+image: /assets/visuals/components/photos/microsd-card-module-illustration.webp
+image_width: 1408
+image_height: 768
+image_alt: Product-style illustration of microSD SPI Module; not a verified physical pin layout
+hide_empty_downloads: true
+setup:
+  items:
+  - label: Board and software
+    value: Low-voltage bench setup as specified below. ESP32 is optional for passive exercises. Coded examples require
+      classic ESP32-WROOM-32/32E DevKit, unused exposed pins, Arduino IDE 2.x and Arduino-ESP32 3.3.2 (review baseline,
+      not a latest-release claim). Other families need their own pin map.
+  - label: Supported hardware
+    value: 'Approved generic SD card adapter illustration; regulator and level shifting unverified. Worked reference:
+      Adafruit MicroSD SPI/SDIO breakout 4682, a 3 V-only board, used in SPI mode.'
+  - label: Prerequisites and parts
+    value: Classic WROOM DevKit, documented reference breakout, spare FAT32 card prepared on a computer with /hello.txt
+      and short wires. Back up data; power off before inserting/removing or rewiring.
+  - label: Libraries
+    value: Arduino-ESP32 3.3.2 built-in SD, FS and SPI; no separately installed generic SD library.
+  - label: Expected result
+    value: Serial prints up to 256 bytes of /hello.txt or a clear mount/file error; the sketch does not format or
+      write the card.
+  - label: Verification status
+    value: Documentation and source review only. Not compiled or tested on hardware. The approved product-style
+      illustration identifies a family, not a verified physical pin layout or manufacturer-authenticated board.
+      Follow the logical diagram and documentation for your actual part.
+related_components:
+- title: ESP32 DevKit power and pins
+  href: /components/esp32-devkit.html
+  description: Check board labels, supply rails and GPIO restrictions.
+eli12: 'A microSD socket carrier exposes the card through SPI or another supported interface. A module marked 5V
+  may include a regulator, level shifters, both or neither; the illustration cannot establish its circuit.
+
+
+  This example uses a documented 3 V-only reference and explicit SPI pins. Card power and signals stay in the 3.3
+  V domain. Other carriers can change labels, pull-ups and timing. The card must be formatted compatibly before
+  the test; mounting is not formatting.'
+electrical:
+  supply: Reference 4682 at 3.3 V only; never 5 V. Verify regulator capacity/decoupling for card bursts on actual
+    board.
+  signal: SPI clock/data/CS in 3.3 V domain. Generic adapter supply label does not prove level compatibility.
+  protection: Common ground and short wires; power off for insertion/removal. No unknown 5 V pull-ups or shared
+    positive supplies.
+specs:
+- name: SPI assignment
+  value: SCK18, MISO19, MOSI23, CS27
+  why: Unused exposed WROOM pins required.
+- name: Test clock
+  value: 1 MHz
+  why: Conservative starting value, not guaranteed performance.
+- name: Test file
+  value: /hello.txt on prepared FAT32
+  why: Read only; at most 256 bytes printed.
+pinout:
+- pin: 3V
+  role: Supply
+  connects: ESP32 3V3
+  note: Reference3Vonly.
+- pin: GND
+  role: Reference
+  connects: ESP32 GND
+  note: Common ground.
+- pin: CLK
+  role: Clock
+  connects: GPIO18
+  note: SPI.
+- pin: SO
+  role: Input
+  connects: GPIO19
+  note: Card output.
+- pin: SI
+  role: Output
+  connects: GPIO23
+  note: Card input.
+- pin: CS
+  role: Select
+  connects: GPIO27
+  note: Active LOW.
+- pin: Other pins
+  role: Unused
+  connects: Leave disconnected
+  note: SPI only.
+wiring:
+  open_full_size: true
+  image: /assets/visuals/components/wiring/microsd-card-module-wiring.svg
+  illustration_alt: Logical wiring for microSD SPI Module; terminal labels rather than physical pin positions
+  summary: Reference3.3 V/GND, CLK18, SO19, SI23, CS27; other pins unconnected.
+  table_columns:
+  - Component terminal
+  - ESP32 / circuit connection
+  - Purpose and qualification
+  table_rows:
+  - component_pin: 3V
+    esp32_pin: ESP32 3V3
+    notes: Reference3Vonly.
+  - component_pin: GND
+    esp32_pin: ESP32 GND
+    notes: Common ground.
+  - component_pin: CLK
+    esp32_pin: GPIO18
+    notes: SPI.
+  - component_pin: SO
+    esp32_pin: GPIO19
+    notes: Card output.
+  - component_pin: SI
+    esp32_pin: GPIO23
+    notes: Card input.
+  - component_pin: CS
+    esp32_pin: GPIO27
+    notes: Active LOW.
+  - component_pin: Other pins
+    esp32_pin: Leave disconnected
+    notes: SPI only.
+  steps:
+  - Prepare a spare backed-up FAT32 card with hello.txt on a computer.
+  - Power off, insert card and wire exact reference labels.
+  - Upload and open Serial115200; inspect mount/file diagnostic before changing clock.
+code:
+  title: Read a prepared text file without writing
+  filename: microsd_card_module.ino
+  wiring: Reference3.3 V/GND, CLK18, SO19, SI23, CS27; other pins unconnected.
+  content: "#include <Arduino.h>\n#include <SPI.h>\n#include <SD.h>\n#include <FS.h>\nconstexpr uint8_t CARD_CS\
+    \ = 27;\nvoid setup() {\n  Serial.begin(115200);\n  SPI.begin(18, 19, 23, CARD_CS);\n  if (!SD.begin(CARD_CS,\
+    \ SPI, 1000000)) {\n    Serial.println(\"SD mount failed: check power, wiring and prepared card\"); return;\n\
+    \  }\n  if (SD.cardType() == CARD_NONE) { Serial.println(\"No card detected\"); SD.end(); return; }\n  File\
+    \ file = SD.open(\"/hello.txt\", FILE_READ);\n  if (!file || file.isDirectory()) {\n    Serial.println(\"Missing\
+    \ /hello.txt or not a file\");\n    if (file) file.close();\n    SD.end(); return;\n  }\n  Serial.println(\"\
+    First up to 256 bytes of /hello.txt:\");\n  for (uint16_t count = 0; count < 256 && file.available(); ++count)\
+    \ {\n    const int value = file.read();\n    if (value < 0) { Serial.println(\"Read error\"); break; }\n   \
+    \ Serial.write(static_cast<uint8_t>(value));\n  }\n  Serial.println(); file.close(); SD.end();\n}\nvoid loop()\
+    \ { delay(1000); }\n"
+  notes: Pinned 3.3.2 SD.begin uses format_if_empty=false by default. This sketch reads once at startup; reset after
+    changing a file with power removed. It does not prove sustained write performance or data integrity.
+output: A supported prepared card should mount and print the first up to 256 bytes. A missing file is distinct from
+  a failed mount. No automatic formatting, logging or filesystem repair occurs.
+how_it_works: SPI assigns separate clock, input, output and chip-select pins; SO/MISO is from the card perspective.
+  The ESP32 SD wrapper mounts the filesystem and opens one file read-only. Power interruptions during other applications
+  writes can corrupt data; this simple reader is not a power-loss-safe logger.
+applications:
+- Reading configuration or text from a prepared card
+- Checking SPI wiring before building a logger
+troubleshooting:
+- problem: Mount failed
+  cause: Wrong labels, supply/burst current, format or unsuitable carrier.
+  fix: Check actual schematic, short wires and spare supported FAT32 card; do not autoformat valuable data.
+- problem: File missing
+  cause: Name/path differs or card prepared incorrectly.
+  fix: Verify root hello.txt on computer, then power off before moving card.
+- problem: Intermittent reads
+  cause: Poor contact, long wires or marginal power.
+  fix: Review power/decoupling and connections; do not assume faster clock fixes it.
+faqs:
+- question: Can a 5V-labelled module connect directly?
+  answer: Only after verifying its actual signal/level-shifting circuit; the label is insufficient.
+- question: Does mount create a filesystem?
+  answer: Not in this example. Prepare a compatible card separately.
+sources:
+- title: Adafruit 4682 pinouts
+  url: https://learn.adafruit.com/adafruit-microsd-spi-sdio/pinouts
+  note: 3 V-only worked reference and SPI terminals.
+- title: Pinned ESP32 SD header
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/SD/src/SD.h
+  note: begin parameters, default formatting disabled and card type.
+- title: Pinned SPI API
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/SPI/src/SPI.h
+  note: Explicit pin assignment.
+library: Built-in SD, FS and SPI — Arduino-ESP32 3.3.2
