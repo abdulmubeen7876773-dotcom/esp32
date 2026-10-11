@@ -38,8 +38,8 @@ def faq_schema(faqs: list) -> str:
 def component_page_html(c: dict, prev_component: dict | None = None, next_component: dict | None = None) -> str:
     slug = c["slug"]
     path = f"components/{slug}.html"
-    title = f"{c['name']} — Component Guide | {SITE_NAME}"
-    desc = c.get("summary", "")
+    title = c.get("meta_title") or f"{c['name']} — Component Guide | {SITE_NAME}"
+    desc = c.get("meta_description") or c.get("summary", "")
     crumbs = breadcrumb_schema([("Home", "/"), ("Components", "components.html"), (c["name"], path)])
     article = json_ld_script(
         {
