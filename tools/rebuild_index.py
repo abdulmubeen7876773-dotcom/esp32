@@ -325,7 +325,7 @@ def home_html(projects):
 {home_primary_paths()}
 {home_project_discovery(source_projects)}
 {home_learning_adventure(source_projects)}
-{home_v3_top_picks(catalog, guides, components)}
+{home_v3_top_picks(catalog, guides, components, include_projects=False)}
 {home_v3_component_feature()}
 {home_v3_why()}
 {home_parent_teacher_split()}

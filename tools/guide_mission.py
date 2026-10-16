@@ -905,9 +905,12 @@ def render_mission_guide(guide: dict) -> str:
   {illustration_block(concept.get("illustration_alt", concept_title), concept_title, "Concept", concept_image)}
   <div class="mission-prose">{_rich_content(concept_body)}</div>
 </section>"""
-    engineering_text = m.get("engineering_explanation", "") or concept_body
+    # Older layouts repeat the concept/intro by default. A page can opt out
+    # without suppressing a separately authored engineering explanation.
+    repeat_explanations = m.get("repeat_explanations", True)
+    engineering_text = m.get("engineering_explanation", "") or (concept_body if repeat_explanations else "")
     engineering_html = mission_prose_section("engineering", "Engineering", "Engineering Explanation", engineering_text)
-    analogy_html = mission_prose_section("analogy", "Real World", "Real-World Analogy", m.get("real_life_analogy", "") or m.get("eli12", ""))
+    analogy_html = mission_prose_section("analogy", "Real World", "Real-World Analogy", m.get("real_life_analogy", "") or (m.get("eli12", "") if repeat_explanations else ""))
     engineer_tip_html = mission_prose_section("engineer-tip", "Tip", "Engineer Tip", m.get("engineer_tip", ""))
     floating_recap_html = mission_prose_section("floating-recap", "Recap", "Floating Pin Recap", m.get("floating_pin_recap", ""))
     internal_resistor_html = mission_prose_section("internal-resistor", "Internal", "ESP32 Internal Pull-up and Pull-down Resistors", m.get("internal_resistor_explanation", ""))
@@ -966,6 +969,8 @@ def render_mission_guide(guide: dict) -> str:
     if not next_item and m.get("next_missions"):
         next_item = m.get("next_missions", [])[0]
     next_html = mission_nav_section("next-mission", "Next", "Next Mission", next_item, "Continue with projects and advanced topics.")
+    if not academy.get("show_next_mission", True):
+        next_html = ""
     continue_html = continue_learning_section(guide)
 
     # Opt-in section selection leaves existing mission layouts unchanged.

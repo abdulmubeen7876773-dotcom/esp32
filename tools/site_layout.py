@@ -1328,6 +1328,9 @@ def home_project_discovery(projects: list[dict]) -> str:
         ),
     ]
     html_blocks = []
+    configured = load_home_recommendations().get("project_discovery")
+    if configured is not None:
+        blocks = [(b["title"], b["description"], b["slugs"], b["id"]) for b in configured]
     for title, desc, slugs, section_id in blocks:
         html_blocks.append(
             f"""<section class="home-discovery-block" id="{esc(section_id)}" aria-labelledby="{esc(section_id)}-heading">
@@ -1580,8 +1583,9 @@ def home_learning_adventure(projects: list[dict]) -> str:
     )
     return f"""<section class="home-learning-finder" id="learning-adventure" aria-labelledby="learning-adventure-heading">
   <div class="wrap">
-    <p class="home-section-eyebrow">Project finder</p>
+    <p class="home-section-eyebrow" id="popular-projects">Project finder</p>
     <h2 id="learning-adventure-heading">Find a project for your next skill</h2>
+    <p>Choose your interests for a three-project progression, from a first build to a further challenge.</p>
     <div class="home-choice-grid">
       <div><h3>Who is building?</h3><div class="home-choice-row" role="group" aria-label="Choose visitor type">{audience_buttons}</div></div>
       <div><h3>What do you want to do?</h3><div class="home-choice-row" role="group" aria-label="Choose learning goal">{goal_buttons}</div></div>
@@ -1836,7 +1840,7 @@ def home_v3_academy() -> str:
 </section>"""
 
 
-def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
+def home_v3_top_picks(projects: list, guides: list, components: list, *, include_projects: bool = True) -> str:
     """Section — Top 3 projects, guides, and components from live catalog."""
     arrow = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
@@ -1905,17 +1909,22 @@ def home_v3_top_picks(projects: list, guides: list, components: list) -> str:
             )
         return "".join(rows)
 
-    return f"""<section class="v3-top-picks reveal" aria-labelledby="v3-top-picks-heading">
-  <div class="wrap">
-    <p class="v3-top-picks-eyebrow">Launch picks</p>
-    <h2 id="v3-top-picks-heading" class="v3-top-picks-heading">Top projects, guides, and components</h2>
-    <p class="v3-top-picks-sub">Hand-picked from the live catalog — start with any row below.</p>
-    <div class="v3-top-picks-grid">
-      <div class="v3-top-picks-col">
+    project_column = f"""<div class="v3-top-picks-col">
         <h3 class="v3-top-picks-col-title">Projects</h3>
         <div class="v3-pick-list">{project_rows()}</div>
         <a class="v3-top-picks-more" href="{site_href("projects.html")}">All projects {arrow}</a>
-      </div>
+      </div>""" if include_projects else ""
+    heading = "Top projects, guides, and components" if include_projects else "Guides and component references"
+    description = "Hand-picked from the live catalog — start with any row below." if include_projects else "Build your GPIO skills or check a part's power, pins and wiring before choosing a project."
+    grid_class = "v3-top-picks-grid" if include_projects else "home-project-discovery-grid"
+    eyebrow = "Launch picks" if include_projects else "Reference picks"
+    return f"""<section class="v3-top-picks reveal" aria-labelledby="v3-top-picks-heading">
+  <div class="wrap">
+    <p class="v3-top-picks-eyebrow">{eyebrow}</p>
+    <h2 id="v3-top-picks-heading" class="v3-top-picks-heading">{heading}</h2>
+    <p class="v3-top-picks-sub">{description}</p>
+    <div class="{grid_class}">
+{project_column}
       <div class="v3-top-picks-col">
         <h3 class="v3-top-picks-col-title">Guides</h3>
         <div class="v3-pick-list">{guide_rows()}</div>
