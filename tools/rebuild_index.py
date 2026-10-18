@@ -311,25 +311,29 @@ def home_html(projects):
     catalog = projects
     counts = site_counts()
     project_count = counts["golden_projects"]
+    cinematic = home.get("design") == "cinematic-maker"
+    if cinematic:
+        from home_cinematic import cinematic_home
+        body = cinematic_home(home, guides, source_projects, components, counts)
+    else:
+        body = (home_v2_declaration(home)
+                + '<div class="wrap">' + beginner_route_html(guides) + '</div>'
+                + home_primary_paths() + home_project_discovery(source_projects)
+                + home_learning_adventure(source_projects)
+                + home_v3_top_picks(catalog, guides, components, include_projects=False)
+                + home_v3_component_feature() + home_v3_why()
+                + home_parent_teacher_split() + home_discovery_links(counts))
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 {head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True, homepage_perf=True)}
-<link rel="preload" as="image" href="/assets/images/heroes/home-hero.webp" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="{home['cinematic']['hero_image'] if cinematic else '/assets/images/heroes/home-hero.webp'}" type="image/webp" fetchpriority="high">
+{'<link rel="stylesheet" href="/assets/cinematic-home.css?v=20261017-cinematic-maker">' if cinematic else ''}
 </head>
-<body class="home-page">
+<body class="home-page{' cinematic-maker' if cinematic else ''}">
 <main>
 {header_html("home", project_count=project_count)}
-{home_v2_declaration(home)}
-<div class="wrap">{beginner_route_html(guides)}</div>
-{home_primary_paths()}
-{home_project_discovery(source_projects)}
-{home_learning_adventure(source_projects)}
-{home_v3_top_picks(catalog, guides, components, include_projects=False)}
-{home_v3_component_feature()}
-{home_v3_why()}
-{home_parent_teacher_split()}
-{home_discovery_links(counts)}
+{body}
 </main>
 {footer_html()}
 <script src="{SEARCH_JS_SRC}" defer></script>

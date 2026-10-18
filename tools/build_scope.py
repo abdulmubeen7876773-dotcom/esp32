@@ -22,10 +22,12 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}):
-        raise ValueError("Scope requires guides, projects and categories; components is optional")
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}):
+        raise ValueError("Scope requires guides, projects and categories; components or homepage is optional")
+    if "homepage" in scope and scope["homepage"] is not True:
+        raise ValueError("Homepage-only scope must set homepage to true")
     if any(not isinstance(v, list) or any(not isinstance(s, str) for s in v)
-           for v in scope.values()):
+           for k, v in scope.items() if k != "homepage"):
         raise ValueError("Scope values must be lists of names")
     store = get_content_store()
     guides = {g["slug"]: g for g in store.guides()}
@@ -46,6 +48,14 @@ def generate_scope(manifest: Path):
         if not path.exists() or path.read_text(encoding="utf-8") != body:
             path.write_text(body, encoding="utf-8")
         print(f"Scoped output: {relative}")
+
+    if scope.get("homepage"):
+        if any(scope[k] for k in required):
+            raise ValueError("Homepage-only scope cannot also select articles")
+        records = [listing.parent_listing_record(p) for p in projects.values()]
+        write("index.html", listing.home_html(records))
+        validate_sitemap(scope)
+        return
 
     if selected_components:
         from build_components import component_page_html, index_html
