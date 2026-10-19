@@ -20,12 +20,6 @@
     return 'badge-beginner';
   }
 
-  function readTime(slug) {
-    var base = 8;
-    if (slug) base += slug.length % 5;
-    return base + ' min read';
-  }
-
   function thumbHtml(category, image) {
     var icons = window.PROJECT_ICONS || {};
     var thumbs = window.PROJECT_THUMBS || {};
@@ -59,7 +53,6 @@
     var descHtml = desc ? '<p class="card-desc">' + esc(desc) + '</p>' : '';
     var levels = p.levels || ['Beginner'];
     var levelsStr = levels.join(',');
-    var rt = readTime(p.slug || '');
     return (
       '<a class="card project-card modern-card project-card-item" href="' +
       esc(p.href) +
@@ -79,9 +72,7 @@
       esc(shortCategory(p.category)) +
       '</span>' +
       levelBadges(levels) +
-      '<span class="badge badge-time">' +
-      esc(rt) +
-      '</span></div><h3>' +
+      '</div><h3>' +
       esc(p.title) +
       '</h3>' +
       descHtml +
@@ -125,6 +116,7 @@
     });
     if (wrap && btn) {
       var needMore = cards.length > PAGE_SIZE && !expanded;
+      wrap.hidden = !needMore;
       wrap.style.display = needMore ? '' : 'none';
       if (needMore) {
         btn.textContent = 'Load More (' + (cards.length - PAGE_SIZE) + ')';
@@ -139,7 +131,7 @@
     var diff = document.getElementById('diff');
     var sort = document.getElementById('sort');
     var count = document.getElementById('count');
-    grid = document.getElementById('grid');
+    var grid = document.getElementById('grid');
     if (!q || !cat || !diff || !count || !grid) return;
 
     function slug(text) {
@@ -226,11 +218,20 @@
           card.tabIndex = 0;
         });
         var wrap = document.getElementById('projects-more-wrap');
-        if (wrap) wrap.style.display = 'none';
+        if (wrap) { wrap.hidden = true; wrap.style.display = 'none'; }
         count.textContent = getVisibleCards().length + ' projects found';
+        var firstNew = getVisibleCards()[PAGE_SIZE];
+        if (firstNew) firstNew.focus();
       });
     }
 
+    var reset = document.getElementById('projects-reset');
+    if (reset) reset.addEventListener('click', function () {
+      q.value = ''; cat.value = ''; diff.value = ''; if (sort) sort.value = 'featured';
+      history.replaceState(null, '', location.pathname); filterProjects(); q.focus();
+    });
+    var initial = new URLSearchParams(location.search);
+    if ([].some.call(diff.options, function(o) { return o.value === initial.get('difficulty'); })) diff.value = initial.get('difficulty');
     applyHashCategory();
     filterProjects();
 
@@ -254,7 +255,7 @@
   }
 
   function loadProjects() {
-    grid = document.getElementById('grid');
+    var grid = document.getElementById('grid');
     if (!grid) return;
 
     if (document.querySelectorAll('.project-card').length) {

@@ -22,12 +22,14 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}, required | {"homepage"}):
-        raise ValueError("Scope requires guides, projects and categories; components or homepage is optional")
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}):
+        raise ValueError("Scope requires guides, projects and categories; components, homepage or navigation is optional")
+    if "navigation" in scope and (scope["navigation"] is not True or any(scope[k] for k in required)):
+        raise ValueError("Navigation-only scope requires true and empty article selections")
     if "homepage" in scope and scope["homepage"] is not True:
         raise ValueError("Homepage-only scope must set homepage to true")
     if any(not isinstance(v, list) or any(not isinstance(s, str) for s in v)
-           for k, v in scope.items() if k != "homepage"):
+           for k, v in scope.items() if k not in {"homepage", "navigation"}):
         raise ValueError("Scope values must be lists of names")
     store = get_content_store()
     guides = {g["slug"]: g for g in store.guides()}
@@ -48,6 +50,12 @@ def generate_scope(manifest: Path):
         if not path.exists() or path.read_text(encoding="utf-8") != body:
             path.write_text(body, encoding="utf-8")
         print(f"Scoped output: {relative}")
+
+    if scope.get("navigation"):
+        from project_catalog import generate_navigation_scope
+        generate_navigation_scope()
+        validate_sitemap(scope)
+        return
 
     if scope.get("homepage"):
         if any(scope[k] for k in required):

@@ -732,7 +732,8 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
     elif cat == "Display Projects":
         related_category = '<p class="meta">Need LED strips or matrix builds? Browse <a href="/category/led-projects.html">ESP32 LED projects</a>.</p>'
     context = category_context_html(cat, projects)
-    return f"""<!DOCTYPE html>
+    from project_catalog import category_layout
+    return category_layout(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 {head_html("", f"{title} | {SITE_NAME}", desc, canonical_path=canon, extra_schema=schema)}
@@ -756,7 +757,7 @@ def render_category_page(cat: str, projects: list[dict]) -> str:
 {footer_html()}
 <script src="{UI_JS_SRC}" defer></script>
 </body>
-</html>"""
+</html>""")
 
 
 def render_category_index(by_cat: dict[str, list[dict]]) -> str:
@@ -778,7 +779,8 @@ def render_category_index(by_cat: dict[str, list[dict]]) -> str:
     title = f"ESP32 Project Categories | {SITE_NAME}"
     desc = "Browse ESP32 Engine project categories by topic, with only public reviewed project tutorials included."
     schema = organization_schema() + webpage_schema(title, desc, "category/")
-    return f"""<!DOCTYPE html>
+    from project_catalog import category_layout
+    return category_layout(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 {head_html("", title, desc, canonical_path="category/", extra_schema=schema)}
@@ -796,7 +798,7 @@ def render_category_index(by_cat: dict[str, list[dict]]) -> str:
 {footer_html()}
 <script src="{UI_JS_SRC}" defer></script>
 </body>
-</html>"""
+</html>""")
 
 
 def main():

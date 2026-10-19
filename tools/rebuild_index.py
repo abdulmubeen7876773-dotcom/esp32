@@ -353,76 +353,8 @@ def projects_listing_html(
     total_count: int,
     text_index: str = "",
 ):
-    page_label = f" — Page {page}" if total_pages > 1 else ""
-    desc = (
-        f"Find {total_count} practical ESP32 projects by level and topic, including beginner builds, IoT, robotics, "
-        f"sensors, displays, and smart-home tutorials with wiring diagrams, Arduino code, and troubleshooting."
-        f"{f' Page {page} of {total_pages}.' if total_pages > 1 else ''}"
-    )
-    schema = organization_schema() + website_schema()
-    preview = "\n".join(parent_grid_card(p) for p in page_projects)
-    canon = projects_page_canonical(page)
-    title = f"ESP32 Projects: {total_count} Practical Tutorials | ESP32 Engine{page_label}"
-    page_links = pagination_head_links(page, total_pages, lambda n: projects_page_path(n))
-    pagination = pagination_nav_html(page, total_pages, projects_page_path)
-    filters = filters_bar_html(True).replace(
-        '<select id="cat" aria-label="Filter by category"><option value="">All categories</option></select>',
-        f'<select id="cat" aria-label="Filter by category"><option value="">All categories</option>{cat_opts}</select>',
-    )
-    hero = category_hero_html(
-        "ESP32 Projects: Beginner to Advanced Builds",
-        "Choose a practical ESP32 build by skill level or topic: start with simple wiring, then move into sensors, displays, IoT dashboards, robotics, and smart-home automation.",
-        "IoT Projects",
-        f'<span class="badge badge-light">{total_count} Projects</span><span class="badge badge-light">Wiring + Arduino code</span><span class="badge badge-light">Difficulty filters</span>',
-    )
-    hero = hero.replace(
-        '<li><a href="/projects.html">Projects</a></li><li aria-current="page">IoT</li>',
-        '<li aria-current="page">Projects</li>',
-    )
-    chooser = """<div class="home-path-grid" aria-label="Choose an ESP32 project path">
-        <article class="home-path-card"><h3>Beginner ESP32 Projects</h3><p>Start with the Beginner filter for simple wiring, clear Arduino code, and low-risk first builds.</p><a href="#grid">Use the Beginner filter</a></article>
-        <article class="home-path-card"><h3>IoT Projects</h3><p>Build Wi-Fi dashboards, MQTT devices, weather stations, and connected sensor nodes.</p><a href="/category/iot-projects.html">Browse IoT projects</a></article>
-        <article class="home-path-card"><h3>Robotics Projects</h3><p>Try motor drivers, line following, robot control, and steering logic.</p><a href="/category/robotics.html">Browse robotics projects</a></article>
-        <article class="home-path-card"><h3>Sensor Projects</h3><p>Read distance, light, motion, soil, air, and environmental signals with ESP32 GPIO and ADC pins.</p><a href="/category/sensor-projects.html">Browse sensor projects</a></article>
-        <article class="home-path-card"><h3>Smart Home Projects</h3><p>Explore thermostat, leak detector, relay, climate, and low-voltage automation ideas.</p><a href="/category/home-automation.html">Browse smart home projects</a></article>
-      </div>"""
-    featured_links = """<p class="meta">Strong starting points: build the <a href="/projects/esp32-oled-weather-clock.html">ESP32 OLED Weather Clock</a> for a compact display and Wi-Fi project, try the <a href="/projects/esp32-line-following-robot.html">ESP32 Line Following Robot</a> for robotics, use the <a href="/projects/esp32-smart-thermostat.html">ESP32 Smart Thermostat</a> for low-voltage climate control, or connect sensor data with the <a href="/projects/esp32-mqtt-sensor-dashboard.html">ESP32 MQTT Sensor Dashboard</a>.</p>"""
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-{head_html("", title, desc, canonical_path=canon, extra_schema=schema)}
-{page_links}
-</head>
-<body class="projects-page">
-<main>
-{header_html("projects", project_count=total_count)}
-{hero}
-<div class="layout-with-sidebar wrap">
-  {sidebar_categories_html("projects")}
-  <div class="main-with-sidebar">
-    <div class="filters-sticky">{filters}</div>
-    <section class="section-block">
-      <p class="meta">Not sure what to build first? Choose a path below, use the category and difficulty filters, or start with <a href="/guides/blink-led-esp32.html">Mission 01 - Blink LED</a> before choosing a larger sensor, display, IoT, or robotics build.</p>
-      {chooser}
-      {featured_links}
-      <div class="grid grid-projects" id="grid">{preview}</div>
-      <p class="meta" id="projects-no-results" hidden>No projects match these filters. Try another category, difficulty, or search word.</p>
-      <div class="section-actions" id="projects-more-wrap"><button type="button" class="btn btn-secondary" id="projects-load-more">Load More</button></div>
-      {text_index}
-      {pagination}
-      <noscript><p class="meta">JavaScript is required for filters. Use the <a href="sitemap.html">sitemap</a>.</p></noscript>
-    </section>
-  </div>
-</div>
-</main>
-{footer_html()}
-<script src="/project-icons.js" defer></script>
-<script src="{SEARCH_JS_SRC}" defer></script>
-<script src="{UI_JS_SRC}" defer></script>
-<script src="/projects.js" defer></script>
-</body>
-</html>
-"""
+    from project_catalog import listing_html
+    return listing_html(cat_opts, page_projects, page, total_pages, total_count, text_index)
 
 
 def cleanup_old_project_pages():
