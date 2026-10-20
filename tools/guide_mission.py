@@ -789,26 +789,26 @@ def _output_preview(text: str) -> str:
     return blocks[0] if blocks else ""
 
 
-def code_section(code: dict, output: str) -> str:
+def code_section(code: dict, output: str, *, show_output_preview: bool = True) -> str:
     if not code.get("content"):
         return ""
     notes = (code.get("notes") or code.get("explain") or "").strip()
     notes_html = ""
     if notes:
         notes_html = f'<div class="mission-code-notes">{_rich_content(notes)}</div>'
-    preview = _output_preview(output)
+    preview = _output_preview(output) if show_output_preview else ""
     preview_html = ""
     if preview:
         preview_html = f"""<aside class="mission-code-preview" aria-label="Expected result preview">
   <h3 class="mission-code-preview-title"><span class="mission-code-preview-icon" aria-hidden="true">✨</span> What you'll see</h3>
   <div class="mission-code-preview-body">{_rich_content(preview)}</div>
 </aside>"""
+    preview_slot = f"\n    {preview_html}" if show_output_preview else ""
     return f"""<section class="mission-section" id="code" aria-labelledby="code-heading">
   {section_heading("code", "⌨️", "Arduino Code")}
   <p class="mission-section-lead">Copy this into Arduino IDE, then click Upload.</p>
   <div class="mission-code-layout">
-    <div class="mission-code-main">{code_panel(code)}</div>
-    {preview_html}
+    <div class="mission-code-main">{code_panel(code)}</div>{preview_slot}
   </div>
   {notes_html}
 </section>"""
@@ -939,7 +939,7 @@ def render_mission_guide(guide: dict) -> str:
 
     code = m.get("code") or {}
     output = m.get("expected_output", "").strip()
-    code_html = code_section(code, output)
+    code_html = code_section(code, output, show_output_preview=m.get("show_output_preview", True))
     code_explanation_items = m.get("code_explanation", [])
     if not code_explanation_items and code.get("notes"):
         code_explanation_items = [{"text": line[2:].strip()} for line in code.get("notes", "").splitlines() if line.strip().startswith("- ")]

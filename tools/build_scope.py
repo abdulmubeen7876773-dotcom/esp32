@@ -22,8 +22,8 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}):
-        raise ValueError("Scope requires guides, projects and categories; components, homepage or navigation is optional")
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}):
+        raise ValueError("Scope requires guides, projects and categories; components, homepage, navigation or pages is optional")
     if "navigation" in scope and (scope["navigation"] is not True or any(scope[k] for k in required)):
         raise ValueError("Navigation-only scope requires true and empty article selections")
     if "homepage" in scope and scope["homepage"] is not True:
@@ -35,6 +35,10 @@ def generate_scope(manifest: Path):
     guides = {g["slug"]: g for g in store.guides()}
     projects = {p["slug"]: p for p in public_projects(store.projects())}
     components = {c["slug"]: c for c in store.components()}
+    pages = store.pages()
+    unknown_pages = set(scope.get("pages", [])) - set(pages)
+    if unknown_pages:
+        raise ValueError(f"Unknown pages: {sorted(unknown_pages)}")
     selected_components = scope.get("components", [])
     unknown_components = set(selected_components) - set(components)
     if unknown_components:
@@ -94,6 +98,11 @@ def generate_scope(manifest: Path):
         write(f"guides/{slug}.html", render_guide(guides[slug]))
     for slug in scope["projects"]:
         write(f"projects/{slug}.html", render_golden_parent(projects[slug]))
+    if scope.get("pages"):
+        from build_static_pages import cms_page_html
+
+        for slug in scope["pages"]:
+            write(f"{slug}.html", cms_page_html(pages[slug]))
     write("guides.html", render_guides_index(store.guides()))
     write("search-index.json", json.dumps(build_index(), ensure_ascii=False, indent=2))
     records = [listing.parent_listing_record(p) for p in projects.values()]
@@ -132,3 +141,6 @@ def validate_sitemap(scope: dict):
         for slug in scope.get(kind, []):
             if f"https://esp32engine.com/{kind}/{slug}.html" not in urls:
                 raise ValueError(f"Scoped sitemap is missing {kind}/{slug}.html")
+    for slug in scope.get("pages", []):
+        if f"https://esp32engine.com/{slug}.html" not in urls:
+            raise ValueError(f"Scoped sitemap is missing {slug}.html")

@@ -155,11 +155,13 @@
       <output data-tool-output="pwm">PWM result appears here.</output>
     </article>
     <article class="tool-card tool-live">
-      <span class="premium-icon">ADC</span><h3>ADC Calculator</h3><p>Convert raw ADC readings to approximate voltage. ESP32 ADC is 12-bit at 3.3V reference.</p>
-      <label>Raw ADC (0-4095) <input data-tool="adc-raw" type="number" value="2048"></label>
-      <label>Reference V <input data-tool="adc-ref" type="number" value="3.3" step="0.1"></label>
+      <span class="premium-icon">ADC</span><h3>ADC Ideal Estimate</h3><p>Estimate voltage using an assumed linear full-scale range. This does not calibrate an ESP32 ADC: the usable range depends on the chip and attenuation, not just its 3.3 V GPIO supply.</p>
+      <p>For measurements, see <a href="/guides/analog-inputs.html">ESP32 ADC range and calibration</a>. Arduino-ESP32 <code>analogRead()</code> returns raw counts; <code>analogReadMilliVolts()</code> returns a calibrated millivolt result.</p>
+      <label>Raw ADC count <input data-tool="adc-raw" type="number" value="2048" min="0" step="1"></label>
+      <label>Assumed full-scale voltage (V) <input data-tool="adc-ref" type="number" value="3.1" min="0" step="0.1"></label>
       <label>Resolution bits <input data-tool="adc-bits" type="number" value="12"></label>
-      <output data-tool-output="adc">ADC result appears here.</output>
+      <output data-tool-output="adc">Ideal estimate appears here.</output>
+      <p>The default 3.1 V illustrates classic ESP32 at 11 dB attenuation in the site's Arduino-ESP32 3.3.2 review baseline. It is not a universal range, safe-input limit or measured calibration.</p>
     </article>
     <article class="tool-card tool-live">
       <span class="premium-icon">Power</span><h3>Power Consumption Calculator</h3><p>Estimate average current across active and deep sleep phases in a duty-cycle project.</p>
@@ -213,11 +215,12 @@
       } else {
         out('pwm', 'Enter frequency, duty cycle, and resolution values.');
       }
-      var raw=num('adc-raw'), ref=num('adc-ref'), abits=num('adc-bits'), maxRaw=Math.pow(2,abits)-1;
-      if(raw>=0 && raw<=maxRaw && ref>0 && abits>0){
-        out('adc','Voltage: ~'+((raw/maxRaw)*ref).toFixed(3)+'V ('+((raw/maxRaw)*100).toFixed(1)+'% of full scale)');
+      var rawInput=document.querySelector('[data-tool="adc-raw"]').value.trim();
+      var raw=rawInput === '' ? NaN : num('adc-raw'), ref=num('adc-ref'), abits=num('adc-bits'), maxRaw=Math.pow(2,abits)-1;
+      if(Number.isInteger(raw) && raw>=0 && raw<=maxRaw && Number.isFinite(ref) && ref>0 && Number.isInteger(abits) && abits>=1 && abits<=16){
+        out('adc','Ideal estimate: ~'+((raw/maxRaw)*ref).toFixed(3)+' V ('+((raw/maxRaw)*100).toFixed(1)+'% of assumed full scale; not calibrated)');
       } else {
-        out('adc', 'Enter ADC raw, reference voltage, and resolution values.');
+        out('adc', 'Enter a whole-number raw count within the selected resolution, a positive assumed full-scale voltage, and 1-16 resolution bits.');
       }
       var aMa=num('pwr-active-ma'), aMs=num('pwr-active-ms'), sMa=num('pwr-sleep-ma'), sMs=num('pwr-sleep-ms'), total=aMs+sMs;
       if(total>0){
