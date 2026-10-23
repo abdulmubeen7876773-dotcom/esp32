@@ -116,7 +116,7 @@ def mission_meta_badges_html(guide: dict, include_trust: bool = True, compact: b
     return f'<div class="{cls}">{"".join(parts)}</div>'
 
 
-def academy_link_list(items: list, fallback_prefix: str = "guides") -> str:
+def academy_link_list(items: list, fallback_prefix: str = "guides", *, use_catalog_copy: bool = True) -> str:
     rows = []
     for item in items:
         if isinstance(item, str):
@@ -130,7 +130,7 @@ def academy_link_list(items: list, fallback_prefix: str = "guides") -> str:
             desc = item.get("description", "")
             if not href and slug:
                 href = site_href(f"{fallback_prefix}/{slug}.html")
-        if fallback_prefix == "projects":
+        if fallback_prefix == "projects" and use_catalog_copy:
             slug = project_slug_from_href(href) or (item if isinstance(item, str) else item.get("slug", ""))
             if slug in PARENT_BY_SLUG:
                 project = PARENT_BY_SLUG[slug]
@@ -585,14 +585,19 @@ def related_components_section(guide: dict) -> str:
 
 
 def related_projects_section(guide: dict) -> str:
-    projects = (guide.get("academy") or {}).get("unlocked_projects", [])
+    """Default to catalog cards; explicit authored copy preserves page-reviewed labels."""
+    academy = guide.get("academy") or {}
+    projects = academy.get("unlocked_projects", [])
+    copy_source = academy.get("project_link_copy", "catalog")
+    if copy_source not in {"catalog", "authored"}:
+        raise ValueError("project_link_copy must be catalog or authored")
     if not projects:
         projects = inferred_related_projects(guide)
     if not projects:
         return ""
     return f"""<section class="mission-section academy-unlocks" id="related-projects" aria-labelledby="related-projects-heading">
   {section_heading("related-projects", "Projects", "Related Projects")}
-  {academy_link_list(projects, "projects")}
+  {academy_link_list(projects, "projects", use_catalog_copy=copy_source != "authored")}
 </section>"""
 
 
