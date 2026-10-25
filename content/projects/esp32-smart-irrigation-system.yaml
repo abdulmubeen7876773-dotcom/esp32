@@ -8,16 +8,16 @@ featured_image: /assets/images/generated/esp32-smart-irrigation-system.webp
 hero_image: /assets/images/generated/esp32-smart-irrigation-system.webp
 placeholder_image: /assets/visuals/projects/placeholders/esp32-smart-irrigation-system-placeholder.svg
 og_image: /assets/images/og/esp32-smart-irrigation-system.webp
-description: Build a plant watering controller that reads soil moisture and switches a pump or valve only when the
-  soil is dry.
-meta_description: Build a plant watering controller that reads soil moisture and switches a pump or valve only when
-  the soil is dry.
+description: Build a calibrated ESP32 soil-moisture controller with a documented active-HIGH relay, low-voltage
+  pump wiring, hysteresis and a latched watering timeout.
+meta_description: Build a calibrated ESP32 soil-moisture controller with a documented active-HIGH relay, low-voltage
+  pump wiring, hysteresis and a latched watering timeout.
 source_base: esp32-smart-irrigation-system
 sensor: soil moisture probe
 output: relay-controlled pump
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-10-26'
 keywords:
 - ESP32
 - ESP32 Smart Irrigation System
@@ -41,109 +41,122 @@ project:
   age: Ages 12+
   estimated_time: 90-150 min
   budget: Under $35
-  what_you_build: A working irrigation controller with an ESP32, a real input, a controlled output, Serial Monitor
-    diagnostics, and a wiring map you can expand into a more advanced version.
+  what_you_build: 'A supervised plant-watering prototype: calibrate the probe with the pump disabled, then
+    use two moisture thresholds to control a normally-open relay contact. Startup is OFF, each watering run
+    is limited, and an out-of-range reading or run timeout latches OFF until reset. It is not an unattended
+    irrigation or plant-safety guarantee.'
   components:
-  - item: ESP32 DevKit board
-    note: Main controller
-    icon: PART
+  - item: Classic ESP32-WROOM DevKit
+    note: USB data cable; GPIO34 ADC1 and GPIO26 output.
     link: /components/esp32-devkit.html
-  - item: Soil Moisture Probe
-    note: Primary input for the project
-    icon: PART
-  - item: Relay-Controlled Pump
-    note: Physical output controlled by ESP32
-    icon: PART
+  - item: DFRobot SEN0193 probe
+    note: Supply from 3V3; manufacturer specifies analog output 0–3.0 V. Identify labelled terminals.
+  - item: 'Adafruit STEMMA relay #4409'
+    note: External regulated 5 V control supply; 10 kΩ Signal-to-GND pull-down.
     link: /components/relay-module.html
-  - item: Breadboard and jumper wires
-    note: Prototype wiring
-    icon: PART
-  - item: USB data cable
-    note: Programming and testing
-    icon: PART
-  bom:
-  - part: ESP32 DevKit
-    qty: '1'
-    estimated_cost: $6-$10
-    notes: USB board
-  - part: Soil Moisture Probe
-    qty: '1'
-    estimated_cost: $2-$10
-    notes: Project input
-  - part: Relay-Controlled Pump
-    qty: '1'
-    estimated_cost: $3-$12
-    notes: Use low-voltage test hardware
-  - part: Breadboard and wires
-    qty: 1 set
-    estimated_cost: $3-$5
-    notes: Prototype wiring
+  - item: 'Adafruit #4547 3 V submersible pump, tubing and separate regulated 3 V supply'
+    note: Listed operating draw 100 mA is not a stall rating; verify startup/stall load, DC contact rating,
+      fuse, leads and flyback diode before use.
+  - item: 10 kΩ resistor and suitable terminals
+    note: Keep pump current off breadboard/GPIO wiring.
+    link: /components/through-hole-resistors.html
+  bom: []
   wiring:
-    illustration_alt: ESP32 Smart Irrigation System wiring diagram
-    summary: Wire the soil moisture probe first, verify readings, then connect the relay-controlled pump.
+    illustration_alt: Logical SEN0193 and STEMMA irrigation circuit with separate pump supply and flyback diode;
+      not physical pin positions
+    summary: SEN0193 VCC goes to 3V3, GND to ESP32 GND and OUT to GPIO34. STEMMA Signal goes to GPIO26 with
+      10 kΩ to GND; its Vin uses external regulated 5 V, with control supply negative joined to ESP32 GND.
+      Keep external positive separate from USB. In the isolated contact circuit, pump supply positive goes
+      through an appropriate fuse to COM; NO goes to pump positive; pump negative returns to pump supply negative.
+      Fit a flyback diode directly across the brushed pump, cathode/stripe at pump positive and anode at pump
+      negative; select forward/surge current and reverse voltage ratings for the motor/supply. Contact isolation
+      means the separate pump return need not join control ground. Read labels, not illustration positions.
     steps:
-    - Unplug USB before placing modules on the breadboard.
-    - Connect the soil moisture probe power pins to the correct 3.3 V or 5 V rail according to its module label.
-    - Connect the soil moisture probe signal line to GPIO34.
-    - Connect the relay-controlled pump control input to GPIO26 and share ground with the ESP32.
-    - Power the ESP32 from USB and test the input reading before enabling the output.
+    - Disconnect all power. Wire and test the sensor and relay control side without pump power.
+    - Upload the default calibration-only sketch. Observe stable raw readings with the same soil, insertion
+      depth and supply at a dry condition and after watering/draining. Do not immerse the upper electronics.
+    - Set DRY_RAW and WET_RAW from your own observations; this build requires dry counts greater than wet counts.
+      Set CALIBRATED true only after reviewing the measured range.
+    - With the pump supply still unplugged, verify LOW=OFF and HIGH=ON at COM/NO. Unknown relay polarity needs
+      a different reviewed interface, not a blind code inversion.
+    - Verify pump/contact/supply ratings and suppression, wire the contact circuit, then supervise a short
+      test with the disconnect reachable.
   gpio_map:
-  - signal: soil moisture probe
+  - signal: SEN0193 VCC / GND
+    esp32_pin: 3V3 / GND
+    direction: Power
+    notes: Selected probe only; never infer unknown 5 V module output safety
+  - signal: SEN0193 analog OUT
     esp32_pin: GPIO34
-    direction: Input
-    notes: Read before controlling output
-  - signal: relay-controlled pump
+    direction: Input ADC1
+    notes: 3.0 V maximum documented output; raw counts are not water-content percentage
+  - signal: STEMMA Signal
     esp32_pin: GPIO26
     direction: Output
-    notes: Drive through a module or driver
-  - signal: Status LED
-    esp32_pin: GPIO2
-    direction: Output
-    notes: Optional debug indicator
-  - signal: Serial Monitor
-    esp32_pin: USB
-    direction: Debug
-    notes: 115200 baud
+    notes: Active HIGH; 10 kΩ to control GND
+  - signal: STEMMA Vin / GND
+    esp32_pin: External +5 V / shared GND
+    direction: Power
+    notes: Do not join external +5 V to USB-powered board positive
+  - signal: Relay COM → NO
+    esp32_pin: Pump supply + → pump +
+    direction: Switched load
+    notes: NC unused; pump − returns to its own supply −; diode across pump
   code:
     filename: smart-irrigation-system.ino
-    content: "const int SOIL_PIN = 34;\nconst int RELAY_PIN = 26;\n\nconst int DRY_ON = 2600;\nconst int WET_OFF\
-      \ = 1900;\nbool pumpOn = false;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(RELAY_PIN, OUTPUT);\n\
-      \  digitalWrite(RELAY_PIN, LOW);\n  Serial.println(\"Smart irrigation ready\");\n}\n\nvoid loop() {\n  int\
-      \ soil = analogRead(SOIL_PIN);\n  if (!pumpOn && soil > DRY_ON) pumpOn = true;\n  if (pumpOn && soil < WET_OFF)\
-      \ pumpOn = false;\n\n  digitalWrite(RELAY_PIN, pumpOn ? HIGH : LOW);\n  Serial.print(\"Soil raw: \"); Serial.print(soil);\n\
-      \  Serial.print(\" | Pump: \"); Serial.println(pumpOn ? \"ON\" : \"OFF\");\n  delay(1000);\n}\n"
-  expected_output: Serial Monitor should show a changing reading. When the soil moisture probe reaches the test
-    condition, the status LED and relay-controlled pump should switch state. If the reading changes but the output
-    does not, debug the output wiring separately.
+    content: "#include <Arduino.h>\nconstexpr uint8_t SOIL_PIN = 34, RELAY_PIN = 26;\nconstexpr bool CALIBRATED\
+      \ = false; // Enable only after measuring your own soil.\nconstexpr int DRY_RAW = 0, WET_RAW = 0; //\
+      \ Replace both; dry must be higher.\nconstexpr uint32_t SAMPLE_MS = 1000, MAX_RUN_MS = 10000, SOAK_MS\
+      \ = 60000;\nbool pumpOn = false, fault = false, calibrationOK = false;\nuint32_t lastSample = 0, runStarted\
+      \ = 0, stoppedAt = 0;\n\nvoid stopPump() {\n  digitalWrite(RELAY_PIN, LOW); // Supported STEMMA 4409\
+      \ only: LOW is OFF.\n  pumpOn = false;\n  stoppedAt = millis();\n}\nvoid failOff(const char* reason)\
+      \ {\n  stopPump(); fault = true;\n  Serial.print(\"LATCHED OFF: \"); Serial.println(reason);\n}\nvoid\
+      \ setup() {\n  digitalWrite(RELAY_PIN, LOW);\n  pinMode(RELAY_PIN, OUTPUT); // External 10k pull-down\
+      \ covers high-impedance reset.\n  stopPump();\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  analogSetPinAttenuation(SOIL_PIN, ADC_11db);\n  calibrationOK = WET_RAW > 100 && DRY_RAW < 4000 &&\
+      \ DRY_RAW-WET_RAW >= 200;\n  if (CALIBRATED && !calibrationOK) failOff(\"invalid calibration constants\"\
+      );\n  Serial.println(CALIBRATED ? \"Configured; startup soak before watering\" :\n    \"CALIBRATION ONLY:\
+      \ pump OFF; record raw values\");\n}\nvoid loop() {\n  uint32_t now = millis();\n  if (pumpOn && now-runStarted\
+      \ >= MAX_RUN_MS) failOff(\"watering timeout; inspect before reset\");\n  if (now-lastSample < SAMPLE_MS)\
+      \ return;\n  lastSample = now;\n  int raw = analogRead(SOIL_PIN);\n  Serial.printf(\"Soil raw: %d\",\
+      \ raw);\n  if (!CALIBRATED) { Serial.println(\" | calibration only, OFF\"); return; }\n  if (fault) {\
+      \ Serial.println(\" | LATCHED OFF\"); return; }\n  if (raw < 100 || raw > 4000 || raw < WET_RAW-100 ||\
+      \ raw > DRY_RAW+100) {\n    Serial.println(); failOff(\"reading outside configured guard band\"); return;\n\
+      \  }\n  float relative = 100.0f * (DRY_RAW-raw) / (DRY_RAW-WET_RAW);\n  relative = constrain(relative,\
+      \ 0.0f, 100.0f);\n  if (pumpOn && relative >= 55.0f) stopPump();\n  else if (!pumpOn && relative <= 30.0f\
+      \ && now-stoppedAt >= SOAK_MS) {\n    digitalWrite(RELAY_PIN, HIGH); pumpOn = true; runStarted = now;\n\
+      \  }\n  Serial.printf(\" | relative %.1f %% | Pump %s\\n\", relative, pumpOn ? \"ON\" : \"OFF\");\n}\n"
+  expected_output: Initially Serial prints raw counts and calibration only, OFF. With measured constants and
+    calibration enabled, a supervised dry condition can start the relay after the startup soak. A wet threshold
+    stops it. A ten-second run without reaching the wet threshold produces LATCHED OFF; reset only after diagnosis.
+    These are expected checks, not recorded hardware results.
   common_mistakes:
   - text: Testing input and output for the first time together.
   - text: Using a GPIO pin that does not match the code constant.
   - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
   - text: Forgetting the shared ground between modules.
   troubleshooting:
-  - problem: soil moisture probe never changes
-    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
-  - problem: relay-controlled pump does not switch
-    fix: Test the output module with a simple blink-style sketch before using the full project.
-  - problem: ESP32 resets under load
-    fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
-  - problem: Behavior is reversed
-    fix: Your module may be active LOW; invert the output logic after confirming with Serial Monitor.
+  - problem: Pump starts during reset
+    fix: Disconnect load power. Confirm exact active-HIGH relay, Signal pull-down and COM/NO. An active-LOW
+      module is outside this circuit.
+  - problem: Raw counts barely change or run backwards
+    fix: Check selected sensor, 3.3 V supply, depth and soil contact. Measure endpoints again; do not reverse
+      thresholds to hide an unknown variant.
+  - problem: LATCHED OFF
+    fix: Read the reason. Check calibration and watering response with pump power off; verify time/flow suitability
+      before a manual reset.
+  - problem: Relay clicks but pump does not run
+    fix: With power off inspect COM/NO, supply, fuse, polarity and motor ratings. GPIO does not supply pump
+      power.
+  - problem: Controller resets or water continues after OFF
+    fix: Disconnect pump supply immediately. Inspect supply noise, suppression, welded contacts and siphoning;
+      software OFF is not physical isolation.
   upgrade_ideas:
-  - Add OLED status feedback.
-  - Add Wi-Fi dashboard or mobile alerts.
-  - Store event history in flash or a cloud service.
-  - Add calibration settings instead of hard-coded thresholds.
+  - Add independently verified reservoir/flow protection before considering unattended operation.
   related_guides:
-  - title: ESP32 IoT Learning Path
-    href: /learning.html#iot-basics
-    description: Follow the connected-project sequence before adding smart-home automation.
-  - title: Read Temperature with DHT11
-    href: /guides/read-temperature-dht22.html
-    description: Learn the sensor-reading workflow used in many ESP32 projects.
-  - title: Connect an OLED Display
-    href: /guides/connect-oled-esp32.html
-    description: Add a local display for values, status, and debugging.
+  - title: ADC raw readings and voltage limits
+    href: /guides/analog-inputs-reading-real-world.html
+    description: Separate raw counts, calibrated voltage and safe input limits.
   related_projects:
   - title: ESP32 IoT Weather Station
     href: /projects/esp32-iot-weather-station.html
@@ -152,60 +165,56 @@ project:
     href: /projects/esp32-home-climate-automation.html
     description: Turn measurements into automatic control decisions.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - Wire and test soil moisture probe
     - Control relay-controlled pump from ESP32
     - Debug hardware with Serial Monitor
     - Improve the project safely
-  story: 'ESP32 Smart Irrigation System reads a soil moisture probe, compares the calibrated dry/wet range with a
-    watering threshold, and switches a relay-controlled pump output only when the measured soil condition calls for it.
+  story: 'ESP32 Smart Irrigation System reads a soil moisture probe, compares the calibrated dry/wet range
+    with a watering threshold, and switches a relay-controlled pump output only when the measured soil condition
+    calls for it.
 
 
-    The important lesson is not only the finished irrigation controller. You learn to calibrate the probe in real
-    soil, choose thresholds from those readings, and keep pump power isolated from the ESP32 control signal.'
+    The important lesson is not only the finished irrigation controller. You learn to calibrate the probe in
+    real soil, choose thresholds from those readings, and keep pump power isolated from the ESP32 control signal.'
   eli12: Think of the ESP32 as the brain. The soil moisture probe is how it notices the world. The relay-controlled
-    pump is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.
-  parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
-    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
-    circuit. Do not use mains voltage on a breadboard.
+    pump is how it answers back. The code is the rule book that tells the brain what to do when the numbers
+    change.
+  parent_safety: Disconnect USB and both external supplies before wiring. Keep the controller, connections
+    and supply dry; this probe is not permission to submerge its electronics. Start with the pump supply unplugged.
+    Use a reachable power disconnect and supervise all watering; welded contacts, siphoning, dry running and
+    plausible sensor faults are not prevented by firmware. No mains wiring is covered. Keep the selected pump
+    inlet submerged/primed during its brief supervised run, but keep the sensor electronics and all connections
+    dry. Do not use it for drinking water.
   learning_objectives:
   - Wire and test the soil moisture probe before connecting the rest of the circuit.
   - Map each signal to a named ESP32 GPIO and keep the code constants readable.
   - Control relay-controlled pump using a clear threshold or command instead of hidden magic numbers.
   - Use Serial Monitor as an engineering tool, not only as a success message.
   - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an output side. The soil moisture probe tells
-    the ESP32 what is happening. The relay-controlled pump receives a controlled signal from the ESP32, usually
-    through a driver, relay, or module that can handle more current than a GPIO pin.
-  engineering_explanation: A reliable irrigation controller is built in layers. First prove the input, then prove
-    the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
-    lock, or automation fails and every wire looks suspicious at the same time.
-  code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
-    and then updates the output and status LED. Replace the threshold with values measured from your own soil moisture
-    probe because modules vary.
+  circuit_explanation: The circuit is split into an input side and an output side. The soil moisture probe
+    tells the ESP32 what is happening. The relay-controlled pump receives a controlled signal from the ESP32,
+    usually through a driver, relay, or module that can handle more current than a GPIO pin.
+  engineering_explanation: A probe reports an electrical response affected by soil, salinity, depth and installation.
+    Relative calibration is useful for a pot experiment, not a universal moisture percentage. The SEN0193 specified
+    output fits this selected ESP32 input configuration; attenuation is not overvoltage protection. Follow
+    the detailed ADC guide for measurement limits. A plausible stuck reading can escape these guards. Use no
+    unattended pump until the whole hydraulic/electrical design has independent fault protection.
+  code_explanation: The sketch explicitly selects 12-bit ADC1 raw counts and attenuation. Calibration produces
+    a relative scale, then two thresholds provide hysteresis. Timeout is checked every loop; sensor checks
+    run nominally once a second. Faults latch, so the software does not repeatedly restart a timed-out pump.
+    No status LED is driven. Hardware contacts, water flow and soil health are not measured.
   testing_checklist:
-  - ESP32 appears on the correct port and accepts a basic blink upload.
-  - Ground is shared between every module that exchanges signals with the ESP32.
-  - Each GPIO in the code matches the wire connected on the breadboard.
-  - Serial Monitor prints startup text at 115200 baud.
-  - The soil moisture probe value changes when you create a real test condition.
-  - The relay-controlled pump changes only when the expected condition is reached.
-  - The circuit still behaves correctly after power is removed and restored.
-  build_photos:
-  - title: Breadboard overview
-    note: Show the ESP32, module placement, and power rails clearly.
-  - title: Close-up wiring
-    note: Capture each GPIO wire so beginners can compare their build.
-  - title: Working output
-    note: Show the Serial Monitor, display, robot, pump, or lock state after the code runs.
-  downloads:
-  - text: ESP32 Smart Irrigation System Arduino sketch
-    note: Use the code section as the downloadable source until file downloads are published.
-  - text: Wiring checklist
-    note: Match the GPIO table and wiring steps before powering the circuit.
-  - text: Troubleshooting worksheet
-    note: Record symptoms, Serial output, voltage checks, and fixes.
+  - Verify the default sketch never commands the relay ON.
+  - Record endpoints with pump power disconnected.
+  - Check relay reset/OFF/ON using contact continuity before attaching the pump.
+  - In a supervised test verify hysteresis, soak delay and timeout latch with suitable spill containment.
+  - Power off before simulating a missing sensor; a floating input may not be detected.
+  build_photos: []
+  downloads: []
   real_world_applications:
   - Classroom irrigation controller trainer
   - STEM lab demonstration
@@ -213,14 +222,48 @@ project:
   - Engineering debugging practice
   - IoT portfolio project
   faqs:
-  - question: Why does my soil moisture probe reading look wrong?
-    answer: Soil type, sensor depth, and probe condition change the reading. Calibrate the GPIO34 value in dry and
-      wet soil before trusting pump decisions.
-  - question: Why does relay-controlled pump not respond?
-    answer: Check the ground connection first. Then confirm the output pin, power supply capacity, and whether the
-      output module uses active HIGH or active LOW logic.
-  - question: Can the pump run directly from an ESP32 pin?
-    answer: No. The ESP32 should only drive the relay or driver input. Power the pump from a suitable separate supply
-      and keep a common ground where the driver requires it.
+  - question: Does 50% mean the soil contains 50% water?
+    answer: No. It is halfway between the two configured raw-count endpoints, not volumetric water content.
+  - question: Can I use an active-LOW relay?
+    answer: Not with this wiring and startup assumption. Select a separately reviewed interface and its reset
+      behavior first.
+  tutorial_flow: true
+  assumptions: 'Classic ESP32-WROOM DevKit with the named pins exposed; Arduino IDE 2.x and Arduino-ESP32 3.3.2
+    review baseline, not a latest-release claim. Other chip families require their own pin review. Serial Monitor:
+    115200 baud. Documentation/code review does not establish compilation or hardware operation; neither has
+    been performed for these changes. Use a DFRobot SEN0193 capacitive probe at 3.3 V and Adafruit STEMMA non-latching
+    relay #4409 at external 5 V. Its input is active HIGH and accepts this 3.3 V command. A generic probe or
+    active-LOW relay is not a drop-in substitute. Selected load: Adafruit #4547 submersible pump at a separate
+    regulated 3 V, with the inlet submerged while running. Its listed 100 mA operating draw is not a startup/stall
+    rating. Verify worst-case current, fuse and relay DC motor-switching suitability before powering it; otherwise
+    stop at the contact-only test. This is not for drinking water or long-term installations.'
+  libraries:
+  - Arduino-ESP32 3.3.2 built-in ADC and GPIO APIs; no third-party library.
+  configuration: Default CALIBRATED=false keeps the pump OFF while printing raw counts. Record dry and watered/drained
+    soil readings in the actual pot; air/water endpoints alone do not establish a plant watering threshold.
+    Replace both zero constants, then set CALIBRATED=true. The code requires 100 < WET_RAW < DRY_RAW < 4000
+    and a span of at least 200 counts; these are illustrative fault guards, not sensor specifications. It switches
+    ON below 30% and OFF above 55% of that relative calibrated span. Those percentages are not volumetric water
+    content. Tune them for your plant before any supervised pump run. MAX_RUN_MS=10000 and SOAK_MS=60000 are
+    bench limits, not validated watering amounts; shorter runs may be necessary.
+  behavior:
+  - - Startup / uncalibrated
+    - Relay command LOW. Calibration-only mode never enables the pump. Configured mode waits at least 60 seconds.
+  - - Dry / wet
+    - Start at relative ≤30%; stop at ≥55%; after a normal stop wait at least 60 seconds before another run.
+  - - Run limit / invalid reading
+    - Command OFF and latch until reset. Diagnose with all load power disconnected before resetting.
+  - - Undetected fault
+    - A disconnected or damaged sensor may still produce plausible counts. There is no flow, tank-level, current
+      or independent watchdog feedback.
+  references:
+  - title: DFRobot SEN0193 specifications and calibration
+    href: https://wiki.dfrobot.com/sen0193
+  - title: STEMMA relay pinouts and polarity
+    href: https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/pinouts
+  - title: ADC API at review baseline 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.h
+  - title: 'Selected Adafruit #4547 pump requirements and limitations'
+    href: https://www.adafruit.com/product/4547
 quality_status: golden
 status: complete

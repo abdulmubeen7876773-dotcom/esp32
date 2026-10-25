@@ -17,7 +17,7 @@ sensor: MFRC522 RFID reader
 output: servo lock actuator
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-08-22'
+date_modified: '2026-10-26'
 keywords:
 - ESP32
 - ESP32 Smart Door Lock
@@ -41,117 +41,119 @@ project:
   age: Ages 12+
   estimated_time: 90-150 min
   budget: Under $35
-  what_you_build: A working educational RFID door lock prototype with an ESP32, an MFRC522 RFID reader using SS
-    on GPIO5 and RST on GPIO22, a servo signal on GPIO26, Serial Monitor messages for approved and unknown cards,
-    and clear limits so it is not mistaken for a certified access-control system.
+  what_you_build: A tabletop RFID access-decision demonstration. An MFRC522 reads a compatible card UID; after
+    explicit provisioning, a matching UID commands a small unloaded servo for five seconds, then returns to
+    its starting command. Enrollment mode prints UIDs without starting servo pulses. No real door, solenoid
+    or certified security system is supported.
   components:
-  - item: ESP32 DevKit board
-    note: Main controller
-    icon: PART
+  - item: Classic ESP32-WROOM DevKit
+    note: USB data cable; explicit SPI pins in code.
     link: /components/esp32-devkit.html
-  - item: MFRC522 RFID reader
-    note: Card reader used for the access decision
-    icon: PART
-  - item: Small hobby servo or low-voltage lock actuator
-    note: Demonstration lock movement controlled from GPIO26
-    icon: PART
-  - item: Breadboard and jumper wires
-    note: Prototype wiring
-    icon: PART
-  - item: USB data cable
-    note: Programming and testing
-    icon: PART
-  bom:
-  - part: ESP32 DevKit
-    qty: '1'
-    estimated_cost: $6-$10
-    notes: USB board
-  - part: MFRC522 RFID reader
-    qty: '1'
-    estimated_cost: $2-$10
-    notes: Card reader input
-  - part: Small hobby servo or low-voltage lock actuator
-    qty: '1'
-    estimated_cost: $3-$12
-    notes: Use low-voltage test hardware and avoid real door hardware
-  - part: Breadboard and wires
-    qty: 1 set
-    estimated_cost: $3-$5
-    notes: Prototype wiring
+  - item: Documented 3.3 V MFRC522 SPI breakout and matching card
+    note: Verify actual labels; pin marked SDA is chip select in SPI mode.
+    link: /components/mfrc522-rfid-reader.html
+  - item: 'FEETECH FS90 positional servo, Pololu #2818'
+    note: External regulated 5 V, at least 1 A bench budget for one unloaded servo; verify actual peaks.
+  - item: 10 kΩ resistor and short wires
+    note: Servo Signal-to-GND pull-down; motor power via suitable terminals.
+    link: /components/through-hole-resistors.html
+  bom: []
   wiring:
-    illustration_alt: ESP32 Smart Door Lock wiring diagram
-    summary: Wire the MFRC522 RFID reader first, verify card reads in Serial Monitor, then connect the servo signal
-      on GPIO26. Keep the build low-voltage and treat the servo or lock mechanism as a classroom prototype.
+    illustration_alt: Logical MFRC522 SPI and externally powered FS90 circuit; not physical connector pin order
+    summary: Use 3V3 and GND for the selected reader; SCK18, MISO19, MOSI23, SS/SDA5 and RST22 match explicit
+      SPI.begin(18,19,23,5). Leave IRQ unused. FS90 signal uses GPIO26 with 10 kΩ to GND; positive uses external
+      regulated 5 V and ground joins supply negative and ESP32 GND. Keep external positive separate from USB.
+      Read the actual connector documentation, not generic colors or this logical drawing.
     steps:
-    - Unplug USB before placing modules on the breadboard.
-    - Connect the MFRC522 RFID reader power pins according to its module label; common MFRC522 boards use 3.3 V
-      logic, not 5 V GPIO signals.
-    - Connect MFRC522 SS/SDA to GPIO5 and RST to GPIO22 to match the code constants.
-    - Connect the MFRC522 SPI bus to the ESP32 SPI pins used by your board and library setup.
-    - Connect the servo signal wire to GPIO26 and share ground with the ESP32.
-    - Power the servo or lock actuator from a suitable low-voltage supply if USB power is not stable; do not power
-      a motorized lock directly from an ESP32 GPIO.
-    - Upload the sketch, scan a known card, and verify Serial Monitor before attaching the lock mechanism.
+    - Disconnect USB and servo power. Wire the reader by labels using the table.
+    - Leave servo power off; upload enrollment-mode code and open Serial at 115200. Scan a compatible card
+      and record its complete UID byte sequence.
+    - Replace ALLOWED_UID with those bytes, including all 4, 7 or 10 bytes as printed. Set PROVISIONED=true
+      only for the demonstration card; re-upload.
+    - Wire the selected unloaded servo and pull-down, verify shared ground and separate positive supply, then
+      enable external servo power with the area clear.
+    - Verify unknown cards leave the commanded starting state; an allowed card requests 1600 µs for five seconds
+      then 1400 µs. Actual position and mechanical locking are not sensed.
   gpio_map:
-  - signal: MFRC522 SS/SDA
+  - signal: MFRC522 3.3V / GND
+    esp32_pin: 3V3 / GND
+    direction: Power
+    notes: No 5 V supply or bus signals on this selected breakout
+  - signal: MFRC522 SCK
+    esp32_pin: GPIO18
+    direction: Output
+    notes: SPI clock
+  - signal: MFRC522 MISO
+    esp32_pin: GPIO19
+    direction: Input
+    notes: Reader to ESP32
+  - signal: MFRC522 MOSI
+    esp32_pin: GPIO23
+    direction: Output
+    notes: ESP32 to reader
+  - signal: MFRC522 SDA / SS
     esp32_pin: GPIO5
     direction: Output
-    notes: Chip-select pin defined as SS_PIN in the sketch
+    notes: SPI chip select, not I2C SDA; classic boot strap, verify reset loading
   - signal: MFRC522 RST
     esp32_pin: GPIO22
     direction: Output
-    notes: Reset pin defined as RST_PIN in the sketch
-  - signal: MFRC522 SPI bus
-    esp32_pin: Board SPI pins
-    direction: I/O
-    notes: SPI.begin() uses the ESP32 board/library SPI setup
-  - signal: Servo signal
+    notes: IRQ unused
+  - signal: FS90 signal
     esp32_pin: GPIO26
     direction: Output
-    notes: Signal only; use suitable low-voltage actuator power
-  - signal: Status LED
-    esp32_pin: GPIO2
-    direction: Output
-    notes: Optional debug indicator
-  - signal: Serial Monitor
-    esp32_pin: USB
-    direction: Debug
-    notes: 115200 baud
+    notes: 10 kΩ to GND; supported 3.3 V signal
+  - signal: FS90 positive / ground
+    esp32_pin: External +5 V / shared GND
+    direction: Power
+    notes: Do not join external positive to USB-powered board positive
   code:
     filename: smart-door-lock.ino
-    content: "#include <SPI.h>\n#include <MFRC522.h>\n#include <ESP32Servo.h>\n\n#define SS_PIN 5\n#define RST_PIN\
-      \ 22\n#define SERVO_PIN 26\n\nMFRC522 rfid(SS_PIN, RST_PIN);\nServo lockServo;\nbyte allowedUid[] = {0xDE,\
-      \ 0xAD, 0xBE, 0xEF};\n\nbool allowedCard() {\n  if (rfid.uid.size != sizeof(allowedUid)) return false;\n \
-      \ for (byte i = 0; i < rfid.uid.size; i++) {\n    if (rfid.uid.uidByte[i] != allowedUid[i]) return false;\n\
-      \  }\n  return true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  SPI.begin();\n  rfid.PCD_Init();\n \
-      \ lockServo.attach(SERVO_PIN);\n  lockServo.write(0);\n  Serial.println(\"Door lock ready\");\n}\n\nvoid loop()\
-      \ {\n  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;\n  if (allowedCard()) {\n\
-      \    Serial.println(\"Unlocked for 5 seconds\");\n    lockServo.write(90);\n    delay(5000);\n    lockServo.write(0);\n\
-      \  } else {\n    Serial.println(\"Unknown card\");\n  }\n  rfid.PICC_HaltA();\n}\n"
-  expected_output: Serial Monitor should print "Door lock ready" after boot. An approved RFID card should print
-    "Unlocked for 5 seconds", move the servo to the unlocked position, wait, then return it to locked. An unknown
-    card should print "Unknown card" and leave the servo in the locked position.
+    content: "#include <Arduino.h>\n#include <SPI.h>\n#include <MFRC522.h>\n#include <ESP32Servo.h>\nconstexpr\
+      \ uint8_t SS_PIN = 5, RST_PIN = 22, SERVO_PIN = 26;\nconstexpr bool PROVISIONED = false; // First record\
+      \ your own UID, then enable.\nconst byte ALLOWED_UID[] = {0x00, 0x00, 0x00, 0x00}; // Replace whole array.\n\
+      constexpr int START_US = 1400, OPEN_US = 1600;\nconstexpr uint32_t OPEN_MS = 5000;\nMFRC522 rfid(SS_PIN,\
+      \ RST_PIN);\nServo demoServo;\nbool servoReady = false, openCommand = false;\nuint32_t openedAt = 0;\n\
+      \nbool allowedCard() {\n  if (!PROVISIONED || rfid.uid.size != sizeof(ALLOWED_UID)) return false;\n \
+      \ for (byte i=0; i<rfid.uid.size; ++i)\n    if (rfid.uid.uidByte[i] != ALLOWED_UID[i]) return false;\n\
+      \  return true;\n}\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(SERVO_PIN, OUTPUT); digitalWrite(SERVO_PIN,\
+      \ LOW);\n  SPI.begin(18, 19, 23, SS_PIN);\n  rfid.PCD_Init();\n  if (PROVISIONED) {\n    demoServo.setPeriodHertz(50);\n\
+      \    demoServo.attach(SERVO_PIN, 1400, 1600);\n    servoReady = demoServo.attached();\n    if (servoReady)\
+      \ demoServo.writeMicroseconds(START_US);\n  }\n  Serial.println(PROVISIONED ? \"Provisioned demo; inspect\
+      \ servo state\" :\n    \"ENROLLMENT: scan card; servo pulses disabled\");\n  if (PROVISIONED && !servoReady)\
+      \ Serial.println(\"Servo attach failed; no opening commands\");\n}\nvoid loop() {\n  if (openCommand\
+      \ && millis()-openedAt >= OPEN_MS) {\n    demoServo.writeMicroseconds(START_US); openCommand=false;\n\
+      \    Serial.println(\"Starting pulse restored; position not measured\");\n  }\n  if (!rfid.PICC_IsNewCardPresent()\
+      \ || !rfid.PICC_ReadCardSerial()) return;\n  Serial.print(\"UID:\");\n  for (byte i=0; i<rfid.uid.size;\
+      \ ++i) Serial.printf(\" 0x%02X\", rfid.uid.uidByte[i]);\n  Serial.println();\n  if (allowedCard() &&\
+      \ servoReady && !openCommand) {\n    demoServo.writeMicroseconds(OPEN_US); openedAt=millis(); openCommand=true;\n\
+      \    Serial.println(\"Open pulse requested for 5 seconds\");\n  } else Serial.println(\"No new opening\
+      \ command (enrollment, unknown, busy or servo fault)\");\n  rfid.PICC_HaltA();\n  rfid.PCD_StopCrypto1();\n\
+      }\n"
+  expected_output: 'Enrollment prints UID: followed by all hexadecimal bytes. With your array provisioned,
+    an allowed scan prints Open pulse requested for 5 seconds; after the interval it prints Starting pulse
+    restored; position not measured. An unknown card requests no opening. These expectations are not recorded
+    hardware results, and the messages do not establish mechanical locking.'
   common_mistakes:
   - text: Testing input and output for the first time together.
   - text: Using a GPIO pin that does not match the code constant.
   - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
   - text: Forgetting the shared ground between modules.
   troubleshooting:
-  - problem: RFID reader never detects a card
-    fix: Check MFRC522 power, ground, SS on GPIO5, RST on GPIO22, SPI wiring, and whether the card is close enough
-      to the antenna.
-  - problem: Servo moves weakly or ESP32 resets
-    fix: Use a suitable separate low-voltage servo supply, keep grounds shared, and do not power the servo from
-      an ESP32 GPIO pin.
-  - problem: ESP32 resets under load
-    fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
-  - problem: Behavior is reversed
-    fix: Check the servo horn position and locked/unlocked angles before changing access logic.
+  - problem: No UID prints
+    fix: Check selected 13.56 MHz card, 3.3 V reader supply and SCK18/MISO19/MOSI23/SS5/RST22. A 125 kHz tag
+      will not work.
+  - problem: Every card denied
+    fix: Enrollment intentionally denies all. Replace the complete byte array and its length, set PROVISIONED=true
+      and re-upload; check Serial.
+  - problem: Servo does not move
+    fix: Use exact positional FS90, external 5 V and shared ground. Enrollment has no pulses; inspect attach
+      status. Never power it from GPIO or 3V3.
+  - problem: Resets or jams
+    fix: Disconnect servo power. Check supply response, wiring, GPIO5 reset loading and mechanical obstruction;
+      do not force the horn or broaden pulse limits.
   upgrade_ideas:
-  - Add OLED status feedback.
-  - Add Wi-Fi dashboard or mobile alerts.
-  - Store event history in flash or a cloud service.
-  - Add calibration settings instead of hard-coded thresholds.
+  - Add a measured position indicator for learning; do not confuse it with certification.
   related_guides:
   - title: ESP32 IoT Learning Path
     href: /learning.html#iot-basics
@@ -167,64 +169,52 @@ project:
     href: /projects/esp32-motion-security-alert.html
     description: Add a related security input project after the door lock prototype works.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - Wire and test MFRC522 RFID reader
     - Control servo lock actuator from ESP32
     - Debug hardware with Serial Monitor
     - Improve the project safely
-  story: 'ESP32 Smart Door Lock reads an MFRC522 RFID card, compares the scanned UID with the approved-card list,
-    and moves the servo on GPIO26 only for the classroom card that should unlock the prototype.
+  story: 'ESP32 Smart Door Lock reads an MFRC522 RFID card, compares the scanned UID with the approved-card
+    list, and moves the servo on GPIO26 only for the classroom card that should unlock the prototype.
 
 
-    The important lesson is not only the finished door lock prototype. You learn to test the reader before the servo,
-    keep actuator power separate from ESP32 GPIO control, and return the servo to the locked position after the timed
-    unlock window.'
-  eli12: Think of the ESP32 as the brain. The RFID reader checks the card. The servo is the small arm that moves
-    when the card is approved. The code is the rule book that decides whether to unlock or stay locked.
-  parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
-    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
-    circuit. Do not use mains voltage on a breadboard, and do not treat this classroom prototype as a certified
-    physical security system.
+    The important lesson is not only the finished door lock prototype. You learn to test the reader before
+    the servo, keep actuator power separate from ESP32 GPIO control, and return the servo to the locked position
+    after the timed unlock window.'
+  eli12: Think of the ESP32 as the brain. The RFID reader checks the card. The servo is the small arm that
+    moves when the card is approved. The code is the rule book that decides whether to unlock or stay locked.
+  parent_safety: Keep this off a real door. Disconnect all supplies before wiring; remove the servo horn/load
+    for initial tests. Use external regulated 5 V for the selected servo, never GPIO, 3V3 or the DevKit USB
+    path. Share ground but not external +5 V with the USB-powered board. Pulses may cause immediate movement
+    when provisioned code starts. Keep a power disconnect reachable.
   learning_objectives:
   - Wire and test the MFRC522 RFID reader before connecting the rest of the circuit.
   - Map each signal to a named ESP32 GPIO and keep the code constants readable.
   - Control the servo signal on GPIO26 using an explicit approved-card decision.
   - Use Serial Monitor as an engineering tool, not only as a success message.
   - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an actuator side. The MFRC522 RFID reader tells
-    the ESP32 which card is present. The servo receives only a control signal from GPIO26; actuator power must come
-    from a suitable low-voltage source, not from an ESP32 GPIO pin.
-  engineering_explanation: A reliable door lock prototype is built in layers. First prove the input, then prove
-    the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
-    lock, or automation fails and every wire looks suspicious at the same time. RFID card IDs are identifiers for
-    a prototype demo, not tamper-resistant authentication.
-  code_explanation: The example defines SS_PIN as GPIO5, RST_PIN as GPIO22, and SERVO_PIN as GPIO26. It reads the
-    RFID UID, compares it with allowedUid, moves the servo only for an approved card, and prints "Unknown card" for
-    anything else.
+  circuit_explanation: The circuit is split into an input side and an actuator side. The MFRC522 RFID reader
+    tells the ESP32 which card is present. The servo receives only a control signal from GPIO26; actuator power
+    must come from a suitable low-voltage source, not from an ESP32 GPIO pin.
+  engineering_explanation: 'This teaches card identification and timed motion only. UID comparison is cloneable,
+    and the pinned library does not provide a secure door authentication system. No anti-tailgating, door-position
+    feedback, actuator supervision, backup power or emergency egress design exists. GPIO5 is a classic ESP32
+    strapping pin: check the reader does not impose an incompatible reset level; if it does, review a different
+    SS pin and update both table and sketch. Do not infer that a commanded pulse locks a real door.'
+  code_explanation: Explicit SPI pins remove reliance on board defaults. The sketch prints the UID before comparison,
+    checks its full length and uses a millis-based five-second window. It never treats a key fob appearance
+    as compatibility evidence. ESP32Servo writes commanded pulse widths, not measured angles. A failed attach
+    suppresses opening commands; a stalled or disconnected servo is not detected.
   testing_checklist:
-  - ESP32 appears on the correct port and accepts a basic blink upload.
-  - Ground is shared between every module that exchanges signals with the ESP32.
-  - Each GPIO in the code matches the wire connected on the breadboard.
-  - Serial Monitor prints startup text at 115200 baud.
-  - The MFRC522 reader reports card scans before the servo is attached.
-  - An unknown card leaves the servo locked.
-  - The approved card unlocks for 5 seconds and then returns to locked.
-  - The circuit still behaves correctly after power is removed and restored.
-  build_photos:
-  - title: Breadboard overview
-    note: Show the ESP32, module placement, and power rails clearly.
-  - title: Close-up wiring
-    note: Capture each GPIO wire so beginners can compare their build.
-  - title: Working output
-    note: Show the Serial Monitor, display, robot, pump, or lock state after the code runs.
-  downloads:
-  - text: ESP32 Smart Door Lock Arduino sketch
-    note: Use the code section as the downloadable source until file downloads are published.
-  - text: Wiring checklist
-    note: Match the GPIO table and wiring steps before powering the circuit.
-  - text: Troubleshooting worksheet
-    note: Record symptoms, Serial output, voltage checks, and fixes.
+  - Check enrollment prints the complete UID with servo power off.
+  - Verify exact pins and separate servo positive supply.
+  - With horn removed, compare allowed/unknown card messages and the five-second return command.
+  - Confirm reset/power loss does not imply a secure mechanical state.
+  build_photos: []
+  downloads: []
   real_world_applications:
   - Classroom door lock prototype trainer
   - STEM lab demonstration
@@ -232,14 +222,51 @@ project:
   - Engineering debugging practice
   - IoT portfolio project
   faqs:
-  - question: Why does my RFID reader or keypad input reading look wrong?
-    answer: Check MFRC522 power, ground, SS on GPIO5, RST on GPIO22, and SPI wiring before changing access logic.
-      Test the reader alone first.
-  - question: Why does the servo lock not respond?
-    answer: Check the shared ground, GPIO26 signal wire, servo power supply, and servo horn position before changing
-      the allowed card list.
-  - question: Can this protect a real door?
-    answer: No. Treat it as a low-voltage classroom prototype. Real locks need mechanical fail-safe planning, secure
-      installation, and adult review.
+  - question: Can a solenoid replace this servo?
+    answer: No. It needs a separately specified driver, supply, protection and control design; this sketch
+      sends servo pulses only.
+  - question: Can I secure a real door with this?
+    answer: No. UID matching and commanded hobby-servo motion are educational; real access control needs secure
+      authentication and a professionally reviewed mechanical/egress design.
+  tutorial_flow: true
+  assumptions: 'Classic ESP32-WROOM DevKit with the named pins exposed; Arduino IDE 2.x and Arduino-ESP32 3.3.2
+    review baseline, not a latest-release claim. Other chip families require their own pin review. Serial Monitor:
+    115200 baud. Documentation/code review does not establish compilation or hardware operation; neither has
+    been performed for these changes. Use a documented 3.3 V SPI MFRC522 breakout and compatible 13.56 MHz
+    ISO/IEC 14443-A card (for example MIFARE Classic); a 125 kHz fob is not compatible and arbitrary NFC phones/cards
+    are not promised. Servo: positional FEETECH FS90 as documented by Pololu #2818, which supports 3.3 V control.
+    FS90R, SG90 clones and solenoid locks are excluded. Keep the servo unloaded; the narrow 1400/1600 µs commands
+    are not guaranteed lock angles.'
+  libraries:
+  - Arduino-ESP32 3.3.2 review baseline, built-in SPI.
+  - 'Library Manager: MFRC522 by GithubCommunity / Miguel Balboa, version 1.4.12; ESP32Servo version 3.0.9.
+    These exact sources were reviewed, not compiled here. MFRC522 maintenance is limited; this UID comparison
+    is not a production access-control design.'
+  configuration: The default PROVISIONED=false prints each scanned UID and leaves servo pulses disabled. Use
+    a private demonstration card, replace the entire ALLOWED_UID array with its printed hexadecimal bytes and
+    then set PROVISIONED=true. The dummy array is not a usable credential. UID length is checked as well as
+    content. A UID can be copied on some cards; it is an identifier, not secure authentication. Start with
+    an unloaded FS90 and review START_US=1400 and OPEN_US=1600. Do not enlarge travel or attach a latch without
+    measuring the mechanical range and reviewing stall/recovery behavior.
+  behavior:
+  - - Enrollment
+    - Print complete UID; no servo attachment/pulses.
+  - - Provisioned boot
+    - Requests the starting pulse immediately if servo attachment succeeds. No position sensing.
+  - - Allowed card
+    - Requests open pulse for five seconds; timer services return without a five-second delay. Extra scans
+      do not extend an active window.
+  - - Unknown / power failure
+    - Unknown scan gives no new opening command. Loss of power does not guarantee a physical locked or unlocked
+      state.
+  references:
+  - title: NXP MFRC522 datasheet
+    href: https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf
+  - title: MFRC522 1.4.12 library and security limitations
+    href: https://github.com/miguelbalboa/rfid/tree/1.4.12
+  - title: ESP32Servo 3.0.9 API
+    href: https://github.com/madhephaestus/ESP32Servo/blob/3.0.9/src/ESP32Servo.h
+  - title: Selected FS90 supply, signal and pulse specifications
+    href: https://www.pololu.com/product/2818
 quality_status: golden
 status: complete
