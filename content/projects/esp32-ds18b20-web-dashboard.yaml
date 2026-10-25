@@ -1,0 +1,200 @@
+format: golden
+slug: esp32-ds18b20-web-dashboard
+title: ESP32 DS18B20 Web Dashboard
+category: Sensor Projects
+category_slug: sensor-projects
+description: Read one externally powered DS18B20 on GPIO4 and display temperature on a local ESP32 access
+  point, with CRC checks and unavailable-reading feedback.
+meta_description: Read one externally powered DS18B20 on GPIO4 and display temperature on a local ESP32
+  access point, with CRC checks and unavailable-reading feedback.
+source_base: esp32-ds18b20-web-dashboard
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-ds18b20-web-dashboard.svg
+featured_image: /assets/visuals/projects/heroes/esp32-ds18b20-web-dashboard.svg
+hero_image: /assets/visuals/projects/heroes/esp32-ds18b20-web-dashboard.svg
+og_image: /assets/visuals/projects/heroes/esp32-ds18b20-web-dashboard.svg
+image_alt: ESP32 DS18B20 Web Dashboard logical overview illustration, not a photograph or physical pin
+  layout
+sensor: One externally powered DS18B20
+output: Local browser page
+hardware:
+  sensor_pin: GPIO4
+  output_pin: Local browser page
+  sensor_name: One externally powered DS18B20
+  output_name: Local browser page
+  wiring:
+  - component: DS18B20 DQ
+    pin: GPIO4
+  - component: DS18B20 VDD
+    pin: 3V3
+  - component: DS18B20 GND
+    pin: GND
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 DS18B20 Web Dashboard
+  icon: Build
+  what_you_build: A read-only temperature page served by the ESP32 itself. Join the board’s access point
+    and use its printed HTTP address. Sampling runs every two seconds, while the page refreshes every
+    three seconds; neither depends on a cloud service.
+  assumptions: Classic ESP32-WROOM DevKit with Arduino-ESP32 3.3.2 as the explicit review baseline, not
+    a latest-release claim. One genuine DS18B20 family-0x28 device, externally powered from 3.3 V, with
+    short leads. A phone/computer must support the board’s 2.4 GHz AP. This is not a waterproof-probe
+    rating or compatibility claim for every ESP32 family. Documentation and code-structure review only;
+    compilation and physical hardware testing have not been performed.
+  parent_safety: USB-powered, low-voltage breadboard demonstration. Unplug USB before changing wiring.
+    ESP32 GPIO uses 3.3 V signals; no signal or pull-up in these examples may be connected to 5 V. Do
+    not use these prototypes for unattended control or safety decisions.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: Select ESP32 Dev Module for the stated board.
+    link: /components/esp32-devkit.html
+  - item: One documented DS18B20
+    note: Bare TO-92 or documented three-wire probe; verify identity and lead order.
+  - item: 4.7 kΩ resistor
+    note: DQ pull-up to 3.3 V; short breadboard wiring.
+    link: /components/through-hole-resistors.html
+  - item: Breadboard, jumpers and USB data cable
+    note: Wire only with USB disconnected.
+    link: /components/solderless-breadboard.html
+  wiring:
+    illustration_alt: ESP32 DS18B20 Web Dashboard logical wiring with labelled signals; verify actual
+      package orientation separately
+    summary: Use the manufacturer package drawing to identify GND, DQ and VDD. The illustration shows
+      electrical names, not a universal left-to-right order. For a probe do not infer functions from wire
+      colors. DS18B20 local-power operation allows 3.0–5.5 V, but this build uses 3.3 V supply and DATA
+      pull-up to keep ESP32 signals safe. Add 4.7 kΩ from DQ to 3V3; the ESP32 internal pull-up is not
+      the specified bus resistor.
+    steps:
+    - Unplug USB. Identify the actual device and supply/data/ground leads.
+    - Wire VDD to 3V3, GND to GND and DQ to GPIO4.
+    - Connect 4.7 kΩ from GPIO4/DQ to 3V3. Inspect any fitted module pull-up first.
+    - Check for shorts and reconnect USB. Upload the full sketch and open Serial at 115200.
+  gpio_map:
+  - signal: DS18B20 DQ
+    esp32_pin: GPIO4
+    direction: Bidirectional
+    notes: 4.7 kΩ pull-up between DQ and 3V3
+  - signal: DS18B20 VDD
+    esp32_pin: 3V3
+    direction: Power
+    notes: Externally powered mode; no parasite power
+  - signal: DS18B20 GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Match actual part pin labels
+  libraries:
+  - Install OneWire by Paul Stoffregen version 2.3.8 through Library Manager. The sketch uses its documented
+    reset, search, select, read/write and CRC APIs; no DallasTemperature library is required.
+  - WiFi and WebServer come with Arduino-ESP32 3.3.2. Keep a USB connection available for diagnostics.
+  configuration: Replace CHANGE_ME_1234 with your own 8–63 character AP password. Upload, join ESP32-Temperature
+    and remain connected even if the phone reports no internet. Type the complete printed http:// address
+    in the address bar. The AP does not provide internet. No router credentials are needed.
+  behavior:
+  - - Sensor discovery
+    - Rejects a missing device, non-0x28 family, ROM CRC failure, parasite-powered device or more than
+      one device. Fix the wiring and reset to rediscover.
+  - - Conversion
+    - Writes 12-bit configuration in volatile scratchpad, starts conversion and waits 800 ms through a
+      state machine; HTTP service continues between brief bus transactions.
+  - - Read failure
+    - Scratchpad CRC/configuration checks fail closed; page shows unavailable rather than the old value.
+  - - Browser access
+    - Three-second HTML refresh, no external JavaScript or cloud requests; unknown routes return HTTP
+      404.
+  code:
+    filename: ds18b20-dashboard.ino
+    content: "#include <Arduino.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include <OneWire.h>\n\n\
+      constexpr uint8_t DATA_PIN = 4;\nconst char* AP_NAME = \"ESP32-Temperature\";\nconst char* AP_PASSWORD\
+      \ = \"CHANGE_ME_1234\"; // Replace before use, 8-63 characters.\nOneWire bus(DATA_PIN);\nWebServer\
+      \ server(80);\nuint8_t address[8];\nbool sensorReady = false, converting = false, valid = false,\
+      \ serverReady = false;\nuint32_t started = 0, lastAttempt = 0, lastGood = 0;\nfloat temperature\
+      \ = 0;\n\nbool configureSensor() {\n  uint8_t extra[8];\n  bus.reset_search();\n  if (!bus.search(address)\
+      \ || address[0] != 0x28 ||\n      OneWire::crc8(address, 7) != address[7]) return false;\n  if (bus.search(extra))\
+      \ return false; // This example deliberately supports ONE device.\n  if (!bus.reset()) return false;\n\
+      \  bus.select(address); bus.write(0xB4); // Read Power Supply.\n  if (!bus.read_bit()) return false;\
+      \   // Parasite power is not supported here.\n  if (!bus.reset()) return false;\n  bus.select(address);\
+      \ bus.write(0x4E); // Write volatile scratchpad, not EEPROM.\n  bus.write(0); bus.write(0); bus.write(0x7F);\
+      \ // TH, TL, 12-bit configuration.\n  return true;\n}\nbool readResult() {\n  uint8_t scratch[9];\n\
+      \  if (!bus.reset()) return false;\n  bus.select(address); bus.write(0xBE);\n  for (uint8_t &b :\
+      \ scratch) b = bus.read();\n  if (OneWire::crc8(scratch, 8) != scratch[8] || scratch[4] != 0x7F\
+      \ ||\n      scratch[7] != 0x10) return false;\n  int16_t raw = int16_t((uint16_t(scratch[1]) <<\
+      \ 8) | scratch[0]);\n  float c = raw / 16.0f;\n  if (c < -55 || c > 125) return false;\n  temperature\
+      \ = c;\n  return true;\n}\nvoid sampleTask() {\n  uint32_t now = millis();\n  if (!sensorReady)\
+      \ return;\n  if (converting && now - started >= 800) {\n    converting = false;\n    valid = readResult();\n\
+      \    if (valid) {\n      lastGood = millis();\n      Serial.printf(\"Temperature %.2f C\\n\", temperature);\n\
+      \    } else Serial.println(\"Sensor read failed; dashboard marks reading unavailable\");\n  }\n\
+      \  if (!converting && now - lastAttempt >= 2000) {\n    lastAttempt = now;\n    if (!bus.reset())\
+      \ { valid = false; return; }\n    bus.select(address); bus.write(0x44, 0); // Externally powered\
+      \ conversion.\n    started = millis(); converting = true;\n  }\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  sensorReady = configureSensor();\n  Serial.println(sensorReady ? \"One externally powered DS18B20\
+      \ found\" :\n    \"Need exactly one family-0x28 externally powered sensor; fix wiring and reset\"\
+      );\n  lastAttempt = millis() - 2000;\n  if (!WiFi.mode(WIFI_AP) || !WiFi.softAP(AP_NAME, AP_PASSWORD))\
+      \ {\n    Serial.println(\"AP failed; check password length and board\"); return;\n  }\n  server.on(\"\
+      /\", HTTP_GET, []() {\n    String page = \"<!doctype html><html lang='en'><meta name='viewport'\
+      \ content='width=device-width,initial-scale=1'>\";\n    page += \"<meta http-equiv='refresh' content='3'><title>Local\
+      \ temperature</title><h1>DS18B20 temperature</h1>\";\n    if (valid && millis() - lastGood < 5000)\
+      \ {\n      page += \"<p>\" + String(temperature, 2) + \" &deg;C</p><p>Sample age: \";\n      page\
+      \ += String(millis() - lastGood) + \" ms</p>\";\n    } else page += \"<p>Reading unavailable. Check\
+      \ Serial and sensor wiring.</p>\";\n    page += \"<p>Refreshes every 3 seconds. Local read-only\
+      \ demonstration.</p></html>\";\n    server.sendHeader(\"Cache-Control\", \"no-store\");\n    server.send(200,\
+      \ \"text/html; charset=utf-8\", page);\n  });\n  server.onNotFound([]() { server.send(404, \"text/plain\"\
+      , \"Not found\\n\"); });\n  server.begin(); serverReady = true;\n  Serial.print(\"Join \"); Serial.println(AP_NAME);\n\
+      \  Serial.print(\"Open http://\"); Serial.println(WiFi.softAPIP());\n}\nvoid loop() {\n  if (serverReady)\
+      \ server.handleClient();\n  sampleTask();\n  delay(1);\n}\n"
+  code_explanation: The DS18B20 conversion can take up to 750 ms at 12-bit resolution. The 800 ms elapsed-time
+    gate gives a conversion window without delay(800). ROM and scratchpad CRC check transmission integrity,
+    not authenticity or calibration. The code never reads a temperature immediately at power-up, when
+    the scratchpad may contain the 85 °C reset value. A valid 85 °C reading after a completed conversion
+    is not automatically rejected. Configuring TH/TL here does not implement an alarm and does not write
+    EEPROM.
+  expected_output: On suitable hardware, Serial should identify one device and print the AP address, then
+    Temperature ... C after the first conversion. The page should show a value and its sample age; missing/invalid
+    samples show Reading unavailable. These are expected behaviors to verify, not recorded measurements.
+    Two decimal places do not imply 0.01 °C accuracy.
+  troubleshooting:
+  - problem: Discovery fails
+    fix: Check VDD/DQ/GND, external power, 4.7 kΩ pull-up and exactly one device. Probe colors are not
+      a pinout. Reset after correcting wiring.
+  - problem: Readings unavailable or repeatedly reset to 85 °C
+    fix: Check supply stability, cable length and conversion configuration. A persistently resetting sensor
+      may show its power-up scratchpad; CRC alone cannot diagnose supply resets.
+  - problem: Browser cannot open page
+    fix: Stay on ESP32-Temperature, use the printed AP address with http:// and check phone mobile-data/VPN
+      routing. No internet is expected.
+  - problem: Slow or unstable long-cable readings
+    fix: This short-wire example does not engineer long 1-Wire networks. Review bus capacitance, topology
+      and pull-up design rather than randomly changing voltage.
+  testing_checklist:
+  - Verify the documented sensor leads before applying power.
+  - Confirm Serial identification and AP address; try an unknown URL and expect 404.
+  - Disconnect DATA with power removed, reboot and confirm unavailable state; restore wiring and reset.
+  - Compare a stable reading with an appropriate reference if accuracy matters; no calibration is provided.
+  engineering_explanation: The DS18B20 datasheet specifies 12-bit resolution steps of 0.0625 °C and an
+    accuracy specification over a stated temperature range; resolution is not accuracy. Short breadboard
+    wiring does not establish environmental suitability. This AP password controls network entry, not
+    HTTP user authentication. Traffic is plain HTTP without TLS; anyone admitted to the AP can read the
+    page. Do not expose it through a router or use it for heater/safety control.
+  related_guides:
+  - title: Arduino IDE first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Complete the Serial-only first upload before wiring peripherals.
+  - title: Local AP web server
+    href: /guides/esp32-web-server.html
+    description: Separate HTTP routing from sensor wiring.
+  related_projects: []
+  faqs: []
+  references:
+  - title: Arduino-ESP32 3.3.2 source baseline
+    href: https://github.com/espressif/arduino-esp32/tree/3.3.2
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: DS18B20 manufacturer datasheet
+    href: https://www.analog.com/media/en/technical-documentation/data-sheets/ds18b20.pdf
+  - title: OneWire 2.3.8 API
+    href: https://github.com/PaulStoffregen/OneWire/blob/v2.3.8/OneWire.h
+  - title: WebServer API at core 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WebServer/src/WebServer.h

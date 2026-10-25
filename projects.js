@@ -68,7 +68,9 @@
       '<div class="card-media-wrap">' +
       thumbHtml(p.category, p.featured_image || p.image || '') +
       '</div>' +
-      '<div class="card-body"><div class="card-badges"><span class="badge badge-cat">' +
+      '<div class="card-body"><div class="card-badges">' +
+      (p.featured ? '<span class="badge badge-featured">Featured</span>' : '') +
+      '<span class="badge badge-cat">' +
       esc(shortCategory(p.category)) +
       '</span>' +
       levelBadges(levels) +
@@ -257,6 +259,27 @@
   function loadProjects() {
     var grid = document.getElementById('grid');
     if (!grid) return;
+
+    var catalogData = document.getElementById('project-catalog-data');
+    if (catalogData) {
+      try {
+        var catalog = JSON.parse(catalogData.textContent);
+        if (Array.isArray(catalog) && catalog.length && catalog.every(function (p) {
+          return p && typeof p.title === 'string' && typeof p.href === 'string' &&
+            typeof p.category === 'string' && Array.isArray(p.levels);
+        })) {
+          renderProjects(catalog, initProjectFilters);
+          var staticPages = document.querySelector('nav[aria-label="Project list pages"]');
+          if (staticPages) {
+            staticPages.hidden = true;
+            staticPages.style.display = 'none';
+          }
+          return;
+        }
+      } catch (error) {
+        // Preserve the server-rendered cards and page links if data is unusable.
+      }
+    }
 
     if (document.querySelectorAll('.project-card').length) {
       initProjectFilters();

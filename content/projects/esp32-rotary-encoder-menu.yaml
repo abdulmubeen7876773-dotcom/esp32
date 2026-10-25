@@ -1,0 +1,258 @@
+format: golden
+slug: esp32-rotary-encoder-menu
+title: ESP32 Rotary Encoder OLED Menu
+category: Education
+category_slug: education
+description: Navigate and edit an OLED settings menu with a quadrature encoder, debounced push switch
+  and explicit Save to ESP32 Preferences.
+meta_description: Navigate and edit an OLED settings menu with a quadrature encoder, debounced push switch
+  and explicit Save to ESP32 Preferences.
+source_base: esp32-rotary-encoder-menu
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-rotary-encoder-menu.svg
+featured_image: /assets/visuals/projects/heroes/esp32-rotary-encoder-menu.svg
+hero_image: /assets/visuals/projects/heroes/esp32-rotary-encoder-menu.svg
+og_image: /assets/visuals/projects/heroes/esp32-rotary-encoder-menu.svg
+image_alt: ESP32 Rotary Encoder OLED Menu logical overview illustration, not a photograph or physical
+  pin layout
+sensor: Quadrature encoder and push switch
+output: SSD1306 OLED settings menu
+hardware:
+  sensor_pin: GPIO25
+  output_pin: SSD1306 OLED settings menu
+  sensor_name: Quadrature encoder and push switch
+  output_name: SSD1306 OLED settings menu
+  wiring:
+  - component: Encoder A
+    pin: GPIO25
+  - component: Encoder B
+    pin: GPIO26
+  - component: Encoder common + switch return
+    pin: GND
+  - component: Push switch signal
+    pin: GPIO27
+  - component: OLED SDA
+    pin: GPIO21
+  - component: OLED SCL
+    pin: GPIO22
+  - component: OLED VCC / GND
+    pin: 3V3 / GND
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 Rotary Encoder OLED Menu
+  icon: Build
+  what_you_build: 'A three-item menu: Interval, Threshold and Save settings. Turn to navigate, press to
+    edit a value, turn to adjust and press to return to navigation. Select Save and press to persist.
+    The numbers are configuration demonstrations only: no sensor, sampling task or actuator is connected
+    to them.'
+  assumptions: Classic ESP32-WROOM DevKit and Arduino-ESP32 3.3.2 review baseline. Bare Bourns PEC11R
+    switch-equipped encoder with 24 pulses/24 detents per revolution; one complete quadrature cycle produces
+    one step. A different pulse-to-detent ratio needs an explicitly reviewed decoder change. This is not
+    a universal KY-040 module pinout. OLED is a verified 3.3 V-compatible SSD1306 128x64 I2C module, not
+    SH1106 or an arbitrary SPI display. Documentation and code-structure review only; compilation and
+    physical hardware testing have not been performed.
+  parent_safety: USB-powered, low-voltage breadboard demonstration. Unplug USB before changing wiring.
+    ESP32 GPIO uses 3.3 V signals; no signal or pull-up in these examples may be connected to 5 V. Do
+    not use these prototypes for unattended control or safety decisions.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: 3.3 V GPIO; Arduino-ESP32 3.3.2 baseline.
+    link: /components/esp32-devkit.html
+  - item: Bourns PEC11R quadrature encoder with switch
+    note: 24 pulses and 24 detents per revolution, for example PEC11R-4215F-S0024. Verify actual order
+      code and terminal drawing.
+  - item: SSD1306 128x64 I2C OLED
+    note: Documented 3.3 V-compatible four-pin module; verify 0x3C address.
+    link: /components/ssd1306-oled.html
+  - item: Three 10 kΩ resistors
+    note: External pull-ups for encoder A, B and switch to 3V3.
+    link: /components/through-hole-resistors.html
+  - item: Breadboard, short jumper wires and USB data cable
+    note: No 5 V encoder module is assumed.
+    link: /components/solderless-breadboard.html
+  wiring:
+    illustration_alt: ESP32 Rotary Encoder OLED Menu logical wiring with labelled signals; verify actual
+      package orientation separately
+    summary: Identify encoder A, common C, B and the separate push-switch contacts from the actual manufacturer
+      drawing; do not infer them from shaft orientation. A/B go to GPIO25/26, common to GND. One switch
+      contact goes to GPIO27 and the other to GND. Add 10 kΩ pull-ups from all three inputs to 3V3. The
+      OLED uses SDA21/SCL22 and a verified 3.3 V supply; module pull-ups must not go to 5 V. The illustration
+      is a signal map, not a physical connector drawing.
+    steps:
+    - Unplug USB. Identify A/C/B and switch terminals using the order-code drawing and continuity checks.
+    - Connect A25, B26 and switch27, with common/switch return to GND. Fit the three pull-ups to 3V3.
+    - Wire OLED VCC/GND/SDA/SCL by its actual labels; verify pull-up voltage.
+    - Reconnect USB, run the existing I2C scanner to determine the address, then upload this full menu
+      sketch.
+  gpio_map:
+  - signal: Encoder A
+    esp32_pin: GPIO25
+    direction: Input
+    notes: 10 kΩ external pull-up to 3V3
+  - signal: Encoder B
+    esp32_pin: GPIO26
+    direction: Input
+    notes: 10 kΩ external pull-up to 3V3
+  - signal: Encoder common + switch return
+    esp32_pin: GND
+    direction: Ground
+    notes: Bare dry contacts only
+  - signal: Push switch signal
+    esp32_pin: GPIO27
+    direction: Input
+    notes: 10 kΩ external pull-up to 3V3
+  - signal: OLED SDA
+    esp32_pin: GPIO21
+    direction: Bidirectional
+    notes: Module I2C pull-ups must go to 3V3
+  - signal: OLED SCL
+    esp32_pin: GPIO22
+    direction: Output
+    notes: Verify SSD1306 128x64 I2C variant
+  - signal: OLED VCC / GND
+    esp32_pin: 3V3 / GND
+    direction: Power
+    notes: Documented 3.3 V supply module
+  libraries:
+  - Install Adafruit SSD1306 2.5.13, Adafruit GFX 1.11.11 and Adafruit BusIO 1.17.0 through Library Manager.
+  - Wire and Preferences are built into Arduino-ESP32 3.3.2. No encoder library or network service is
+    used.
+  configuration: Set OLED_ADDRESS to the verified address, typically 0x3C for the specified module. An
+    address ACK does not prove controller identity or dimensions. Upload and use Serial at 115200 for
+    initialization diagnostics. Interval is bounded to 1–60 seconds; Threshold is a unitless 0–100 example.
+    Defaults are 10 and 50. A successful Preferences load is not evidence that a previous user saved those
+    defaults.
+  behavior:
+  - - Navigation
+    - One completed four-transition quadrature cycle advances one item; swapping A/B reverses direction.
+  - - Editing
+    - Press Interval or Threshold to toggle edit mode; changes are RAM-only until Save.
+  - - Switch bounce
+    - 30 ms stable transition gate generates one action on each stable press. Holding does not repeat.
+  - - Save
+    - Only an explicit Save selection writes NVS. Two setting writes are separate operations, not a power-fail-atomic
+      transaction.
+  - - OLED failure
+    - Serial shows a diagnostic; no false message claims the panel is working. Correct wiring/address/type
+      and reset.
+  code:
+    filename: encoder-menu.ino
+    content: "#include <Arduino.h>\n#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\
+      #include <Preferences.h>\n\nconstexpr uint8_t ENC_A = 25, ENC_B = 26, BUTTON = 27, OLED_ADDRESS\
+      \ = 0x3C;\nAdafruit_SSD1306 display(128, 64, &Wire, -1);\nPreferences prefs;\nportMUX_TYPE encoderMux\
+      \ = portMUX_INITIALIZER_UNLOCKED;\nvolatile int pending = 0;\nvolatile int quarter = 0;\nvolatile\
+      \ uint8_t previousAB = 0;\nint intervalSeconds = 10, threshold = 50, selected = 0;\nbool editing\
+      \ = false, dirty = false, displayReady = false, storeReady = false, redraw = true;\nbool rawButton\
+      \ = HIGH, stableButton = HIGH;\nuint32_t buttonChanged = 0, lastDraw = 0;\nconst char* notice =\
+      \ \"RAM settings\";\n\nvoid encoderChanged() {\n  uint8_t current = (digitalRead(ENC_A) << 1) |\
+      \ digitalRead(ENC_B);\n  portENTER_CRITICAL_ISR(&encoderMux);\n  uint8_t changed = current ^ previousAB;\n\
+      \  if (changed == 3) quarter = 0; // Both bits changed: missed/invalid transition.\n  else if (changed\
+      \ != 0) {\n    // Positive cycle: 11 -> 10 -> 00 -> 01 -> 11.\n    int delta = ((previousAB == 3\
+      \ && current == 2) || (previousAB == 2 && current == 0) ||\n                 (previousAB == 0 &&\
+      \ current == 1) || (previousAB == 1 && current == 3)) ? 1 : -1;\n    quarter += delta;\n    if (quarter\
+      \ >= 4) { if (pending < 32) ++pending; quarter = 0; }\n    if (quarter <= -4) { if (pending > -32)\
+      \ --pending; quarter = 0; }\n  }\n  previousAB = current;\n  portEXIT_CRITICAL_ISR(&encoderMux);\n\
+      }\nvoid saveSettings() {\n  if (!storeReady) { notice = \"NVS unavailable\"; return; }\n  size_t\
+      \ a = prefs.putInt(\"interval\", intervalSeconds);\n  size_t b = prefs.putInt(\"threshold\", threshold);\n\
+      \  if (a == sizeof(int32_t) && b == sizeof(int32_t)) {\n    dirty = false; notice = \"Saved\";\n\
+      \  } else notice = \"Save failed\"; // Two separate writes are not a transaction.\n}\nvoid drawMenu()\
+      \ {\n  display.clearDisplay(); display.setTextSize(1); display.setTextColor(SSD1306_WHITE);\n  display.setCursor(0,\
+      \ 0); display.print(editing ? \"EDIT  press to exit\" : \"MENU  press to edit\");\n  display.setCursor(0,\
+      \ 16); display.print(selected == 0 ? \"> \" : \"  \");\n  display.print(\"Interval: \"); display.print(intervalSeconds);\
+      \ display.print(\"s\");\n  display.setCursor(0, 28); display.print(selected == 1 ? \"> \" : \" \
+      \ \");\n  display.print(\"Threshold: \"); display.print(threshold);\n  display.setCursor(0, 40);\
+      \ display.print(selected == 2 ? \"> Save settings\" : \"  Save settings\");\n  display.setCursor(0,\
+      \ 54); display.print(notice);\n  display.display();\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  pinMode(ENC_A, INPUT_PULLUP); pinMode(ENC_B, INPUT_PULLUP); pinMode(BUTTON, INPUT_PULLUP);\n\
+      \  previousAB = (digitalRead(ENC_A) << 1) | digitalRead(ENC_B);\n  attachInterrupt(digitalPinToInterrupt(ENC_A),\
+      \ encoderChanged, CHANGE);\n  attachInterrupt(digitalPinToInterrupt(ENC_B), encoderChanged, CHANGE);\n\
+      \  rawButton = stableButton = digitalRead(BUTTON);\n  storeReady = prefs.begin(\"menu-demo\", false);\n\
+      \  if (storeReady) {\n    intervalSeconds = constrain(prefs.getInt(\"interval\", 10), 1, 60);\n\
+      \    threshold = constrain(prefs.getInt(\"threshold\", 50), 0, 100);\n  }\n  Wire.begin(21, 22);\n\
+      \  Wire.beginTransmission(OLED_ADDRESS);\n  bool acknowledged = Wire.endTransmission() == 0;\n \
+      \ displayReady = acknowledged && display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true, false);\n\
+      \  Serial.println(displayReady ? \"Menu ready; turn slowly, press to edit, select Save to persist\"\
+      \ :\n    \"OLED unavailable; verify SSD1306 128x64 I2C module and address, then reset\");\n  if\
+      \ (!storeReady) notice = \"NVS unavailable\";\n}\nvoid loop() {\n  portENTER_CRITICAL(&encoderMux);\n\
+      \  int steps = pending; pending = 0;\n  portEXIT_CRITICAL(&encoderMux);\n  if (steps) {\n    if\
+      \ (!editing) selected = ((selected + steps) % 3 + 3) % 3;\n    else {\n      if (selected == 0)\
+      \ intervalSeconds = constrain(intervalSeconds + steps, 1, 60);\n      if (selected == 1) threshold\
+      \ = constrain(threshold + steps, 0, 100);\n      dirty = true; notice = \"Unsaved\";\n    }\n  \
+      \  redraw = true;\n  }\n  uint32_t now = millis();\n  bool value = digitalRead(BUTTON);\n  if (value\
+      \ != rawButton) { rawButton = value; buttonChanged = now; }\n  if (now - buttonChanged >= 30 &&\
+      \ stableButton != rawButton) {\n    stableButton = rawButton;\n    if (stableButton == LOW) {\n\
+      \      if (selected == 2) saveSettings();\n      else editing = !editing;\n      redraw = true;\n\
+      \    }\n  }\n  if (displayReady && redraw && now - lastDraw >= 40) {\n    lastDraw = now; redraw\
+      \ = false; drawMenu();\n  }\n  delay(1);\n}\n"
+  code_explanation: Two CHANGE interrupts capture A/B transitions even during the OLED transfer. Reverse
+    bounce transitions cancel partial movement and invalid two-bit jumps clear the partial cycle. A critical
+    section transfers accumulated steps to loop; the ISR never draws or writes flash. Pending steps are
+    capped at 32 in either direction, so very rapid movement can be lost rather than grow without bound.
+    The display redraws only when something changes and no faster than every 40 ms. These design choices
+    do not guarantee bounce-free operation for every encoder or noisy cable.
+  expected_output: The OLED should show Interval, Threshold and Save settings. The arrow moves when you
+    turn slowly. In edit mode a value changes within its bounds. Unsaved marks RAM edits; Save should
+    show Saved after both writes succeed. After reset, saved values should reload. This is a verification
+    procedure, not a record of observed hardware operation.
+  troubleshooting:
+  - problem: Turning skips or reverses unexpectedly
+    fix: Check A/B/common, pull-ups, short leads and the specified pulse/detent ratio. Swap A/B only to
+      reverse intentional direction. Hardware noise filtering may be required by the actual encoder.
+  - problem: Two clicks needed for one step
+    fix: Your encoder likely has a different cycle/detent relationship. This decoder deliberately counts
+      full cycles; do not silently claim universal support.
+  - problem: OLED ACKs but stays blank
+    fix: ACK is not identity or framebuffer proof. Verify SSD1306, 128x64 dimensions, address, supply
+      and any reset requirements. begin success alone is not a visible display test.
+  - problem: Settings revert after reset
+    fix: Edits in RAM are not saved automatically. Select Save; inspect NVS unavailable or Save failed
+      feedback. Flash erase/repartitioning can remove Preferences.
+  - problem: One button press triggers repeatedly
+    fix: Verify switch terminal pairing, ground and external pull-up. Test slowly and inspect contact
+      noise rather than removing the debounce gate.
+  testing_checklist:
+  - Confirm the physical encoder pin labels by continuity before powering it.
+  - Navigate all three items in both directions, then edit each bound and verify it clamps.
+  - 'Press and hold once: exactly one edit/navigation action should occur.'
+  - Change values without saving and reset; compare with previous persisted/default values.
+  - Save, reset and verify both values; do not interpret a power interruption between writes as atomic
+    saving.
+  engineering_explanation: Preferences uses the board flash; writing every encoder tick would add unnecessary
+    writes and lag. This example saves deliberately, checks returned byte counts and validates loaded
+    ranges. Separate writes can leave a mixture of old/new values after interrupted power. Store a versioned
+    single record with an integrity/commit strategy if consistency matters. Encoder contact ratings describe
+    permitted contacts, not a need for 5 V logic. No motors or high-current paths belong on these inputs.
+  related_guides:
+  - title: Arduino IDE first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Complete the Serial-only first upload before wiring peripherals.
+  - title: Button debouncing
+    href: /guides/debouncing-buttons.html
+    description: Compare stable switch timing with quadrature decoding.
+  - title: I2C scanner
+    href: /guides/i2c-communication.html
+    description: Find an address without treating ACK as device identity.
+  - title: OLED setup
+    href: /guides/oled-display-esp32.html
+    description: Verify controller, dimensions, wiring and initialization separately.
+  related_projects: []
+  faqs: []
+  references:
+  - title: Arduino-ESP32 3.3.2 source baseline
+    href: https://github.com/espressif/arduino-esp32/tree/3.3.2
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: Bourns PEC11R manufacturer datasheet
+    href: https://www.bourns.com/docs/product-datasheets/PEC11R.pdf
+  - title: SSD1306 2.5.13 API
+    href: https://github.com/adafruit/Adafruit_SSD1306/blob/2.5.13/Adafruit_SSD1306.h
+  - title: GFX 1.11.11
+    href: https://github.com/adafruit/Adafruit-GFX-Library/tree/1.11.11
+  - title: BusIO 1.17.0
+    href: https://github.com/adafruit/Adafruit_BusIO/tree/1.17.0
+  - title: Preferences 3.3.2 API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/Preferences/src/Preferences.h

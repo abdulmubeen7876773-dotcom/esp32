@@ -1,0 +1,298 @@
+format: golden
+slug: esp32-telegram-motion-alert
+title: ESP32 Telegram Motion Notifications
+category: Security Projects
+category_slug: security-projects
+description: Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS,
+  with warm-up, bounded Wi-Fi attempts and explicit delivery limits.
+meta_description: Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS,
+  with warm-up, bounded Wi-Fi attempts and explicit delivery limits.
+source_base: esp32-telegram-motion-alert
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg
+featured_image: /assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg
+hero_image: /assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg
+og_image: /assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg
+image_alt: ESP32 Telegram Motion Notifications logical illustration, not a photograph or verified physical
+  pinout
+sensor: 'Adafruit PIR #189 digital OUT'
+output: Telegram API motion-input notification
+hardware:
+  sensor_pin: GPIO27
+  output_pin: HTTPS client only
+  sensor_name: 'Adafruit PIR #189 digital OUT'
+  output_name: Telegram API motion-input notification
+  wiring:
+  - component: Selected PIR + supply
+    pin: Regulated external 5 V
+  - component: PIR GND
+    pin: 5 V minus + ESP32 GND
+  - component: PIR OUT
+    pin: GPIO27
+  - component: ESP32 power
+    pin: USB data cable
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 Telegram Motion Notifications
+  icon: Build
+  what_you_build: An educational motion-input notifier that sends a short text to your own private Telegram
+    chat. It waits through sensor warm-up and a stable LOW, detects a new HIGH, keeps at most one pending
+    event and limits cloud attempts. It adds an actual HTTPS notification workflow to the existing local
+    PIR lesson; it is not a verified intrusion alarm or person detector.
+  assumptions: 'Classic ESP32-WROOM DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 as the review baseline,
+    not a latest-release claim. Select ESP32 Dev Module only for the stated generic WROOM board. Other
+    families need their own pin/radio review. Complete the Serial-only IDE upload first. The complete
+    sketches below were reviewed against documentation; they have not been compiled or tested on physical
+    hardware. The documented Adafruit PIR #189 supplies a 3.3 V digital output when powered from its specified
+    supply. Generic HC-SR501 clones may differ in regulator, pin order, hold time and output voltage;
+    they are not silently interchangeable. Check your own board before connecting OUT. No motor, relay
+    or sound output is driven.'
+  parent_safety: Low-voltage educational prototype only. Use a regulated external 5 V source for the selected
+    sensor and USB for the ESP32, with common ground and separate positive rails. Disconnect both before
+    rewiring. Obtain permission before monitoring a shared space. Do not use these alerts for fire, medical,
+    emergency response or unattended security decisions.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: 2.4 GHz STA Wi-Fi and USB power.
+    link: /components/esp32-devkit.html
+  - item: 'Adafruit PIR module #189'
+    note: Documented 5–12 V supply and 3.3 V output. This example selects external regulated 5 V.
+    link: /components/pir-sensor.html
+  - item: Regulated 5 V low-voltage supply
+    note: Documented module polarity; share minus with ESP32 GND, not USB positive.
+  - item: Telegram bot and private chat
+    note: User-owned bot token, positive numeric private-chat ID and internet access. No account or secret
+      is created by this tutorial.
+  wiring:
+    illustration_alt: ESP32 Telegram Motion Notifications logical connection map; not physical pin order
+    summary: Identify the selected PIR connector functions from its supplier pinout; do not infer VCC/OUT/GND
+      from a generic photo or wire color. Connect module positive to external regulated 5 V, its ground
+      to supply minus and ESP32 GND, and its documented 3.3 V OUT to GPIO27. ESP32 remains USB-powered.
+      Do not join external positive to USB/3V3. The internal input pull-down defines an open input but
+      cannot detect a disconnected or faulty sensor. If using another module, verify its OUT level first;
+      never put a 5 V signal into GPIO27.
+    steps:
+    - With USB and external power off, identify PIR supply, ground and OUT from the exact module documentation.
+    - Wire the table, verify separate positive rails and common ground, then set the documented PIR to
+      its appropriate retrigger mode and short hold delay for bench tests.
+    - Power the sensor and ESP32, and confirm warm-up/LOW/HIGH behavior in Serial before relying on network
+      notification.
+    - Install ArduinoJson 6.21.5 and fill the four placeholders privately; upload with Serial at 115200.
+    - Wait 60 seconds plus at least two seconds of stable LOW, then create a new motion-input HIGH. Observe
+      Serial API acceptance separately from the phone notification.
+  gpio_map:
+  - signal: Selected PIR + supply
+    esp32_pin: Regulated external 5 V
+    direction: Power
+    notes: 'Adafruit #189, not an unknown clone'
+  - signal: PIR GND
+    esp32_pin: 5 V minus + ESP32 GND
+    direction: Ground
+    notes: Share ground; do not join positive rails
+  - signal: PIR OUT
+    esp32_pin: GPIO27
+    direction: Digital input
+    notes: Documented 3.3 V output; verify module
+  - signal: ESP32 power
+    esp32_pin: USB data cable
+    direction: Power
+    notes: No relay, buzzer or actuator attached
+  libraries:
+  - 'Arduino-ESP32 3.3.2: built-in WiFi, NetworkClientSecure, HTTPClient and time.'
+  - ArduinoJson 6.21.5. This example calls the Telegram HTTPS API directly; UniversalTelegramBot is not
+    required.
+  - Your authorized 2.4 GHz Wi-Fi with internet DNS, HTTPS and network-time access. Captive-portal/enterprise
+    onboarding is not implemented.
+  configuration: Create a bot using Telegram’s official BotFather workflow, send /start to that bot from
+    your own private chat, and obtain that chat’s numeric ID through the official getUpdates API. Its
+    request uses the bot-token-specific getUpdates endpoint at api.telegram.org; keep the token/request/response
+    private and do not use third-party ID collection bots. Replace REPLACE_WIFI_SSID, REPLACE_WIFI_PASSWORD,
+    REPLACE_BOT_TOKEN and REPLACE_PRIVATE_CHAT_ID locally. The sketch deliberately accepts positive numeric
+    private-chat IDs only; groups/channels/webhooks are outside this build. Keep the filled sketch out
+    of a public repository and redact Serial/screenshots; rotate a leaked token through BotFather. With
+    placeholders unchanged no cloud request is sent. No real token or message was used during authoring.
+    Set Arduino IDE Core Debug Level to None; framework HTTP/TLS debug logs can reveal request details
+    even when the sketch does not print them. If sensor power is turned on later than board boot, reset
+    the ESP32 so the full warm-up applies.
+  behavior:
+  - - Sensor warm-up / rearm
+    - Ignores events for 60 seconds after boot, then requires LOW for two seconds before a debounced HIGH
+      can queue an event. A HIGH held at startup cannot trigger the first alert.
+  - - Network unavailable / cooldown
+    - One event remains pending for at most 30 seconds, then is discarded. No disk backlog/replay. Additional
+      edges coalesce. Attempts are at least 60 seconds apart; edges during cooldown may expire.
+  - - Wi-Fi and clock
+    - Tries Wi-Fi for 15 seconds, disconnects and pauses 30 seconds before another attempt. No endless
+      connection wait. HTTPS sending waits for a plausible network-synchronized clock.
+  - - HTTPS / API result
+    - Uses a CA trust anchor and hostname validation, not setInsecure. HTTP 200 plus JSON ok=true is API
+      acceptance only; failure/unknown results are not automatically resent.
+  - - Rate limit / reset
+    - HTTP 429 pauses all further sending until manual diagnosis and reset. Reset clears the RAM state
+      and local cooldown; it does not cancel Telegram service limits.
+  code:
+    filename: pir-telegram.ino
+    content: "#include <Arduino.h>\n// Keep Arduino IDE Core Debug Level set to None; redact credentials\
+      \ from all logs.\n#include <WiFi.h>\n#include <NetworkClientSecure.h>\n#include <HTTPClient.h>\n\
+      #include <ArduinoJson.h>\n#include <time.h>\n#include <string.h>\n\nconst char* WIFI_SSID = \"REPLACE_WIFI_SSID\"\
+      ;\nconst char* WIFI_PASSWORD = \"REPLACE_WIFI_PASSWORD\";\nconst char* BOT_TOKEN = \"REPLACE_BOT_TOKEN\"\
+      ;\nconst char* CHAT_ID = \"REPLACE_PRIVATE_CHAT_ID\";\nconstexpr uint8_t PIR_PIN = 27;\nconstexpr\
+      \ uint32_t WARMUP_MS = 60000, LOW_REARM_MS = 2000;\nconstexpr uint32_t COOLDOWN_MS = 60000, EVENT_MAX_AGE_MS\
+      \ = 30000;\nconstexpr uint32_t WIFI_TRY_MS = 15000, WIFI_PAUSE_MS = 30000;\n\n// Public Go Daddy\
+      \ Root Certificate Authority - G2, not a private key.\n// Reviewed CA source: https://certs.godaddy.com/repository/gdroot-g2.crt\n\
+      // Confirm the service trust chain when maintaining this example; never use setInsecure().\nconst\
+      \ char ROOT_CA[] PROGMEM = R\"CERT(\n-----BEGIN CERTIFICATE-----\nMIIDxTCCAq2gAwIBAgIBADANBgkqhkiG9w0BAQsFADCBgzELMAkGA1UEBhMCVVMx\n\
+      EDAOBgNVBAgTB0FyaXpvbmExEzARBgNVBAcTClNjb3R0c2RhbGUxGjAYBgNVBAoT\nEUdvRGFkZHkuY29tLCBJbmMuMTEwLwYDVQQDEyhHbyBEYWRkeSBSb290IENlcnRp\n\
+      ZmljYXRlIEF1dGhvcml0eSAtIEcyMB4XDTA5MDkwMTAwMDAwMFoXDTM3MTIzMTIz\nNTk1OVowgYMxCzAJBgNVBAYTAlVTMRAwDgYDVQQIEwdBcml6b25hMRMwEQYDVQQH\n\
+      EwpTY290dHNkYWxlMRowGAYDVQQKExFHb0RhZGR5LmNvbSwgSW5jLjExMC8GA1UE\nAxMoR28gRGFkZHkgUm9vdCBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkgLSBHMjCCASIw\n\
+      DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL9xYgjx+lk09xvJGKP3gElY6SKD\nE6bFIEMBO4Tx5oVJnyfq9oQbTqC023CYxzIBsQU+B07u9PpPL1kwIuerGVZr4oAH\n\
+      /PMWdYA5UXvl+TW2dE6pjYIT5LY/qQOD+qK+ihVqf94Lw7YZFAXK6sOoBJQ7Rnwy\nDfMAZiLIjWltNowRGLfTshxgtDj6AozO091GB94KPutdfMh8+7ArU6SSYmlRJQVh\n\
+      GkSBjCypQ5Yj36w6gZoOKcUcqeldHraenjAKOc7xiID7S13MMuyFYkMlNAJWJwGR\ntDtwKj9useiciAF9n9T521NtYJ2/LOdYq7hfRvzOxBsDPAnrSTFcaUaz4EcCAwEA\n\
+      AaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYE\nFDqahQcQZyi27/a9BUFuIMGU2g/eMA0GCSqGSIb3DQEBCwUAA4IBAQCZ21151fmX\n\
+      WWcDYfF+OwYxdS2hII5PZYe096acvNjpL9DbWu7PdIxztDhC2gV7+AJ1uP2lsdeu\n9tfeE8tTEH6KRtGX+rcuKxGrkLAngPnon1rpN5+r5N9ss4UXnT3ZJE95kTXWXwTr\n\
+      gIOrmgIttRD02JDHBHNA7XIloKmf7J6raBKZV8aPEjoJpL1E/QYVN8Gb5DKj7Tjo\n2GTzLH4U/ALqn83/B2gX2yKQOC16jdFU8WnjXzPKej17CuPKf1855eJ1usV2GDPO\n\
+      LPAvTK33sefOT6jEm0pUBsV/fdUID+Ic/n4XuKxe9tQWskMJDE32p2u0mYRlynqI\n4uJEvlz36hz1\n-----END CERTIFICATE-----\n\
+      )CERT\";\n\nbool warmed = false;\nbool configured = false, wifiTrying = false, wasConnected = false;\n\
+      bool rawHigh = false, stableHigh = false, readyForEdge = false, pending = false;\nbool attempted\
+      \ = false, rateLimited = false, lowTiming = false;\nuint32_t wifiSince=0, wifiEnded=0, changedAt=0,\
+      \ lowSince=0, eventAt=0, lastAttempt=0;\n\nbool credentialsReady() {\n  if (strstr(WIFI_SSID,\"\
+      REPLACE_\") || strstr(WIFI_PASSWORD,\"REPLACE_\") ||\n      strstr(BOT_TOKEN,\"REPLACE_\") || !strchr(BOT_TOKEN,':'))\
+      \ return false;\n  size_t n = strlen(CHAT_ID);\n  if (!n || n > 20) return false;\n  for (size_t\
+      \ i=0;i<n;++i) if (CHAT_ID[i]<'0' || CHAT_ID[i]>'9') return false;\n  return true; // Private-chat\
+      \ numeric ID only; no group/channel support in this example.\n}\nvoid startWiFi(uint32_t now) {\n\
+      \  WiFi.begin(WIFI_SSID,WIFI_PASSWORD);wifiTrying=true;wifiSince=now;\n  Serial.println(\"Starting\
+      \ bounded Wi-Fi attempt (credentials hidden)\");\n}\nvoid serviceWiFi(uint32_t now) {\n  if (!configured)\
+      \ return;\n  if (WiFi.status()==WL_CONNECTED) {\n    if (!wasConnected) {\n      wasConnected=true;wifiTrying=false;\n\
+      \      configTime(0,0,\"pool.ntp.org\",\"time.nist.gov\");\n      Serial.println(\"Wi-Fi connected;\
+      \ TLS waits for plausible network time\");\n    }\n    return;\n  }\n  if (wasConnected) { wasConnected=false;wifiTrying=false;wifiEnded=now;\
+      \ }\n  if (wifiTrying && now-wifiSince>=WIFI_TRY_MS) {\n    WiFi.disconnect();wifiTrying=false;wifiEnded=now;\n\
+      \    Serial.println(\"Wi-Fi attempt ended; wait 30 s before next attempt\");\n  } else if (!wifiTrying\
+      \ && now-wifiEnded>=WIFI_PAUSE_MS) startWiFi(now);\n}\nvoid servicePIR(uint32_t now) {\n  bool high\
+      \ = digitalRead(PIR_PIN)==HIGH;\n  if (high!=rawHigh) { rawHigh=high;changedAt=now; }\n  if (now-changedAt>=30)\
+      \ stableHigh=rawHigh;\n  if (!warmed) {\n    if (now>=WARMUP_MS) warmed=true;\n    else { readyForEdge=false;lowTiming=false;return;\
+      \ }\n  }\n  if (!stableHigh) {\n    if (!lowTiming) { lowTiming=true;lowSince=now; }\n    if (now-lowSince>=LOW_REARM_MS)\
+      \ readyForEdge=true;\n  } else {\n    lowTiming=false;\n    if (readyForEdge) {\n      readyForEdge=false;\n\
+      \      if (pending) Serial.println(\"Additional edge coalesced; one event already pending\");\n\
+      \      else { pending=true;eventAt=now;Serial.println(\"Motion-input event queued (not proof of\
+      \ a person)\"); }\n    }\n  }\n}\nbool sendAlert(uint32_t eventUptime) {\n  NetworkClientSecure\
+      \ tls; tls.setCACert(ROOT_CA);\n  tls.setHandshakeTimeout(8);tls.setTimeout(5000);\n  HTTPClient\
+      \ http;http.useHTTP10(true);http.setReuse(false);\n  http.setConnectTimeout(5000);http.setTimeout(5000);\n\
+      \  String url=String(\"https://api.telegram.org/bot\")+BOT_TOKEN+\"/sendMessage\";\n  if (!http.begin(tls,url))\
+      \ return false; // Never print URL/token/response body.\n  StaticJsonDocument<384> outgoing;\n \
+      \ outgoing[\"chat_id\"]=CHAT_ID;\n  outgoing[\"text\"]=String(\"Educational PIR input event. Board\
+      \ uptime at detection: \")+String(eventUptime/1000)+\" s. Not a verified security alarm.\";\n  String\
+      \ body;serializeJson(outgoing,body);\n  http.addHeader(\"Content-Type\",\"application/json\");\n\
+      \  int code=http.POST(body);\n  StaticJsonDocument<128> filter;filter[\"ok\"]=true;\n  StaticJsonDocument<128>\
+      \ answer;\n  bool accepted=false;\n  if (code==200) {\n    auto error=deserializeJson(answer,http.getStream(),DeserializationOption::Filter(filter),DeserializationOption::NestingLimit(12));\n\
+      \    accepted=!error && answer[\"ok\"].is<bool>() && answer[\"ok\"].as<bool>();\n  }\n  if (code==429)\
+      \ { rateLimited=true;Serial.println(\"HTTP 429: sending paused until reset; inspect Telegram rate\
+      \ limits before restarting\"); }\n  Serial.printf(\"Telegram HTTP status: %d; API accepted: %s\\\
+      n\",code,accepted?\"yes\":\"no/unknown\");\n  http.end();tls.stop();return accepted;\n}\nvoid setup()\
+      \ {\n  Serial.begin(115200);pinMode(PIR_PIN,INPUT_PULLDOWN);\n  configured=credentialsReady();\n\
+      \  WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(false);\n  Serial.println(\"PIR warm-up: 60 s, then\
+      \ require LOW for 2 s. Network calls can miss short input pulses.\");\n  if (configured) startWiFi(millis());\n\
+      \  else Serial.println(\"Replace credentials and positive private chat ID; no cloud requests while\
+      \ placeholders remain\");\n}\nvoid loop() {\n  uint32_t now=millis();servicePIR(now);serviceWiFi(now);\n\
+      \  if (pending && now-eventAt>EVENT_MAX_AGE_MS) { pending=false;Serial.println(\"Queued event expired\
+      \ after 30 s; no replay\"); }\n  bool cooldownOver=!attempted || now-lastAttempt>=COOLDOWN_MS;\n\
+      \  bool timeReady=time(nullptr)>1700000000; // Plausibility gate, not proof of clock accuracy.\n\
+      \  if (pending && configured && !rateLimited && WiFi.status()==WL_CONNECTED && timeReady && cooldownOver)\
+      \ {\n    uint32_t captured=eventAt;pending=false;attempted=true;lastAttempt=now;\n    bool accepted=sendAlert(captured);\
+      \ // Synchronous, bounded per-operation timeouts; not a hard total deadline.\n    Serial.println(accepted?\"\
+      API acceptance is not proof of delivery/read\":\"Outcome failed/unknown; no automatic resend of\
+      \ this event\");\n  }\n  delay(5);\n}\n"
+  code_explanation: The loop services a 30 ms stable-level filter and LOW rearm before attempting any
+    send. A pending event stores the detection uptime, not a claimed UTC occurrence time. Wi-Fi attempts
+    are scheduled without an endless blocking wait. Each eligible event is removed before a synchronous
+    HTTPS POST, so an ambiguous response cannot trigger automatic duplicate resends. ArduinoJson generates
+    the request text and filters the reply down to its boolean ok field. HTTP/1.0 avoids unsupported raw
+    chunk parsing when reading HTTPClient’s stream. The sketch does not print token-bearing URLs or reply
+    bodies; framework debug logs must stay disabled and any diagnostics must be redacted. TLS handshake/connect/read
+    timeouts limit individual operations, not the total loop latency; DNS/network work can still delay
+    sampling and short PIR pulses may be missed.
+  expected_output: On a configured bench, Serial should describe warm-up, Wi-Fi state and queued events.
+    With internet, plausible time and a trusted Telegram certificate chain, a send should return API acceptance
+    and your private chat may receive the text. Neither HTTP success nor a PIR HIGH proves a person, notification
+    delivery, display or reading. This is a procedure to verify on your own hardware, not a recorded successful
+    cloud test.
+  troubleshooting:
+  - problem: No first alert
+    fix: Wait through warm-up and two seconds of LOW. The sensor hold timer/retriggering may keep OUT
+      HIGH; a new HIGH after LOW is required. Check the exact module and Serial state.
+  - problem: No cloud requests
+    fix: Replace all placeholders and use a positive private-chat ID; check router band, DNS, HTTPS and
+      network time. Events older than 30 seconds are intentionally dropped.
+  - problem: TLS or HTTP error
+    fix: Check the clock and documented current service trust chain. The embedded public Go Daddy G2 root
+      is a reviewed trust anchor, not a guarantee of a future Telegram certificate chain. Do not bypass
+      verification with setInsecure.
+  - problem: HTTP 400, 401 or 403
+    fix: Check bot token, own private-chat ID, /start and whether the bot was blocked. Never paste your
+      token/whole response into public bug reports.
+  - problem: HTTP 429 or repeated failure
+    fix: Stop testing rapidly. Sending is latched off for this boot after 429; review Telegram retry/rate-limit
+      guidance before resetting. The sketch does not retry an ambiguous event.
+  - problem: Phone shows no notification after API acceptance
+    fix: Check Telegram chat history and phone notification settings separately. API acceptance is not
+      delivery or read acknowledgement.
+  - problem: Short events missing
+    fix: TLS/HTTP calls are synchronous and can occupy seconds. This polling demonstration is not an interrupt-backed
+      or reliable alarm/event recorder.
+  testing_checklist:
+  - First verify the PIR signal and documented voltage without trusting Telegram as a sensor diagnostic.
+  - Confirm placeholders suppress outbound requests; never use real credentials in screenshots/source
+    control.
+  - Create one edge after LOW rearm, inspect API status, and check the actual private chat separately.
+  - Verify sustained HIGH does not create an endless alert stream and attempts are rate-limited.
+  - Test router unavailability and expired pending events; restoration must not replay a stored backlog.
+  - Use your own authorized environment to check certificate/time failure stays fail-closed. Do not disable
+    TLS verification to make a test pass.
+  engineering_explanation: The 60-second warm-up and LOW interval are chosen bench policies for the documented
+    PIR, not universal sensor readiness proofs. Time plausibility is not a clock-accuracy or authenticated-time
+    guarantee. The public Go Daddy Root CA G2 certificate is valid through 2037, but service trust chains
+    can change earlier; maintain the actual trusted root using current official evidence. Credentials
+    stored in ordinary firmware are not protected against a reader of flash. Message text and chat metadata
+    go to Telegram; only send information you intend to share. The local rate limiter is RAM-only, not
+    a global service quota or protection against reboot loops. No certified alarm, person classification,
+    durable queue, exactly-once delivery or remote actuator control is implemented.
+  related_guides:
+  - title: IDE setup and first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Verify upload and Serial before adding sensor/network code.
+  - title: Wi-Fi connection diagnostics
+    href: /guides/esp32-wifi-troubleshooting.html
+    description: Check the supported band, credentials and bounded recovery.
+  related_projects:
+  - title: Local PIR motion lesson
+    href: /projects/esp32-motion-security-alert.html
+    description: Verify motion-input behavior before adding cloud transport.
+  faqs: []
+  references:
+  - title: Arduino-ESP32 3.3.2 Wi-Fi interfaces
+    href: https://github.com/espressif/arduino-esp32/tree/3.3.2/libraries/WiFi/src
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: 'Adafruit PIR module #189 electrical details'
+    href: https://www.adafruit.com/product/189
+  - title: Adafruit PIR stabilization and test procedure
+    href: https://learn.adafruit.com/pir-passive-infrared-proximity-motion-sensor/testing-a-pir
+  - title: Telegram bot setup
+    href: https://core.telegram.org/bots/tutorial
+  - title: Telegram Bot API sendMessage and response contract
+    href: https://core.telegram.org/bots/api#sendmessage
+  - title: Telegram Bot API getUpdates
+    href: https://core.telegram.org/bots/api#getupdates
+  - title: ArduinoJson 6.21.5
+    href: https://github.com/bblanchon/ArduinoJson/tree/v6.21.5
+  - title: ArduinoJson 6 HTTPClient stream parsing
+    href: https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/
+  - title: NetworkClientSecure at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/NetworkClientSecure/src/NetworkClientSecure.h
+  - title: HTTPClient at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/HTTPClient/src/HTTPClient.h
+  - title: Go Daddy Root Certificate Authority - G2 public certificate
+    href: https://certs.godaddy.com/repository/gdroot-g2.crt

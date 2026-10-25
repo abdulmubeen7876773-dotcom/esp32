@@ -1,0 +1,240 @@
+format: golden
+slug: esp32-microsd-climate-logger
+title: ESP32 DHT22 microSD CSV Logger
+category: IoT Projects
+category_slug: iot-projects
+description: Log DHT22 readings to a microSD CSV file every ten seconds, using UTC after NTP sync and
+  explicit unset-time and sensor-error fields.
+meta_description: Log DHT22 readings to a microSD CSV file every ten seconds, using UTC after NTP sync
+  and explicit unset-time and sensor-error fields.
+source_base: esp32-microsd-climate-logger
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-microsd-climate-logger.svg
+featured_image: /assets/visuals/projects/heroes/esp32-microsd-climate-logger.svg
+hero_image: /assets/visuals/projects/heroes/esp32-microsd-climate-logger.svg
+og_image: /assets/visuals/projects/heroes/esp32-microsd-climate-logger.svg
+image_alt: ESP32 DHT22 microSD CSV Logger logical overview illustration, not a photograph or physical
+  pin layout
+sensor: DHT22 temperature and humidity
+output: microSD CSV and Serial
+hardware:
+  sensor_pin: GPIO4
+  output_pin: microSD CSV and Serial
+  sensor_name: DHT22 temperature and humidity
+  output_name: microSD CSV and Serial
+  wiring:
+  - component: DHT22 DATA
+    pin: GPIO4
+  - component: DHT22 VCC + SD adapter supply
+    pin: 3V3
+  - component: DHT22 GND + SD GND
+    pin: GND
+  - component: SD SCK
+    pin: GPIO18
+  - component: SD MISO / DO
+    pin: GPIO19
+  - component: SD MOSI / DI
+    pin: GPIO23
+  - component: SD CS
+    pin: GPIO25
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 DHT22 microSD CSV Logger
+  icon: Build
+  what_you_build: A climate logger that appends one CSV row every ten seconds, including failed sensor
+    samples. It works without a browser or broker. Wi-Fi is used only to obtain UTC from NTP; before the
+    clock is set, rows retain uptime but leave UTC empty. No DHT11 page is replaced.
+  assumptions: Classic ESP32-WROOM DevKit, Arduino-ESP32 3.3.2 review baseline and a documented 3.3 V-compatible
+    DHT22. Use a short-wire SPI adapter explicitly rated for 3.3 V supply with 3.3 V signals. A common
+    adapter with a regulator intended for 5 V input is not automatically equivalent. Start with a backed-up
+    FAT32 card; this tutorial does not format it. A 2.4 GHz network with internet/NTP access is optional
+    for calendar timestamps. Documentation and code-structure review only; compilation and physical hardware
+    testing have not been performed.
+  parent_safety: USB-powered, low-voltage breadboard demonstration. Unplug USB before changing wiring.
+    ESP32 GPIO uses 3.3 V signals; no signal or pull-up in these examples may be connected to 5 V. Do
+    not use these prototypes for unattended control or safety decisions.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: Arduino-ESP32 3.3.2 baseline.
+    link: /components/esp32-devkit.html
+  - item: DHT22 or AM2302
+    note: Documented 3.3 V-compatible sensor; not DHT11.
+    link: /components/dht22.html
+  - item: microSD SPI adapter and card
+    note: Verified 3.3 V supply AND 3.3 V logic; FAT32 test card with backed-up contents.
+    link: /components/microsd-card-module.html
+  - item: 10 kΩ resistor, breadboard, jumpers, USB data cable
+    note: Bare DHT22 DATA pull-up to 3V3; verify module pull-ups.
+    link: /components/through-hole-resistors.html
+  wiring:
+    illustration_alt: ESP32 DHT22 microSD CSV Logger logical wiring with labelled signals; verify actual
+      package orientation separately
+    summary: 'The card and DHT22 share GND and the specified 3.3 V supply, but their signals are separate.
+      A bare card and an adapter have different pin layouts: use labels on a verified adapter, not physical
+      positions in this logical illustration. SD write-current peaks require a suitable supply and module
+      decoupling. No adapter signal may pull an ESP32 input above 3.3 V. For a bare DHT22 leave NC unconnected
+      and add DATA pull-up to 3V3.'
+    steps:
+    - Back up the card on a computer; use a supported FAT32 filesystem and safely eject it.
+    - With USB unplugged, connect the adapter SPI signals to GPIO18/19/23/25 and its verified 3.3 V supply.
+    - Wire DHT22 DATA to GPIO4 with the required 10 kΩ pull-up; connect its VCC/GND.
+    - Check actual module labels and supply capacity, then reconnect USB. Never remove the card during
+      a write.
+  gpio_map:
+  - signal: DHT22 DATA
+    esp32_pin: GPIO4
+    direction: Bidirectional
+    notes: 10 kΩ pull-up to 3V3 for bare sensor
+  - signal: DHT22 VCC + SD adapter supply
+    esp32_pin: 3V3
+    direction: Power
+    notes: Only documented 3.3 V supply adapters
+  - signal: DHT22 GND + SD GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Common ground; short wires
+  - signal: SD SCK
+    esp32_pin: GPIO18
+    direction: Output
+    notes: SPI clock, 4 MHz request
+  - signal: SD MISO / DO
+    esp32_pin: GPIO19
+    direction: Input
+    notes: 3.3 V signal output
+  - signal: SD MOSI / DI
+    esp32_pin: GPIO23
+    direction: Output
+    notes: 3.3 V signal input
+  - signal: SD CS
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Explicit chip-select constant
+  libraries:
+  - Built-in SPI, SD, WiFi and time/SNTP APIs from Arduino-ESP32 3.3.2. No external SD library is required.
+  - Install Adafruit DHT sensor library 1.4.6 and Adafruit Unified Sensor 1.1.15 dependency through Library
+    Manager. Select DHT22 in the constructor; the historical DHT11 quick-build uses another type.
+  configuration: Replace YOUR_WIFI_SSID and YOUR_WIFI_PASSWORD with local credentials; never publish them
+    in screenshots. Open Serial at 115200. The code appends /climate.csv and writes a header only when
+    the file is empty. If that filename already contains another schema or a damaged final row, archive/repair
+    it on a computer before this test. UTC is formatted with Z; no local daylight-saving offset is applied.
+    To read the file, finish a sample, disconnect board power, remove the card and open the CSV on a computer.
+  behavior:
+  - - No Wi-Fi
+    - 15-second connection windows at a minimum 30-second start cadence; no endless connect loop. Samples
+      still run.
+  - - Clock unset
+    - UTC field empty and time_status UNSET; uptime remains available.
+  - - Clock set this boot
+    - SET_THIS_BOOT means SNTP supplied time at least once. It does not promise current synchronization
+      or accuracy after an outage.
+  - - DHT22 failure
+    - Blank temperature/humidity fields and sensor_error; no invented zero value.
+  - - Card failure
+    - Stops writes for this boot, continues Serial samples and reports NOT SAVED. Fix hardware/filesystem
+      with power off and reset. No offline replay.
+  code:
+    filename: climate-logger.ino
+    content: "#include <Arduino.h>\n#include <WiFi.h>\n#include <SPI.h>\n#include <SD.h>\n#include <DHT.h>\n\
+      #include <time.h>\n#include <sys/time.h>\n#include <esp_sntp.h>\n#include <math.h>\n#include <cstring>\n\
+      \nconst char* SSID = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\";\nconstexpr\
+      \ uint8_t DHT_PIN = 4, SD_CS = 25;\nconstexpr uint32_t SAMPLE_MS = 10000, WIFI_WINDOW_MS = 15000,\
+      \ WIFI_RETRY_MS = 30000;\nconst char* FILE_NAME = \"/climate.csv\";\nconst char* HEADER = \"uptime_ms,utc,time_status,temp_c,humidity_pct,sensor_status\\\
+      n\";\nDHT dht(DHT_PIN, DHT22);\nvolatile bool clockSet = false;\nbool cardReady = false, wifiTrying\
+      \ = false, ntpStarted = false;\nuint32_t wifiStarted = 0, lastSample = 0;\n\nvoid timeReceived(struct\
+      \ timeval*) { clockSet = true; }\nvoid startWiFi() {\n  wifiStarted = millis(); wifiTrying = true;\n\
+      \  WiFi.begin(SSID, PASSWORD);\n  Serial.println(\"Starting bounded Wi-Fi attempt\");\n}\nvoid networkTask()\
+      \ {\n  uint32_t now = millis();\n  if (WiFi.status() == WL_CONNECTED) {\n    wifiTrying = false;\n\
+      \    if (!ntpStarted) {\n      sntp_set_time_sync_notification_cb(timeReceived);\n      configTime(0,\
+      \ 0, \"pool.ntp.org\", \"time.nist.gov\"); // UTC, asynchronous SNTP.\n      ntpStarted = true;\n\
+      \    }\n  } else {\n    if (wifiTrying && now - wifiStarted >= WIFI_WINDOW_MS) {\n      WiFi.disconnect(false);\
+      \ wifiTrying = false;\n      Serial.println(\"Wi-Fi unavailable; sampling continues without waiting\"\
+      );\n    }\n    if (!wifiTrying && now - wifiStarted >= WIFI_RETRY_MS) startWiFi();\n  }\n}\nbool\
+      \ initializeCard() {\n  if (!SPI.begin(18, 19, 23, SD_CS)) return false;\n  if (!SD.begin(SD_CS,\
+      \ SPI, 4000000) || SD.cardType() == CARD_NONE) return false;\n  File file = SD.open(FILE_NAME, FILE_APPEND);\n\
+      \  if (!file) return false;\n  bool ok = true;\n  if (file.size() == 0) ok = file.print(HEADER)\
+      \ == strlen(HEADER);\n  file.close();\n  return ok;\n}\nvoid recordSample() {\n  float h = dht.readHumidity(),\
+      \ t = dht.readTemperature();\n  bool sensorOK = isfinite(h) && isfinite(t);\n  char utc[25] = \"\
+      \";\n  time_t stamp = time(nullptr);\n  bool hasTime = clockSet && stamp >= 1704067200; // Reject\
+      \ an obviously unset clock.\n  if (hasTime) {\n    struct tm tmUTC;\n    gmtime_r(&stamp, &tmUTC);\n\
+      \    strftime(utc, sizeof(utc), \"%Y-%m-%dT%H:%M:%SZ\", &tmUTC);\n  }\n  String row = String(millis())\
+      \ + \",\" + utc + \",\" + (hasTime ? \"SET_THIS_BOOT\" : \"UNSET\") + \",\";\n  if (sensorOK) row\
+      \ += String(t, 1) + \",\" + String(h, 1) + \",ok\\n\";\n  else row += \",,sensor_error\\n\";\n \
+      \ Serial.print(row);\n  if (!cardReady) { Serial.println(\"NOT SAVED: card unavailable; no replay\
+      \ buffer\"); return; }\n  File file = SD.open(FILE_NAME, FILE_APPEND);\n  if (!file) { cardReady\
+      \ = false; Serial.println(\"Open failed; fix card and reset\"); return; }\n  size_t written = file.print(row);\n\
+      \  file.close();\n  if (written != row.length()) {\n    cardReady = false;\n    Serial.println(\"\
+      Short write; stop logging, inspect file and reset after repair\");\n  } else Serial.println(\"Row\
+      \ accepted by filesystem; not a power-loss durability guarantee\");\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  dht.begin();\n  cardReady = initializeCard();\n  Serial.println(cardReady ? \"CSV card ready\"\
+      \ : \"SD init failed; Serial sampling still runs\");\n  WiFi.mode(WIFI_STA); WiFi.setAutoReconnect(false);\n\
+      \  startWiFi();\n  lastSample = millis(); // First DHT22 sample after 10 seconds.\n}\nvoid loop()\
+      \ {\n  networkTask();\n  uint32_t now = millis();\n  if (now - lastSample >= SAMPLE_MS) { lastSample\
+      \ = now; recordSample(); }\n  delay(2);\n}\n"
+  code_explanation: 'Samples are spaced ten seconds apart, slower than the DHT22 minimum interval and
+    the library’s 2000 ms cache. Consecutive humidity/temperature calls share a sensor transaction through
+    that cache. Each row includes six fields: uptime_ms, utc, time_status, temp_c, humidity_pct and sensor_status.
+    millis() wraps after about 49.7 days and resets on reboot; uptime is not a permanent unique ID. The
+    SNTP callback only marks clock state. Disk operations are synchronous and can delay loop, so this
+    is not a real-time recorder. Missed intervals are not backfilled.'
+  expected_output: After CSV card ready, Serial prints a row approximately every ten seconds. Before NTP
+    a row has an empty UTC field and UNSET. After a sync it contains an ISO-style UTC timestamp and SET_THIS_BOOT.
+    The CSV begins with the documented header. A sensor error leaves both reading fields empty. Examples
+    describe expected output, not physical measurements made by the author.
+  troubleshooting:
+  - problem: SD init failed
+    fix: Verify actual adapter supply requirements, 3.3 V logic, CS25/SCK18/MISO19/MOSI23, card format
+      and wiring. Do not cure an incompatible adapter by applying 5 V to ESP32 signals.
+  - problem: UNSET persists
+    fix: Check Wi-Fi credentials, DNS and outbound NTP access. A network connection alone is not a time
+      sync. The logger still records uptime.
+  - problem: sensor_error rows
+    fix: Check DHT22 identity, GPIO4, power and pull-up. Preserve DHT22 constructor and sample spacing.
+  - problem: CSV tail damaged or rows missing
+    fix: Power loss or card removal can interrupt filesystem writes. Inspect a backed-up copy on a computer.
+      A returned byte count/close is not a durability guarantee.
+  - problem: Old columns mixed with new data
+    fix: The example appends without validating an existing header. Archive an incompatible climate.csv
+      before using the sketch.
+  testing_checklist:
+  - Verify a standalone DHT22 reading before combining with SD.
+  - Read the resulting file on a computer and check six fields per row and a single header.
+  - 'Test without Wi-Fi: UTC should stay empty until a successful NTP sync.'
+  - After first sync, disconnect network and observe that SET_THIS_BOOT is not a fresh-sync claim.
+  - With power off, remove card then restart; verify Serial still reports unsaved samples.
+  engineering_explanation: Closing each row reduces the open-file window but cannot guarantee survival
+    of sudden power loss. Keep backups and power down before card removal; there is no hot-swap detection,
+    automatic repair, rotation or full-card recovery. Files grow until capacity or an error stops writes.
+    UTC can be adjusted by NTP and is not guaranteed monotonic. No battery-backed RTC is fitted, so a
+    cold boot without network loses calendar time. NTP here is not authenticated. This is environmental
+    logging, not a certified recorder.
+  related_guides:
+  - title: Arduino IDE first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Complete the Serial-only first upload before wiring peripherals.
+  - title: DHT22 reference
+    href: /guides/esp32-dht22.html
+    description: Use the matching DHT22 sensor type and timing.
+  - title: Wi-Fi diagnostics
+    href: /guides/esp32-wifi-troubleshooting.html
+    description: Diagnose connectivity separately from the SD card.
+  related_projects: []
+  faqs: []
+  references:
+  - title: Arduino-ESP32 3.3.2 source baseline
+    href: https://github.com/espressif/arduino-esp32/tree/3.3.2
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: SD 3.3.2 mount API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/SD/src/SD.h
+  - title: SPI 3.3.2 pin API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/SPI/src/SPI.h
+  - title: Time and SNTP example at 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/ESP32/examples/Time/SimpleTime/SimpleTime.ino
+  - title: DHT 1.4.6 sampling cache
+    href: https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/DHT.cpp
+  - title: Aosong DHT22 manufacturer manual
+    href: https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf

@@ -1,0 +1,300 @@
+format: golden
+slug: esp32-bme280-web-dashboard
+title: ESP32 BME280 Web Dashboard and Live Chart
+category: IoT Projects
+category_slug: iot-projects
+description: Read BME280 temperature, humidity and local pressure in a local browser, with five-second
+  sampling, bounded history and visible missing-data gaps.
+meta_description: Read BME280 temperature, humidity and local pressure in a local browser, with five-second
+  sampling, bounded history and visible missing-data gaps.
+source_base: esp32-bme280-web-dashboard
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-bme280-web-dashboard.svg
+featured_image: /assets/visuals/projects/heroes/esp32-bme280-web-dashboard.svg
+hero_image: /assets/visuals/projects/heroes/esp32-bme280-web-dashboard.svg
+og_image: /assets/visuals/projects/heroes/esp32-bme280-web-dashboard.svg
+image_alt: ESP32 BME280 Web Dashboard and Live Chart logical illustration, not a photograph or verified
+  physical pinout
+sensor: BME280 on I2C
+output: Browser values, temperature plot and sample table
+hardware:
+  sensor_pin: GPIO21 / GPIO22
+  output_pin: Local AP HTTP
+  sensor_name: BME280 on I2C
+  output_name: Browser values, temperature plot and sample table
+  wiring:
+  - component: BME280 VIN
+    pin: ESP32 3V3
+  - component: BME280 GND
+    pin: ESP32 GND
+  - component: BME280 SDI / SDA
+    pin: GPIO21
+  - component: BME280 SCK / SCL
+    pin: GPIO22
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 BME280 Web Dashboard and Live Chart
+  icon: Build
+  what_you_build: An ESP32-hosted dashboard with current temperature in °C, relative humidity in %RH and
+    local pressure in hPa. A temperature chart and exact-value table share the same bounded sampling history.
+    This combines the dashboard and live-chart topics in one complete build rather than two near-identical
+    articles. The existing weather-station tutorial remains the Serial-first foundation.
+  assumptions: 'Classic ESP32-WROOM DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 as the review baseline,
+    not a latest-release claim. Select ESP32 Dev Module only for the stated generic WROOM board. Other
+    families need their own pin/radio review. Complete the Serial-only IDE upload first. The complete
+    sketches below were reviewed against documentation; they have not been compiled or tested on physical
+    hardware. One Adafruit BME280 breakout #2652 wired through its labelled header, not a bare chip or
+    unspecified BMP/BME clone. A successful 0x76/0x77 ACK is not device identification. The library also
+    checks chip ID 0x60; that is a compatibility check, not proof of authenticity or measurement accuracy.'
+  parent_safety: USB-powered indoor, low-voltage breadboard demonstration. Unplug USB before rewiring.
+    Keep I2C pull-ups at 3.3 V and do not expose the unprotected board to water or condensation. No alarm,
+    weatherproof enclosure or safety-critical control is implemented.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: USB data cable; pins 21 and 22 exposed.
+    link: /components/esp32-devkit.html
+  - item: 'Adafruit BME280 breakout #2652'
+    note: Documented VIN 3–5 V/level shifting; this build uses 3.3 V VIN. BMP280 is not a substitute.
+    link: /components/bme280.html
+  - item: Breadboard and short jumpers
+    note: No extra display or memory card.
+    link: /components/solderless-breadboard.html
+  wiring:
+    illustration_alt: ESP32 BME280 Web Dashboard and Live Chart logical connection map; not physical pin
+      order
+    summary: Connect the selected breakout VIN to ESP32 3V3 and GND to GND. SDI (SDA) goes to GPIO21;
+      SCK (SCL) goes to GPIO22. Header names can differ between revisions; identify functions from the
+      exact Adafruit pinout. Leave 3Vo, CS and SDO disconnected for default I2C operation at 0x77. The
+      sketch also tries 0x76 for an intentionally changed address. Its I2C bus is 100 kHz with a 50 ms
+      Wire operation timeout. Do not power a pull-up-equipped unknown module from 5 V and assume its bus
+      is safe.
+    steps:
+    - Disconnect USB; identify VIN, GND, SDI/SDA and SCK/SCL from the exact board pinout.
+    - Wire the four connections in the table; confirm no 5 V rail reaches SDA/SCL.
+    - Install the pinned libraries, select the stated board/core and replace the AP password.
+    - Upload and open Serial at 115200. Initialization should identify a supported BME280 or report unavailable.
+    - Join ESP32-BME280 and open the printed http:// IP. Stay on that network when your phone reports
+      no internet.
+  gpio_map:
+  - signal: BME280 VIN
+    esp32_pin: ESP32 3V3
+    direction: Power
+    notes: Selected breakout, not bare sensor
+  - signal: BME280 GND
+    esp32_pin: ESP32 GND
+    direction: Ground
+    notes: Common low-voltage reference
+  - signal: BME280 SDI / SDA
+    esp32_pin: GPIO21
+    direction: Bidirectional I2C
+    notes: 100 kHz; pull-ups at 3.3 V only
+  - signal: BME280 SCK / SCL
+    esp32_pin: GPIO22
+    direction: I2C clock
+    notes: Leave CS, SDO and 3Vo unconnected
+  libraries:
+  - 'Arduino-ESP32 3.3.2: built-in Wire, WiFi, WebServer and ESP-IDF timer/random APIs.'
+  - Adafruit BME280 Library 2.3.0, Adafruit Unified Sensor 1.1.15 and Adafruit BusIO 1.17.0. Select these
+    versions in Library Manager.
+  - Modern browser with JavaScript, fetch, AbortController and Canvas. No CDN or chart library; raw /samples
+    JSON and Serial remain available.
+  configuration: Replace CHANGE_ME_1234 with your own 8–63 character password. The board creates a local
+    2.4 GHz AP on channel 6 with one station; it does not use a router, NTP or internet. Sampling starts
+    five seconds after initialization. The board holds up to 60 attempts, about five minutes; reset erases
+    them. Open /samples directly for raw JSON. The page polls only after the preceding request completes,
+    plus five seconds, with a three-second browser request timeout. Background tabs and slow clients can
+    delay updates; this is not a precise acquisition scheduler.
+  behavior:
+  - - Valid sample
+    - Reads chip ID and three compensated values. Finite/in-range checks pass before all three are marked
+      valid; pressure Pa is divided by 100 for hPa.
+  - - Missing or bad sample
+    - Adds an unavailable row with null values; the chart breaks its line. Old valid numbers are not substituted
+      as current readings.
+  - - Browser disconnect / bad JSON
+    - Current value is cleared and retained chart/table labelled historical. Next polling cycle attempts
+      recovery without overlapping requests.
+  - - History limit / reset
+    - Oldest attempt is overwritten after 60. A random boot identifier lets the page notice a reboot;
+      no durable storage or UTC timestamps.
+  - - Sensor initialization fails
+    - Dashboard can still serve unavailable attempts. Correct wiring/model and reset; no repeated library
+      initialization loop is added.
+  code:
+    filename: bme-chart.ino
+    content: "#include <Arduino.h>\n#include <Wire.h>\n#include <WiFi.h>\n#include <WebServer.h>\n#include\
+      \ <Adafruit_BME280.h>\n#include <esp_timer.h>\n#include <esp_system.h>\n#include <math.h>\n\nconst\
+      \ char* AP_PASSWORD = \"CHANGE_ME_1234\"; // Replace: 8-63 characters.\nconstexpr uint32_t SAMPLE_MS\
+      \ = 5000;\nconstexpr size_t CAPACITY = 60;\nstruct Sample { uint32_t seq; uint64_t ms; bool ok;\
+      \ float t, rh, hpa; };\nSample history[CAPACITY];\nsize_t head = 0, count = 0;\nuint32_t sequence\
+      \ = 0, lastSample = 0;\nuint8_t address = 0;\nbool sensorReady = false, httpReady = false;\nString\
+      \ bootId;\nAdafruit_BME280 bme;\nWebServer server(80);\n\nconst char PAGE[] PROGMEM = R\"HTML(\n\
+      <!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"\
+      width=device-width,initial-scale=1\">\n<title>BME280 local readings and trend</title>\n<style>body{font:1rem\
+      \ system-ui;max-width:60rem;margin:auto;padding:1rem;color:#14283a;background:#f7fafc}canvas{width:100%;height:240px;border:1px\
+      \ solid #597182;background:white}table{border-collapse:collapse;width:100%}th,td{padding:.5rem;text-align:left;border-bottom:1px\
+      \ solid #8c9ca8}.scroll{overflow:auto}#status{font-weight:600}</style></head><body>\n<h1>BME280\
+      \ readings and temperature trend</h1>\n<p id=\"status\" role=\"status\">Waiting for the board...</p>\n\
+      <p id=\"latest\">No current reading.</p>\n<p>Local pressure is hPa, not sea-level pressure. Temperature\
+      \ is &deg;C; humidity is %RH.</p>\n<canvas id=\"plot\" width=\"800\" height=\"300\" role=\"img\"\
+      \ aria-label=\"Temperature in Celsius versus seconds since board boot. Missing readings break the\
+      \ line; recent exact values are in the table.\"></canvas>\n<p>Automatic vertical scale; horizontal\
+      \ axis: seconds since ESP32 boot, not clock time. Up to 60 attempts, about five minutes. Invalid\
+      \ samples break the line. No cloud or permanent log.</p>\n<div class=\"scroll\"><table><caption>Newest\
+      \ twelve sampling attempts</caption><thead><tr><th scope=\"col\">Boot seconds</th><th scope=\"col\"\
+      >&deg;C</th><th scope=\"col\">%RH</th><th scope=\"col\">hPa</th><th scope=\"col\">State</th></tr></thead><tbody\
+      \ id=\"rows\"></tbody></table></div>\n<noscript>Automatic readings and chart require JavaScript.\
+      \ Open /samples for raw JSON or use Serial Monitor.</noscript>\n<script>\nlet boot = null;\nconst\
+      \ statusNode = document.getElementById('status');\nconst latest = document.getElementById('latest');\n\
+      const rows = document.getElementById('rows');\nconst canvas = document.getElementById('plot');\n\
+      const ctx = canvas.getContext('2d');\nfunction draw(samples) {\n  ctx.clearRect(0, 0, 800, 300);\n\
+      \  const valid = samples.filter(s => s.ok);\n  ctx.fillStyle = '#14283a'; ctx.font = '16px sans-serif';\n\
+      \  if (!valid.length) { ctx.fillText('No valid temperature history', 60, 80); return; }\n  let lo\
+      \ = Math.min(...valid.map(s => s.t)) - 0.5;\n  let hi = Math.max(...valid.map(s => s.t)) + 0.5;\n\
+      \  let left = samples[0].ms, right = samples[samples.length - 1].ms;\n  if (right === left) right\
+      \ = left + 5000;\n  const x = s => 60 + 700 * (s.ms - left) / (right - left);\n  const y = s =>\
+      \ 250 - 210 * (s.t - lo) / (hi - lo);\n  ctx.fillText(hi.toFixed(1) + ' C', 4, 35); ctx.fillText(lo.toFixed(1),\
+      \ 4, 250);\n  ctx.fillText((left / 1000).toFixed(0) + ' s', 60, 285);\n  ctx.fillText((right / 1000).toFixed(0)\
+      \ + ' s', 690, 285);\n  ctx.strokeStyle = '#8c9ca8'; ctx.beginPath();ctx.moveTo(60,35);ctx.lineTo(60,250);ctx.lineTo(760,250);ctx.stroke();\n\
+      \  ctx.strokeStyle = '#005a8d'; ctx.lineWidth = 3; ctx.beginPath();\n  let previous = null;\n  for\
+      \ (const s of samples) {\n    if (!s.ok) { previous = null; continue; }\n    if (!previous || s.ms\
+      \ - previous.ms > 7500) ctx.moveTo(x(s), y(s));\n    else ctx.lineTo(x(s), y(s));\n    previous\
+      \ = s;\n  }\n  ctx.stroke();\n  for (const s of valid) { ctx.beginPath();ctx.arc(x(s),y(s),3,0,2*Math.PI);ctx.fill();\
+      \ }\n}\nfunction validPayload(d) {\n  return d && typeof d.boot === 'string' && Number.isFinite(d.now_ms)\
+      \ &&\n    Array.isArray(d.samples) && d.samples.length <= 60 && d.samples.every((s,i,a) =>\n   \
+      \   Number.isInteger(s.seq) && Number.isFinite(s.ms) && s.ms <= d.now_ms &&\n      (i === 0 || s.ms\
+      \ >= a[i-1].ms) && typeof s.ok === 'boolean' &&\n      (!s.ok || [s.t,s.rh,s.hpa].every(Number.isFinite)));\n\
+      }\nfunction show(d) {\n  if (!validPayload(d)) throw new Error('Invalid response');\n  const rebooted\
+      \ = boot !== null && boot !== d.boot; boot = d.boot;\n  const samples = d.samples;\n  const s =\
+      \ samples[samples.length - 1];\n  const fresh = s && s.ok && d.now_ms - s.ms <= 10000;\n  statusNode.textContent\
+      \ = (rebooted ? 'Board reboot detected. ' : '') +\n    (fresh ? 'Current sample available. ' : 'Current\
+      \ reading unavailable or stale. ') +\n    'Attempt history: ' + samples.length + '/60. Browser polls\
+      \ after each request plus 5 seconds.';\n  latest.textContent = fresh ? s.t.toFixed(2) + ' C | '\
+      \ + s.rh.toFixed(2) + ' %RH | ' + s.hpa.toFixed(2) + ' hPa' : 'No current reading; do not reuse\
+      \ an old value.';\n  rows.replaceChildren();\n  for (const s of samples.slice(-12).reverse()) {\n\
+      \    const tr = document.createElement('tr');\n    const cells = [(s.ms/1000).toFixed(1), s.ok?s.t.toFixed(2):'--',\
+      \ s.ok?s.rh.toFixed(2):'--', s.ok?s.hpa.toFixed(2):'--',s.ok?'valid':'unavailable'];\n    for (const\
+      \ value of cells) { const td=document.createElement('td');td.textContent=value;tr.append(td); }\n\
+      \    rows.append(tr);\n  }\n  draw(samples);\n}\nasync function tick() {\n  const controller = new\
+      \ AbortController(); const timer = setTimeout(() => controller.abort(),3000);\n  try {\n    const\
+      \ response = await fetch('/samples',{cache:'no-store',signal:controller.signal});\n    if (!response.ok)\
+      \ throw new Error('HTTP failure');\n    show(await response.json());\n  } catch (error) {\n    statusNode.textContent\
+      \ = 'Board unreachable or invalid response. Retained chart/table are historical, not current.';\n\
+      \    latest.textContent = 'No current reading.';\n  } finally { clearTimeout(timer); setTimeout(tick,5000);\
+      \ }\n}\ntick();\n</script></body></html>\n)HTML\";\n\nbool chipResponds() {\n  Wire.beginTransmission(address);\
+      \ Wire.write(0xD0);\n  if (Wire.endTransmission(false) != 0) return false;\n  if (Wire.requestFrom(address,\
+      \ uint8_t(1)) != 1) return false;\n  return Wire.read() == 0x60; // Compatibility check, not proof\
+      \ of authenticity.\n}\nvoid sampleSensor() {\n  Sample s = {};\n  s.seq = ++sequence; s.ms = uint64_t(esp_timer_get_time())\
+      \ / 1000;\n  if (sensorReady && chipResponds()) {\n    s.t = bme.readTemperature(); s.rh = bme.readHumidity();\
+      \ s.hpa = bme.readPressure() / 100.0F;\n    s.ok = isfinite(s.t) && isfinite(s.rh) && isfinite(s.hpa)\
+      \ &&\n      s.t >= -40 && s.t <= 85 && s.rh >= 0 && s.rh <= 100 && s.hpa >= 300 && s.hpa <= 1100;\n\
+      \  }\n  history[head] = s; head = (head + 1) % CAPACITY;\n  if (count < CAPACITY) ++count;\n  Serial.printf(\"\
+      Attempt %lu: %s\\n\", (unsigned long)s.seq, s.ok ? \"valid\" : \"unavailable\");\n}\nvoid sendSamples()\
+      \ {\n  String json;\n  if (!json.reserve(11000)) { server.send(503,\"text/plain\",\"Insufficient\
+      \ memory\\n\");return; }\n  json = \"{\\\"boot\\\":\\\"\" + bootId + \"\\\",\\\"now_ms\\\":\" +\
+      \ String((unsigned long long)(esp_timer_get_time()/1000)) + \",\\\"samples\\\":[\";\n  for (size_t\
+      \ i=0; i<count; ++i) {\n    const Sample& s = history[(head + CAPACITY - count + i) % CAPACITY];\n\
+      \    if (i) json += ',';\n    json += \"{\\\"seq\\\":\" + String(s.seq) + \",\\\"ms\\\":\" + String((unsigned\
+      \ long long)s.ms) + \",\\\"ok\\\":\";\n    json += s.ok ? \"true\" : \"false\";\n    if (s.ok) json\
+      \ += \",\\\"t\\\":\" + String(s.t,2) + \",\\\"rh\\\":\" + String(s.rh,2) + \",\\\"hpa\\\":\" + String(s.hpa,2);\n\
+      \    else json += \",\\\"t\\\":null,\\\"rh\\\":null,\\\"hpa\\\":null\";\n    json += '}';\n  }\n\
+      \  json += \"]}\";\n  server.sendHeader(\"Cache-Control\",\"no-store\"); server.send(200,\"application/json\"\
+      ,json);\n}\nvoid setup() {\n  Serial.begin(115200); bootId = String(esp_random(),HEX);\n  Wire.begin(21,22,100000);\
+      \ Wire.setTimeOut(50);\n  // Initialization is a one-time library operation. Reset after correcting\
+      \ a fault.\n  for (uint8_t a=0x76; a<=0x77; ++a) {\n    address = a;\n    if (chipResponds() &&\
+      \ bme.begin(a,&Wire)) { sensorReady = true; break; }\n  }\n  if (sensorReady) {\n    bme.setSampling(Adafruit_BME280::MODE_NORMAL,Adafruit_BME280::SAMPLING_X1,\n\
+      \      Adafruit_BME280::SAMPLING_X1,Adafruit_BME280::SAMPLING_X1,\n      Adafruit_BME280::FILTER_OFF,Adafruit_BME280::STANDBY_MS_1000);\n\
+      \  }\n  Serial.println(sensorReady ? \"BME280 initialized; first sample after 5 s\" : \"No supported\
+      \ BME280; reset after wiring correction\");\n  server.on(\"/\",HTTP_GET,[](){ server.sendHeader(\"\
+      Cache-Control\",\"no-store\");server.send_P(200,\"text/html; charset=utf-8\",PAGE); });\n  server.on(\"\
+      /samples\",HTTP_GET,sendSamples);\n  server.onNotFound([](){ server.send(404,\"text/plain\",\"Not\
+      \ found\\n\"); });\n  if (WiFi.mode(WIFI_AP) && WiFi.softAP(\"ESP32-BME280\",AP_PASSWORD,6,false,1))\
+      \ {\n    server.begin();httpReady=true;Serial.print(\"Open http://\");Serial.println(WiFi.softAPIP());\n\
+      \  } else Serial.println(\"AP failed; check configuration and reset\");\n  lastSample = millis();\n\
+      }\nvoid loop() {\n  if (millis()-lastSample >= SAMPLE_MS) { lastSample=millis();sampleSensor();\
+      \ }\n  if (httpReady) server.handleClient();\n  delay(1);\n}\n"
+  code_explanation: The loop samples independently of HTTP requests and stores a fixed-size ring buffer.
+    GET /samples returns a snapshot in oldest-to-newest order, with a sequence number, a 64-bit monotonic
+    millisecond timestamp since this boot and nulls for invalid readings. GET does not take another measurement.
+    The browser plots temperature only, shows all three quantities in the newest-twelve-attempt table,
+    and breaks connections across invalid rows or timestamp gaps above 7.5 seconds. The chart auto-scales
+    vertically; it does not prove a large physical change. Sensor sampling is nominally every five seconds;
+    page arrival times are not used as sensor timestamps.
+  expected_output: On a correctly assembled bench the page should show plausible readings, then a growing
+    temperature trend and table. The first few seconds may show no current reading. Older valid history
+    may remain visible during a failure, but its status must identify it as historical. Values depend
+    on the actual environment; no specific readings, calibration accuracy or successful hardware run are
+    claimed here.
+  troubleshooting:
+  - problem: Address responds but library fails
+    fix: Confirm BME280 rather than BMP280, board address configuration, VIN and 3.3 V signal levels.
+      ACK alone does not prove identity.
+  - problem: History is present but no current value
+    fix: Read the status and latest sampling attempt. A failed or >10-second-old newest sample is not
+      current; check wiring and reset after power-off correction.
+  - problem: Page cannot connect
+    fix: Use the Serial-printed http:// address while connected to the ESP32 AP, not the home router.
+      Check mobile-data/VPN routing.
+  - problem: Chart has gaps or stretches
+    fix: Failed samples and >7.5-second time gaps deliberately break the line. Slow synchronous requests/browser
+      scheduling can delay acquisition. No samples are synthesized to hide gaps.
+  - problem: Pressure differs from a weather app
+    fix: This is local station pressure in hPa, not sea-level-adjusted pressure. Altitude conversion needs
+      a relevant reference pressure and assumptions; no altitude or forecast calculation is included.
+  - problem: Board remains in sensor startup
+    fix: The pinned sensor library performs blocking initialization and calibration-status waits. Wire
+      timeouts do not bound that whole library operation. Remove power, correct the bus/sensor, and reset;
+      no deterministic recovery guarantee is made.
+  testing_checklist:
+  - Verify Serial-only BME280 readings before the dashboard.
+  - Compare /samples latest attempt with the visible table, units and boot seconds.
+  - After several minutes confirm at most 60 attempts remain; invalid rows and timestamp gaps must not
+    be joined with invented points.
+  - To test a missing-sensor startup safely, power off, disconnect the sensor, then restart. Do not hot-unplug
+    wires on a powered breadboard.
+  - Reboot and check that uptime/history restart; disconnect the browser network and check unavailable/current
+    versus retained-history wording.
+  engineering_explanation: BME280 temperature can be influenced by board heating and enclosure airflow.
+    Range checks reject obvious nonsense; they are not calibration or full I2C fault detection and cannot
+    prove that every plausible result is fresh. Normal-mode sensor conversions run separately from five-second
+    application reads. Supply and pull-up claims apply to the selected breakout; a bare BME280 has different
+    pin/power requirements. RAM history and uptime timestamps are deliberately distinct from a timestamped
+    SD logger. The local server is plain HTTP without user authentication or TLS; the AP password only
+    controls network admission. Do not expose it through a router. Synchronous WebServer and library operations
+    may delay the loop; this is an educational dashboard, not guaranteed real-time monitoring.
+  related_guides:
+  - title: IDE setup and first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Verify upload and Serial before adding sensor/network code.
+  - title: I2C scanner and safe bus diagnostics
+    href: /guides/i2c-communication.html
+    description: Use explicit pins and remember an address response is not identity.
+  - title: Read-only local web-server foundation
+    href: /guides/esp32-web-server.html
+    description: Understand AP access and request handling.
+  related_projects:
+  - title: Serial-first BME280 weather station
+    href: /projects/esp32-iot-weather-station.html
+    description: Start with this simpler existing sensor build before adding a browser.
+  faqs: []
+  references:
+  - title: Arduino-ESP32 3.3.2 Wi-Fi interfaces
+    href: https://github.com/espressif/arduino-esp32/tree/3.3.2/libraries/WiFi/src
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: Adafruit BME280 breakout pinouts, VIN and address
+    href: https://learn.adafruit.com/adafruit-bme280-humidity-barometric-pressure-temperature-sensor-breakout/pinouts
+  - title: Bosch BME280 datasheet
+    href: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
+  - title: Adafruit BME280 2.3.0 implementation
+    href: https://github.com/adafruit/Adafruit_BME280_Library/blob/2.3.0/Adafruit_BME280.cpp
+  - title: Adafruit Unified Sensor 1.1.15
+    href: https://github.com/adafruit/Adafruit_Sensor/tree/1.1.15
+  - title: Adafruit BusIO 1.17.0
+    href: https://github.com/adafruit/Adafruit_BusIO/tree/1.17.0
+  - title: WebServer API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WebServer/src/WebServer.h

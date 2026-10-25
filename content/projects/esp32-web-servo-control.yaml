@@ -1,0 +1,266 @@
+format: golden
+slug: esp32-web-servo-control
+title: ESP32 WiFi Servo Pulse Controller
+category: Robotics
+category_slug: robotics
+description: Send bounded 1400–1600 µs commands to a documented FS90 positional servo from a local browser,
+  with explicit enable, external power and timeout limits.
+meta_description: Send bounded 1400–1600 µs commands to a documented FS90 positional servo from a local
+  browser, with explicit enable, external power and timeout limits.
+source_base: esp32-web-servo-control
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-web-servo-control.svg
+featured_image: /assets/visuals/projects/heroes/esp32-web-servo-control.svg
+hero_image: /assets/visuals/projects/heroes/esp32-web-servo-control.svg
+og_image: /assets/visuals/projects/heroes/esp32-web-servo-control.svg
+image_alt: ESP32 WiFi Servo Pulse Controller logical illustration, not a photograph or verified physical
+  pinout
+sensor: Local browser POST requests
+output: One externally powered positional FS90
+hardware:
+  sensor_pin: Wi-Fi AP
+  output_pin: GPIO25
+  sensor_name: Local browser POST requests
+  output_name: One externally powered positional FS90
+  wiring:
+  - component: FS90 signal
+    pin: GPIO25
+  - component: FS90 positive
+    pin: External regulated 5 V
+  - component: FS90 ground
+    pin: Supply minus + ESP32 GND
+  - component: ESP32 power
+    pin: USB data cable
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 WiFi Servo Pulse Controller
+  icon: Build
+  what_you_build: A local web page with Enable at 1500 us, a narrow pulse-width slider and Disable pulse
+    output. The example controls only a small unloaded servo. It does not report measured shaft position
+    or claim a universal angle conversion. This is distinct from the existing joystick-controlled arm
+    and standalone SG90 component.
+  assumptions: 'Classic ESP32-WROOM DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 as the API review
+    baseline, not the latest-release claim. Select ESP32 Dev Module only for the stated generic WROOM
+    board. Other ESP32 families need their own GPIO and LEDC review. Complete the Serial-only IDE upload
+    first. Documentation/code-structure and local browser checks do not establish compilation or physical
+    operation; these sketches have not been compiled or hardware-tested. Exact FEETECH FS90 positional
+    unit supplied/documented as Pololu #2818, with linked FS90-C specification and verified 3.3 V control
+    compatibility. The supplier documents 3.3 V and 5 V signals; this does not identify your own servo.
+    FS90R is continuous rotation and excluded. The manufacturer linked specification gives a 4.8–6 V operating
+    range; the build selects regulated 5 V and limits commands to 1400–1600 µs around 1500 µs.'
+  parent_safety: Remove the horn/load for first tests, restrain the servo body and keep fingers clear.
+    Enabling may cause immediate movement. Use a separately switched/current-limited low-voltage supply
+    and keep its switch reachable. Never power the servo from GPIO, DevKit 3V3 or the USB power path.
+    Disabling pulses does not disconnect power, guarantee loss of torque or make a mechanism safe.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: LEDC 50 Hz, 16-bit review baseline 3.3.2.
+    link: /components/esp32-devkit.html
+  - item: FEETECH FS90 positional servo
+    note: 'Exact Pololu #2818 / linked FS90-C specification; NOT FS90R, SG90 or unidentified clone.'
+  - item: Separate regulated 5 V supply
+    note: At least 1 A bench budget for this one unloaded servo; verify actual unit peaks and supply response.
+  - item: 10 kΩ resistor and suitable connections
+    note: Control-line pull-down; size servo power leads for current, not thin GPIO jumpers.
+    link: /components/through-hole-resistors.html
+  wiring:
+    illustration_alt: ESP32 WiFi Servo Pulse Controller logical signal and power map; not physical pin
+      order
+    summary: Identify signal, positive and ground from the exact documented servo connector; wire color
+      is only a clue. GPIO25 drives signal directly only because the selected supplier explicitly supports
+      3.3 V input. Fit 10 kΩ from signal to GND for a defined reset-time LOW. The servo positive connects
+      only to external regulated 5 V. Join external minus, servo ground and ESP32 GND; do not join external
+      positive to USB/3V3. Provide local supply decoupling according to the actual supply/lead design.
+      This logical diagram is not a connector-orientation drawing.
+    steps:
+    - With USB and servo supply disconnected, identify connector functions and remove the horn/load.
+    - Wire signal25 with a 10 kΩ pull-down; wire servo power to the separate supply and share ground.
+      Check polarity before powering.
+    - Upload/reset ESP32 over USB with servo power off; confirm pulse output starts disabled.
+    - Turn on the verified servo supply, open the local page, clear the area and press Enable at 1500
+      us. Test only small changes.
+    - Disable pulses before turning off external power. Disconnect both supplies before changing wiring.
+  gpio_map:
+  - signal: FS90 signal
+    esp32_pin: GPIO25
+    direction: Output
+    notes: 10 kΩ pull-down from signal to GND
+  - signal: FS90 positive
+    esp32_pin: External regulated 5 V
+    direction: Power
+    notes: Separate supply sized for startup/stall
+  - signal: FS90 ground
+    esp32_pin: Supply minus + ESP32 GND
+    direction: Ground
+    notes: Share ground, never positive rails
+  - signal: ESP32 power
+    esp32_pin: USB data cable
+    direction: Power
+    notes: Do not power the servo from DevKit rails
+  libraries:
+  - Built-in WiFi and WebServer from Arduino-ESP32 3.3.2; LEDC is built into core 3.3.2. No ESP32Servo
+    library is used or implied.
+  configuration: Change CHANGE_ME_1234 to your own 8–63 character AP password. Upload and open Serial
+    at 115200. Join the printed ESP32 network, stay connected if your phone reports no internet, and open
+    the printed http:// address directly. The classic board uses a 2.4 GHz AP on channel 6, allows one
+    connected station and does not join your router. No internet, external JavaScript, cloud account or
+    third-party Arduino library is required. The AP name is ESP32-WebServo. Enable starts at 1500 µs;
+    Apply pulse accepts only 1400–1600 µs. The slider steps by 10 µs. These are command units, not calibrated
+    degrees. Accepted enable/move commands renew a 15-second lifetime; page refresh does not. Press Enable
+    again after expiry. Disconnect external power if any movement, buzzing or heating is unexpected.
+  behavior:
+  - - Startup / AP failure
+    - Signal is LOW and no PWM is attached. The external supply is a separate manual control.
+  - - POST /arm
+    - No arguments accepted; attaches 50 Hz/16-bit LEDC and commands 1500 µs. This can move the servo
+      immediately.
+  - - POST /pulse
+    - One integer us argument in 1400–1600; 400 for invalid data, 409 if not enabled and 503 on driver
+      failure.
+  - - POST /off or idle expiry
+    - Attempts zero duty, detaches LEDC and drives signal LOW. Motor supply remains powered; torque behavior
+      is not guaranteed.
+  code:
+    filename: web-servo.ino
+    content: "#include <Arduino.h>\n#include <WiFi.h>\n#include <WebServer.h>\n\nWebServer server(80);\n\
+      const char* AP_PASSWORD = \"CHANGE_ME_1234\"; // Replace with your own 8-63 character password.\n\
+      bool httpReady = false;\n\nvoid redirectHome() {\n  server.sendHeader(\"Location\", \"/\");\n  server.send(303,\
+      \ \"text/plain\", \"Open the control page\\n\");\n}\nString pageStart(const char* title) {\n  String\
+      \ page = \"<!doctype html><html lang='en'><head>\";\n  page += \"<meta name='viewport' content='width=device-width,initial-scale=1'>\"\
+      ;\n  page += \"<style>body{font:1.1rem system-ui;max-width:40rem;margin:2rem auto;padding:1rem}button,input{font:inherit;margin:.5rem\
+      \ 0}input[type=range]{width:100%}</style>\";\n  page += \"<title>\"; page += title; page += \"</title></head><body><h1>\"\
+      ;\n  page += title; page += \"</h1>\";\n  return page;\n}\nvoid sendPage(const String& page) {\n\
+      \  server.sendHeader(\"Cache-Control\", \"no-store\");\n  server.send(200, \"text/html; charset=utf-8\"\
+      , page + \"</body></html>\");\n}\nbool parseUnsigned(const String& text, uint16_t minimum, uint16_t\
+      \ maximum, uint16_t& value) {\n  if (text.length() == 0 || text.length() > 4) return false;\n  uint32_t\
+      \ n = 0;\n  for (size_t i = 0; i < text.length(); ++i) {\n    char c = text[i];\n    if (c < '0'\
+      \ || c > '9') return false;\n    n = n * 10 + (c - '0');\n  }\n  if (n < minimum || n > maximum)\
+      \ return false;\n  value = uint16_t(n); return true;\n}\nvoid startHTTP(const char* name) {\n  server.onNotFound([]()\
+      \ { server.send(404, \"text/plain\", \"No such route\\n\"); });\n  if (!WiFi.mode(WIFI_AP) || !WiFi.softAP(name,\
+      \ AP_PASSWORD, 6, false, 1)) {\n    Serial.println(\"AP failed; output stays off. Check board and\
+      \ password length.\");\n    return;\n  }\n  server.begin(); httpReady = true;\n  Serial.print(\"\
+      Join \"); Serial.println(name);\n  Serial.print(\"Open http://\"); Serial.println(WiFi.softAPIP());\n\
+      }\n\nconstexpr uint8_t SIGNAL_PIN = 25, RESOLUTION = 16;\nconstexpr uint16_t MIN_US = 1400, CENTER_US\
+      \ = 1500, MAX_US = 1600;\nconstexpr uint32_t FRAME_US = 20000, COMMAND_LIFETIME_MS = 15000;\nbool\
+      \ enabled = false;\nuint16_t lastPulseUs = CENTER_US;\nuint32_t lastCommand = 0;\n\nuint32_t pulseTicks(uint16_t\
+      \ us) {\n  return (uint32_t(us) * (1UL << RESOLUTION) + FRAME_US / 2) / FRAME_US;\n}\nvoid disablePulses()\
+      \ {\n  if (enabled) {\n    bool zeroOK = ledcWrite(SIGNAL_PIN, 0);\n    bool detached = ledcDetach(SIGNAL_PIN);\n\
+      \    if (!zeroOK || !detached) Serial.println(\"LEDC stop reported an error; remove external power\"\
+      );\n  }\n  enabled = false;\n  pinMode(SIGNAL_PIN, OUTPUT); digitalWrite(SIGNAL_PIN, LOW);\n  Serial.println(\"\
+      Pulse output disabled; servo supply is NOT switched off\");\n}\nbool writePulse(uint16_t us) {\n\
+      \  if (!enabled || !ledcWrite(SIGNAL_PIN, pulseTicks(us))) { disablePulses(); return false; }\n\
+      \  lastPulseUs = us; lastCommand = millis(); return true;\n}\nvoid showPage() {\n  String page =\
+      \ pageStart(\"ESP32 bounded servo control\");\n  page += String(\"<p>Pulse output: \") + (enabled\
+      \ ? \"enabled\" : \"disabled\") + \".</p>\";\n  page += \"<p>Last accepted pulse: \" + String(lastPulseUs)\
+      \ + \" us; this is not measured position.</p>\";\n  page += \"<form method='post' action='/arm'><button>Enable\
+      \ at 1500 us</button></form>\";\n  page += \"<form method='post' action='/pulse'><label for='pulse'>Pulse\
+      \ width 1400 to 1600 us</label>\";\n  page += \"<input id='pulse' name='us' type='range' min='1400'\
+      \ max='1600' step='10' value='\";\n  page += String(lastPulseUs) + \"'><button>Apply pulse</button></form>\"\
+      ;\n  page += \"<form method='post' action='/off'><button>Disable pulse output</button></form>\"\
+      ;\n  page += \"<p>Enable can cause immediate movement. Commands expire after 15 seconds; disabling\
+      \ pulses is NOT a certified stop or power isolation.</p>\";\n  sendPage(page);\n}\nvoid setup()\
+      \ {\n  Serial.begin(115200);\n  pinMode(SIGNAL_PIN, OUTPUT); digitalWrite(SIGNAL_PIN, LOW);\n  server.on(\"\
+      /\", HTTP_GET, showPage);\n  server.on(\"/arm\", HTTP_POST, []() {\n    if (server.args() != 0)\
+      \ { server.send(400, \"text/plain\", \"No arguments expected\\n\"); return; }\n    if (!enabled)\
+      \ enabled = ledcAttach(SIGNAL_PIN, 50, RESOLUTION);\n    if (!enabled || !writePulse(CENTER_US))\
+      \ {\n      disablePulses(); server.send(503, \"text/plain\", \"Pulse driver unavailable\\n\"); return;\n\
+      \    }\n    Serial.println(\"Pulse output enabled at 1500 us; keep clear of movement\");\n    redirectHome();\n\
+      \  });\n  server.on(\"/pulse\", HTTP_POST, []() {\n    uint16_t next = 0;\n    if (server.args()\
+      \ != 1 || !server.hasArg(\"us\") ||\n        !parseUnsigned(server.arg(\"us\"), MIN_US, MAX_US,\
+      \ next)) {\n      server.send(400, \"text/plain\", \"Exactly one integer us, 1400 through 1600,\
+      \ is required\\n\"); return;\n    }\n    if (!enabled) { server.send(409, \"text/plain\", \"Enable\
+      \ at center before moving\\n\"); return; }\n    if (!writePulse(next)) { server.send(503, \"text/plain\"\
+      , \"Pulse write failed\\n\"); return; }\n    Serial.printf(\"Accepted pulse %u us; no position feedback\\\
+      n\", unsigned(next));\n    redirectHome();\n  });\n  server.on(\"/off\", HTTP_POST, []() {\n   \
+      \ if (server.args() != 0) { server.send(400, \"text/plain\", \"No arguments expected\\n\"); return;\
+      \ }\n    disablePulses(); redirectHome();\n  });\n  startHTTP(\"ESP32-WebServo\");\n}\nvoid loop()\
+      \ {\n  if (httpReady) server.handleClient();\n  if (enabled && millis() - lastCommand >= COMMAND_LIFETIME_MS)\
+      \ {\n    Serial.println(\"Command expired\"); disablePulses();\n  }\n  delay(1);\n}\n"
+  code_explanation: At 50 Hz the frame is 20,000 µs. The code rounds pulse_us × 65,536 / 20,000 into the
+    16-bit timer duty. It uses core 3.x ledcAttach/ledcWrite with a GPIO pin; no 500–2500 µs endpoint
+    sweep or assumed 0–180° mapping is used. The last accepted pulse remains displayed when output is
+    disabled, explicitly labelled as historical command data. No potentiometer/shaft feedback is connected.
+    Synchronous request servicing can delay the software expiry.
+  expected_output: On a verified bench setup the page first says disabled. Enable should start center-region
+    pulses; small changes should produce limited movement on the selected positional servo. Disable or
+    expiry should stop command pulses, but does not verify actual stopped motion or released torque. These
+    are intended checks, not an observed hardware demonstration.
+  troubleshooting:
+  - problem: Cannot open the page
+    fix: Confirm the phone is still on the ESP32 AP, use the Serial-printed http:// address and check
+      mobile-data/VPN routing. The AP deliberately provides no internet.
+  - problem: HTTP 400 from a command
+    fix: Use the provided form. Exact argument counts and allowed values are checked; blank, negative,
+      decimal or nonnumeric values are not converted silently.
+  - problem: Page shows an old value
+    fix: Refresh the page. It reports the last accepted software command, not measured light output or
+      shaft position. GET/refresh does not renew the command lifetime.
+  - problem: Servo spins continuously
+    fix: Stop external power and verify the exact model. An FS90R or converted continuous-rotation unit
+      is not the supported FS90 positional servo.
+  - problem: ESP32 resets or servo chatters
+    fix: Stop the test. Check the separate supply, its transient-current capability, common ground, lead
+      resistance and actual servo loading. A capacitor does not replace an adequate supply.
+  - problem: Enabled page but no movement
+    fix: Check power and connector identity; a web/LEDC success does not prove a physical signal or servo
+      response. Confirm the selected unit really accepts 3.3 V control.
+  - problem: Buzzing, heating or blocked motion
+    fix: Remove external power immediately; remove the load and inspect mechanics. Do not increase pulse
+      endpoints or hold a stall to force motion.
+  - problem: Pulse output expired while page stayed open
+    fix: Only accepted enable/move commands renew the 15-second window. Refresh the page for software
+      state; no heartbeat or continuous command stream is implemented.
+  testing_checklist:
+  - Verify model/connector/supply and keep a reachable physical power switch before enabling.
+  - Observe small unloaded moves near 1500 µs; do not infer exact angles.
+  - Try Apply before Enable and expect 409; invalid pulse requests should return 400.
+  - Check explicit Disable, idle expiry and reset behavior using appropriate bench instruments if available.
+  - Observe that external supply stays on after Disable; never use it as an emergency-stop substitute.
+  engineering_explanation: The FS90-C manufacturer sheet lists stall current at its specified supply test
+    points; the chosen ≥1 A regulated bench supply is a design budget, not an invented universal servo
+    rating. Confirm the actual revision, current limits and lead behavior. Travel and endpoint limits
+    depend on the exact revision and mechanics; this example deliberately makes no universal travel-angle
+    claim. Generic SG90 modules require their own voltage, pulse and input-threshold evidence; the existing
+    SG90 page uses a qualified buffer design and is not interchangeable with this wiring. This is plain
+    HTTP on a trusted local demonstration AP. The Wi-Fi password is network admission, not per-user HTTP
+    authentication. Anyone admitted can issue commands; POST alone does not prevent CSRF, and the sketch
+    has no TLS, CSRF token, rate limiting or user roles. Do not expose the port through a router or adapt
+    this example to locks, heaters, mains equipment or safety-critical mechanisms. The synchronous WebServer
+    can wait on slow clients; the loop timeout is best-effort cleanup, not a hard real-time or certified
+    safety stop.
+  related_guides:
+  - title: IDE setup and first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Prove upload and Serial before adding wiring.
+  - title: Read-only AP web-server foundation
+    href: /guides/esp32-web-server.html
+    description: Understand requests and local addresses without changing that existing tutorial.
+  - title: PWM timing reference
+    href: /guides/esp32-pwm.html
+    description: Compare LED duty control with servo pulse-width commands.
+  related_projects:
+  - title: Existing educational servo arm
+    href: /projects/esp32-robot-arm-controller.html
+    description: A different joystick/multiple-servo project; do not merge its endpoint assumptions blindly.
+  faqs: []
+  references:
+  - title: WebServer API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WebServer/src/WebServer.h
+  - title: Wi-Fi AP API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WiFi/src/WiFiAP.h
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: LEDC API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-ledc.h
+  - title: LEDC implementation at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-ledc.c
+  - title: FS90 supplier integration specifications
+    href: https://www.pololu.com/product/2818
+  - title: FEETECH FS90-C manufacturer specification
+    href: https://www.pololu.com/file/0J1435/FS90-specs.pdf
+  - title: Servo pulse interface and angle limitations
+    href: https://www.pololu.com/blog/17/servo-control-interface-in-detail

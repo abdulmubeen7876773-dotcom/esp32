@@ -1,5 +1,6 @@
 """Project discovery presentation and fragment-only navigation migration."""
 import re
+import json
 from html import escape
 from pathlib import Path
 
@@ -29,12 +30,20 @@ def category_layout(body):
 
 def listing_html(cat_opts, page_projects, page, total_pages, total_count, text_index=''):
     from site_layout import head_html, header_html, footer_html, pagination_head_links, pagination_nav_html, projects_page_path, projects_page_canonical, SEARCH_JS_SRC, UI_JS_SRC, organization_schema, website_schema
-    from rebuild_index import parent_grid_card
+    from rebuild_index import parent_grid_card, parent_listing_record, project_json_record
     from content_store import get_content_store
     from project_text import public_projects
     topics = sorted({p['category'] for p in public_projects(get_content_store().projects())})
     options = ''.join(f'<option value="{escape(c)}">{escape(c)}</option>' for c in topics)
     cards = ''.join(re.sub(r'<span class="badge badge-time">.*?</span>', '', parent_grid_card(p)) for p in page_projects)
+    # Interactive filters need the entire library even when static HTML spans pages.
+    # Keep paginated cards as the no-JavaScript and malformed-data fallback.
+    catalog_data = ''
+    if total_pages > 1:
+        records = [project_json_record(parent_listing_record(p))
+                   for p in public_projects(get_content_store().projects())]
+        payload = json.dumps(records, ensure_ascii=False).replace('<', '\\u003c')
+        catalog_data = f'<script type="application/json" id="project-catalog-data">{payload}</script>'
     title = f'ESP32 Projects: {total_count} Practical Tutorials | ESP32 Engine' + (f' — Page {page}' if total_pages > 1 else '')
     description = 'Choose an ESP32 project by topic and difficulty. Browse existing builds, compare their requirements and follow the linked tutorials.'
     return f'''<!DOCTYPE html>
@@ -54,7 +63,7 @@ def listing_html(cat_opts, page_projects, page, total_pages, total_count, text_i
 {pagination_nav_html(page,total_pages,projects_page_path)}
 <noscript><p>Search and filters need JavaScript. Browse the project cards and page links, or choose a topic collection below.</p></noscript></section>
 {category_browse()}</div></main>{footer_html()}
-<script src="/project-icons.js" defer></script><script src="{SEARCH_JS_SRC}" defer></script><script src="{UI_JS_SRC}" defer></script><script src="/projects.js?v=20261018-catalog" defer></script></body></html>'''
+{catalog_data}<script src="/project-icons.js" defer></script><script src="{SEARCH_JS_SRC}" defer></script><script src="{UI_JS_SRC}" defer></script><script src="/projects.js?v=20261024-catalog-pages" defer></script></body></html>'''
 
 
 def generate_navigation_scope():

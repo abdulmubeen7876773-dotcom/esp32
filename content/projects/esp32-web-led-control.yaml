@@ -1,0 +1,202 @@
+format: golden
+slug: esp32-web-led-control
+title: ESP32 Browser LED On and Off Control
+category: IoT Projects
+category_slug: iot-projects
+description: Control a resistor-limited LED from a local ESP32 web form, with POST validation, startup
+  OFF and a best-effort command timeout.
+meta_description: Control a resistor-limited LED from a local ESP32 web form, with POST validation, startup
+  OFF and a best-effort command timeout.
+source_base: esp32-web-led-control
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-web-led-control.svg
+featured_image: /assets/visuals/projects/heroes/esp32-web-led-control.svg
+hero_image: /assets/visuals/projects/heroes/esp32-web-led-control.svg
+og_image: /assets/visuals/projects/heroes/esp32-web-led-control.svg
+image_alt: ESP32 Browser LED On and Off Control logical illustration, not a photograph or verified physical
+  pinout
+sensor: Local browser POST requests
+output: Resistor-limited red LED
+hardware:
+  sensor_pin: Wi-Fi AP
+  output_pin: GPIO25
+  sensor_name: Local browser POST requests
+  output_name: Resistor-limited red LED
+  wiring:
+  - component: 470 Ω resistor → LED anode
+    pin: GPIO25
+  - component: LED cathode
+    pin: GND
+  - component: DevKit power
+    pin: USB data cable
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 Browser LED On and Off Control
+  icon: Build
+  what_you_build: A phone-controlled LED with explicit On and Off buttons. The ESP32 creates its own network,
+    accepts a validated form submission and shows the last commanded state. This is the first actuator
+    example after the existing read-only AP server, not a replacement for it.
+  assumptions: Classic ESP32-WROOM DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 as the API review baseline,
+    not the latest-release claim. Select ESP32 Dev Module only for the stated generic WROOM board. Other
+    ESP32 families need their own GPIO and LEDC review. Complete the Serial-only IDE upload first. Documentation/code-structure
+    and local browser checks do not establish compilation or physical operation; these sketches have not
+    been compiled or hardware-tested. Use one low-current red indicator LED such as the documented WP7113ID,
+    with 470 Ω in series. Do not substitute high-power LEDs, relay coils or LED strips.
+  parent_safety: This is a USB-powered LED breadboard circuit only. Unplug USB before rewiring; keep signals
+    at 3.3 V. No mains, motors, relays or unattended control are covered.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: GPIO25 exposed and unused; USB data cable.
+    link: /components/esp32-devkit.html
+  - item: One low-current red indicator LED
+    note: Kingbright WP7113ID is the documented example; identify the actual anode/cathode.
+    link: /components/discrete-leds.html
+  - item: 470 Ω 0.25 W resistor
+    note: One series resistor for this LED; no direct LED-to-GPIO connection.
+    link: /components/through-hole-resistors.html
+  - item: Breadboard and short jumpers
+    note: Disconnect USB before changing wires.
+    link: /components/solderless-breadboard.html
+  wiring:
+    illustration_alt: ESP32 Browser LED On and Off Control logical signal and power map; not physical
+      pin order
+    summary: GPIO25 drives a series path through 470 Ω to the LED anode; the cathode returns to GND. Resistor
+      placement on either side of the LED is electrically equivalent if it remains in series. Check polarity
+      using the actual datasheet or power-off diode test. No built-in GPIO2 LED is assumed.
+    steps:
+    - Disconnect USB and identify LED polarity.
+    - Wire GPIO25 through the 470 Ω resistor to the anode, and cathode to GND.
+    - Check that the resistor is in series rather than bypassed by a breadboard row.
+    - Reconnect USB, upload the sketch and read Serial at 115200.
+  gpio_map:
+  - signal: 470 Ω resistor → LED anode
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Series path; LED cathode returns to GND
+  - signal: LED cathode
+    esp32_pin: GND
+    direction: Ground
+    notes: Verify actual LED polarity
+  - signal: DevKit power
+    esp32_pin: USB data cable
+    direction: Power
+    notes: No onboard LED or 5 V signal assumed
+  libraries:
+  - Built-in WiFi and WebServer from Arduino-ESP32 3.3.2; no additional Arduino library.
+  configuration: Change CHANGE_ME_1234 to your own 8–63 character AP password. Upload and open Serial
+    at 115200. Join the printed ESP32 network, stay connected if your phone reports no internet, and open
+    the printed http:// address directly. The classic board uses a 2.4 GHz AP on channel 6, allows one
+    connected station and does not join your router. No internet, external JavaScript, cloud account or
+    third-party Arduino library is required. Press Turn on or Turn off. Only those POST submissions change
+    the output; opening or refreshing the page does not. The page does not poll automatically, so refresh
+    after an expiry to see the latest software state.
+  behavior:
+  - - Startup / AP failure
+    - GPIO25 is set LOW before AP startup; a failed AP leaves the LED OFF.
+  - - Valid POST /led
+    - Exactly one value argument, 0 or 1, changes the LED and returns a 303 redirect to the page.
+  - - Invalid request
+    - HTTP 400 for missing, duplicate/extra or unsupported values; an unknown or wrong-method route returns
+      404.
+  - - Idle ON command
+    - The loop switches OFF after 30 seconds since the last accepted command; GET does not extend this
+      window.
+  code:
+    filename: web-led.ino
+    content: "#include <Arduino.h>\n#include <WiFi.h>\n#include <WebServer.h>\n\nWebServer server(80);\n\
+      const char* AP_PASSWORD = \"CHANGE_ME_1234\"; // Replace with your own 8-63 character password.\n\
+      bool httpReady = false;\n\nvoid redirectHome() {\n  server.sendHeader(\"Location\", \"/\");\n  server.send(303,\
+      \ \"text/plain\", \"Open the control page\\n\");\n}\nString pageStart(const char* title) {\n  String\
+      \ page = \"<!doctype html><html lang='en'><head>\";\n  page += \"<meta name='viewport' content='width=device-width,initial-scale=1'>\"\
+      ;\n  page += \"<style>body{font:1.1rem system-ui;max-width:40rem;margin:2rem auto;padding:1rem}button,input{font:inherit;margin:.5rem\
+      \ 0}input[type=range]{width:100%}</style>\";\n  page += \"<title>\"; page += title; page += \"</title></head><body><h1>\"\
+      ;\n  page += title; page += \"</h1>\";\n  return page;\n}\nvoid sendPage(const String& page) {\n\
+      \  server.sendHeader(\"Cache-Control\", \"no-store\");\n  server.send(200, \"text/html; charset=utf-8\"\
+      , page + \"</body></html>\");\n}\nvoid startHTTP(const char* name) {\n  server.onNotFound([]() {\
+      \ server.send(404, \"text/plain\", \"No such route\\n\"); });\n  if (!WiFi.mode(WIFI_AP) || !WiFi.softAP(name,\
+      \ AP_PASSWORD, 6, false, 1)) {\n    Serial.println(\"AP failed; output stays off. Check board and\
+      \ password length.\");\n    return;\n  }\n  server.begin(); httpReady = true;\n  Serial.print(\"\
+      Join \"); Serial.println(name);\n  Serial.print(\"Open http://\"); Serial.println(WiFi.softAPIP());\n\
+      }\n\nconstexpr uint8_t LED_PIN = 25;\nconstexpr uint32_t COMMAND_LIFETIME_MS = 30000;\nbool ledOn\
+      \ = false;\nuint32_t lastCommand = 0;\n\nvoid showPage() {\n  String page = pageStart(\"ESP32 web\
+      \ LED\");\n  page += String(\"<p>Commanded output: \") + (ledOn ? \"ON\" : \"OFF\") + \"</p>\";\n\
+      \  page += \"<form method='post' action='/led'><button name='value' value='1'>Turn on</button> \"\
+      ;\n  page += \"<button name='value' value='0'>Turn off</button></form>\";\n  page += \"<p>ON expires\
+      \ 30 seconds after the last accepted command. Refresh to read the current software state.</p>\"\
+      ;\n  sendPage(page);\n}\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(LED_PIN, OUTPUT); digitalWrite(LED_PIN,\
+      \ LOW);\n  server.on(\"/\", HTTP_GET, showPage);\n  server.on(\"/led\", HTTP_POST, []() {\n    if\
+      \ (server.args() != 1 || !server.hasArg(\"value\") ||\n        (server.arg(\"value\") != \"0\" &&\
+      \ server.arg(\"value\") != \"1\")) {\n      server.send(400, \"text/plain\", \"Exactly one value,\
+      \ 0 or 1, is required\\n\"); return;\n    }\n    ledOn = server.arg(\"value\") == \"1\";\n    digitalWrite(LED_PIN,\
+      \ ledOn ? HIGH : LOW);\n    lastCommand = millis();\n    Serial.println(ledOn ? \"LED commanded\
+      \ ON\" : \"LED commanded OFF\");\n    redirectHome();\n  });\n  startHTTP(\"ESP32-WebLED\");\n}\n\
+      void loop() {\n  if (httpReady) server.handleClient();\n  if (ledOn && millis() - lastCommand >=\
+      \ COMMAND_LIFETIME_MS) {\n    ledOn = false; digitalWrite(LED_PIN, LOW);\n    Serial.println(\"\
+      Command expired: LED OFF\");\n  }\n  delay(1);\n}\n"
+  code_explanation: GET / renders the page without changing the LED. The two submit buttons send one value
+    field to POST /led. The handler validates the argument count and exact string before touching GPIO25.
+    Post/Redirect/Get avoids an ordinary page refresh repeating a prior form command. digitalWrite and
+    the displayed ledOn flag describe the software command; neither measures actual light output. Unsigned
+    elapsed-time subtraction handles normal millis wrap for this short timeout.
+  expected_output: With the supported circuit, Turn on should illuminate the LED and redirect to a page
+    saying ON. Turn off should extinguish it. Leaving an ON command idle should print Command expired
+    and switch it off near 30 seconds; refresh to see OFF. These are expected bench observations, not
+    measurements recorded during authoring.
+  troubleshooting:
+  - problem: Cannot open the page
+    fix: Confirm the phone is still on the ESP32 AP, use the Serial-printed http:// address and check
+      mobile-data/VPN routing. The AP deliberately provides no internet.
+  - problem: HTTP 400 from a command
+    fix: Use the provided form. Exact argument counts and allowed values are checked; blank, negative,
+      decimal or nonnumeric values are not converted silently.
+  - problem: Page shows an old value
+    fix: Refresh the page. It reports the last accepted software command, not measured light output or
+      shaft position. GET/refresh does not renew the command lifetime.
+  - problem: Software says ON but LED is dark
+    fix: Unplug USB, verify polarity, GPIO25, common ground and the resistor/LED series path. A command
+      flag does not diagnose a reversed or broken LED.
+  - problem: LED never switches off exactly at the chosen instant
+    fix: This synchronous server can temporarily block loop servicing. The timeout is approximate cleanup,
+      not a deterministic shutdown deadline.
+  testing_checklist:
+  - Compare both form buttons with the LED and Serial output.
+  - Refresh without pressing a control and confirm it does not renew an ON command.
+  - 'Send a malformed command only on your bench: it should return 400 without changing output.'
+  - Reset and verify startup OFF before repeating the test.
+  engineering_explanation: At 3.3 V a 470 Ω resistor limits even a shorted LED path to about 7 mA; the
+    actual LED current is lower and depends on forward voltage. This conservative resistor choice is not
+    a universal GPIO current rating. Use the detailed Blink/component material for LED basics rather than
+    removing current limiting. This is plain HTTP on a trusted local demonstration AP. The Wi-Fi password
+    is network admission, not per-user HTTP authentication. Anyone admitted can issue commands; POST alone
+    does not prevent CSRF, and the sketch has no TLS, CSRF token, rate limiting or user roles. Do not
+    expose the port through a router or adapt this example to locks, heaters, mains equipment or safety-critical
+    mechanisms. The synchronous WebServer can wait on slow clients; the loop timeout is best-effort cleanup,
+    not a hard real-time or certified safety stop.
+  related_guides:
+  - title: IDE setup and first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Prove upload and Serial before adding wiring.
+  - title: Read-only AP web-server foundation
+    href: /guides/esp32-web-server.html
+    description: Understand requests and local addresses without changing that existing tutorial.
+  - title: Blink first
+    href: /guides/blink-led-esp32.html
+    description: Verify the external LED before adding networking.
+  related_projects:
+  - title: Add a browser brightness slider
+    href: /projects/esp32-web-pwm-slider.html
+    description: Keep the same resistor-limited LED and change from binary output to duty control.
+  faqs: []
+  references:
+  - title: WebServer API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WebServer/src/WebServer.h
+  - title: Wi-Fi AP API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WiFi/src/WiFiAP.h
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: Kingbright WP7113ID example LED datasheet
+    href: https://www.kingbrightusa.com/images/catalog/SPEC/WP7113ID.pdf

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Telegram Motion Notifications | ESP32 Engine</title>
+<meta name="description" content="Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/projects/esp32-telegram-motion-alert.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Telegram Motion Notifications | ESP32 Engine">
+<meta property="og:description" content="Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.">
+<meta property="og:url" content="https://esp32engine.com/projects/esp32-telegram-motion-alert.html">
+<meta property="og:image" content="https://esp32engine.com/assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Telegram Motion Notifications | ESP32 Engine">
+<meta name="twitter:description" content="Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"ESP32 Telegram Motion Notifications | ESP32 Engine","description":"Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.","url":"https://esp32engine.com/projects/esp32-telegram-motion-alert.html","isPartOf":{"@type":"WebSite","name":"ESP32 Engine","url":"https://esp32engine.com/"},"publisher":{"@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Projects","item":"https://esp32engine.com/projects.html"},{"@type":"ListItem","position":3,"name":"ESP32 Telegram Motion Notifications","item":"https://esp32engine.com/projects/esp32-telegram-motion-alert.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"ESP32 Telegram Motion Notifications","description":"Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.","datePublished":"2026-10-24","dateModified":"2026-10-24","image":"https://esp32engine.com/assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/projects/esp32-telegram-motion-alert.html"},"proficiencyLevel":"Intermediate","timeRequired":"","keywords":""}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to build ESP32 Telegram Motion Notifications","description":"Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.","totalTime":"","supply":[{"@type":"HowToSupply","name":"Classic ESP32-WROOM DevKit"},{"@type":"HowToSupply","name":"Adafruit PIR module #189"},{"@type":"HowToSupply","name":"Regulated 5 V low-voltage supply"},{"@type":"HowToSupply","name":"Telegram bot and private chat"}],"tool":[{"@type":"HowToTool","name":"Arduino IDE"},{"@type":"HowToTool","name":"USB cable"}],"step":[{"@type":"HowToStep","position":1,"name":"With USB and external power off, identify PIR supply, ground and OUT from the ex","text":"With USB and external power off, identify PIR supply, ground and OUT from the exact module documentation."},{"@type":"HowToStep","position":2,"name":"Wire the table, verify separate positive rails and common ground, then set the d","text":"Wire the table, verify separate positive rails and common ground, then set the documented PIR to its appropriate retrigger mode and short hold delay for bench tests."},{"@type":"HowToStep","position":3,"name":"Power the sensor and ESP32, and confirm warm-up/LOW/HIGH behavior in Serial befo","text":"Power the sensor and ESP32, and confirm warm-up/LOW/HIGH behavior in Serial before relying on network notification."},{"@type":"HowToStep","position":4,"name":"Install ArduinoJson 6.21.5 and fill the four placeholders privately; upload with","text":"Install ArduinoJson 6.21.5 and fill the four placeholders privately; upload with Serial at 115200."},{"@type":"HowToStep","position":5,"name":"Wait 60 seconds plus at least two seconds of stable LOW, then create a new motio","text":"Wait 60 seconds plus at least two seconds of stable LOW, then create a new motion-input HIGH. Observe Serial API acceptance separately from the phone notification."}]}</script>
+</head>
+<body class="project-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html">Guides</a><a href="/projects.html" class="active">Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">57 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<div class="project-hero-band">
+  <section class="wrap project-hero">
+    <nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/projects.html">Projects</a></li><li><a href="/category/security-projects.html">Security Projects</a></li><li aria-current="page">ESP32 Telegram Motion Notifications</li></ol></nav>
+    <div class="project-hero-inner">
+      <p class="hero-eyebrow project-hero-eyebrow">Build Project</p>
+      <div class="project-hero-badges">
+        <span class="badge badge-cat">Security Projects</span>
+      </div>
+      <h1 class="project-hero-title">ESP32 Telegram Motion Notifications</h1>
+      <p class="project-hero-summary">Send rate-limited PIR motion-input events to a private Telegram chat over verified HTTPS, with warm-up, bounded Wi-Fi attempts and explicit delivery limits.</p>
+      <div class="project-meta-row"><span class="badge badge-intermediate">Intermediate</span><span class="badge badge-parent-safe">Parent Safe</span></div>
+      <span class="project-hero-icon" aria-hidden="true">Build</span>
+    </div>
+    <div class="project-hero-art"><img src="/assets/visuals/projects/heroes/esp32-telegram-motion-alert.svg" alt="ESP32 Telegram Motion Notifications logical illustration, not a photograph or verified physical pinout" width="1600" height="900" loading="eager" decoding="async"></div>
+  </section>
+</div>
+<section class="section-block wrap project-guide-shell">
+<article class="project-journey project-tutorial-flow"><details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#build-heading">What You Will Build</a><a href="#assumptions-heading">Before You Start</a><a href="#safety-heading">For Parents & Teachers</a><a href="#components-heading">Parts</a><a href="#wiring-heading">Wiring</a><a href="#gpio-map-heading">Wiring Reference</a><a href="#libraries-heading">Libraries and Setup</a><a href="#configuration-heading">Configure the Example</a><a href="#behavior-heading">Control and Recovery Behavior</a><a href="#code-heading">Code</a><a href="#code-explanation-heading">How the Code Works</a><a href="#output-heading">Expected Output</a><a href="#troubleshooting-heading">Troubleshooting</a><a href="#testing-heading">Checks to Perform on Your Build</a><a href="#engineering-heading">Practical Design Notes</a><a href="#related-guides-heading">Related Guides</a><a href="#related-projects-heading">Related Projects</a><a href="#review-references-heading">Review, Testing, and References</a></nav></details><section class="project-section" id="build" aria-labelledby="build-heading">
+  <h2 id="build-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Build</span><span class="project-section-title">What You Will Build</span></h2>
+  <div class="project-prose"><p>An educational motion-input notifier that sends a short text to your own private Telegram chat. It waits through sensor warm-up and a stable LOW, detects a new HIGH, keeps at most one pending event and limits cloud attempts. It adds an actual HTTPS notification workflow to the existing local PIR lesson; it is not a verified intrusion alarm or person detector.</p></div>
+</section>
+<section class="project-section" id="assumptions" aria-labelledby="assumptions-heading">
+  <h2 id="assumptions-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Setup</span><span class="project-section-title">Before You Start</span></h2>
+  <div class="project-prose"><p>Classic ESP32-WROOM DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 as the review baseline, not a latest-release claim. Select ESP32 Dev Module only for the stated generic WROOM board. Other families need their own pin/radio review. Complete the Serial-only IDE upload first. The complete sketches below were reviewed against documentation; they have not been compiled or tested on physical hardware. The documented Adafruit PIR #189 supplies a 3.3 V digital output when powered from its specified supply. Generic HC-SR501 clones may differ in regulator, pin order, hold time and output voltage; they are not silently interchangeable. Check your own board before connecting OUT. No motor, relay or sound output is driven.</p></div>
+</section>
+<section class="project-section project-safety-section" id="safety" aria-labelledby="safety-heading">
+  <aside class="project-safety" aria-label="Parent safety note">
+    <div class="project-safety-head">
+      <span class="project-safety-icon" aria-hidden="true">👨‍👩‍👧</span>
+      <h2 id="safety-heading" tabindex="-1">For Parents & Teachers</h2>
+    </div>
+    <div class="project-safety-body"><p>Low-voltage educational prototype only. Use a regulated external 5 V source for the selected sensor and USB for the ESP32, with common ground and separate positive rails. Disconnect both before rewiring. Obtain permission before monitoring a shared space. Do not use these alerts for fire, medical, emergency response or unattended security decisions.</p></div>
+  </aside>
+</section>
+<section class="project-section" id="components" aria-labelledby="components-heading"><h2 id="components-heading" tabindex="-1"><span class="project-section-title">Parts</span></h2><ul class="project-parts-list"><li class="project-part-item"><span class="project-part-icon" aria-hidden="true">📦</span><span class="project-part-body"><a href="/components/esp32-devkit.html" class="project-part-name">Classic ESP32-WROOM DevKit</a><span class="project-part-note">2.4 GHz STA Wi-Fi and USB power.</span></span></li><li class="project-part-item"><span class="project-part-icon" aria-hidden="true">📦</span><span class="project-part-body"><a href="/components/pir-sensor.html" class="project-part-name">Adafruit PIR module #189</a><span class="project-part-note">Documented 5–12 V supply and 3.3 V output. This example selects external regulated 5 V.</span></span></li><li class="project-part-item"><span class="project-part-icon" aria-hidden="true">📦</span><span class="project-part-body"><span class="project-part-name">Regulated 5 V low-voltage supply</span><span class="project-part-note">Documented module polarity; share minus with ESP32 GND, not USB positive.</span></span></li><li class="project-part-item"><span class="project-part-icon" aria-hidden="true">📦</span><span class="project-part-body"><span class="project-part-name">Telegram bot and private chat</span><span class="project-part-note">User-owned bot token, positive numeric private-chat ID and internet access. No account or secret is created by this tutorial.</span></span></li></ul></section>
+<section class="project-section" id="wiring" aria-labelledby="wiring-heading">
+  <h2 id="wiring-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">🔗</span><span class="project-section-title">Wiring</span></h2>
+  <p>Identify the selected PIR connector functions from its supplier pinout; do not infer VCC/OUT/GND from a generic photo or wire color. Connect module positive to external regulated 5 V, its ground to supply minus and ESP32 GND, and its documented 3.3 V OUT to GPIO27. ESP32 remains USB-powered. Do not join external positive to USB/3V3. The internal input pull-down defines an open input but cannot detect a disconnected or faulty sensor. If using another module, verify its OUT level first; never put a 5 V signal into GPIO27.</p>
+  <figure class="mission-illustration mission-illustration--image">
+  <img src="/assets/visuals/projects/wiring/esp32-telegram-motion-alert-wiring.svg" alt="ESP32 Telegram Motion Notifications logical connection map; not physical pin order" loading="lazy" decoding="async" width="1200" height="800">
+</figure><p><a href="/assets/visuals/projects/wiring/esp32-telegram-motion-alert-wiring.svg">Open wiring diagram full size</a></p>
+  <ol class="project-steps-list"><li class="project-step-wrap">
+  <div class="project-step">
+    <span class="project-step-num">1</span>
+    <p class="project-step-text">With USB and external power off, identify PIR supply, ground and OUT from the exact module documentation.</p>
+  </div>
+</li><li class="project-step-wrap">
+  <div class="project-step">
+    <span class="project-step-num">2</span>
+    <p class="project-step-text">Wire the table, verify separate positive rails and common ground, then set the documented PIR to its appropriate retrigger mode and short hold delay for bench tests.</p>
+  </div>
+</li><li class="project-step-wrap">
+  <div class="project-step">
+    <span class="project-step-num">3</span>
+    <p class="project-step-text">Power the sensor and ESP32, and confirm warm-up/LOW/HIGH behavior in Serial before relying on network notification.</p>
+  </div>
+</li><li class="project-step-wrap">
+  <div class="project-step">
+    <span class="project-step-num">4</span>
+    <p class="project-step-text">Install ArduinoJson 6.21.5 and fill the four placeholders privately; upload with Serial at 115200.</p>
+  </div>
+</li><li class="project-step-wrap">
+  <div class="project-step">
+    <span class="project-step-num">5</span>
+    <p class="project-step-text">Wait 60 seconds plus at least two seconds of stable LOW, then create a new motion-input HIGH. Observe Serial API acceptance separately from the phone notification.</p>
+  </div>
+</li></ol>
+</section>
+<section class="project-section" id="gpio-map" aria-labelledby="gpio-map-heading">
+  <h2 id="gpio-map-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">GPIO</span><span class="project-section-title">Wiring Reference</span></h2>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable wiring or behavior table"><table class="wiring-table">
+    <thead><tr><th>Signal</th><th>ESP32 Pin</th><th>Direction</th><th>Notes</th></tr></thead>
+    <tbody><tr><td>Selected PIR + supply</td><td>Regulated external 5 V</td><td>Power</td><td>Adafruit #189, not an unknown clone</td></tr><tr><td>PIR GND</td><td>5 V minus + ESP32 GND</td><td>Ground</td><td>Share ground; do not join positive rails</td></tr><tr><td>PIR OUT</td><td>GPIO27</td><td>Digital input</td><td>Documented 3.3 V output; verify module</td></tr><tr><td>ESP32 power</td><td>USB data cable</td><td>Power</td><td>No relay, buzzer or actuator attached</td></tr></tbody>
+  </table></div>
+</section>
+<section class="project-section" id="libraries" aria-labelledby="libraries-heading">
+  <h2 id="libraries-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Setup</span><span class="project-section-title">Libraries and Setup</span></h2>
+  <ul class="project-callout-list"><li>Arduino-ESP32 3.3.2: built-in WiFi, NetworkClientSecure, HTTPClient and time.</li><li>ArduinoJson 6.21.5. This example calls the Telegram HTTPS API directly; UniversalTelegramBot is not required.</li><li>Your authorized 2.4 GHz Wi-Fi with internet DNS, HTTPS and network-time access. Captive-portal/enterprise onboarding is not implemented.</li></ul>
+</section>
+<section class="project-section" id="configuration" aria-labelledby="configuration-heading">
+  <h2 id="configuration-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Settings</span><span class="project-section-title">Configure the Example</span></h2>
+  <div class="project-prose"><p>Create a bot using Telegram’s official BotFather workflow, send /start to that bot from your own private chat, and obtain that chat’s numeric ID through the official getUpdates API. Its request uses the bot-token-specific getUpdates endpoint at api.telegram.org; keep the token/request/response private and do not use third-party ID collection bots. Replace REPLACE_WIFI_SSID, REPLACE_WIFI_PASSWORD, REPLACE_BOT_TOKEN and REPLACE_PRIVATE_CHAT_ID locally. The sketch deliberately accepts positive numeric private-chat IDs only; groups/channels/webhooks are outside this build. Keep the filled sketch out of a public repository and redact Serial/screenshots; rotate a leaked token through BotFather. With placeholders unchanged no cloud request is sent. No real token or message was used during authoring. Set Arduino IDE Core Debug Level to None; framework HTTP/TLS debug logs can reveal request details even when the sketch does not print them. If sensor power is turned on later than board boot, reset the ESP32 so the full warm-up applies.</p></div>
+</section>
+<section class="project-section" id="behavior" aria-labelledby="behavior-heading">
+  <h2 id="behavior-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Behavior</span><span class="project-section-title">Control and Recovery Behavior</span></h2>
+  <div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable wiring or behavior table"><table class="wiring-table">
+    <thead><tr><th>Condition</th><th>Result</th></tr></thead>
+    <tbody><tr><td>Sensor warm-up / rearm</td><td>Ignores events for 60 seconds after boot, then requires LOW for two seconds before a debounced HIGH can queue an event. A HIGH held at startup cannot trigger the first alert.</td></tr><tr><td>Network unavailable / cooldown</td><td>One event remains pending for at most 30 seconds, then is discarded. No disk backlog/replay. Additional edges coalesce. Attempts are at least 60 seconds apart; edges during cooldown may expire.</td></tr><tr><td>Wi-Fi and clock</td><td>Tries Wi-Fi for 15 seconds, disconnects and pauses 30 seconds before another attempt. No endless connection wait. HTTPS sending waits for a plausible network-synchronized clock.</td></tr><tr><td>HTTPS / API result</td><td>Uses a CA trust anchor and hostname validation, not setInsecure. HTTP 200 plus JSON ok=true is API acceptance only; failure/unknown results are not automatically resent.</td></tr><tr><td>Rate limit / reset</td><td>HTTP 429 pauses all further sending until manual diagnosis and reset. Reset clears the RAM state and local cooldown; it does not cancel Telegram service limits.</td></tr></tbody>
+  </table></div>
+</section>
+<section class="project-section" id="code" aria-labelledby="code-heading">
+  <h2 id="code-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">⌨️</span><span class="project-section-title">Code</span></h2>
+  <p class="project-section-lead">Install the libraries above and match the configuration and wiring before uploading.</p>
+  <div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">pir-telegram.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" aria-label="Arduino example code"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+<span class="tok-com">// Keep Arduino IDE Core Debug Level set to None; redact credentials from all logs.</span>
+<span class="tok-pre">#include &lt;WiFi.h&gt;</span>
+<span class="tok-pre">#include &lt;NetworkClientSecure.h&gt;</span>
+<span class="tok-pre">#include &lt;HTTPClient.h&gt;</span>
+<span class="tok-pre">#include &lt;ArduinoJson.h&gt;</span>
+<span class="tok-pre">#include &lt;time.h&gt;</span>
+<span class="tok-pre">#include &lt;string.h&gt;</span>
+
+const <span class="tok-kw">char</span>* WIFI_SSID = &quot;REPLACE_WIFI_SSID&quot;;
+const <span class="tok-kw">char</span>* WIFI_PASSWORD = &quot;REPLACE_WIFI_PASSWORD&quot;;
+const <span class="tok-kw">char</span>* BOT_TOKEN = &quot;REPLACE_BOT_TOKEN&quot;;
+const <span class="tok-kw">char</span>* CHAT_ID = &quot;REPLACE_PRIVATE_CHAT_ID&quot;;
+constexpr <span class="tok-kw">uint8_t</span> PIR_PIN = <span class="tok-num">27</span>;
+constexpr <span class="tok-kw">uint32_t</span> WARMUP_MS = <span class="tok-num">60000</span>, LOW_REARM_MS = <span class="tok-num">2000</span>;
+constexpr <span class="tok-kw">uint32_t</span> COOLDOWN_MS = <span class="tok-num">60000</span>, EVENT_MAX_AGE_MS = <span class="tok-num">30000</span>;
+constexpr <span class="tok-kw">uint32_t</span> WIFI_TRY_MS = <span class="tok-num">15000</span>, WIFI_PAUSE_MS = <span class="tok-num">30000</span>;
+
+<span class="tok-com">// Public Go Daddy Root Certificate Authority - G2, not a private key.</span>
+<span class="tok-com">// Reviewed CA source: https://certs.godaddy.com/repository/gdroot-g2.crt</span>
+<span class="tok-com">// Confirm the service trust chain when maintaining this example; never use setInsecure().</span>
+const <span class="tok-kw">char</span> ROOT_CA[] PROGMEM = R&quot;CERT(
+-----BEGIN CERTIFICATE-----
+MIIDxTCCAq2gAwIBAgIBADANBgkqhkiG9w0BAQsFADCBgzELMAkGA1UEBhMCVVMx
+EDAOBgNVBAgTB0FyaXpvbmExEzARBgNVBAcTClNjb3R0c2RhbGUxGjAYBgNVBAoT
+EUdvRGFkZHkuY29tLCBJbmMuMTEwLwYDVQQDEyhHbyBEYWRkeSBSb290IENlcnRp
+ZmljYXRlIEF1dGhvcml0eSAtIEcyMB4XDTA5MDkwMTAwMDAwMFoXDTM3MTIzMTIz
+NTk1OVowgYMxCzAJBgNVBAYTAlVTMRAwDgYDVQQIEwdBcml6b25hMRMwEQYDVQQH
+EwpTY290dHNkYWxlMRowGAYDVQQKExFHb0RhZGR5LmNvbSwgSW5jLjExMC8GA1UE
+AxMoR28gRGFkZHkgUm9vdCBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkgLSBHMjCCASIw
+DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL9xYgjx+lk09xvJGKP3gElY6SKD
+E6bFIEMBO4Tx5oVJnyfq9oQbTqC023CYxzIBsQU+B07u9PpPL1kwIuerGVZr4oAH
+/PMWdYA5UXvl+TW2dE6pjYIT5LY/qQOD+qK+ihVqf94Lw7YZFAXK6sOoBJQ7Rnwy
+DfMAZiLIjWltNowRGLfTshxgtDj6AozO091GB94KPutdfMh8+7ArU6SSYmlRJQVh
+GkSBjCypQ5Yj36w6gZoOKcUcqeldHraenjAKOc7xiID7S13MMuyFYkMlNAJWJwGR
+tDtwKj9useiciAF9n9T521NtYJ2/LOdYq7hfRvzOxBsDPAnrSTFcaUaz4EcCAwEA
+AaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYE
+FDqahQcQZyi27/a9BUFuIMGU2g/eMA0GCSqGSIb3DQEBCwUAA4IBAQCZ21151fmX
+WWcDYfF+OwYxdS2hII5PZYe096acvNjpL9DbWu7PdIxztDhC2gV7+AJ1uP2lsdeu
+9tfeE8tTEH6KRtGX+rcuKxGrkLAngPnon1rpN5+r5N9ss4UXnT3ZJE95kTXWXwTr
+gIOrmgIttRD02JDHBHNA7XIloKmf7J6raBKZV8aPEjoJpL1E/QYVN8Gb5DKj7Tjo
+2GTzLH4U/ALqn83/B2gX2yKQOC16jdFU8WnjXzPKej17CuPKf1855eJ1usV2GDPO
+LPAvTK33sefOT6jEm0pUBsV/fdUID+Ic/n4XuKxe9tQWskMJDE32p2u0mYRlynqI
+4uJEvlz36hz1
+-----END CERTIFICATE-----
+)CERT&quot;;
+
+bool warmed = <span class="tok-kw">false</span>;
+bool configured = <span class="tok-kw">false</span>, wifiTrying = <span class="tok-kw">false</span>, wasConnected = <span class="tok-kw">false</span>;
+bool rawHigh = <span class="tok-kw">false</span>, stableHigh = <span class="tok-kw">false</span>, readyForEdge = <span class="tok-kw">false</span>, pending = <span class="tok-kw">false</span>;
+bool attempted = <span class="tok-kw">false</span>, rateLimited = <span class="tok-kw">false</span>, lowTiming = <span class="tok-kw">false</span>;
+<span class="tok-kw">uint32_t</span> wifiSince=<span class="tok-num">0</span>, wifiEnded=<span class="tok-num">0</span>, changedAt=<span class="tok-num">0</span>, lowSince=<span class="tok-num">0</span>, eventAt=<span class="tok-num">0</span>, lastAttempt=<span class="tok-num">0</span>;
+
+bool credentialsReady() {
+  <span class="tok-kw">if</span> (strstr(WIFI_SSID,&quot;REPLACE_&quot;) || strstr(WIFI_PASSWORD,&quot;REPLACE_&quot;) ||
+      strstr(BOT_TOKEN,&quot;REPLACE_&quot;) || !strchr(BOT_TOKEN,&#x27;:&#x27;)) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  size_t n = strlen(CHAT_ID);
+  <span class="tok-kw">if</span> (!n || n &gt; <span class="tok-num">20</span>) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  <span class="tok-kw">for</span> (size_t i=<span class="tok-num">0</span>;i&lt;n;++i) <span class="tok-kw">if</span> (CHAT_ID[i]&lt;&#x27;<span class="tok-num">0</span>&#x27; || CHAT_ID[i]&gt;&#x27;<span class="tok-num">9</span>&#x27;) <span class="tok-kw">return</span> <span class="tok-kw">false</span>;
+  <span class="tok-kw">return</span> <span class="tok-kw">true</span>; <span class="tok-com">// Private-chat numeric ID only; no group/channel support in this example.</span>
+}
+<span class="tok-kw">void</span> startWiFi(<span class="tok-kw">uint32_t</span> now) {
+  WiFi.<span class="tok-fn">begin</span>(WIFI_SSID,WIFI_PASSWORD);wifiTrying=<span class="tok-kw">true</span>;wifiSince=now;
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Starting bounded Wi-Fi attempt (credentials hidden)&quot;);
+}
+<span class="tok-kw">void</span> serviceWiFi(<span class="tok-kw">uint32_t</span> now) {
+  <span class="tok-kw">if</span> (!configured) <span class="tok-kw">return</span>;
+  <span class="tok-kw">if</span> (WiFi.status()==WL_CONNECTED) {
+    <span class="tok-kw">if</span> (!wasConnected) {
+      wasConnected=<span class="tok-kw">true</span>;wifiTrying=<span class="tok-kw">false</span>;
+      configTime(<span class="tok-num">0</span>,<span class="tok-num">0</span>,&quot;pool.ntp.org&quot;,&quot;time.nist.gov&quot;);
+      <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Wi-Fi connected; TLS waits <span class="tok-kw">for</span> plausible network time&quot;);
+    }
+    <span class="tok-kw">return</span>;
+  }
+  <span class="tok-kw">if</span> (wasConnected) { wasConnected=<span class="tok-kw">false</span>;wifiTrying=<span class="tok-kw">false</span>;wifiEnded=now; }
+  <span class="tok-kw">if</span> (wifiTrying &amp;&amp; now-wifiSince&gt;=WIFI_TRY_MS) {
+    WiFi.disconnect();wifiTrying=<span class="tok-kw">false</span>;wifiEnded=now;
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Wi-Fi attempt ended; wait <span class="tok-num">30</span> s before next attempt&quot;);
+  } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (!wifiTrying &amp;&amp; now-wifiEnded&gt;=WIFI_PAUSE_MS) startWiFi(now);
+}
+<span class="tok-kw">void</span> servicePIR(<span class="tok-kw">uint32_t</span> now) {
+  bool high = <span class="tok-fn">digitalRead</span>(PIR_PIN)==<span class="tok-const">HIGH</span>;
+  <span class="tok-kw">if</span> (high!=rawHigh) { rawHigh=high;changedAt=now; }
+  <span class="tok-kw">if</span> (now-changedAt&gt;=<span class="tok-num">30</span>) stableHigh=rawHigh;
+  <span class="tok-kw">if</span> (!warmed) {
+    <span class="tok-kw">if</span> (now&gt;=WARMUP_MS) warmed=<span class="tok-kw">true</span>;
+    <span class="tok-kw">else</span> { readyForEdge=<span class="tok-kw">false</span>;lowTiming=<span class="tok-kw">false</span>;<span class="tok-kw">return</span>; }
+  }
+  <span class="tok-kw">if</span> (!stableHigh) {
+    <span class="tok-kw">if</span> (!lowTiming) { lowTiming=<span class="tok-kw">true</span>;lowSince=now; }
+    <span class="tok-kw">if</span> (now-lowSince&gt;=LOW_REARM_MS) readyForEdge=<span class="tok-kw">true</span>;
+  } <span class="tok-kw">else</span> {
+    lowTiming=<span class="tok-kw">false</span>;
+    <span class="tok-kw">if</span> (readyForEdge) {
+      readyForEdge=<span class="tok-kw">false</span>;
+      <span class="tok-kw">if</span> (pending) <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Additional edge coalesced; one event already pending&quot;);
+      <span class="tok-kw">else</span> { pending=<span class="tok-kw">true</span>;eventAt=now;<span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Motion-input event queued (not proof of a person)&quot;); }
+    }
+  }
+}
+bool sendAlert(<span class="tok-kw">uint32_t</span> eventUptime) {
+  NetworkClientSecure tls; tls.setCACert(ROOT_CA);
+  tls.setHandshakeTimeout(<span class="tok-num">8</span>);tls.setTimeout(<span class="tok-num">5000</span>);
+  HTTPClient http;http.useHTTP10(<span class="tok-kw">true</span>);http.setReuse(<span class="tok-kw">false</span>);
+  http.setConnectTimeout(<span class="tok-num">5000</span>);http.setTimeout(<span class="tok-num">5000</span>);
+  String url=String(&quot;https:<span class="tok-com">//api.telegram.org/bot&quot;)+BOT_TOKEN+&quot;/sendMessage&quot;;</span>
+  <span class="tok-kw">if</span> (!http.<span class="tok-fn">begin</span>(tls,url)) <span class="tok-kw">return</span> <span class="tok-kw">false</span>; <span class="tok-com">// Never print URL/token/response body.</span>
+  StaticJsonDocument&lt;<span class="tok-num">384</span>&gt; outgoing;
+  outgoing[&quot;chat_id&quot;]=CHAT_ID;
+  outgoing[&quot;text&quot;]=String(&quot;Educational PIR input event. Board uptime at detection: &quot;)+String(eventUptime/<span class="tok-num">1000</span>)+&quot; s. Not a verified security alarm.&quot;;
+  String body;serializeJson(outgoing,body);
+  http.addHeader(&quot;Content-Type&quot;,&quot;application/json&quot;);
+  <span class="tok-kw">int</span> code=http.POST(body);
+  StaticJsonDocument&lt;<span class="tok-num">128</span>&gt; filter;filter[&quot;ok&quot;]=<span class="tok-kw">true</span>;
+  StaticJsonDocument&lt;<span class="tok-num">128</span>&gt; answer;
+  bool accepted=<span class="tok-kw">false</span>;
+  <span class="tok-kw">if</span> (code==<span class="tok-num">200</span>) {
+    auto error=deserializeJson(answer,http.getStream(),DeserializationOption::Filter(filter),DeserializationOption::NestingLimit(<span class="tok-num">12</span>));
+    accepted=!error &amp;&amp; answer[&quot;ok&quot;].is&lt;bool&gt;() &amp;&amp; answer[&quot;ok&quot;].as&lt;bool&gt;();
+  }
+  <span class="tok-kw">if</span> (code==<span class="tok-num">429</span>) { rateLimited=<span class="tok-kw">true</span>;<span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;HTTP <span class="tok-num">429</span>: sending paused until reset; inspect Telegram rate limits before restarting&quot;); }
+  <span class="tok-fn">Serial</span>.printf(&quot;Telegram HTTP status: %d; API accepted: %s\n&quot;,code,accepted?&quot;yes&quot;:&quot;no/unknown&quot;);
+  http.end();tls.stop();<span class="tok-kw">return</span> accepted;
+}
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);<span class="tok-fn">pinMode</span>(PIR_PIN,INPUT_PULLDOWN);
+  configured=credentialsReady();
+  WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(<span class="tok-kw">false</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;PIR warm-up: <span class="tok-num">60</span> s, then require <span class="tok-const">LOW</span> <span class="tok-kw">for</span> <span class="tok-num">2</span> s. Network calls can miss short input pulses.&quot;);
+  <span class="tok-kw">if</span> (configured) startWiFi(millis());
+  <span class="tok-kw">else</span> <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Replace credentials and positive private chat ID; no cloud requests <span class="tok-kw">while</span> placeholders remain&quot;);
+}
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-kw">uint32_t</span> now=millis();servicePIR(now);serviceWiFi(now);
+  <span class="tok-kw">if</span> (pending &amp;&amp; now-eventAt&gt;EVENT_MAX_AGE_MS) { pending=<span class="tok-kw">false</span>;<span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;Queued event expired after <span class="tok-num">30</span> s; no replay&quot;); }
+  bool cooldownOver=!attempted || now-lastAttempt&gt;=COOLDOWN_MS;
+  bool timeReady=time(nullptr)&gt;<span class="tok-num">1700000000</span>; <span class="tok-com">// Plausibility gate, not proof of clock accuracy.</span>
+  <span class="tok-kw">if</span> (pending &amp;&amp; configured &amp;&amp; !rateLimited &amp;&amp; WiFi.status()==WL_CONNECTED &amp;&amp; timeReady &amp;&amp; cooldownOver) {
+    <span class="tok-kw">uint32_t</span> captured=eventAt;pending=<span class="tok-kw">false</span>;attempted=<span class="tok-kw">true</span>;lastAttempt=now;
+    bool accepted=sendAlert(captured); <span class="tok-com">// Synchronous, bounded per-operation timeouts; not a hard total deadline.</span>
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(accepted?&quot;API acceptance is not proof of delivery/read&quot;:&quot;Outcome failed/unknown; no automatic resend of this event&quot;);
+  }
+  <span class="tok-fn">delay</span>(<span class="tok-num">5</span>);
+}</code></pre>
+</div>
+</section>
+<section class="project-section" id="code-explanation" aria-labelledby="code-explanation-heading">
+  <h2 id="code-explanation-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Code</span><span class="project-section-title">How the Code Works</span></h2>
+  <div class="project-prose"><p>The loop services a 30 ms stable-level filter and LOW rearm before attempting any send. A pending event stores the detection uptime, not a claimed UTC occurrence time. Wi-Fi attempts are scheduled without an endless blocking wait. Each eligible event is removed before a synchronous HTTPS POST, so an ambiguous response cannot trigger automatic duplicate resends. ArduinoJson generates the request text and filters the reply down to its boolean ok field. HTTP/1.0 avoids unsupported raw chunk parsing when reading HTTPClient’s stream. The sketch does not print token-bearing URLs or reply bodies; framework debug logs must stay disabled and any diagnostics must be redacted. TLS handshake/connect/read timeouts limit individual operations, not the total loop latency; DNS/network work can still delay sampling and short PIR pulses may be missed.</p></div>
+</section>
+<section class="project-section project-output" id="output" aria-labelledby="output-heading">
+  <h2 id="output-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">✨</span><span class="project-section-title">Expected Output</span></h2>
+  <div class="project-output-body"><p>On a configured bench, Serial should describe warm-up, Wi-Fi state and queued events. With internet, plausible time and a trusted Telegram certificate chain, a send should return API acceptance and your private chat may receive the text. Neither HTTP success nor a PIR HIGH proves a person, notification delivery, display or reading. This is a procedure to verify on your own hardware, not a recorded successful cloud test.</p></div>
+</section>
+<section class="project-section project-troubleshooting" id="troubleshooting" aria-labelledby="troubleshooting-heading">
+  <h2 id="troubleshooting-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">🔧</span><span class="project-section-title">Troubleshooting</span></h2>
+  <ul class="project-trouble-list"><li class="project-trouble-item">
+  <strong class="project-trouble-problem">No first alert</strong>
+  <span class="project-trouble-fix">Wait through warm-up and two seconds of LOW. The sensor hold timer/retriggering may keep OUT HIGH; a new HIGH after LOW is required. Check the exact module and Serial state.</span>
+</li><li class="project-trouble-item">
+  <strong class="project-trouble-problem">No cloud requests</strong>
+  <span class="project-trouble-fix">Replace all placeholders and use a positive private-chat ID; check router band, DNS, HTTPS and network time. Events older than 30 seconds are intentionally dropped.</span>
+</li><li class="project-trouble-item">
+  <strong class="project-trouble-problem">TLS or HTTP error</strong>
+  <span class="project-trouble-fix">Check the clock and documented current service trust chain. The embedded public Go Daddy G2 root is a reviewed trust anchor, not a guarantee of a future Telegram certificate chain. Do not bypass verification with setInsecure.</span>
+</li><li class="project-trouble-item">
+  <strong class="project-trouble-problem">HTTP 400, 401 or 403</strong>
+  <span class="project-trouble-fix">Check bot token, own private-chat ID, /start and whether the bot was blocked. Never paste your token/whole response into public bug reports.</span>
+</li><li class="project-trouble-item">
+  <strong class="project-trouble-problem">HTTP 429 or repeated failure</strong>
+  <span class="project-trouble-fix">Stop testing rapidly. Sending is latched off for this boot after 429; review Telegram retry/rate-limit guidance before resetting. The sketch does not retry an ambiguous event.</span>
+</li><li class="project-trouble-item">
+  <strong class="project-trouble-problem">Phone shows no notification after API acceptance</strong>
+  <span class="project-trouble-fix">Check Telegram chat history and phone notification settings separately. API acceptance is not delivery or read acknowledgement.</span>
+</li><li class="project-trouble-item">
+  <strong class="project-trouble-problem">Short events missing</strong>
+  <span class="project-trouble-fix">TLS/HTTP calls are synchronous and can occupy seconds. This polling demonstration is not an interrupt-backed or reliable alarm/event recorder.</span>
+</li></ul>
+</section>
+<section class="project-section" id="testing" aria-labelledby="testing-heading">
+  <h2 id="testing-heading" tabindex="-1"><span class="project-section-title">Checks to Perform on Your Build</span></h2>
+  <ul class="project-callout-list"><li>First verify the PIR signal and documented voltage without trusting Telegram as a sensor diagnostic.</li><li>Confirm placeholders suppress outbound requests; never use real credentials in screenshots/source control.</li><li>Create one edge after LOW rearm, inspect API status, and check the actual private chat separately.</li><li>Verify sustained HIGH does not create an endless alert stream and attempts are rate-limited.</li><li>Test router unavailability and expired pending events; restoration must not replay a stored backlog.</li><li>Use your own authorized environment to check certificate/time failure stays fail-closed. Do not disable TLS verification to make a test pass.</li></ul>
+</section>
+<section class="project-section" id="engineering" aria-labelledby="engineering-heading">
+  <h2 id="engineering-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Details</span><span class="project-section-title">Practical Design Notes</span></h2>
+  <div class="project-prose"><p>The 60-second warm-up and LOW interval are chosen bench policies for the documented PIR, not universal sensor readiness proofs. Time plausibility is not a clock-accuracy or authenticated-time guarantee. The public Go Daddy Root CA G2 certificate is valid through 2037, but service trust chains can change earlier; maintain the actual trusted root using current official evidence. Credentials stored in ordinary firmware are not protected against a reader of flash. Message text and chat metadata go to Telegram; only send information you intend to share. The local rate limiter is RAM-only, not a global service quota or protection against reboot loops. No certified alarm, person classification, durable queue, exactly-once delivery or remote actuator control is implemented.</p></div>
+</section>
+
+<section class="project-section project-related-guides" id="related-guides" aria-labelledby="related-guides-heading">
+  <h2 id="related-guides-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Guides</span><span class="project-section-title">Related Guides</span></h2>
+  <div class="project-related-grid"><a class="project-related-card" href="/guides/installing-arduino-ide-esp32.html">
+  <h3>IDE setup and first upload</h3>
+  <p>Verify upload and Serial before adding sensor/network code.</p>
+  <span class="project-related-cta">Open<span aria-hidden="true">→</span></span>
+</a><a class="project-related-card" href="/guides/esp32-wifi-troubleshooting.html">
+  <h3>Wi-Fi connection diagnostics</h3>
+  <p>Check the supported band, credentials and bounded recovery.</p>
+  <span class="project-related-cta">Open<span aria-hidden="true">→</span></span>
+</a></div>
+</section>
+<section class="project-section project-related-projects" id="related-projects" aria-labelledby="related-projects-heading">
+  <h2 id="related-projects-heading" tabindex="-1"><span class="project-section-icon" aria-hidden="true">Projects</span><span class="project-section-title">Related Projects</span></h2>
+  <div class="project-related-grid"><a class="project-related-card" href="/projects/esp32-motion-security-alert.html">
+  <h3>ESP32 Motion Security Alert</h3>
+  <p>Build an ESP32 PIR motion sensor project with HC-SR501 OUT on GPIO27, warm-up behavior, buzzer or LED alert logic, fa…</p>
+  <span class="project-related-cta">Open<span aria-hidden="true">→</span></span>
+</a></div>
+</section>
+
+<section class="project-section project-references" id="review-references" aria-labelledby="review-references-heading">
+  <h2 id="review-references-heading" tabindex="-1"><span class="project-section-title">Review, Testing, and References</span></h2>
+  <div class="project-prose">
+    <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-10-24. <strong>Reviewed:</strong> wiring logic, Arduino code structure, beginner safety, and learning sequence.</p>
+    <p><strong>Educational level:</strong> Intermediate. <strong>Estimated completion time:</strong> Varies by build. This project is for learning and prototyping; production or unattended hardware needs additional engineering review.</p>
+  </div>
+  <ul class="project-callout-list"><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li><li><a href="https://github.com/espressif/arduino-esp32/tree/3.3.2/libraries/WiFi/src" target="_blank" rel="noopener noreferrer">Arduino-ESP32 3.3.2 Wi-Fi interfaces</a></li><li><a href="https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf" target="_blank" rel="noopener noreferrer">Classic ESP32 datasheet</a></li><li><a href="https://www.adafruit.com/product/189" target="_blank" rel="noopener noreferrer">Adafruit PIR module #189 electrical details</a></li><li><a href="https://learn.adafruit.com/pir-passive-infrared-proximity-motion-sensor/testing-a-pir" target="_blank" rel="noopener noreferrer">Adafruit PIR stabilization and test procedure</a></li><li><a href="https://core.telegram.org/bots/tutorial" target="_blank" rel="noopener noreferrer">Telegram bot setup</a></li><li><a href="https://core.telegram.org/bots/api#sendmessage" target="_blank" rel="noopener noreferrer">Telegram Bot API sendMessage and response contract</a></li><li><a href="https://core.telegram.org/bots/api#getupdates" target="_blank" rel="noopener noreferrer">Telegram Bot API getUpdates</a></li><li><a href="https://github.com/bblanchon/ArduinoJson/tree/v6.21.5" target="_blank" rel="noopener noreferrer">ArduinoJson 6.21.5</a></li><li><a href="https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/" target="_blank" rel="noopener noreferrer">ArduinoJson 6 HTTPClient stream parsing</a></li><li><a href="https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/NetworkClientSecure/src/NetworkClientSecure.h" target="_blank" rel="noopener noreferrer">NetworkClientSecure at Arduino-ESP32 3.3.2</a></li><li><a href="https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/HTTPClient/src/HTTPClient.h" target="_blank" rel="noopener noreferrer">HTTPClient at Arduino-ESP32 3.3.2</a></li><li><a href="https://certs.godaddy.com/repository/gdroot-g2.crt" target="_blank" rel="noopener noreferrer">Go Daddy Root Certificate Authority - G2 public certificate</a></li></ul>
+</section></article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+</body>
+</html>

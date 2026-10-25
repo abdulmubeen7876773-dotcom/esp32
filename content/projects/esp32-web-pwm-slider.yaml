@@ -1,0 +1,223 @@
+format: golden
+slug: esp32-web-pwm-slider
+title: ESP32 Web PWM Brightness Slider
+category: LED Projects
+category_slug: led-projects
+description: Set LED duty from a local browser slider using Arduino-ESP32 3.3.2 LEDC APIs, bounded inputs,
+  an Apply button and output-fault handling.
+meta_description: Set LED duty from a local browser slider using Arduino-ESP32 3.3.2 LEDC APIs, bounded
+  inputs, an Apply button and output-fault handling.
+source_base: esp32-web-pwm-slider
+status: published
+featured: false
+date_published: '2026-10-24'
+date_modified: '2026-10-24'
+image: /assets/visuals/projects/heroes/esp32-web-pwm-slider.svg
+featured_image: /assets/visuals/projects/heroes/esp32-web-pwm-slider.svg
+hero_image: /assets/visuals/projects/heroes/esp32-web-pwm-slider.svg
+og_image: /assets/visuals/projects/heroes/esp32-web-pwm-slider.svg
+image_alt: ESP32 Web PWM Brightness Slider logical illustration, not a photograph or verified physical
+  pinout
+sensor: Local browser POST requests
+output: PWM-controlled red LED
+hardware:
+  sensor_pin: Wi-Fi AP
+  output_pin: GPIO25
+  sensor_name: Local browser POST requests
+  output_name: PWM-controlled red LED
+  wiring:
+  - component: 470 Ω resistor → LED anode
+    pin: GPIO25
+  - component: LED cathode
+    pin: GND
+  - component: DevKit power
+    pin: USB data cable
+project:
+  tutorial_flow: true
+  difficulty: Intermediate
+  mission_title: ESP32 Web PWM Brightness Slider
+  icon: Build
+  what_you_build: A browser slider that sets the duty of one resistor-limited LED. Dragging selects a
+    value; Apply brightness sends it. This adds HTTP-to-PWM control to the existing local PWM lessons
+    without duplicating their general theory.
+  assumptions: Classic ESP32-WROOM DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 as the API review baseline,
+    not the latest-release claim. Select ESP32 Dev Module only for the stated generic WROOM board. Other
+    ESP32 families need their own GPIO and LEDC review. Complete the Serial-only IDE upload first. Documentation/code-structure
+    and local browser checks do not establish compilation or physical operation; these sketches have not
+    been compiled or hardware-tested. The same documented low-current red LED and 470 Ω series circuit
+    as the browser On/Off project. This is a 3.3 V GPIO indicator, not a power dimmer or servo signal.
+  parent_safety: USB-powered low-voltage LED circuit only. Do not connect a motor, fan, strip or relay
+    to GPIO25. A PWM control value does not replace a load driver or current-limiting design.
+  components:
+  - item: Classic ESP32-WROOM DevKit
+    note: GPIO25 exposed and unused; USB data cable.
+    link: /components/esp32-devkit.html
+  - item: One low-current red indicator LED
+    note: Kingbright WP7113ID is the documented example; identify the actual anode/cathode.
+    link: /components/discrete-leds.html
+  - item: 470 Ω 0.25 W resistor
+    note: One series resistor for this LED; no direct LED-to-GPIO connection.
+    link: /components/through-hole-resistors.html
+  - item: Breadboard and short jumpers
+    note: Disconnect USB before changing wires.
+    link: /components/solderless-breadboard.html
+  wiring:
+    illustration_alt: ESP32 Web PWM Brightness Slider logical signal and power map; not physical pin order
+    summary: GPIO25 → 470 Ω → LED anode, LED cathode → GND. The resistor is required even at low duty,
+      because pulse current is determined by the instantaneous circuit voltage and resistance. Verify
+      actual polarity; the overview is not an LED package drawing.
+    steps:
+    - Unplug USB and wire the external LED/resistor exactly as the On/Off build.
+    - Keep GPIO25 free of other devices; these are independent sketches, not one combined pin assignment.
+    - Reconnect USB and select the stated classic ESP32 board.
+    - Upload, check Serial and use the printed local AP address.
+  gpio_map:
+  - signal: 470 Ω resistor → LED anode
+    esp32_pin: GPIO25
+    direction: Output
+    notes: Series path; LED cathode returns to GND
+  - signal: LED cathode
+    esp32_pin: GND
+    direction: Ground
+    notes: Verify actual LED polarity
+  - signal: DevKit power
+    esp32_pin: USB data cable
+    direction: Power
+    notes: No onboard LED or 5 V signal assumed
+  libraries:
+  - Built-in WiFi and WebServer from Arduino-ESP32 3.3.2; LEDC is also built into core 3.3.2; no ESP32Servo
+    or external PWM library.
+  configuration: Change CHANGE_ME_1234 to your own 8–63 character AP password. Upload and open Serial
+    at 115200. Join the printed ESP32 network, stay connected if your phone reports no internet, and open
+    the printed http:// address directly. The classic board uses a 2.4 GHz AP on channel 6, allows one
+    connected station and does not join your router. No internet, external JavaScript, cloud account or
+    third-party Arduino library is required. The example requests 5 kHz and 8-bit PWM. The slider range
+    is 0–255 and starts at 0. Press Apply brightness after moving it. Only accepted POST requests renew
+    the 30-second command window. This version intentionally does not send a request on every drag event.
+  behavior:
+  - - LEDC setup
+    - Checks ledcAttach(GPIO25, 5000, 8) and initial zero-duty write. An initialization error latches
+      an unavailable state.
+  - - Valid POST /brightness
+    - Requires one integer duty in 0–255. Write success updates the displayed command; a failed write
+      produces 503 and attempts to return the pin LOW.
+  - - Bad input
+    - Empty, negative, fractional, nonnumeric, excessive-length or out-of-range values return 400 rather
+      than being silently coerced.
+  - - Command expires
+    - A nonzero duty is returned to zero after a best-effort 30-second idle interval.
+  code:
+    filename: web-pwm.ino
+    content: "#include <Arduino.h>\n#include <WiFi.h>\n#include <WebServer.h>\n\nWebServer server(80);\n\
+      const char* AP_PASSWORD = \"CHANGE_ME_1234\"; // Replace with your own 8-63 character password.\n\
+      bool httpReady = false;\n\nvoid redirectHome() {\n  server.sendHeader(\"Location\", \"/\");\n  server.send(303,\
+      \ \"text/plain\", \"Open the control page\\n\");\n}\nString pageStart(const char* title) {\n  String\
+      \ page = \"<!doctype html><html lang='en'><head>\";\n  page += \"<meta name='viewport' content='width=device-width,initial-scale=1'>\"\
+      ;\n  page += \"<style>body{font:1.1rem system-ui;max-width:40rem;margin:2rem auto;padding:1rem}button,input{font:inherit;margin:.5rem\
+      \ 0}input[type=range]{width:100%}</style>\";\n  page += \"<title>\"; page += title; page += \"</title></head><body><h1>\"\
+      ;\n  page += title; page += \"</h1>\";\n  return page;\n}\nvoid sendPage(const String& page) {\n\
+      \  server.sendHeader(\"Cache-Control\", \"no-store\");\n  server.send(200, \"text/html; charset=utf-8\"\
+      , page + \"</body></html>\");\n}\nbool parseUnsigned(const String& text, uint16_t minimum, uint16_t\
+      \ maximum, uint16_t& value) {\n  if (text.length() == 0 || text.length() > 4) return false;\n  uint32_t\
+      \ n = 0;\n  for (size_t i = 0; i < text.length(); ++i) {\n    char c = text[i];\n    if (c < '0'\
+      \ || c > '9') return false;\n    n = n * 10 + (c - '0');\n  }\n  if (n < minimum || n > maximum)\
+      \ return false;\n  value = uint16_t(n); return true;\n}\nvoid startHTTP(const char* name) {\n  server.onNotFound([]()\
+      \ { server.send(404, \"text/plain\", \"No such route\\n\"); });\n  if (!WiFi.mode(WIFI_AP) || !WiFi.softAP(name,\
+      \ AP_PASSWORD, 6, false, 1)) {\n    Serial.println(\"AP failed; output stays off. Check board and\
+      \ password length.\");\n    return;\n  }\n  server.begin(); httpReady = true;\n  Serial.print(\"\
+      Join \"); Serial.println(name);\n  Serial.print(\"Open http://\"); Serial.println(WiFi.softAPIP());\n\
+      }\n\nconstexpr uint8_t LED_PIN = 25, RESOLUTION = 8;\nconstexpr uint32_t FREQUENCY_HZ = 5000, COMMAND_LIFETIME_MS\
+      \ = 30000;\nbool pwmReady = false;\nuint16_t duty = 0;\nuint32_t lastCommand = 0;\n\nvoid stopOnFault()\
+      \ {\n  if (pwmReady) { ledcWrite(LED_PIN, 0); ledcDetach(LED_PIN); }\n  pwmReady = false; duty =\
+      \ 0;\n  pinMode(LED_PIN, OUTPUT); digitalWrite(LED_PIN, LOW);\n  Serial.println(\"PWM failure; reset\
+      \ after diagnosis\");\n}\nbool applyDuty(uint16_t next) {\n  if (!pwmReady || !ledcWrite(LED_PIN,\
+      \ next)) { stopOnFault(); return false; }\n  duty = next; return true;\n}\nvoid showPage() {\n \
+      \ String page = pageStart(\"ESP32 PWM slider\");\n  page += String(\"<p>Last accepted duty: \")\
+      \ + duty + \" / 255. Driver: \";\n  page += pwmReady ? \"ready.</p>\" : \"fault; check Serial and\
+      \ reset.</p>\";\n  page += \"<form method='post' action='/brightness'><label for='duty'>LED duty\
+      \ 0 to 255</label>\";\n  page += \"<input id='duty' name='duty' type='range' min='0' max='255' step='1'\
+      \ value='\";\n  page += String(duty) + \"'><button type='submit'>Apply brightness</button></form>\"\
+      ;\n  page += \"<p>Moving the slider alone sends nothing. Press Apply; nonzero duty expires after\
+      \ 30 seconds. Refresh to read software state.</p>\";\n  sendPage(page);\n}\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  pinMode(LED_PIN, OUTPUT); digitalWrite(LED_PIN, LOW);\n  pwmReady = ledcAttach(LED_PIN, FREQUENCY_HZ,\
+      \ RESOLUTION);\n  if (!pwmReady || !ledcWrite(LED_PIN, 0)) stopOnFault();\n  server.on(\"/\", HTTP_GET,\
+      \ showPage);\n  server.on(\"/brightness\", HTTP_POST, []() {\n    uint16_t next = 0;\n    if (server.args()\
+      \ != 1 || !server.hasArg(\"duty\") ||\n        !parseUnsigned(server.arg(\"duty\"), 0, 255, next))\
+      \ {\n      server.send(400, \"text/plain\", \"Exactly one integer duty, 0 through 255, is required\\\
+      n\"); return;\n    }\n    if (!pwmReady || !applyDuty(next)) {\n      server.send(503, \"text/plain\"\
+      , \"PWM unavailable; diagnose and reset\\n\"); return;\n    }\n    lastCommand = millis();\n   \
+      \ Serial.printf(\"Accepted duty %u / 255\\n\", unsigned(duty));\n    redirectHome();\n  });\n  startHTTP(\"\
+      ESP32-WebPWM\");\n}\nvoid loop() {\n  if (httpReady) server.handleClient();\n  if (pwmReady && duty\
+      \ != 0 && millis() - lastCommand >= COMMAND_LIFETIME_MS) {\n    if (applyDuty(0)) Serial.println(\"\
+      Command expired: duty 0\");\n  }\n  delay(1);\n}\n"
+  code_explanation: 'In the reviewed 3.x API, ledcAttach chooses a channel and ledcWrite takes the GPIO
+    pin, not a legacy channel number. Eight bits gives 256 command levels; 0 requests OFF and 255 full
+    duty. The 5 kHz/8-bit pair is modest for this classic ESP32 example. Frequency and resolution share
+    finite timer resources: do not assume every larger pair can be attached. The numeric parser checks
+    length, every digit and the range before any write.'
+  expected_output: The page should initially report duty 0 and driver ready. After Apply, a supported
+    LED should change brightness and the page should report the accepted integer. Try 0, a middle value
+    and 255. Perceived brightness is not linear with duty, and no luminance measurement is provided. A
+    fault page describes a driver error, not proof of a failed LED.
+  troubleshooting:
+  - problem: Cannot open the page
+    fix: Confirm the phone is still on the ESP32 AP, use the Serial-printed http:// address and check
+      mobile-data/VPN routing. The AP deliberately provides no internet.
+  - problem: HTTP 400 from a command
+    fix: Use the provided form. Exact argument counts and allowed values are checked; blank, negative,
+      decimal or nonnumeric values are not converted silently.
+  - problem: Page shows an old value
+    fix: Refresh the page. It reports the last accepted software command, not measured light output or
+      shaft position. GET/refresh does not renew the command lifetime.
+  - problem: PWM unavailable / HTTP 503
+    fix: Inspect Serial, GPIO25 availability and the core version. Reset after fixing the cause. Do not
+      replace pin-based calls with old ledcSetup/ledcAttachPin.
+  - problem: Slider moves but nothing changes
+    fix: This UI requires Apply brightness. Also confirm LED polarity, the series resistor and that the
+      accepted duty is not zero.
+  - problem: Two duty steps look identical
+    fix: Eight-bit command resolution does not guarantee visually distinguishable or equal-brightness
+      increments. Gamma correction and photometry are outside this build.
+  testing_checklist:
+  - Verify the circuit with Blink or the On/Off build first.
+  - Apply 0, a middle value and 255; compare the returned software duty with expected visible changes.
+  - Attempt invalid values on your own bench and check HTTP 400, without a changed duty.
+  - Leave a nonzero command idle and check expiry, then reset and confirm startup zero.
+  engineering_explanation: PWM changes the fraction of time the LED path is driven, not the high-state
+    voltage. It is not a calibrated analog voltage source. A servo needs a separately specified pulse
+    width/frame and external power; this LED slider is not a servo example. Channel/timer conflicts matter
+    when combining sketches, so these examples must first be run independently. This is plain HTTP on
+    a trusted local demonstration AP. The Wi-Fi password is network admission, not per-user HTTP authentication.
+    Anyone admitted can issue commands; POST alone does not prevent CSRF, and the sketch has no TLS, CSRF
+    token, rate limiting or user roles. Do not expose the port through a router or adapt this example
+    to locks, heaters, mains equipment or safety-critical mechanisms. The synchronous WebServer can wait
+    on slow clients; the loop timeout is best-effort cleanup, not a hard real-time or certified safety
+    stop.
+  related_guides:
+  - title: IDE setup and first upload
+    href: /guides/installing-arduino-ide-esp32.html
+    description: Prove upload and Serial before adding wiring.
+  - title: Read-only AP web-server foundation
+    href: /guides/esp32-web-server.html
+    description: Understand requests and local addresses without changing that existing tutorial.
+  - title: PWM reference and tradeoffs
+    href: /guides/esp32-pwm.html
+    description: Review the 3.x pin-based APIs and frequency/resolution relationship.
+  related_projects:
+  - title: Start with binary control
+    href: /projects/esp32-web-led-control.html
+    description: Separate HTTP request handling from PWM setup.
+  faqs: []
+  references:
+  - title: WebServer API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WebServer/src/WebServer.h
+  - title: Wi-Fi AP API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WiFi/src/WiFiAP.h
+  - title: Classic ESP32 datasheet
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: Kingbright WP7113ID example LED datasheet
+    href: https://www.kingbrightusa.com/images/catalog/SPEC/WP7113ID.pdf
+  - title: LEDC API at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-ledc.h
+  - title: LEDC implementation at Arduino-ESP32 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-ledc.c
