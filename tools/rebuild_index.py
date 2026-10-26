@@ -312,7 +312,11 @@ def home_html(projects):
     counts = site_counts()
     project_count = counts["golden_projects"]
     cinematic = home.get("design") == "cinematic-maker"
-    if cinematic:
+    clean = home.get("design") == "clean-premium"
+    if clean:
+        from home_clean import clean_home
+        body = clean_home(home, guides, source_projects, components, counts)
+    elif cinematic:
         from home_cinematic import cinematic_home
         body = cinematic_home(home, guides, source_projects, components, counts)
     else:
@@ -327,10 +331,11 @@ def home_html(projects):
 <html lang="en">
 <head>
 {head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True, homepage_perf=True)}
-<link rel="preload" as="image" href="{home['cinematic']['hero_image'] if cinematic else '/assets/images/heroes/home-hero.webp'}" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="{home['clean_premium']['hero_image'] if clean else (home['cinematic']['hero_image'] if cinematic else '/assets/images/heroes/home-hero.webp')}" type="image/webp" fetchpriority="high">
 {'<link rel="stylesheet" href="/assets/cinematic-home.css?v=20261017-cinematic-maker">' if cinematic else ''}
+{'<link rel="stylesheet" href="/assets/clean-premium-home.css?v=20261026">' if clean else ''}
 </head>
-<body class="home-page{' cinematic-maker' if cinematic else ''}">
+<body class="home-page{' clean-premium' if clean else (' cinematic-maker' if cinematic else '')}">
 <main>
 {header_html("home", project_count=project_count)}
 {body}
