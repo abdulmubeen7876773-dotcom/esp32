@@ -1,5 +1,9 @@
 {
-  "tutorial_video": {"youtube_id": "UB71PJbP0FY", "title": "SSD1306 OLED display with ESP32 — video tutorial", "note": "Follow this guide’s hardware, supply-voltage limits, wiring and GPIO assignments when building; the video may use different pins or a different board."},
+  "tutorial_video": {
+    "youtube_id": "UB71PJbP0FY",
+    "title": "SSD1306 OLED display with ESP32 — video tutorial",
+    "note": "Follow this guide’s hardware, supply-voltage limits, wiring and GPIO assignments when building; the video may use different pins or a different board."
+  },
   "format": "mission",
   "phase": 1,
   "sort_order": 9,
@@ -16,7 +20,7 @@
   "proficiency_level": "Beginner",
   "reading_time": "40-45 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-08-22",
+  "date_modified": "2026-10-26",
   "academy": {
     "mission_id": "Mission 09",
     "level": "Foundation",
@@ -44,8 +48,8 @@
     ],
     "estimated_time": "40-45 min",
     "difficulty": "Beginner",
-    "expected_outcome": "You will wire an SSD1306 OLED to GPIO21 and GPIO22, then display a title, live ADC value, and percent value on the screen.",
-    "mini_challenge": "Change the OLED layout so it shows raw ADC value on one line and a human-friendly percent value on another line.",
+    "expected_outcome": "Wire the supported SSD1306 OLED to GPIO21/GPIO22 and display raw ADC counts plus a separately sampled calibrated millivolt estimate.",
+    "mini_challenge": "Show raw ADC counts and the millivolt estimate clearly on separate lines; explain why neither is a calibrated shaft-position percentage.",
     "previous_mission": {
       "slug": "analog-inputs",
       "title": "Analog Inputs",
@@ -76,23 +80,23 @@
     "project_link_copy": "authored",
     "unlocked_projects": [
       {
-        "title": "ESP32 OLED Weather Clock",
         "href": "/projects/esp32-oled-weather-clock.html",
+        "title": "ESP32 OLED Weather Clock",
         "description": "Build an ESP32 OLED weather clock that syncs NTP time over Wi-Fi and shows BME280 temperature, humidity, and pressure…"
       },
       {
-        "title": "ESP32 IoT Weather Station: BME280 Arduino Code",
         "href": "/projects/esp32-iot-weather-station.html",
+        "title": "ESP32 IoT Weather Station: BME280 Arduino Code",
         "description": "Build an ESP32 BME280 weather station with I2C wiring on GPIO21/GPIO22, 3.3 V power, Arduino code, Serial Monitor out…"
       },
       {
-        "title": "ESP32 Smart Thermostat: Temperature Control and Code",
         "href": "/projects/esp32-smart-thermostat.html",
+        "title": "ESP32 Smart Thermostat: Temperature Control and Code",
         "description": "Build a low-voltage ESP32 smart thermostat with DHT22 on GPIO4, relay fan control on GPIO26, hysteresis thresholds, s…"
       },
       {
-        "title": "ESP32 Lightning Detector: AS3935 Sensor Demo",
         "href": "/projects/esp32-lightning-detector.html",
+        "title": "ESP32 Lightning Detector: AS3935 Sensor Demo",
         "description": "Build an ESP32 AS3935 lightning sensor demo with SPI wiring, interrupt handling, OLED output, noise/disturber classif…"
       }
     ],
@@ -195,7 +199,7 @@
       "Install the correct Arduino libraries for SSD1306 displays.",
       "Write text and live ADC values to the OLED without relying only on Serial Monitor."
     ],
-    "what_you_build": "- An SSD1306 128x64 OLED connected to the ESP32 over I2C.\n- A potentiometer connected to GPIO34 as a live data source.\n- A screen that shows a title, raw ADC value, and percent value.\n- Serial Monitor output that confirms the same value the OLED is showing.",
+    "what_you_build": "- An SSD1306 128x64 OLED connected to the ESP32 over I2C.\n- A potentiometer connected to GPIO34 as a live data source.\n- A screen that shows a title, raw ADC value, and millivolt estimate.\n- Serial Monitor output that confirms the same value the OLED is showing.",
     "things_you_need": [
       {
         "item": "ESP32 DevKit board",
@@ -242,12 +246,11 @@
     "component_spotlight_lead": "The SSD1306 OLED is the beginner-friendly display that turns a hidden microcontroller program into something you can read at a glance.",
     "concept": {
       "title": "The OLED Is a Tiny Output Device",
-
       "image": "/assets/visuals/guides/concepts/oled-display-esp32-concept.svg",
       "illustration_alt": "ESP32 connected to an SSD1306 OLED over I2C using GPIO21 SDA and GPIO22 SCL, showing ADC value on screen",
       "body": "An OLED display is an output device. It does not decide what to show. Your ESP32 code decides what text and numbers to draw.\n\nMost small SSD1306 OLED modules use I2C. That means the ESP32 does not need many wires. It sends commands and display data over two signal lines: SDA and SCL.\n\nThe important beginner idea is simple: Serial Monitor shows data on your computer, while an OLED shows data on the project itself."
     },
-    "engineering_explanation": "The SSD1306 OLED module contains a display panel and a controller chip. The controller remembers what each pixel should do, and the OLED panel lights those pixels.\n\nThe ESP32 communicates with the controller over I2C in this tutorial. SDA carries the data bits. SCL is the clock signal that keeps both sides moving together. This site's examples use GPIO21 for SDA and GPIO22 for SCL. ESP32 I2C pins can be changed, but the wiring and Wire.begin(SDA, SCL) call must agree.\n\nThe OLED also has an I2C address, usually 0x3C and sometimes 0x3D. The address tells the ESP32 which device on the bus should listen. If the screen stays blank even though power and wiring look correct, run an I2C scanner before guessing.\n\nThe Adafruit SSD1306 library hides most of the low-level commands. Your sketch draws into a screen buffer in memory using functions such as setCursor(), print(), and println(). When you call display.display(), the library sends the buffer to the OLED controller and the visible screen updates.\n\nThis is why clearDisplay() matters. The screen buffer keeps old pixels until you clear or overwrite them. A clean refresh usually means: clear the buffer, draw the new text, then send it to the screen.",
+    "engineering_explanation": "Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline (not latest). Selected display: a documented 3.3 V-compatible 128×64 I2C SSD1306 module with bus pull-ups to 3.3 V, four labelled VCC/GND/SDA/SCL pins and suitable reset circuitry. SH1106 and SPI displays need another driver/wiring. Pins are SDA21/SCL22; set OLED_ADDRESS from the module documentation/scanner. An ACK checks address response, not controller identity. Install Adafruit SSD1306 2.5.13, Adafruit GFX 1.12.1 and Adafruit BusIO 1.17.0. Documentation reviewed; no compilation or hardware testing performed.\n\nThe SSD1306 OLED module contains a display panel and a controller chip. The controller remembers what each pixel should do, and the OLED panel lights those pixels.\n\nThe ESP32 communicates with the controller over I2C in this tutorial. SDA carries the data bits. SCL is the clock signal that keeps both sides moving together. This site's examples use GPIO21 for SDA and GPIO22 for SCL. ESP32 I2C pins can be changed, but the wiring and Wire.begin(SDA, SCL) call must agree.\n\nThe OLED also has an I2C address, usually 0x3C and sometimes 0x3D. The address tells the ESP32 which device on the bus should listen. If the screen stays blank even though power and wiring look correct, run an I2C scanner before guessing.\n\nThe Adafruit SSD1306 library hides most of the low-level commands. Your sketch draws into a screen buffer in memory using functions such as setCursor(), print(), and println(). When you call display.display(), the library sends the buffer to the OLED controller and the visible screen updates.\n\nThis is why clearDisplay() matters. The screen buffer keeps old pixels until you clear or overwrite them. A clean refresh usually means: clear the buffer, draw the new text, then send it to the screen.\n\nThe pinned SSD1306 begin() result checks buffer/init success, not display detection. The separate I2C ACK check still cannot prove model identity or visible display operation. Confirm the actual screen output.\n\nReview baseline: classic ESP32-WROOM DevKit and Arduino-ESP32 3.3.2, not a latest-release claim. GPIO34 is input-only ADC1 without internal pull resistors. This 3V3-powered potentiometer can approach the supply rail, but the classic ADC measurement range at 11 dB is approximately 150–3100 mV and can saturate near either end. Attenuation is not overvoltage protection: never apply 5 V or negative voltage. Raw full scale does not prove 3.3 V or a particular shaft position. Documentation reviewed; compilation and physical hardware testing have not been performed. analogReadMilliVolts() takes another conversion, so a moving dial can give a raw/millivolt pair from slightly different moments. It is a calibrated estimate, not a precision voltmeter.",
     "real_life_analogy": "Think of I2C like a classroom with one teacher and several students. The teacher is the ESP32. The students are devices such as displays and sensors. Everyone hears the same two wires, but the teacher says an address first. Only the student with that address answers.\n\nThe OLED buffer is like writing on a small whiteboard before showing it to the class. You prepare the message, then hold it up. display.display() is the moment the class sees the whiteboard.\n\nThe Serial Monitor is like a notebook on your desk. Useful while learning, but the OLED is like a label on the product itself. Anyone can read it without opening your computer.",
     "wiring": {
       "illustration_alt": "ESP32 OLED wiring with VCC to 3.3 V, GND to GND, SDA to GPIO21, SCL to GPIO22, and potentiometer wiper to GPIO34",
@@ -299,8 +302,8 @@
     ],
     "code": {
       "filename": "oled_display_values.ino",
-      "notes": "- Install Adafruit SSD1306 and Adafruit GFX before compiling.\n- The OLED address is set to 0x3C, the most common SSD1306 address.\n- GPIO21 is SDA and GPIO22 is SCL.\n- GPIO34 reads the potentiometer value from Mission 08.",
-      "content": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\nconst int SCREEN_WIDTH = 128;\nconst int SCREEN_HEIGHT = 64;\nconst int OLED_RESET = -1;\nconst int POT_PIN = 34;\n\nconst int I2C_SDA = 21;\nconst int I2C_SCL = 22;\nconst int OLED_ADDRESS = 0x3C;\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\n\nvoid setup() {\n  Serial.begin(115200);\n\n  Wire.begin(I2C_SDA, I2C_SCL);\n\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {\n    Serial.println(\"OLED not found. Check wiring and I2C address.\");\n    while (true) {\n      delay(1000);\n    }\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n\n  delay(1500);\n}\n\nvoid loop() {\n  int rawValue = analogRead(POT_PIN);\n  int percent = map(rawValue, 0, 4095, 0, 100);\n\n  Serial.print(\"ADC: \");\n  Serial.print(rawValue);\n  Serial.print(\" | Percent: \");\n  Serial.print(percent);\n  Serial.println(\"%\");\n\n  display.clearDisplay();\n\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"Mission 09 OLED\");\n\n  display.setCursor(0, 18);\n  display.print(\"ADC: \");\n  display.println(rawValue);\n\n  display.setCursor(0, 34);\n  display.print(\"Dial: \");\n  display.print(percent);\n  display.println(\"%\");\n\n  display.setCursor(0, 52);\n  display.println(\"GPIO34 -> screen\");\n\n  display.display();\n  delay(250);\n}\n"
+      "notes": "Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline (not latest). Selected display: a documented 3.3 V-compatible 128×64 I2C SSD1306 module with bus pull-ups to 3.3 V, four labelled VCC/GND/SDA/SCL pins and suitable reset circuitry. SH1106 and SPI displays need another driver/wiring. Pins are SDA21/SCL22; set OLED_ADDRESS from the module documentation/scanner. An ACK checks address response, not controller identity. Install Adafruit SSD1306 2.5.13, Adafruit GFX 1.12.1 and Adafruit BusIO 1.17.0. Documentation reviewed; no compilation or hardware testing performed.\n\nRaw counts and calibrated millivolts are separate samples, not measured shaft position. ADC range can clip before a 3.3 V rail.",
+      "content": "#include <Arduino.h>\n#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\nconst int SCREEN_WIDTH = 128;\nconst int SCREEN_HEIGHT = 64;\nconst int OLED_RESET = -1;\nconst int POT_PIN = 34;\n\nconst int I2C_SDA = 21;\nconst int I2C_SCL = 22;\nconst int OLED_ADDRESS = 0x3C;\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\n\nbool oledResponds() {\n  Wire.beginTransmission(OLED_ADDRESS);\n  return Wire.endTransmission() == 0; // ACK only, not controller identification.\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\n  Wire.begin(I2C_SDA, I2C_SCL);\n  analogReadResolution(12);\n  analogSetPinAttenuation(POT_PIN, ADC_11db);\n\n  Wire.setTimeOut(50); // Per bus operation, not a whole-sketch deadline.\n  if (!oledResponds()) {\n    Serial.println(\"No I2C ACK at OLED_ADDRESS; check power, bus and address, then reset\");\n    while (true) delay(1000);\n  }\n  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true, false)) {\n    Serial.println(\"SSD1306 buffer/init failed; this is not a presence test\");\n    while (true) delay(1000);\n  }\n\n  display.clearDisplay();\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"ESP32 Engine\");\n  display.println(\"OLED ready\");\n  display.display();\n\n  delay(1500);\n}\n\nvoid loop() {\n  int rawValue = analogRead(POT_PIN);\n  uint32_t millivolts = analogReadMilliVolts(POT_PIN); // A separate conversion.\n\n  Serial.print(\"ADC: \");\n  Serial.print(rawValue);\n  Serial.print(\" | mV estimate: \");\n  Serial.print(millivolts);\n  Serial.println(\" mV\");\n\n  display.clearDisplay();\n\n  display.setTextSize(1);\n  display.setCursor(0, 0);\n  display.println(\"Mission 09 OLED\");\n\n  display.setCursor(0, 18);\n  display.print(\"ADC: \");\n  display.println(rawValue);\n\n  display.setCursor(0, 34);\n  display.print(\"mV est: \");\n  display.print(millivolts);\n  display.println(\" mV\");\n\n  display.setCursor(0, 52);\n  display.println(\"GPIO34 -> screen\");\n\n  display.display();\n  delay(250);\n}\n"
     },
     "code_explanation": [
       {
@@ -322,16 +325,13 @@
         "text": "Wire.begin(21, 22) starts I2C using the same SDA and SCL pins wired in this tutorial."
       },
       {
-        "text": "display.begin() checks whether the OLED responds at address 0x3C."
-      },
-      {
-        "text": "If the OLED is not found, the sketch prints a clear error and stops so you do not miss the wiring problem."
+        "text": "oledResponds() checks an address ACK; display.begin() separately checks buffer/init success. Neither proves controller identity or visible output."
       },
       {
         "text": "analogRead() gets the raw ADC value from the potentiometer."
       },
       {
-        "text": "map() converts the raw 0 to 4095 range into a friendlier 0 to 100 percent range."
+        "text": "analogReadMilliVolts() takes a separate conversion and returns a calibrated millivolt estimate; it does not measure dial position."
       },
       {
         "text": "clearDisplay() clears the screen buffer before drawing the next frame."
@@ -346,7 +346,7 @@
         "text": "display.display() sends the finished buffer to the OLED so the visible pixels update."
       }
     ],
-    "expected_output": "The OLED first shows:\n\nESP32 Engine\nOLED ready\n\nAfter the short startup message, the screen updates several times per second:\n\nMission 09 OLED\nADC: 1875\nDial: 45%\nGPIO34 -> screen\n\nWhen you turn the potentiometer, the ADC and percent values change on both the OLED and Serial Monitor.\n\nSerial Monitor should show lines like:\n\nADC: 32 | Percent: 0%\nADC: 1040 | Percent: 25%\nADC: 2198 | Percent: 53%\nADC: 4090 | Percent: 99%",
+    "expected_output": "After the intended startup message, the display shows Mission 09 OLED, ADC: <raw>, mV est: <estimate> mV and GPIO34 -> screen. Serial prints the same two quantities. Placeholders describe output format, not supplied measurements. Raw counts are not a dial percentage; separate conversions, noise and endpoint clipping can affect comparisons.",
     "common_mistakes": [
       {
         "problem": "SDA and SCL swapped",
@@ -406,9 +406,9 @@
         "fix": "Check 3.3 V, GND, GPIO21, GPIO22, OLED_ADDRESS, and installed libraries."
       },
       {
-        "problem": "Serial Monitor says OLED not found",
-        "cause": "The ESP32 did not receive a response from the display at address 0x3C.",
-        "fix": "Check wiring first, then try 0x3D if your module uses a different address."
+        "problem": "No I2C ACK or buffer/init error",
+        "cause": "These are different startup failures, with separate Serial messages.",
+        "fix": "For no ACK check documented power, pins and address. For buffer/init failure check library/memory. Neither result proves correct pixels or controller identity."
       },
       {
         "problem": "Code compiles but upload fails",
@@ -436,11 +436,11 @@
     "challenge_items": [
       {
         "icon": "BIG",
-        "text": "Make the percent value use setTextSize(2) so it becomes the main number on the display."
+        "text": "Make the millivolt estimate use setTextSize(2) so it becomes the main number on the display."
       },
       {
         "icon": "BAR",
-        "text": "Draw a simple text bar using ten blocks or characters based on the percent value."
+        "text": "Draw a simple text bar using ten blocks or characters based on the millivolt estimate."
       },
       {
         "icon": "ADDR",

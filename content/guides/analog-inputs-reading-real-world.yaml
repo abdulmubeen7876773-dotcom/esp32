@@ -1,5 +1,9 @@
 {
-  "tutorial_video": {"youtube_id": "P2uwMjAiyvg", "title": "ESP32 analog inputs: reading a potentiometer — video tutorial", "note": "Follow this guide’s hardware, supply-voltage limits, wiring and GPIO assignments when building; the video may use different pins or a different board."},
+  "tutorial_video": {
+    "youtube_id": "P2uwMjAiyvg",
+    "title": "ESP32 analog inputs: reading a potentiometer — video tutorial",
+    "note": "Follow this guide’s hardware, supply-voltage limits, wiring and GPIO assignments when building; the video may use different pins or a different board."
+  },
   "format": "mission",
   "phase": 1,
   "sort_order": 8,
@@ -14,7 +18,7 @@
   "proficiency_level": "Beginner",
   "reading_time": "35-40 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-07-01",
+  "date_modified": "2026-10-26",
   "academy": {
     "mission_id": "Mission 08",
     "level": "Foundation",
@@ -42,7 +46,7 @@
     "estimated_time": "35-40 min",
     "difficulty": "Beginner",
     "expected_outcome": "You will turn a potentiometer and watch the ESP32 print smoothly changing ADC values in Serial Monitor.",
-    "mini_challenge": "Map the raw ADC value into a 0-100 percent dial reading and explain why the value may still wiggle slightly.",
+    "mini_challenge": "Record raw counts at several knob positions and explain why noise or clipping prevents treating raw full scale as calibrated position.",
     "previous_mission": {
       "slug": "pwm-fundamentals",
       "title": "PWM Fundamentals",
@@ -72,22 +76,27 @@
     ],
     "unlocked_projects": [
       {
-        "title": "ESP32 Soil Moisture Monitor",
         "href": "/projects/esp32-soil-moisture-monitor.html",
-        "description": "Soil moisture modules often produce changing analog values."
+        "title": "ESP32 Soil Moisture Monitor",
+        "description": "A plant monitor that reads a capacitive soil sensor, converts raw ADC values into a moisture percentage, and uses LED…"
       },
       {
-        "title": "ESP32 Smart Irrigation System",
         "href": "/projects/esp32-smart-irrigation-system.html",
-        "description": "Irrigation projects depend on reading gradual sensor values, not only ON/OFF states."
+        "title": "ESP32 Smart Irrigation System",
+        "description": "Build a plant watering controller that reads soil moisture and switches a pump or valve only when the soil is dry."
       },
       {
-        "title": "ESP32 Air Quality Monitor",
         "href": "/projects/esp32-air-quality-monitor.html",
-        "description": "Many environmental sensors begin with the same analog-thinking foundation."
+        "title": "ESP32 Air Quality Monitor",
+        "description": "Build an ESP32 MQ135 air quality monitor with GPIO34 analog readings, warm-up and baseline testing, GPIO26 fan or rel…"
       }
     ],
     "future_paths": [
+      {
+        "slug": "analog-inputs",
+        "title": "Detailed ADC reference: counts versus calibrated millivolts",
+        "description": "Measurement range, separate conversions and classic ADC2/Wi-Fi restrictions."
+      },
       {
         "slug": "pwm-fundamentals",
         "title": "PWM Fundamentals",
@@ -98,7 +107,8 @@
         "title": "Read Temperature with DHT11",
         "description": "See how digital sensor readings differ from raw ADC readings."
       }
-    ]
+    ],
+    "project_link_copy": "authored"
   },
   "faqs": [
     {
@@ -176,7 +186,7 @@
       "Read raw ADC values in Serial Monitor.",
       "Explain why analog readings can change smoothly and still contain small noise."
     ],
-    "what_you_build": "- A potentiometer connected as a voltage divider.\n- GPIO34 reading the middle pin of the potentiometer.\n- Serial Monitor output showing raw ADC values from about 0 to about 4095.\n- A percent value that makes the raw number easier to understand.",
+    "what_you_build": "- A potentiometer connected as a voltage divider.\n- GPIO34 reading the middle pin of the potentiometer.\n- Serial Monitor output showing raw ADC values from about 0 to about 4095.\n- Explicit 12-bit resolution and 11 dB attenuation, with endpoint-clipping qualifications.",
     "things_you_need": [
       {
         "item": "ESP32 DevKit board",
@@ -219,12 +229,11 @@
     "component_spotlight_lead": "The potentiometer is the safest beginner analog sensor because you control the voltage by turning the knob.",
     "concept": {
       "title": "Analog Values Are In-Between Values",
-
       "image": "/assets/visuals/guides/concepts/analog-inputs-reading-real-world-concept.svg",
-      "illustration_alt": "ESP32 ADC reading a potentiometer voltage from 0 volts to 3.3 volts and converting it into values from 0 to 4095",
-      "body": "A digital input answers with two values. An analog input answers with many possible values.\n\nThe ESP32 ADC measures the voltage on an analog-capable pin. Near GND, the reading is near 0. Near 3.3 V, the reading is near 4095. Voltages between those two points become numbers between those two ends.\n\nThat number is not magic. It is the ESP32's best digital description of a real voltage."
+      "illustration_alt": "Logical flow from a 3V3-powered potentiometer to GPIO34 raw ADC counts; measurement range can saturate before the supply rail",
+      "body": "A potentiometer divides 3V3 and GND; its wiper supplies a changing voltage to GPIO34. With 12-bit resolution, analogRead() returns raw counts from 0 to 4095. Counts are neither volts nor a calibrated dial-position percentage. Observe the trend as you turn the dial; a flat reading near an endpoint can be saturation rather than a broken sensor."
     },
-    "engineering_explanation": "ADC stands for Analog-to-Digital Converter. Analog means the voltage can vary continuously. Digital means the ESP32 stores the result as a number.\n\nIn this mission, the potentiometer is wired as a voltage divider. One outside leg connects to 3.3 V. The other outside leg connects to GND. The middle pin, called the wiper, slides between those two ends as you turn the knob. When the wiper is near GND, GPIO34 sees a low voltage. When it is near 3.3 V, GPIO34 sees a high voltage.\n\nThe ESP32 ADC samples that voltage and returns a raw number. With 12-bit readings, the possible values are 0 through 4095. A reading near 0 means the input is near GND. A reading near 4095 means the input is near the top of the safe range. A reading near 2048 means the input is roughly around the middle.\n\nReal ADC readings are not perfectly still. You may see small changes even when the knob is not moving. That is normal. Wires pick up noise, USB power is not perfectly clean, and ADC hardware has small variation. Engineers handle this by averaging readings, filtering, calibrating, and designing stable circuits.\n\nThe most important beginner habit is to print the raw value first. Before guessing what a sensor means, look at the number the ESP32 is actually reading.",
+    "engineering_explanation": "Review baseline: classic ESP32-WROOM DevKit and Arduino-ESP32 3.3.2, not a latest-release claim. GPIO34 is input-only ADC1 without internal pull resistors. This 3V3-powered potentiometer can approach the supply rail, but the classic ADC measurement range at 11 dB is approximately 150–3100 mV and can saturate near either end. Attenuation is not overvoltage protection: never apply 5 V or negative voltage. Raw full scale does not prove 3.3 V or a particular shaft position. Documentation reviewed; compilation and physical hardware testing have not been performed.\n\nThis quick build prints raw counts only. For calibrated millivolt estimates, separate-sample timing and classic ADC2/Wi-Fi restrictions, use the detailed Analog Inputs reference linked in Continue Learning. Short wiring and stable power help with noise but do not correct clipping.",
     "real_life_analogy": "A light switch is digital: it is either off or on. A volume knob is analog: it can be quiet, medium, loud, or anywhere between.\n\nA thermometer is another example. Temperature does not jump only between cold and hot. It moves gradually. Analog inputs let a microcontroller notice those gradual changes.\n\nThink of the ADC like a ruler for voltage. The voltage is the real-world length. The ADC number is the ruler marking closest to where the voltage lands.",
     "wiring": {
       "illustration_alt": "ESP32 3.3V connected to one outer potentiometer leg, GND to the other outer leg, and GPIO34 to the middle wiper pin",
@@ -251,7 +260,7 @@
         "signal": "Potentiometer high side",
         "esp32_pin": "3V3",
         "mode": "Power",
-        "notes": "Provides the safe top voltage for the dial."
+        "notes": "Supply rail, not a guarantee of accurate ADC measurement up to 3.3 V."
       },
       {
         "signal": "Potentiometer low side",
@@ -263,38 +272,26 @@
         "signal": "Serial debug",
         "esp32_pin": "USB",
         "mode": "Serial",
-        "notes": "Shows raw ADC and percent values."
+        "notes": "Shows raw ADC counts only."
       }
     ],
     "code": {
       "filename": "analog_potentiometer_read.ino",
-      "notes": "- GPIO34 is an ADC input pin.\n- analogRead() returns a raw value from about 0 to 4095.\n- map() converts the raw reading into a 0 to 100 percent estimate.\n- A short delay makes Serial Monitor easier to read.",
-      "content": "const int POT_PIN = 34;\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(500);\n\n  Serial.println(\"Mission 08: Analog input ready\");\n  Serial.println(\"Turn the potentiometer and watch the ADC value change.\");\n}\n\nvoid loop() {\n  int rawValue = analogRead(POT_PIN);\n  int percent = map(rawValue, 0, 4095, 0, 100);\n\n  Serial.print(\"Raw ADC: \");\n  Serial.print(rawValue);\n  Serial.print(\"  |  Dial: \");\n  Serial.print(percent);\n  Serial.println(\"%\");\n\n  delay(200);\n}\n"
+      "notes": "GPIO34 reads the potentiometer wiper; outer terminals use 3V3 and GND.\n\nResolution and attenuation are explicit for the stated board/core.\n\nRaw counts are not voltage or shaft-position percentage.",
+      "content": "#include <Arduino.h>\nconstexpr uint8_t POT_PIN = 34;\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(POT_PIN, ADC_11db);\n  Serial.println(\"Analog input ready: raw counts, not dial percent\");\n}\nvoid loop() {\n  const uint16_t raw = analogRead(POT_PIN);\n  Serial.print(\"Raw ADC: \");\n  Serial.println(raw);\n  delay(200);\n}\n"
     },
     "code_explanation": [
       {
-        "text": "POT_PIN is GPIO34, the ADC-capable pin connected to the potentiometer middle pin."
+        "text": "analogReadResolution(12) selects a 0–4095 result; analogSetPinAttenuation selects the wider classic-ESP32 measurement range."
       },
       {
-        "text": "Serial.begin(115200) starts communication with Serial Monitor."
+        "text": "analogRead(POT_PIN) takes one raw sample. Serial prints the count without inventing a voltage or dial position."
       },
       {
-        "text": "analogRead(POT_PIN) asks the ESP32 ADC to measure the voltage on GPIO34."
-      },
-      {
-        "text": "rawValue stores the ADC result, usually somewhere between 0 and 4095."
-      },
-      {
-        "text": "map(rawValue, 0, 4095, 0, 100) converts the raw ADC range into a beginner-friendly percentage."
-      },
-      {
-        "text": "Serial.print() lines show both the raw number and the percent value so you can compare engineering data with human-friendly data."
-      },
-      {
-        "text": "delay(200) slows the output so the Serial Monitor does not scroll too fast while you turn the knob."
+        "text": "delay(200) limits output rate for this single-task observation sketch."
       }
     ],
-    "expected_output": "Serial Monitor should print changing values as you rotate the potentiometer:\n\nMission 08: Analog input ready\nTurn the potentiometer and watch the ADC value change.\nRaw ADC: 18  |  Dial: 0%\nRaw ADC: 1024  |  Dial: 25%\nRaw ADC: 2050  |  Dial: 50%\nRaw ADC: 3075  |  Dial: 75%\nRaw ADC: 4090  |  Dial: 99%\n\nYour exact values may not reach perfect 0 or perfect 4095. That is normal. The important behavior is that the number changes gradually when the knob turns gradually.",
+    "expected_output": "At 115200 baud, expect the startup label followed by Raw ADC: <count>. The placeholder is not a measurement supplied by the tutorial. Turning the dial should change counts through much of its travel; noise and endpoint saturation are possible. Do not expect full scale to equal 3.3 V or half-scale to equal half the shaft travel.",
     "common_mistakes": [
       {
         "problem": "Connecting the potentiometer to 5 V",
@@ -319,7 +316,7 @@
       {
         "problem": "Thinking 4095 means 4095 volts",
         "cause": "The ADC value is a count, not a voltage unit.",
-        "fix": "Treat 0 to 4095 as a scale representing the input voltage range."
+        "fix": "Counts are not voltage units; full scale does not identify the actual voltage or dial position."
       }
     ],
     "common_problems": [
@@ -330,8 +327,8 @@
       },
       {
         "problem": "The value stays near 4095",
-        "cause": "GPIO34 may be connected directly to 3.3 V, or the wiper wire may be on the wrong leg.",
-        "fix": "Move the GPIO34 wire to the middle pin of the potentiometer."
+        "cause": "Wiper may be near a supply endpoint, the ADC may saturate, or the wire may be on an outer terminal.",
+        "fix": "Power off to trace the wiper connection. A 3V3-powered potentiometer can legitimately clip near its upper travel; do not increase voltage."
       },
       {
         "problem": "Values change backwards",
@@ -353,8 +350,8 @@
     "remember_forever": "Digital asks: is it ON?\n\nAnalog asks: how much?\n\nThe ADC is how the ESP32 turns a changing voltage into a number it can reason about.",
     "challenge_items": [
       {
-        "icon": "100",
-        "text": "Print only the 0-100 percent value and explain why it is easier for humans than 0-4095."
+        "icon": "ADC",
+        "text": "Record the raw count at several dial positions; identify noise or clipping without labelling counts as accurate position percentage."
       },
       {
         "icon": "AVG",
