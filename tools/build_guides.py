@@ -1,4 +1,6 @@
 import sys
+import re
+from html import unescape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -290,6 +292,21 @@ def render_legacy_guide(guide: dict) -> str:
     faqs = guide.get("faqs", [])
     related = guide.get("related_guides", [])
     body = normalize_body(guide.get("body_html", ""))
+    copy_script = ""
+    if guide.get("copy_code_filename"):
+        # Opt in only the first complete sketch; leave sample output untouched.
+        from guide_mission import code_panel
+        body, count = re.subn(
+            r"<pre><code>(.*?)</code></pre>",
+            lambda match: code_panel({
+                "filename": guide["copy_code_filename"],
+                "content": unescape(match.group(1)),
+            }),
+            body, count=1, flags=re.S,
+        )
+        if not count:
+            raise ValueError("copy_code_filename requires a pre/code sketch block")
+        copy_script = '\n<script src="/mission-guide.js" defer></script>'
     canon = f"guides/{slug}.html"
     schema = guide_schema(guide, faqs)
     headline = guide.get("headline") or page_title.split("|")[0].strip()
@@ -325,7 +342,7 @@ def render_legacy_guide(guide: dict) -> str:
 </main>
 {footer_html()}
 <script src="{SEARCH_JS_SRC}" defer></script>
-<script src="{UI_JS_SRC}" defer></script>
+<script src="{UI_JS_SRC}" defer></script>{copy_script}
 {guide_faq_script()}
 </body>
 </html>"""

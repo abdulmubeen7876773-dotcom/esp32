@@ -26,7 +26,7 @@ GUIDE_IMAGE_BY_SLUG = {
     "pull-up-vs-pull-down-resistors": "/assets/images/generated/guides/pull-up-vs-pull-down-resistors-1200.webp",
     "esp32-pwm": "/assets/images/generated/guides/pwm-fundamentals-1200.webp",
     "esp32-bme280": "/assets/visuals/components/photos/bme280-photo.svg",
-    "esp32-dht22": "/assets/images/generated/guides/read-temperature-dht22-1200.webp",
+    "esp32-dht22": "/assets/visuals/guides/concepts/read-temperature-dht11-concept.svg",
     "esp32-dht22-vs-bme280": "/assets/images/generated/guides/read-temperature-dht22-1200.webp",
     "pwm-fundamentals": "/assets/images/generated/guides/pwm-fundamentals-1200.webp",
     "read-temperature-dht22": "/assets/visuals/guides/concepts/read-temperature-dht11-concept.svg",
@@ -90,7 +90,7 @@ def guide_image_alt(guide: dict) -> str:
     if slug == "esp32-bme280":
         return "BME280 environmental sensor breakout module"
     if slug == "esp32-dht22":
-        return "DHT22 temperature and humidity sensor connected to an ESP32"
+        return "DHT11 temperature and humidity guide concept illustration, not a hardware photograph"
     if slug == "esp32-gpio-button":
         return "ESP32 push button on a GPIO input using INPUT_PULLUP"
     if slug == "esp32-dht22-vs-bme280":
