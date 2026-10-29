@@ -391,10 +391,60 @@ def render_mission_page(guide: dict) -> str:
 </html>"""
 
 
+def recorded_media_section(media: dict) -> str:
+    """Opt-in contributed media; captions describe the recorded setup, not test claims."""
+    notes = "".join(f"<p>{esc(note)}</p>" for note in media.get("notes", []))
+    figures = []
+    for image in media.get("images", []):
+        figures.append(
+            f'<figure style="margin:0"><a href="{esc(image["src"])}">'
+            f'<img src="{esc(image["src"])}" alt="{esc(image["alt"])}" '
+            f'width="{int(image["width"])}" height="{int(image["height"])}" '
+            'loading="lazy" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-md)"></a>'
+            f'<figcaption>{esc(image["caption"])}</figcaption></figure>'
+        )
+    gallery = (
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1.25rem">'
+        + "".join(figures) + "</div>"
+    ) if figures else ""
+    video = media.get("video")
+    clip = ""
+    if video:
+        clip = (
+            f'<figure style="margin:1.5rem 0"><video controls playsinline preload="none" '
+            f'width="{int(video["width"])}" height="{int(video["height"])}" '
+            f'poster="{esc(video["poster"])}" aria-label="{esc(video["title"])}" '
+            'style="display:block;width:100%;height:auto;border-radius:var(--radius-md)">'
+            f'<source src="{esc(video["src"])}" type="video/mp4">'
+            f'<a href="{esc(video["src"])}">Download the demonstration clip</a></video>'
+            f'<figcaption>{esc(video["caption"])}</figcaption></figure>'
+            f'<p><a href="{esc(video["src"])}">Open the silent demonstration clip</a></p>'
+        )
+    downloads = "".join(
+        f'<li><a href="{esc(item["href"])}" download>{esc(item["label"])}</a></li>'
+        for item in media.get("downloads", [])
+    )
+    return (
+        '<section class="mission-section" id="recorded-media" aria-labelledby="recorded-media-heading">'
+        f'<h2 id="recorded-media-heading" tabindex="-1">{esc(media["heading"])}</h2>'
+        + notes + gallery + clip + (f"<ul>{downloads}</ul>" if downloads else "") + "</section>\n"
+    )
+
+
 def render_guide(guide: dict) -> str:
     if is_mission_guide(guide):
-        return render_mission_page(guide)
-    return render_legacy_guide(guide)
+        page = render_mission_page(guide)
+    else:
+        page = render_legacy_guide(guide)
+    media = guide.get("media_evidence")
+    if media:
+        anchor = re.search(
+            r'<(?:section|h2)\b[^>]*\bid="' + re.escape(media["before_id"]) + r'"[^>]*>', page
+        )
+        if not anchor:
+            raise ValueError("Recorded media requires an existing section or heading target")
+        page = page[:anchor.start()] + recorded_media_section(media) + page[anchor.start():]
+    return page
 
 
 def render_guides_index(guides: list[dict]) -> str:
