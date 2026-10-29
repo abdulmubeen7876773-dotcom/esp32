@@ -21,6 +21,8 @@ def public_file(relative: Path) -> bool:
     if len(relative.parts) == 1:
         return (relative.suffix in ROOT_EXTENSIONS or relative.name in ROOT_FILES
                 or relative.name.startswith("esp32engineindex") and relative.suffix == ".txt")
+    if relative.parts[:4] == ("assets", "downloads", "guides", "blink-led") and relative.name == "blink_led.ino":
+        return True
     if relative.parts[0] == "assets":
         return relative.suffix.lower() in {".svg", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".ico", ".css", ".js", ".woff", ".woff2", ".ttf", ".mp4", ".pdf"}
     return relative.parts[0] in PUBLIC_DIRS and relative.suffix == ".html"
