@@ -1,0 +1,162 @@
+slug: esp32-arrays-strings
+phase: 1
+sort_order: 40
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Arrays and Strings: Group Values and Handle Text | ESP32 Engine'
+headline: 'ESP32 Arrays and Strings: Group Values and Handle Text'
+meta_description: Learn ESP32 Arduino arrays, zero-based bounds, char buffers and String objects with a complete
+  Serial example and explicit text-capacity checks.
+lead: Learn ESP32 Arduino arrays, zero-based bounds, char buffers and String objects with a complete Serial example
+  and explicit text-capacity checks.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 Arrays and Strings
+keywords: 'ESP32 Arrays and Strings: Group Values and Handle Text'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No sensor, LED or other external circuit.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Finish the Serial-only first upload and the setup()/loop() lesson. Open Serial Monitor at 115200 baud;
+      use your exact board and port.
+  - label: Your goal
+    value: Visit each valid array index and distinguish text length, buffer capacity and the null terminator.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: indexed-values
+  heading: Group related values with one element type
+  text: 'An array stores a fixed number of elements of one type. The example scores contains three illustrative
+    integers. Valid indices are zero, one and two; index three is already outside this array. C++ does not automatically
+    reject an out-of-bounds access at runtime. Both reads and writes outside the array are invalid and can cause
+    unpredictable behavior.
+
+
+    The for loop uses i < SCORE_COUNT. Its upper bound is excluded. sizeof(scores) / sizeof(scores[0]) calculates
+    the element count only while scores is an actual array in this scope. When an array is passed to an ordinary
+    function parameter as a pointer, that expression no longer recovers its original length. Pass the count explicitly
+    in such an interface.'
+- id: char-buffer
+  heading: Leave space for the end of text
+  text: 'A C-style string is a sequence of characters ending with the null character ''\0''. It is different from
+    the visible character ''0''. char label[8] = "room" provides capacity for eight bytes, including the terminator.
+    This four-character text occupies five bytes including its terminator; the buffer has room for longer text only
+    up to its capacity.
+
+
+    strlen reports the bytes before the first null terminator. sizeof(label) reports this array’s total capacity
+    in bytes. Calling strlen on a buffer without an accessible terminator can read outside valid memory. Do not
+    remove the terminator as an experiment. For multi-byte UTF-8 text, byte counts are not the number of visible
+    characters.'
+- id: safe-format
+  heading: Check formatting before using the buffer
+  text: 'snprintf receives the output capacity, writes formatted text within that capacity and, when capacity is
+    greater than zero, provides a terminator. Its return value describes the length needed excluding the terminator.
+    A negative return is an error; a return greater than or equal to the capacity means the output was truncated.
+    The example checks both cases before printing the result.
+
+
+    Capacity checks do not validate the meaning of a message or make every format argument safe. Keep format specifiers
+    matched to argument types. Do not use unbounded copying into a small char buffer, and do not treat incoming
+    network text as an unchecked format string.'
+- id: string-object
+  heading: Know when you are using a String object
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Different objects need different size
+    operations</caption><thead><tr><th scope="col">Representation</th><th scope="col">Length or capacity</th><th
+    scope="col">Typical use</th></tr></thead><tbody><tr><th scope="row">int scores[]</th><td>Element count from
+    the actual array</td><td>A fixed collection of whole values.</td></tr><tr><th scope="row">char label[8]</th><td>sizeof
+    capacity; strlen text bytes</td><td>A small bounded mutable text buffer.</td></tr><tr><th scope="row">String
+    status</th><td>status.length() text bytes</td><td>Convenient owned text with object operations.</td></tr></tbody></table></div>
+- id: compare-text
+  heading: Compare text content deliberately
+  text: 'String status = "ready" creates an Arduino String object. Its == operator can compare its text with a literal.
+    A plain char array does not gain that String comparison behavior: use strcmp(label, "room") == 0 to compare
+    null-terminated C strings, with <cstring> included. Comparing C-string pointers with == compares addresses,
+    not general text content.
+
+
+    String can allocate memory as its content grows. It is convenient for small controlled messages, but long-running
+    code should bound incoming text and avoid uncontrolled growth or repeated temporary concatenations. A fixed
+    char buffer makes capacity explicit; it still needs correct bounds. Neither representation is automatically
+    safe for unlimited input.'
+- id: expected-practice
+  heading: Trace the contents and sizes
+  text: 'Expected source walkthrough: indices 0, 1 and 2 print values 12, 18 and 24; label length is 4 and its buffer
+    capacity is 8. The formatted line is room:12, status length is 5, the label comparison is 1 and the String comparison
+    is 1. This is a prediction, not captured device output.
+
+
+    Practice: add a fourth score and verify that the calculated count changes without manually extending the loop.
+    Change the label to "desk", retaining its terminator and capacity. On paper, predict what a smaller output buffer
+    would require the truncation branch to do; keep the error check instead of ignoring it. Do not deliberately
+    access a fourth element when the array still has only three.'
+- id: upload-steps
+  heading: Run one complete sketch
+  text: Save the complete example as arrays_text_demo.ino. Keep only this sketch in its folder, select your board
+    and port, and upload. Open Serial Monitor at 115200 baud, then press EN/reset if the initial output was missed.
+    The program prints its demonstration once in setup(); the empty-working loop yields with delay(10). No GPIO
+    wiring or extra library is required.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: arrays_text_demo.ino
+  wiring: 'USB only. No GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n#include <cstdio>\n#include <cstring>\n\nconst int scores[] = {12, 18, 24};\n\
+    constexpr size_t SCORE_COUNT = sizeof(scores) / sizeof(scores[0]);\n\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  delay(1000);\n  for (size_t i = 0; i < SCORE_COUNT; ++i) {\n    Serial.print(\"index \"); Serial.print(i);\n\
+    \    Serial.print(\": \"); Serial.println(scores[i]);\n  }\n\n  char label[8] = \"room\";\n  Serial.print(\"\
+    label length: \"); Serial.println(std::strlen(label));\n  Serial.print(\"label capacity: \"); Serial.println(sizeof(label));\n\
+    \  char line[24];\n  const int needed = std::snprintf(line, sizeof(line), \"%s:%d\", label, scores[0]);\n  if\
+    \ (needed < 0) {\n    Serial.println(\"format error\");\n  } else if (static_cast<size_t>(needed) >= sizeof(line))\
+    \ {\n    Serial.println(\"output truncated\");\n  } else {\n    Serial.println(line);\n  }\n\n  String status\
+    \ = \"ready\";\n  Serial.print(\"status length: \"); Serial.println(status.length());\n  Serial.print(\"label\
+    \ matches: \"); Serial.println(std::strcmp(label, \"room\") == 0);\n  Serial.print(\"status matches: \"); Serial.println(status\
+    \ == \"ready\");\n}\n\nvoid loop() {\n  delay(10);\n}\n"
+  notes: Expected results below are a source walkthrough, not a captured hardware log. No firmware compilation or
+    board upload was performed for this lesson.
+faqs:
+- question: Is scores[3] valid for three elements?
+  answer: No. The valid indices are 0, 1 and 2.
+- question: Are strlen and sizeof interchangeable?
+  answer: No. strlen counts text bytes before the terminator; sizeof on the actual array gives its total storage
+    capacity.
+sources:
+- title: Arduino arrays
+  url: https://docs.arduino.cc/language-reference/en/variables/data-types/array/
+  note: Zero-based array indexing and bounds.
+- title: Arduino char-array strings
+  url: https://docs.arduino.cc/language-reference/en/variables/data-types/string/
+  note: Null termination and character versus text literals.
+- title: Arduino String object
+  url: https://docs.arduino.cc/language-reference/en/variables/data-types/stringObject/
+  note: The separate Arduino text object.
+- title: Arduino-ESP32 3.3.2 String API
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/WString.h
+  note: length and text comparison signatures for the reviewed core.
+- title: Newlib snprintf reference
+  url: https://sourceware.org/newlib/libc.html#sprintf
+  note: Bounded formatted output and return-value contract.
+- title: Arduino-ESP32 3.3.2 Print API
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Serial formatting overloads in the reviewed API baseline.
+related_guides:
+- title: Understand setup() and loop()
+  href: /guides/esp32-setup-and-loop.html
+  description: Review startup order before changing this example.
+- title: Schedule work with millis()
+  href: /guides/esp32-millis-vs-delay.html
+  description: Continue with the next programming skill.
+conclusion: Keep indices inside the array, reserve the terminator and check text capacity before using a result.

@@ -1,0 +1,150 @@
+slug: esp32-for-while-loops
+phase: 1
+sort_order: 38
+guide_type: reference
+concise_layout: true
+title: 'ESP32 for and while Loops: Repeat Work Without Getting Stuck | ESP32 Engine'
+headline: 'ESP32 for and while Loops: Repeat Work Without Getting Stuck'
+meta_description: Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid
+  indefinite waits with a complete Serial-only example.
+lead: Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid indefinite
+  waits with a complete Serial-only example.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 for and while Loops
+keywords: 'ESP32 for and while Loops: Repeat Work Without Getting Stuck'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No sensor, LED or other external circuit.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Finish the Serial-only first upload and the setup()/loop() lesson. Open Serial Monitor at 115200 baud;
+      use your exact board and port.
+  - label: Your goal
+    value: Trace the exact number of repetitions and explain what makes each loop end.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: two-kinds
+  heading: Distinguish loop() from a loop statement
+  text: 'Arduino loop() is a function the core calls repeatedly. A for or while statement repeats work inside the
+    current function before execution continues after it. A statement inside setup() can repeat even though setup()
+    itself is called only once per startup.
+
+
+    Use for when initialization, a continuation test and a counter update make the repetition clear. Use while when
+    continuing depends on a condition, but still identify what changes that condition. Neither statement automatically
+    runs its body in parallel with the rest of your sketch.'
+- id: trace-for
+  heading: Trace start, test, body and update
+  text: 'In for (int i = 0; i < 4; ++i), i starts at zero, the condition is checked, the body runs, and i increments.
+    The body sees 0, 1, 2 and 3. It does not see 4 because the next condition is false. This four-pass pattern is
+    useful for an array with four elements.
+
+
+    Changing < to <= adds a pass. With an array, that can access outside its bounds. Avoid unsigned reverse-loop
+    tests such as i >= 0 that never become false. Write the expected first index, last index and count on paper
+    before using them in a circuit.'
+- id: trace-while
+  heading: A while loop needs progress toward an exit
+  text: 'The countdown example starts at three, prints the current value and decrements it. It prints 3, 2 and 1,
+    then exits when the value reaches zero. A while test happens before the body, so an initially false condition
+    causes zero iterations. A do/while has a different first-pass rule and is outside this example.
+
+
+    An accidental semicolon after while creates an empty body. Omitting the decrement leaves the same condition
+    true. An infinite loop might hang the application or contribute to watchdog problems depending on task configuration;
+    do not rely on a watchdog as your normal exit strategy.'
+- id: bounded-work
+  heading: Bound work even when input keeps arriving
+  text: 'The example calls Serial.available() only while taking at most eight bytes in one batch. The processed
+    counter advances on every byte read. A sender that continually sends more bytes therefore cannot make this one
+    batch run indefinitely. This is an optional demonstration, not a promise to process an entire command or packet.
+
+
+    A batch limit bounds iteration count; Serial writes and other calls can still take time. A timeout test also
+    only takes effect when execution reaches it. Calling a blocking library function inside a timed loop does not
+    make that call non-blocking. Keep a real application responsive with small pieces of work and the millis() scheduling
+    lesson.'
+- id: break-continue
+  heading: Know where control goes next
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Control flow while reading repeated
+    work</caption><thead><tr><th scope="col">Statement</th><th scope="col">Effect</th><th scope="col">Common mistake</th></tr></thead><tbody><tr><th
+    scope="row">break</th><td>Exit the nearest enclosing loop or switch.</td><td>Assuming it exits every nested
+    loop.</td></tr><tr><th scope="row">continue in for</th><td>Skip to the update expression, then test again.</td><td>Forgetting
+    that this pass skipped later work.</td></tr><tr><th scope="row">continue in while</th><td>Return to the condition
+    test.</td><td>Skipping the only counter update and never making progress.</td></tr><tr><th scope="row">return</th><td>Leave
+    the current function.</td><td>Confusing it with just ending one repetition.</td></tr></tbody></table></div>
+- id: expected-practice
+  heading: Predict counts before running
+  text: 'Expected source walkthrough: the for loop prints four indices 0 through 3; the countdown prints 3, 2 and
+    1. The optional byte count is between zero and eight depending on bytes already buffered when setup() reaches
+    that section. It is often zero; no input is required to finish the demonstration. No output here is presented
+    as a hardware log.
+
+
+    Practice: change the for limit to three and predict the new count. Start the countdown at zero and explain why
+    it prints nothing. If your own program stops progressing, inspect the condition and update before adding arbitrary
+    delays. For work that must continue receiving commands, avoid long batches and indefinite waits.'
+- id: upload-steps
+  heading: Run one complete sketch
+  text: Save the complete example as loops_demo.ino. Keep only this sketch in its folder, select your board and
+    port, and upload. Open Serial Monitor at 115200 baud, then press EN/reset if the initial output was missed.
+    The program prints its demonstration once in setup(); the empty-working loop yields with delay(10). No GPIO
+    wiring or extra library is required.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: loops_demo.ino
+  wiring: 'USB only. No GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  Serial.println(\"\
+    for indices:\");\n  for (int i = 0; i < 4; ++i) {\n    Serial.println(i);\n  }\n\n  Serial.println(\"countdown:\"\
+    );\n  int remaining = 3;\n  while (remaining > 0) {\n    Serial.println(remaining);\n    --remaining;\n  }\n\
+    \n  int processed = 0;\n  while (processed < 8 && Serial.available() > 0) {\n    const int incoming = Serial.read();\n\
+    \    if (incoming < 0) {\n      break;\n    }\n    ++processed;\n  }\n  Serial.print(\"optional buffered bytes\
+    \ consumed: \");\n  Serial.println(processed);\n  Serial.println(\"demonstration finished\");\n}\n\nvoid loop()\
+    \ {\n  delay(10);\n}\n"
+  notes: Expected results below are a source walkthrough, not a captured hardware log. No firmware compilation or
+    board upload was performed for this lesson.
+faqs:
+- question: Does a for loop let the rest of loop() run between passes?
+  answer: No. Later sketch statements wait for this for statement to finish; background system tasks are a separate
+    concern.
+- question: Does a while body always run once?
+  answer: No. The condition is tested first, so it can run zero times.
+sources:
+- title: Arduino for
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/for/
+  note: Initialization, continuation test and update order.
+- title: Arduino while
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/while/
+  note: A pre-test condition controls repeated execution.
+- title: Arduino break
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/break/
+  note: Exit the nearest loop or switch.
+- title: Arduino continue
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/continue/
+  note: Skip the rest of a repetition; preserve condition updates.
+- title: Arduino-ESP32 3.3.2 Print API
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Serial formatting overloads in the reviewed API baseline.
+related_guides:
+- title: Understand setup() and loop()
+  href: /guides/esp32-setup-and-loop.html
+  description: Review startup order before changing this example.
+- title: Write reusable functions
+  href: /guides/esp32-reusable-functions.html
+  description: Continue with the next programming skill.
+conclusion: Give every repeated block an intentional exit, then move a small repeated job into a helper function.

@@ -1,6 +1,12 @@
 GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 
 GUIDE_IMAGE_BY_SLUG = {
+    "esp32-variables-data-types": "/assets/visuals/guides/concepts/esp32-variables-data-types-concept.svg",
+    "esp32-if-else-switch": "/assets/visuals/guides/concepts/esp32-if-else-switch-concept.svg",
+    "esp32-for-while-loops": "/assets/visuals/guides/concepts/esp32-for-while-loops-concept.svg",
+    "esp32-reusable-functions": "/assets/visuals/guides/concepts/esp32-reusable-functions-concept.svg",
+    "esp32-arrays-strings": "/assets/visuals/guides/concepts/esp32-arrays-strings-concept.svg",
+
     "esp32-setup-and-loop": "/assets/visuals/guides/concepts/esp32-setup-and-loop-concept.svg",
     "esp32-millis-vs-delay": "/assets/visuals/guides/concepts/esp32-millis-vs-delay-concept.svg",
     "esp32-led-resistor": "/assets/visuals/guides/concepts/esp32-led-resistor-concept.svg",

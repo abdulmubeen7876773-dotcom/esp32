@@ -1,0 +1,145 @@
+slug: esp32-if-else-switch
+phase: 1
+sort_order: 37
+guide_type: reference
+concise_layout: true
+title: 'ESP32 if, else and switch: Make Clear Decisions | ESP32 Engine'
+headline: 'ESP32 if, else and switch: Make Clear Decisions'
+meta_description: Use if, else and switch in ESP32 Arduino code. Follow a complete Serial example with boundary
+  cases, character commands and common comparison mistakes.
+lead: Use if, else and switch in ESP32 Arduino code. Follow a complete Serial example with boundary cases, character
+  commands and common comparison mistakes.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 if, else and switch
+keywords: 'ESP32 if, else and switch: Make Clear Decisions'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No sensor, LED or other external circuit.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Finish the Serial-only first upload and the setup()/loop() lesson. Open Serial Monitor at 115200 baud;
+      use your exact board and port.
+  - label: Your goal
+    value: Predict a single classification at each boundary and select a command without accidental fall-through.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: choose-structure
+  heading: Choose a range or a specific command
+  text: 'Use if when a condition is true or false. An else if chain evaluates later conditions only when earlier
+    ones failed; its final else provides a fallback. Separate if statements are independent and can execute more
+    than one branch. That matters when two ranges overlap.
+
+
+    Use switch for matching an integral or enumeration value against constant case labels. A character command such
+    as ''r'' is suitable. A fractional range or a whole String is not a direct replacement for those labels. Choose
+    the structure that expresses the decision clearly, rather than forcing every problem into one form.'
+- id: boundaries
+  heading: Write the boundaries before the code
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Software exercise only; these are not
+    sensor alarm thresholds</caption><thead><tr><th scope="col">Illustrative score</th><th scope="col">Chosen branch</th><th
+    scope="col">Reason</th></tr></thead><tbody><tr><th scope="row">Less than 0</th><td>Invalid</td><td>Reject the
+    lower out-of-range values first.</td></tr><tr><th scope="row">0 through 39</th><td>Low</td><td>The first range
+    includes zero.</td></tr><tr><th scope="row">40 through 69</th><td>Middle</td><td>The previous comparison already
+    rejected lower scores.</td></tr><tr><th scope="row">70 through 100</th><td>High</td><td>Both endpoints are included.</td></tr><tr><th
+    scope="row">Greater than 100</th><td>Invalid</td><td>Reject the upper out-of-range values first.</td></tr></tbody></table></div>
+- id: operators
+  heading: Keep assignment and comparison distinct
+  text: 'The operator = assigns a value. The operator == compares two values. Accidentally writing if (score = 40)
+    changes score and then tests the assigned value. Use braces around each branch and keep assignments outside
+    the condition while learning. A semicolon immediately after if(condition) makes that conditional body empty.
+
+
+    Logical && means both conditions must be true; || means at least one must be true. The example rejects score
+    < 0 || score > 100 before classifying valid scores. Check the two boundaries explicitly instead of assuming
+    a middle test handles invalid input.'
+- id: switch-break
+  heading: Make switch exits visible
+  text: 'A matching case continues through following statements unless control leaves the switch. break ends this
+    switch; it does not stop the whole sketch. default handles an unmatched command. The example intentionally has
+    a break after every case.
+
+
+    A Serial terminal can send a line ending after a command. Ignore carriage return and newline explicitly if you
+    later connect this decision to Serial.read(). This fixed-input demonstration has no terminal command parser,
+    no physical output and no safety interlock. A real alarm or actuator needs input validation, failure handling
+    and its own electrical design.'
+- id: expected-results
+  heading: Walk through every branch
+  text: 'Expected source walkthrough: -1 and 101 are invalid; 0 and 39 are low; 40 and 69 are middle; 70 and 100
+    are high. The fixed command ''r'' prints a report request once. These are predictions from the code, not captured
+    board output.
+
+
+    The decisions run once in setup(). To inspect the startup text, open Serial Monitor at 115200 baud and reset
+    if necessary. No sensor is connected, and no value has been read from the room or from a GPIO.'
+- id: practice
+  heading: Check one boundary at a time
+  text: 'Change command to ''s'', then to ''x'', and predict the case or default message before uploading. Add scores
+    1, 41 and 99 to your paper walkthrough. Do not change the range limits and test values together.
+
+
+    If two messages appear for one value in your own rewrite, check whether you used independent if blocks. If a
+    command runs another command too, check break. If the compiler rejects a case label, check that it is a constant
+    of an appropriate type and has not been used twice.'
+- id: upload-steps
+  heading: Run one complete sketch
+  text: Save the complete example as decisions_demo.ino. Keep only this sketch in its folder, select your board
+    and port, and upload. Open Serial Monitor at 115200 baud, then press EN/reset if the initial output was missed.
+    The program prints its demonstration once in setup(); the empty-working loop yields with delay(10). No GPIO
+    wiring or extra library is required.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: decisions_demo.ino
+  wiring: 'USB only. No GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n\nvoid classifyScore(int score) {\n  Serial.print(score);\n  Serial.print(\":\
+    \ \");\n  if (score < 0 || score > 100) {\n    Serial.println(\"invalid\");\n  } else if (score < 40) {\n  \
+    \  Serial.println(\"low\");\n  } else if (score < 70) {\n    Serial.println(\"middle\");\n  } else {\n    Serial.println(\"\
+    high\");\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  classifyScore(-1);\n  classifyScore(0);\n\
+    \  classifyScore(39);\n  classifyScore(40);\n  classifyScore(69);\n  classifyScore(70);\n  classifyScore(100);\n\
+    \  classifyScore(101);\n\n  const char command = 'r';\n  switch (command) {\n    case 'r':\n      Serial.println(\"\
+    report requested\");\n      break;\n    case 's':\n      Serial.println(\"stop requested (message only)\");\n\
+    \      break;\n    default:\n      Serial.println(\"unknown command\");\n      break;\n  }\n}\n\nvoid loop()\
+    \ {\n  delay(10);\n}\n"
+  notes: Expected results below are a source walkthrough, not a captured hardware log. No firmware compilation or
+    board upload was performed for this lesson.
+faqs:
+- question: Can two independent if statements both run?
+  answer: Yes. Use an else if chain when one and only one classification should be chosen.
+- question: Can switch directly match a float range?
+  answer: No. Use comparisons in if/else for ranges and fractional values.
+sources:
+- title: Arduino if
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/if/
+  note: Conditions and comparison versus assignment.
+- title: Arduino else
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/else/
+  note: Alternative branches.
+- title: Arduino switch/case
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/switchCase/
+  note: Case constants, break and fall-through.
+- title: Arduino-ESP32 3.3.2 Print API
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Serial formatting overloads in the reviewed API baseline.
+related_guides:
+- title: Understand setup() and loop()
+  href: /guides/esp32-setup-and-loop.html
+  description: Review startup order before changing this example.
+- title: Repeat with for and while
+  href: /guides/esp32-for-while-loops.html
+  description: Continue with the next programming skill.
+conclusion: Test below, at and above every boundary before connecting decisions to real outputs.

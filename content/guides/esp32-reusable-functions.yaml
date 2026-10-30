@@ -1,0 +1,151 @@
+slug: esp32-reusable-functions
+phase: 1
+sort_order: 39
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Functions: Write Small, Reusable Arduino Helpers | ESP32 Engine'
+headline: 'ESP32 Functions: Write Small, Reusable Arduino Helpers'
+meta_description: Write reusable ESP32 Arduino functions with clear parameters and return values. Follow a complete
+  Serial example, local variables and pass-by-value behavior.
+lead: Write reusable ESP32 Arduino functions with clear parameters and return values. Follow a complete Serial example,
+  local variables and pass-by-value behavior.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 Functions
+keywords: 'ESP32 Functions: Write Small, Reusable Arduino Helpers'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No sensor, LED or other external circuit.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Finish the Serial-only first upload and the setup()/loop() lesson. Open Serial Monitor at 115200 baud;
+      use your exact board and port.
+  - label: Your goal
+    value: Call a helper with two inputs, use its returned result and separate calculation from printing.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: one-job
+  heading: Give a helper one clear job
+  text: 'A helper function names a piece of work so it can be called without duplicating its body. Decide its inputs,
+    result and side effects before writing it. The conversion helper in this lesson takes a Celsius value and returns
+    a Fahrenheit value; it does not read a sensor, print text or control a pin.
+
+
+    The reporting helper has a different job: print an input and its converted value. Keeping those roles separate
+    makes it easier to use the same calculation later with an OLED or a network response. Small functions improve
+    structure; they do not automatically make a blocking operation faster.'
+- id: signature
+  heading: Read the function contract
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>An explicit interface for a small helper</caption><thead><tr><th
+    scope="col">Part</th><th scope="col">Example</th><th scope="col">Meaning</th></tr></thead><tbody><tr><th scope="row">Return
+    type</th><td>float</td><td>The caller receives a floating-point result.</td></tr><tr><th scope="row">Name</th><td>celsiusToFahrenheit</td><td>Identifies
+    the operation; names are case-sensitive.</td></tr><tr><th scope="row">Parameter</th><td>float celsius</td><td>A
+    local input initialized by the call.</td></tr><tr><th scope="row">Return statement</th><td>return ...;</td><td>Ends
+    this call with a value.</td></tr><tr><th scope="row">No result</th><td>void reportConversion(...)</td><td>Performs
+    reporting; no calculated return value.</td></tr></tbody></table></div>
+- id: calculation
+  heading: Convert before mixing in hardware
+  text: 'The formula here is F = C × 9/5 + 32. The code uses 9.0f / 5.0f so the multiplier is fractional rather
+    than integer division. Inputs 0 and 25 are chosen to make the expected results easy to check. They are illustrative
+    constants, not measured temperatures.
+
+
+    Every normal path through a non-void function must return an appropriate value. A return inside a helper ends
+    that helper call, not the caller or the Arduino application. Always use the returned value when you need the
+    calculation; calling a calculation helper and discarding its result does not update your original variable.'
+- id: value-parameters
+  heading: Understand what the helper can change
+  text: 'An ordinary parameter such as int value is passed by value in this example: changing the parameter changes
+    a local copy. incrementCopy(7) returns 8 while the caller’s original remains 7. Assign the returned result if
+    you want to replace the original. References and pointers can let a function modify caller-owned data, but are
+    a separate contract and are not used here.
+
+
+    Local variables hide implementation details from other functions. A local static can deliberately retain state;
+    it also makes results depend on previous calls. Start with stateless calculation helpers when the result should
+    depend only on the inputs.'
+- id: definition-order
+  heading: Make declarations visible before use
+  text: 'This complete sketch defines helpers before setup(), so their signatures are visible where called. Arduino’s
+    .ino preprocessing can generate prototypes for many simple functions, but explicit ordering avoids relying on
+    that convenience here. In a larger project, put declarations in an appropriate header and definitions in a source
+    file.
+
+
+    The function body uses braces; a call uses parentheses and a final semicolon. Do not paste a second setup()
+    or loop() from another sketch. Extract the repeated job into a helper and call it from your existing pair of
+    sketch functions.'
+- id: expected-practice
+  heading: Check one function independently
+  text: 'Expected source walkthrough: 0.00 C converts to 32.00 F and 25.00 C converts to 77.00 F. original prints
+    7 while incremented prints 8. Open Serial Monitor at 115200 baud and reset to see the one-time output. This
+    is not a captured hardware run.
+
+
+    Practice: predict the result for -40 C, then add one reportConversion call. Keep the formula helper unchanged
+    while changing only the reporting label. If compilation fails, compare the declared return type, number of arguments
+    and argument types. If output never appears, first check the port and baud rate with the known first-upload
+    sketch.'
+- id: upload-steps
+  heading: Run one complete sketch
+  text: Save the complete example as functions_demo.ino. Keep only this sketch in its folder, select your board
+    and port, and upload. Open Serial Monitor at 115200 baud, then press EN/reset if the initial output was missed.
+    The program prints its demonstration once in setup(); the empty-working loop yields with delay(10). No GPIO
+    wiring or extra library is required.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: functions_demo.ino
+  wiring: 'USB only. No GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n\nfloat celsiusToFahrenheit(float celsius) {\n  return celsius * (9.0f / 5.0f)\
+    \ + 32.0f;\n}\n\nvoid reportConversion(float celsius) {\n  const float fahrenheit = celsiusToFahrenheit(celsius);\n\
+    \  Serial.print(celsius, 2);\n  Serial.print(\" C -> \");\n  Serial.print(fahrenheit, 2);\n  Serial.println(\"\
+    \ F\");\n}\n\nint incrementCopy(int value) {\n  return value + 1;  // Only small illustrative inputs are used\
+    \ here.\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  reportConversion(0.0f);\n  reportConversion(25.0f);\n\
+    \  const int original = 7;\n  const int incremented = incrementCopy(original);\n  Serial.print(\"original: \"\
+    ); Serial.println(original);\n  Serial.print(\"incremented: \"); Serial.println(incremented);\n}\n\nvoid loop()\
+    \ {\n  delay(10);\n}\n"
+  notes: Expected results below are a source walkthrough, not a captured hardware log. No firmware compilation or
+    board upload was performed for this lesson.
+faqs:
+- question: Does passing an int by value change my original variable?
+  answer: No. Return a result and assign it, or deliberately design a reference/pointer interface in a later lesson.
+- question: Does splitting code into functions remove blocking delays?
+  answer: No. A delay or other blocking call still waits when it runs inside a helper.
+sources:
+- title: Arduino functions guide
+  url: https://docs.arduino.cc/learn/programming/functions/
+  note: Function declarations, parameters and return values.
+- title: Arduino return
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/return/
+  note: Returning control and an optional value from a function.
+- title: Arduino scope
+  url: https://docs.arduino.cc/language-reference/en/variables/variable-scope-qualifiers/scope/
+  note: Local names and visibility boundaries.
+- title: Arduino sketch build process
+  url: https://docs.arduino.cc/arduino-cli/sketch-build-process/
+  note: Sketch preprocessing and generated prototypes.
+- title: Arduino-ESP32 3.3.2 Print API
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Serial formatting overloads in the reviewed API baseline.
+related_guides:
+- title: Understand setup() and loop()
+  href: /guides/esp32-setup-and-loop.html
+  description: Review startup order before changing this example.
+- title: Group values with arrays and strings
+  href: /guides/esp32-arrays-strings.html
+  description: Continue with the next programming skill.
+conclusion: Use one small calculation helper twice, then group several related values in an array.

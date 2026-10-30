@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 for and while Loops: Repeat Work Without Getting Stuck | ESP32 Engine</title>
+<meta name="description" content="Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid indefinite waits with a complete Serial-only example.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-for-while-loops.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 for and while Loops: Repeat Work Without Getting Stuck | ESP32 Engine">
+<meta property="og:description" content="Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid indefinite waits with a complete Serial-only example.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-for-while-loops.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 for and while Loops: Repeat Work Without Getting Stuck | ESP32 Engine">
+<meta name="twitter:description" content="Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid indefinite waits with a complete Serial-only example.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"ESP32 for and while Loops: Repeat Work Without Getting Stuck","description":"Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid indefinite waits with a complete Serial-only example.","datePublished":"2026-10-30","dateModified":"2026-10-30","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-for-while-loops.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 for and while Loops: Repeat Work Without Getting Stuck"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP32 for and while Loops: Repeat Work Without Getting Stuck","item":"https://esp32engine.com/guides/esp32-for-while-loops.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does a for loop let the rest of loop() run between passes?","acceptedAnswer":{"@type":"Answer","text":"No. Later sketch statements wait for this for statement to finish; background system tasks are a separate concern."}},{"@type":"Question","name":"Does a while body always run once?","acceptedAnswer":{"@type":"Answer","text":"No. The condition is tested first, so it can run zero times."}}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">57 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP32 for and while Loops: Repeat Work Without Getting Stuck</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>ESP32 for and while Loops: Repeat Work Without Getting Stuck</h1>
+<p class="article-lead">Learn bounded for and while loops in ESP32 Arduino, trace counters and exit conditions, and avoid indefinite waits with a complete Serial-only example.</p>
+<p class="meta guide-meta">Learning reference · Updated 2026-10-30</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/esp32-for-while-loops-concept.svg" alt="ESP32 for and while Loops: Repeat Work Without Getting Stuck guide illustration" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+
+<article class="mission-journey article-concise">
+<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#two-kinds-heading">Distinguish loop() from a loop statement</a><a href="#trace-for-heading">Trace start, test, body and update</a><a href="#trace-while-heading">A while loop needs progress toward an exit</a><a href="#bounded-work-heading">Bound work even when input keeps arriving</a><a href="#break-continue-heading">Know where control goes next</a><a href="#expected-practice-heading">Predict counts before running</a><a href="#upload-steps-heading">Run one complete sketch</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#back-to-roadmap-heading">Continue your learning path</a><a href="#next-steps-heading">Next steps</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a><a href="#related-guides">Related Guides</a></nav></details>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Hardware</dt><dd>Classic ESP32-WROOM DevKit, USB data cable and computer. No sensor, LED or other external circuit.</dd><dt>Software baseline</dt><dd>Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline, not a latest-version claim.</dd><dt>Before this lesson</dt><dd>Finish the Serial-only first upload and the setup()/loop() lesson. Open Serial Monitor at 115200 baud; use your exact board and port.</dd><dt>Your goal</dt><dd>Trace the exact number of repetitions and explain what makes each loop end.</dd><dt>Verification limits</dt><dd>Documentation/API and local content/browser review only. No sketch compilation, board upload or physical hardware test was performed for this lesson.</dd></dl></section>
+<section class="mission-section" id="two-kinds" aria-labelledby="two-kinds-heading"><h2 tabindex="-1" id="two-kinds-heading">Distinguish loop() from a loop statement</h2><p>Arduino loop() is a function the core calls repeatedly. A for or while statement repeats work inside the current function before execution continues after it. A statement inside setup() can repeat even though setup() itself is called only once per startup.</p><p>Use for when initialization, a continuation test and a counter update make the repetition clear. Use while when continuing depends on a condition, but still identify what changes that condition. Neither statement automatically runs its body in parallel with the rest of your sketch.</p></section>
+<section class="mission-section" id="trace-for" aria-labelledby="trace-for-heading"><h2 tabindex="-1" id="trace-for-heading">Trace start, test, body and update</h2><p>In for (int i = 0; i &lt; 4; ++i), i starts at zero, the condition is checked, the body runs, and i increments. The body sees 0, 1, 2 and 3. It does not see 4 because the next condition is false. This four-pass pattern is useful for an array with four elements.</p><p>Changing &lt; to &lt;= adds a pass. With an array, that can access outside its bounds. Avoid unsigned reverse-loop tests such as i &gt;= 0 that never become false. Write the expected first index, last index and count on paper before using them in a circuit.</p></section>
+<section class="mission-section" id="trace-while" aria-labelledby="trace-while-heading"><h2 tabindex="-1" id="trace-while-heading">A while loop needs progress toward an exit</h2><p>The countdown example starts at three, prints the current value and decrements it. It prints 3, 2 and 1, then exits when the value reaches zero. A while test happens before the body, so an initially false condition causes zero iterations. A do/while has a different first-pass rule and is outside this example.</p><p>An accidental semicolon after while creates an empty body. Omitting the decrement leaves the same condition true. An infinite loop might hang the application or contribute to watchdog problems depending on task configuration; do not rely on a watchdog as your normal exit strategy.</p></section>
+<section class="mission-section" id="bounded-work" aria-labelledby="bounded-work-heading"><h2 tabindex="-1" id="bounded-work-heading">Bound work even when input keeps arriving</h2><p>The example calls Serial.available() only while taking at most eight bytes in one batch. The processed counter advances on every byte read. A sender that continually sends more bytes therefore cannot make this one batch run indefinitely. This is an optional demonstration, not a promise to process an entire command or packet.</p><p>A batch limit bounds iteration count; Serial writes and other calls can still take time. A timeout test also only takes effect when execution reaches it. Calling a blocking library function inside a timed loop does not make that call non-blocking. Keep a real application responsive with small pieces of work and the millis() scheduling lesson.</p></section>
+<section class="mission-section" id="break-continue" aria-labelledby="break-continue-heading"><h2 tabindex="-1" id="break-continue-heading">Know where control goes next</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="wiring-table"><caption>Control flow while reading repeated work</caption><thead><tr><th scope="col">Statement</th><th scope="col">Effect</th><th scope="col">Common mistake</th></tr></thead><tbody><tr><th scope="row">break</th><td>Exit the nearest enclosing loop or switch.</td><td>Assuming it exits every nested loop.</td></tr><tr><th scope="row">continue in for</th><td>Skip to the update expression, then test again.</td><td>Forgetting that this pass skipped later work.</td></tr><tr><th scope="row">continue in while</th><td>Return to the condition test.</td><td>Skipping the only counter update and never making progress.</td></tr><tr><th scope="row">return</th><td>Leave the current function.</td><td>Confusing it with just ending one repetition.</td></tr></tbody></table></div></section>
+<section class="mission-section" id="expected-practice" aria-labelledby="expected-practice-heading"><h2 tabindex="-1" id="expected-practice-heading">Predict counts before running</h2><p>Expected source walkthrough: the for loop prints four indices 0 through 3; the countdown prints 3, 2 and 1. The optional byte count is between zero and eight depending on bytes already buffered when setup() reaches that section. It is often zero; no input is required to finish the demonstration. No output here is presented as a hardware log.</p><p>Practice: change the for limit to three and predict the new count. Start the countdown at zero and explain why it prints nothing. If your own program stops progressing, inspect the condition and update before adding arbitrary delays. For work that must continue receiving commands, avoid long batches and indefinite waits.</p></section>
+<section class="mission-section" id="upload-steps" aria-labelledby="upload-steps-heading"><h2 tabindex="-1" id="upload-steps-heading">Run one complete sketch</h2><p>Save the complete example as loops_demo.ino. Keep only this sketch in its folder, select your board and port, and upload. Open Serial Monitor at 115200 baud, then press EN/reset if the initial output was missed. The program prints its demonstration once in setup(); the empty-working loop yields with delay(10). No GPIO wiring or extra library is required.</p></section>
+<section class="mission-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Complete USB and Serial-only example</h3><p>USB only. No GPIO wiring. Serial Monitor: 115200 baud.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">loops_demo.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;<span class="tok-kw">for</span> indices:&quot;);
+  <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">4</span>; ++i) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(i);
+  }
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;countdown:&quot;);
+  <span class="tok-kw">int</span> remaining = <span class="tok-num">3</span>;
+  <span class="tok-kw">while</span> (remaining &gt; <span class="tok-num">0</span>) {
+    <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(remaining);
+    --remaining;
+  }
+
+  <span class="tok-kw">int</span> processed = <span class="tok-num">0</span>;
+  <span class="tok-kw">while</span> (processed &lt; <span class="tok-num">8</span> &amp;&amp; <span class="tok-fn">Serial</span>.available() &gt; <span class="tok-num">0</span>) {
+    const <span class="tok-kw">int</span> incoming = <span class="tok-fn">Serial</span>.read();
+    <span class="tok-kw">if</span> (incoming &lt; <span class="tok-num">0</span>) {
+      break;
+    }
+    ++processed;
+  }
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;optional buffered bytes consumed: &quot;);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(processed);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(&quot;demonstration finished&quot;);
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-fn">delay</span>(<span class="tok-num">10</span>);
+}</code></pre>
+</div><p>Expected results below are a source walkthrough, not a captured hardware log. No firmware compilation or board upload was performed for this lesson.</p></section>
+<section class="mission-section" id="back-to-roadmap" aria-labelledby="back-to-roadmap-heading"><h2 tabindex="-1" id="back-to-roadmap-heading">Continue your learning path</h2><p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the full ESP32 roadmap</a></p></section>
+<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 tabindex="-1" id="next-steps-heading">Next steps</h2><p>Give every repeated block an intentional exit, then move a small repeated job into a helper function.</p></section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does a for loop let the rest of loop() run between passes?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Later sketch statements wait for this for statement to finish; background system tasks are a separate concern.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does a while body always run once?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. The condition is tested first, so it can run zero times.</p></div></div></div>
+</section>
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://docs.arduino.cc/language-reference/en/structure/control-structure/for/">Arduino for</a> — Initialization, continuation test and update order.</li><li><a href="https://docs.arduino.cc/language-reference/en/structure/control-structure/while/">Arduino while</a> — A pre-test condition controls repeated execution.</li><li><a href="https://docs.arduino.cc/language-reference/en/structure/control-structure/break/">Arduino break</a> — Exit the nearest loop or switch.</li><li><a href="https://docs.arduino.cc/language-reference/en/structure/control-structure/continue/">Arduino continue</a> — Skip the rest of a repetition; preserve condition updates.</li><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h">Arduino-ESP32 3.3.2 Print API</a> — Serial formatting overloads in the reviewed API baseline.</li></ul></section>
+  <h2 tabindex="-1" id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/esp32-setup-and-loop.html"><strong>Understand setup() and loop()</strong></a> <span class="meta">Review startup order before changing this example.</span></li><li><a href="/guides/esp32-reusable-functions.html"><strong>Write reusable functions</strong></a> <span class="meta">Continue with the next programming skill.</span></li></ul>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>

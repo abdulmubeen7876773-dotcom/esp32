@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32 Variables and Data Types: Choose Values That Fit | ESP32 Engine</title>
+<meta name="description" content="Learn ESP32 variables, constants and data types with a complete Serial example covering integer division, decimal values, scope and storage size.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-variables-data-types.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="ESP32 Variables and Data Types: Choose Values That Fit | ESP32 Engine">
+<meta property="og:description" content="Learn ESP32 variables, constants and data types with a complete Serial example covering integer division, decimal values, scope and storage size.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-variables-data-types.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ESP32 Variables and Data Types: Choose Values That Fit | ESP32 Engine">
+<meta name="twitter:description" content="Learn ESP32 variables, constants and data types with a complete Serial example covering integer division, decimal values, scope and storage size.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"ESP32 Variables and Data Types: Choose Values That Fit","description":"Learn ESP32 variables, constants and data types with a complete Serial example covering integer division, decimal values, scope and storage size.","datePublished":"2026-10-30","dateModified":"2026-10-30","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-variables-data-types.html"},"proficiencyLevel":"Beginner","keywords":"ESP32 Variables and Data Types: Choose Values That Fit"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"ESP32 Variables and Data Types: Choose Values That Fit","item":"https://esp32engine.com/guides/esp32-variables-data-types.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does float recover a fraction lost by integer division?","acceptedAnswer":{"@type":"Answer","text":"No. Convert an operand before division, not only the result afterwards."}},{"@type":"Question","name":"Does a global variable survive power loss?","acceptedAnswer":{"@type":"Answer","text":"No. A global RAM variable has application lifetime, not persistent storage."}}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">57 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">ESP32 Variables and Data Types: Choose Values That Fit</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>ESP32 Variables and Data Types: Choose Values That Fit</h1>
+<p class="article-lead">Learn ESP32 variables, constants and data types with a complete Serial example covering integer division, decimal values, scope and storage size.</p>
+<p class="meta guide-meta">Learning reference · Updated 2026-10-30</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/esp32-variables-data-types-concept.svg" alt="ESP32 Variables and Data Types: Choose Values That Fit guide illustration" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+
+<article class="mission-journey article-concise">
+<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#declare-values-heading">Start with the value you need to represent</a><a href="#type-choices-heading">Choose by range and meaning</a><a href="#division-heading">The operands decide the division</a><a href="#scope-heading">Separate lifetime from visibility</a><a href="#expected-results-heading">Read the source walkthrough</a><a href="#troubleshooting-heading">Diagnose a surprising value</a><a href="#upload-steps-heading">Run one complete sketch</a><a href="#code-heading">Wiring and matching Arduino code</a><a href="#back-to-roadmap-heading">Continue your learning path</a><a href="#next-steps-heading">Next steps</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a><a href="#related-guides">Related Guides</a></nav></details>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Hardware</dt><dd>Classic ESP32-WROOM DevKit, USB data cable and computer. No sensor, LED or other external circuit.</dd><dt>Software baseline</dt><dd>Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline, not a latest-version claim.</dd><dt>Before this lesson</dt><dd>Finish the Serial-only first upload and the setup()/loop() lesson. Open Serial Monitor at 115200 baud; use your exact board and port.</dd><dt>Your goal</dt><dd>Choose a type for a count, a flag and a decimal value; explain why 5 / 2 differs from 5.0f / 2.0f.</dd><dt>Verification limits</dt><dd>Documentation/API and local content/browser review only. No sketch compilation, board upload or physical hardware test was performed for this lesson.</dd></dl></section>
+<section class="mission-section" id="declare-values" aria-labelledby="declare-values-heading"><h2 tabindex="-1" id="declare-values-heading">Start with the value you need to represent</h2><p>A variable is a named object with a type and a value. In int sampleCount = 5;, int is the type, sampleCount is the name and 5 initializes it. Later assignment changes the value; it does not change the declared type. Use a meaningful name and initialize local variables before reading them. An uninitialized local integer does not provide a useful default reading.</p><p>Use bool for a true/false condition, an integer for whole counts and a floating-point type when a fraction is needed. A value called temperature is not automatically a sensor measurement: this lesson uses a fixed illustrative number. Keep units in names such as temperatureC or intervalMs so later calculations are easier to review.</p></section>
+<section class="mission-section" id="type-choices" aria-labelledby="type-choices-heading"><h2 tabindex="-1" id="type-choices-heading">Choose by range and meaning</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="wiring-table"><caption>Types used in small ESP32 sketches</caption><thead><tr><th scope="col">Need</th><th scope="col">Example type</th><th scope="col">What to check</th></tr></thead><tbody><tr><th scope="row">Whole count</th><td>int</td><td>Signed range depends on target; avoid signed overflow.</td></tr><tr><th scope="row">Fixed-width quantity</th><td>uint32_t</td><td>Exactly 32 bits when the type is provided; no negative values.</td></tr><tr><th scope="row">True / false</th><td>bool</td><td>Use true and false, not text such as &quot;false&quot;.</td></tr><tr><th scope="row">Fractional value</th><td>float</td><td>Binary approximation; printed decimals are formatting, not accuracy.</td></tr><tr><th scope="row">One character</th><td>char</td><td>Use single quotes, for example &#x27;C&#x27;.</td></tr><tr><th scope="row">Elapsed-time value</th><td>unsigned long</td><td>Use the millis() type and elapsed subtraction pattern.</td></tr></tbody></table></div></section>
+<section class="mission-section" id="division" aria-labelledby="division-heading"><h2 tabindex="-1" id="division-heading">The operands decide the division</h2><p>The expression 5 / 2 performs integer division and yields 2. Assigning that result to float afterwards produces 2.0; the fraction was already lost. In 5.0f / 2.0f the operands are floating-point, so the expected result is 2.5. Conversion must happen before the operation when you want fractional arithmetic.</p><p>Serial.println(value, 2) requests two decimal places for a floating-point value. It does not make the underlying value more precise. Avoid using exact equality as a general test for calculated decimal values. Also check for a zero denominator before dividing values that come from inputs.</p></section>
+<section class="mission-section" id="scope" aria-labelledby="scope-heading"><h2 tabindex="-1" id="scope-heading">Separate lifetime from visibility</h2><p>The global savedCount is initialized before setup() and can be used by both sketch functions. The local insideCount belongs to setup(). A local static value retains its value across calls but has local visibility. Persistent variables are still RAM state; reset or power loss restarts this example. Saving settings to flash is a separate topic.</p><p>constexpr identifies a compile-time constant here. It helps express fixed configuration; it does not save a changing value across reset. const also prevents normal modification through that name, but not every const object is a compile-time expression. Do not fix a scope error by making every variable global.</p></section>
+<section class="mission-section" id="expected-results" aria-labelledby="expected-results-heading"><h2 tabindex="-1" id="expected-results-heading">Read the source walkthrough</h2><p>Expected key results: integer quotient 2, fractional quotient 2.50, temperature 23.75 C and ready 1. sizeof prints the byte size on the selected target. Use those results on your own toolchain rather than copying AVR Uno size assumptions into ESP32 code. This lesson does not assert that all Arduino boards use the same int, long or double widths.</p><p>The fixed-width counter begins at 7 and increments to 8. Unsigned arithmetic has defined wraparound, but that does not make wrapping correct for every application. A counter meant to stop at a limit needs an explicit limit. Signed overflow must be avoided; changing the printed format does not enlarge the stored range.</p></section>
+<section class="mission-section" id="troubleshooting" aria-labelledby="troubleshooting-heading"><h2 tabindex="-1" id="troubleshooting-heading">Diagnose a surprising value</h2><p>If a fraction disappears, inspect the operand types before the assignment. If an identifier is not declared, check spelling and the braces that determine its scope. If a number becomes unexpectedly large, check conversions between signed and unsigned values. If a decimal only appears rounded, compare print precision with the original calculation.</p><p>Practice: predict both quotient lines, change sampleCount to 7, then recompute the expected results before uploading. Replace the fixed temperature with another illustrative decimal and keep its unit label. Change one thing at a time; do not treat these printed constants as sensor evidence.</p></section>
+<section class="mission-section" id="upload-steps" aria-labelledby="upload-steps-heading"><h2 tabindex="-1" id="upload-steps-heading">Run one complete sketch</h2><p>Save the complete example as variables_demo.ino. Keep only this sketch in its folder, select your board and port, and upload. Open Serial Monitor at 115200 baud, then press EN/reset if the initial output was missed. The program prints its demonstration once in setup(); the empty-working loop yields with delay(10). No GPIO wiring or extra library is required.</p></section>
+<section class="mission-section" id="code" aria-labelledby="code-heading"><h2 tabindex="-1" id="code-heading">Wiring and matching Arduino code</h2><h3>Complete USB and Serial-only example</h3><p>USB only. No GPIO wiring. Serial Monitor: 115200 baud.</p><div class="code-panel">
+  <div class="code-panel-head">
+    <div class="code-panel-chrome" aria-hidden="true">
+      <span class="code-dot code-dot-red"></span>
+      <span class="code-dot code-dot-yellow"></span>
+      <span class="code-dot code-dot-green"></span>
+    </div>
+    <span class="code-panel-filename">variables_demo.ino</span>
+    <button type="button" class="btn-copy" data-copy aria-label="Copy code to clipboard">
+      <svg class="btn-copy-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span class="btn-copy-label">Copy</span>
+    </button>
+  </div>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">#include &lt;Arduino.h&gt;</span>
+<span class="tok-pre">#include &lt;stdint.h&gt;</span>
+
+constexpr <span class="tok-kw">int</span> DIVISOR = <span class="tok-num">2</span>;
+<span class="tok-kw">uint32_t</span> savedCount = <span class="tok-num">7</span>;
+
+<span class="tok-kw">void</span> <span class="tok-fn">setup</span>() {
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">begin</span>(<span class="tok-num">115200</span>);
+  <span class="tok-fn">delay</span>(<span class="tok-num">1000</span>);
+  <span class="tok-kw">int</span> sampleCount = <span class="tok-num">5</span>;
+  <span class="tok-kw">int</span> insideCount = <span class="tok-num">3</span>;
+  bool ready = <span class="tok-kw">true</span>;
+  <span class="tok-kw">char</span> unit = &#x27;C&#x27;;
+  <span class="tok-kw">float</span> temperatureC = <span class="tok-num">23</span>.75f;  <span class="tok-com">// Illustrative, not a sensor reading.</span>
+  <span class="tok-kw">int</span> integerQuotient = sampleCount / DIVISOR;
+  <span class="tok-kw">float</span> fractionalQuotient = static_cast&lt;<span class="tok-kw">float</span>&gt;(sampleCount) / DIVISOR;
+
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;integer quotient: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(integerQuotient);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;fractional quotient: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(fractionalQuotient, <span class="tok-num">2</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;temperature: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(temperatureC, <span class="tok-num">2</span>);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&#x27; &#x27;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(unit);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;ready: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(ready);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;local count: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(insideCount);
+  ++savedCount;
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;saved RAM count: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(savedCount);
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;sizeof <span class="tok-kw">int</span>: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(sizeof(<span class="tok-kw">int</span>));
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;sizeof <span class="tok-kw">float</span>: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(sizeof(<span class="tok-kw">float</span>));
+  <span class="tok-fn">Serial</span>.<span class="tok-fn">print</span>(&quot;sizeof <span class="tok-kw">double</span>: &quot;); <span class="tok-fn">Serial</span>.<span class="tok-fn">println</span>(sizeof(<span class="tok-kw">double</span>));
+}
+
+<span class="tok-kw">void</span> <span class="tok-fn">loop</span>() {
+  <span class="tok-fn">delay</span>(<span class="tok-num">10</span>);
+}</code></pre>
+</div><p>Expected results below are a source walkthrough, not a captured hardware log. No firmware compilation or board upload was performed for this lesson.</p></section>
+<section class="mission-section" id="back-to-roadmap" aria-labelledby="back-to-roadmap-heading"><h2 tabindex="-1" id="back-to-roadmap-heading">Continue your learning path</h2><p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the full ESP32 roadmap</a></p></section>
+<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 tabindex="-1" id="next-steps-heading">Next steps</h2><p>Choose types deliberately, predict arithmetic first and use the next lesson to make a decision from a value.</p></section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does float recover a fraction lost by integer division?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Convert an operand before division, not only the result afterwards.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does a global variable survive power loss?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. A global RAM variable has application lifetime, not persistent storage.</p></div></div></div>
+</section>
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://docs.arduino.cc/language-reference/en/variables/data-types/int/">Arduino integer types</a> — Integer declarations and signed-range limitations; board sizes differ.</li><li><a href="https://docs.arduino.cc/language-reference/en/variables/data-types/float/">Arduino floating-point values</a> — Approximate fractional arithmetic; do not apply AVR-specific double claims to every target.</li><li><a href="https://docs.arduino.cc/language-reference/en/variables/variable-scope-qualifiers/scope/">Arduino variable scope</a> — Visibility of global and local declarations.</li><li><a href="https://docs.arduino.cc/language-reference/en/structure/further-syntax/sizeof/">Arduino sizeof</a> — Measure an object or type size in bytes on the target.</li><li><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h">Arduino-ESP32 3.3.2 Print API</a> — Serial formatting overloads in the reviewed API baseline.</li></ul></section>
+  <h2 tabindex="-1" id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/esp32-setup-and-loop.html"><strong>Understand setup() and loop()</strong></a> <span class="meta">Review startup order before changing this example.</span></li><li><a href="/guides/esp32-if-else-switch.html"><strong>Choose with if, else and switch</strong></a> <span class="meta">Continue with the next programming skill.</span></li></ul>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>
