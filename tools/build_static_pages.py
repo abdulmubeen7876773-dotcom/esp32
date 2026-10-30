@@ -77,7 +77,10 @@ def cms_page_html(page: dict) -> str:
     if slug == "learning":
         from learning_journey import beginner_route_html
         body = body.replace("{{beginner_route}}", beginner_route_html(get_content_store().guides(), "esp32-basics"))
-    return static_page_shell(
+        if "{{learning_roadmap}}" in body:
+            from learning_roadmap import render_roadmap
+            body = body.replace("{{learning_roadmap}}", render_roadmap())
+    rendered = static_page_shell(
         page.get("nav", slug),
         page["title"],
         page["meta_description"],
@@ -85,6 +88,10 @@ def cms_page_html(page: dict) -> str:
         f"{slug}.html",
         page_schema(page),
     )
+    if slug == "learning" and "{{learning_roadmap}}" in page.get("body_html", ""):
+        rendered = rendered.replace("</head>", '<link rel="stylesheet" href="/assets/learning-roadmap.css?v=20261030">\n</head>')
+        rendered = rendered.replace("</body>", '<script src="/assets/learning-roadmap.js?v=20261030" defer></script>\n</body>')
+    return rendered
 
 
 def not_found_page() -> str:
