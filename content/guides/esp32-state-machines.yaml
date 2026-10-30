@@ -1,0 +1,160 @@
+slug: esp32-state-machines
+phase: 1
+sort_order: 43
+guide_type: reference
+concise_layout: true
+title: 'ESP32 State Machines: Respond While a Timer Runs | ESP32 Engine'
+headline: 'ESP32 State Machines: Respond While a Timer Runs'
+meta_description: Build a small ESP32 state machine with named states, Serial commands and millis() timing, without
+  a long delay holding up the sketch.
+lead: Build a small ESP32 state machine with named states, Serial commands and millis() timing, without a long delay
+  holding up the sketch.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 State Machines
+keywords: 'ESP32 State Machines: Respond While a Timer Runs'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No external sensor or output circuit for this
+      exercise.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the first Serial-only upload. For the logic lessons, read the variables, decisions, loops and
+      functions references first.
+  - label: Your goal
+    value: Trace IDLE, WAITING and DONE, including start, report, cancel and elapsed-time transitions.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: state-events
+  heading: Separate the current state from the event
+  text: 'A state describes what the application is doing now. An event is a reason to consider changing it: a command
+    or an elapsed interval in this lesson. Store the state explicitly rather than using several independent booleans
+    that can accidentally describe contradictory modes.
+
+
+    This USB-only exercise represents a small timed job. It has no relay, motor or sensor. Commands are lowercase
+    single characters: s starts, r reports and x cancels/resets to IDLE. DONE remains visible until another command
+    changes it. A real application needs its own fault and recovery states.
+
+
+    Explicit helper declarations follow the enum definition so functions that use JobState do not depend on automatic
+    .ino prototype generation.'
+- id: transitions
+  heading: Write the transitions first
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Explicit transition policy for this
+    demonstration</caption><thead><tr><th scope="col">Current state</th><th scope="col">Event</th><th scope="col">Next
+    state / action</th></tr></thead><tbody><tr><th scope="row">IDLE or DONE</th><td>s</td><td>Enter WAITING and
+    save the start time.</td></tr><tr><th scope="row">WAITING</th><td>s</td><td>Ignore restart; keep the original
+    start time.</td></tr><tr><th scope="row">WAITING</th><td>At least 2000 ms elapsed</td><td>Enter DONE once.</td></tr><tr><th
+    scope="row">Any</th><td>r</td><td>Print the current state without changing it.</td></tr><tr><th scope="row">Any</th><td>x</td><td>Enter
+    IDLE, cancelling a pending wait.</td></tr><tr><th scope="row">Any</th><td>Carriage return / newline</td><td>Ignore
+    terminal line ending.</td></tr></tbody></table></div>
+- id: time
+  heading: Wait by checking elapsed time
+  text: 'The WAITING branch compares unsigned now - enteredAt with 2000UL. It does a small check and returns, so
+    later loop passes can still inspect Serial commands. This is the same elapsed-time pattern as the millis() reference.
+    Reaching DONE once prevents repeatedly printing the completion action on every later loop pass.
+
+
+    Unsigned subtraction supports normal timer wraparound when the interval and polling assumptions are respected.
+    Keep intervals short relative to the counter’s wrap period and service the state regularly; this is not a clock
+    that can recover arbitrary missed wraps. Do not compare now against enteredAt + interval as a substitute without
+    considering wraparound.'
+- id: command-service
+  heading: Bound command work per loop pass
+  text: 'At most eight buffered bytes are handled in one pass. After those commands, the code takes a fresh millis()
+    value before the timer check. This avoids comparing a timestamp captured before a later command with a newer
+    state-entry time. If x is processed before the timer check, cancellation wins for that pass.
+
+
+    This is a cooperative sketch, not parallel execution or a real-time guarantee. Serial output can take time,
+    and delay(1) deliberately yields briefly. A blocking library call inside a state would still block. There is
+    no packet parser, authentication or persistence; terminal line endings are simply ignored.'
+- id: walkthrough
+  heading: Try a sequence you can predict
+  text: 'Expected walkthrough after startup: IDLE. Send s to enter WAITING, then r to report WAITING while the interval
+    is pending. After at least two seconds as observed by later loop checks, DONE prints once. Send s again to start
+    another job. Send x during a wait and it should return to IDLE without a later DONE for that cancelled wait.
+
+
+    These are predicted transitions, not captured hardware logs. Latency depends on loop service and Serial traffic.
+    A late-opened monitor may miss startup output; reset once if needed. Repeated s commands during WAITING intentionally
+    do not postpone completion.'
+- id: practice
+  heading: Add behavior through the transition policy
+  text: 'On paper, add a requirement that a job can start only from IDLE. Identify the one command condition that
+    would change and how DONE should reset. Test the transition list before adding hardware or another state.
+
+
+    If the job continually restarts, inspect where enteredAt is assigned. If completion prints repeatedly, check
+    that the state actually leaves WAITING. If commands seem ignored, check baud rate, lowercase letters and whether
+    another function blocks the loop. Keep decisions and elapsed timing separate enough to trace.'
+- id: upload-steps
+  heading: Use one complete example
+  text: Save this full sketch as state_machine_demo.ino, select your exact ESP32 board and port, and use Verify
+    before Upload. Open Serial Monitor at 115200 baud after upload; press EN/reset if you missed startup text. No
+    extra library is needed. The example uses no GPIO wiring. The stated results are predictions from source, not
+    a recorded board run.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: state_machine_demo.ino
+  wiring: 'USB only; no GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n\nenum class JobState { Idle, Waiting, Done };\nconst char* stateName(JobState\
+    \ value);\nvoid enterState(JobState next, unsigned long now);\nvoid handleCommand(char command, unsigned long\
+    \ now);\n\nJobState state = JobState::Idle;\nunsigned long enteredAt = 0;\nconstexpr unsigned long WAIT_MS =\
+    \ 2000UL;\n\nconst char* stateName(JobState value) {\n  switch (value) {\n    case JobState::Idle: return \"\
+    IDLE\";\n    case JobState::Waiting: return \"WAITING\";\n    case JobState::Done: return \"DONE\";\n  }\n \
+    \ return \"UNKNOWN\";\n}\n\nvoid enterState(JobState next, unsigned long now) {\n  state = next;\n  enteredAt\
+    \ = now;\n  Serial.println(stateName(state));\n}\n\nvoid handleCommand(char command, unsigned long now) {\n\
+    \  switch (command) {\n    case 's':\n      if (state != JobState::Waiting) {\n        enterState(JobState::Waiting,\
+    \ now);\n      }\n      break;\n    case 'x':\n      enterState(JobState::Idle, now);\n      break;\n    case\
+    \ 'r':\n      Serial.println(stateName(state));\n      break;\n    case '\\r':\n    case '\\n':\n      break;\n\
+    \    default:\n      Serial.println(\"Use s=start, r=report, x=cancel\");\n      break;\n  }\n}\n\nvoid setup()\
+    \ {\n  Serial.begin(115200);\n  delay(1000);\n  Serial.println(\"s=start, r=report, x=cancel\");\n  enterState(JobState::Idle,\
+    \ millis());\n}\n\nvoid loop() {\n  for (int n = 0; n < 8 && Serial.available() > 0; ++n) {\n    const int incoming\
+    \ = Serial.read();\n    if (incoming < 0) { break; }\n    handleCommand(static_cast<char>(incoming), millis());\n\
+    \  }\n  const unsigned long now = millis();\n  if (state == JobState::Waiting && now - enteredAt >= WAIT_MS)\
+    \ {\n    enterState(JobState::Done, now);\n  }\n  delay(1);\n}\n"
+  notes: Expected behavior in this guide is a source walkthrough. No firmware compilation or physical board upload
+    was performed for this lesson.
+faqs:
+- question: Does a state machine automatically make a sensor call non-blocking?
+  answer: No. Any blocking call still waits when executed. Keep state work short and review each API separately.
+- question: Why does DONE not print on every pass?
+  answer: The transition leaves WAITING. Later timer checks therefore do not repeat the completion action.
+sources:
+- title: Arduino switch/case
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/switchCase/
+  note: Select behavior from the stored state or command.
+- title: Arduino elapsed-time example
+  url: https://raw.githubusercontent.com/arduino/arduino-examples/main/examples/02.Digital/BlinkWithoutDelay/BlinkWithoutDelay.ino
+  note: Unsigned elapsed-time pattern; this lesson uses Serial rather than an assumed built-in LED.
+- title: Arduino-ESP32 3.3.2 timing
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/esp32-hal-misc.c
+  note: millis and deliberate yielding in the reviewed core.
+- title: Arduino-ESP32 3.3.2 Print interface
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Formatting API baseline; no firmware execution claim.
+related_guides:
+- title: millis() scheduling
+  href: /guides/esp32-millis-vs-delay.html
+  description: Review elapsed subtraction and missed-event policy.
+- title: if, else and switch
+  href: /guides/esp32-if-else-switch.html
+  description: Read a clear decision before adding more states.
+conclusion: Write the transition table first, then verify cancellation and repeated commands before extending the
+  machine.

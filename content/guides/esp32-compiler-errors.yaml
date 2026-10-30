@@ -1,0 +1,151 @@
+slug: esp32-compiler-errors
+phase: 1
+sort_order: 42
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Compiler Errors: Find the First Useful Diagnostic | ESP32 Engine'
+headline: 'ESP32 Compiler Errors: Find the First Useful Diagnostic'
+meta_description: Read ESP32 Arduino compiler messages, separate build failures from upload faults, and fix scope,
+  syntax and dependency problems one change at a time.
+lead: Read ESP32 Arduino compiler messages, separate build failures from upload faults, and fix scope, syntax and
+  dependency problems one change at a time.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 Compiler Errors
+keywords: 'ESP32 Compiler Errors: Find the First Useful Diagnostic'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No external sensor or output circuit for this
+      exercise.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the first Serial-only upload. For the logic lessons, read the variables, decisions, loops and
+      functions references first.
+  - label: Your goal
+    value: Locate a meaningful file/line diagnostic and use a minimal complete sketch before changing hardware.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: build-or-upload
+  heading: Identify the failing stage
+  text: 'Verify builds the sketch without attempting a board upload. A Verify failure is a software/toolchain problem
+    to investigate before COM-port or BOOT-button experiments. Upload adds a communication stage after building;
+    a successful build does not prove that the board accepted the firmware or that the circuit works.
+
+
+    Use the correct board selection even for Verify because it determines the target and available core APIs. Preserve
+    the exact failing sketch, dependency versions and full console text. A screenshot of only the final red notification
+    usually omits the most useful detail.'
+- id: diagnostic
+  heading: Read a location and its message together
+  text: 'A diagnostic often contains a file path, line number, sometimes a column, and a message. Scroll above the
+    final exit status to find a concrete cause. A parser can report the point where it became confused rather than
+    the place the mistake began, so inspect the preceding line and nearby braces too.
+
+
+    Fix one specific cause and run Verify again on your computer before acting on later messages. One missing delimiter
+    can produce several follow-on diagnostics. Paths can point to a library or generated sketch file as well as
+    your main tab. Preserve context rather than assuming every highlighted library line is a library defect.'
+- id: patterns
+  heading: Map the symptom to one small check
+  html: '<div class="wiring-table-wrap"><table class="wiring-table"><caption>Patterns for diagnosis, not captured
+    compiler output</caption><thead><tr><th scope="col">Illustrative diagnostic pattern</th><th scope="col">Inspect
+    first</th><th scope="col">Avoid this detour</th></tr></thead><tbody><tr><th scope="row">expected ; or a closing
+    brace</th><td>Previous statement and matching braces.</td><td>Changing USB drivers for a syntax error.</td></tr><tr><th
+    scope="row">identifier was not declared</th><td>Spelling, declaration order and scope.</td><td>Making every
+    variable global without understanding why.</td></tr><tr><th scope="row">header: No such file or directory</th><td>Header
+    spelling, library identity and dependency.</td><td>Installing unrelated packages with similar names.</td></tr><tr><th
+    scope="row">redefinition of setup or loop</th><td>Other sketch tabs containing another definition.</td><td>Pasting
+    a whole second sketch into the first.</td></tr><tr><th scope="row">undefined reference</th><td>Missing matching
+    definition or required entry function.</td><td>Treating every linker error as a missing semicolon.</td></tr><tr><th
+    scope="row">no matching function / no member</th><td>Argument types and the installed API version.</td><td>Assuming
+    an older tutorial matches a different core release.</td></tr></tbody></table></div>'
+- id: minimal
+  heading: Keep a known small starting point
+  text: 'The copyable sketch below defines both required entry functions and a helper before it is called. It has
+    no external library, sensor or GPIO assumption. Expected startup text is “Minimal sketch reached setup” followed
+    by “next count: 3”. This is a source walkthrough, not evidence of a Verify or upload performed here.
+
+
+    If this small sketch fails on your machine, inspect the selected board platform and installation first. If it
+    builds there while your project fails, compare the project’s includes, helper signatures and extra tabs in small
+    steps. A minimal example is a way to isolate a difference; it does not validate the original project by itself.'
+- id: scope-api
+  heading: Check names and versions deliberately
+  text: 'A variable declared inside setup() is not visible as a normal local in loop(). Pass a value to a helper,
+    return a result or deliberately design shared state instead of blindly moving declarations. Names such as setup
+    and Setup differ in C++.
+
+
+    For a version mismatch, compare the exact API signature in the library/core documentation with the call site.
+    Avoid an unrelated update or downgrade while also rewriting the code. If a different release is required, record
+    that decision so another person can reproduce it. A successful build still needs separate runtime checks.'
+- id: practice
+  heading: Collect a useful debugging record
+  text: 'On your own copy, add a comment identifying the chosen board, core version and IDE version. Use Auto Format
+    to make brace structure visible. Read the corrected minimal sketch before deliberately trying one syntax change
+    in a disposable copy; restore the working original after learning from the result. Do not publish a broken sketch
+    as the main example.
+
+
+    When asking for help, include the complete minimal code, the first useful diagnostic with its surrounding lines,
+    and dependency names/versions. Remove personal path details or credentials if present. State whether Verify
+    failed, upload failed or the running program produced an unexpected result.'
+- id: upload-steps
+  heading: Use one complete example
+  text: Save this full sketch as compiler_baseline.ino, select your exact ESP32 board and port, and use Verify before
+    Upload. Open Serial Monitor at 115200 baud after upload; press EN/reset if you missed startup text. No extra
+    library is needed. The example uses no GPIO wiring. The stated results are predictions from source, not a recorded
+    board run.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: compiler_baseline.ino
+  wiring: 'USB only; no GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n\nint nextCount(int current) {\n  return current + 1;\n}\n\nvoid setup() {\n \
+    \ Serial.begin(115200);\n  delay(1000);\n  const int count = 2;\n  Serial.println(\"Minimal sketch reached setup\"\
+    );\n  Serial.print(\"next count: \");\n  Serial.println(nextCount(count));\n}\n\nvoid loop() {\n  delay(10);\n\
+    }\n"
+  notes: Expected behavior in this guide is a source walkthrough. No firmware compilation or physical board upload
+    was performed for this lesson.
+faqs:
+- question: Does exit status 1 identify the broken line?
+  answer: No. It summarizes failure; inspect the earlier specific diagnostic and its context.
+- question: Does Verify prove the board or sensor works?
+  answer: No. Verify builds software for the selected target; upload and runtime behavior are separate checks.
+sources:
+- title: Arduino compilation troubleshooting
+  url: https://support.arduino.cc/hc/en-us/articles/4402764401554-If-your-sketch-doesn-t-compile
+  note: Verify, console diagnostics and common failure categories.
+- title: Arduino sketch build process
+  url: https://docs.arduino.cc/arduino-cli/sketch-build-process/
+  note: Preprocessing, dependency resolution, compilation and linking; architecture tools differ.
+- title: Arduino variable scope
+  url: https://docs.arduino.cc/language-reference/en/variables/variable-scope-qualifiers/scope/
+  note: Declaration visibility and local names.
+- title: Arduino multiple-library selection
+  url: https://support.arduino.cc/hc/en-us/articles/4406379650578-Error-Multiple-libraries-were-found
+  note: A matching-library list alone does not establish a build failure.
+- title: Arduino-ESP32 3.3.2 Print interface
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Formatting API baseline; no firmware execution claim.
+related_guides:
+- title: Install the right libraries
+  href: /guides/esp32-install-libraries.html
+  description: Resolve missing headers and record dependency versions.
+- title: Variables and data types
+  href: /guides/esp32-variables-data-types.html
+  description: Review names, types and variable scope.
+conclusion: Keep one known small sketch and change only one suspected cause before checking again.

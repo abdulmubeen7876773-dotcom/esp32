@@ -1,0 +1,149 @@
+slug: esp32-sensor-hysteresis
+phase: 2
+sort_order: 44
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Sensor Thresholds and Hysteresis: Stop Rapid Toggling | ESP32 Engine'
+headline: 'ESP32 Sensor Thresholds and Hysteresis: Stop Rapid Toggling'
+meta_description: Use two thresholds and remembered state in ESP32 code. Trace fixed sample values, handle invalid
+  input and separate hysteresis from smoothing.
+lead: Use two thresholds and remembered state in ESP32 code. Trace fixed sample values, handle invalid input and
+  separate hysteresis from smoothing.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 Sensor Thresholds and Hysteresis
+keywords: 'ESP32 Sensor Thresholds and Hysteresis: Stop Rapid Toggling'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No external sensor or output circuit for this
+      exercise.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the first Serial-only upload. For the logic lessons, read the variables, decisions, loops and
+      functions references first.
+  - label: Your goal
+    value: Predict when a high-level flag turns on, turns off or keeps its previous state inside a threshold band.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: one-threshold
+  heading: A single threshold can chatter
+  text: 'A signal close to one decision boundary can alternate above and below it. A comparison such as level >=
+    50 would repeatedly change a flag for values 49, 51, 49 and 51. Whether that matters depends on the application;
+    frequent transitions can make displays or control logic unstable.
+
+
+    Hysteresis uses a different boundary to enter a state than to leave it. Its memory is the current flag. This
+    demonstration uses a made-up integer level from 0 through 100, with no physical unit, sensor, GPIO or actuator.
+    The thresholds are teaching values, not a thermostat or safety recommendation.'
+- id: band
+  heading: Give both thresholds an explicit policy
+  html: '<div class="wiring-table-wrap"><table class="wiring-table"><caption>Inclusive transition boundaries: high
+    = 55, low = 45</caption><thead><tr><th scope="col">Previous flag</th><th scope="col">Valid input</th><th scope="col">Next
+    flag</th></tr></thead><tbody><tr><th scope="row">OFF</th><td>55 or higher</td><td>ON</td></tr><tr><th scope="row">ON</th><td>45
+    or lower</td><td>OFF</td></tr><tr><th scope="row">Either</th><td>Strictly between 45 and 55</td><td>Keep the
+    previous flag.</td></tr><tr><th scope="row">OFF</th><td>45 or lower</td><td>Stay OFF.</td></tr><tr><th scope="row">ON</th><td>55
+    or higher</td><td>Stay ON.</td></tr><tr><th scope="row">Either</th><td>Outside 0–100</td><td>Report invalid;
+    do not update the remembered flag.</td></tr></tbody></table></div>'
+- id: startup
+  heading: Decide the initial state and invalid policy
+  text: 'The stored flag begins OFF. A first valid sample inside the band therefore leaves it OFF. If you need a
+    different startup rule, define it explicitly; there is no previous physical history for the program to recover
+    automatically after reset. The code checks low < high with a compile-time assertion.
+
+
+    An invalid sample is reported and skipped. Retaining a software flag is only the policy of this no-output demonstration.
+    A real actuator may need a separate fault state, timeout or independent protection. For floating-point sensor
+    data, also reject non-finite values such as NaN before applying comparisons; the integer sample stream here
+    cannot represent NaN.'
+- id: walkthrough
+  heading: Trace both travel directions
+  text: 'The fixed sequence is 49, 51, 50, 54, 55, 53, 46, 45, 44, -1, 56. Starting OFF, the flag stays OFF through
+    54, turns ON at 55, stays ON at 53 and 46, then turns OFF at 45. It stays OFF at 44, reports -1 as invalid,
+    and turns ON at 56. These are source predictions, not captured sensor readings.
+
+
+    The function returns the next flag from a valid sample and the prior flag. It does not turn on an output or
+    read a sensor. Its explicit input and return value make the policy easier to inspect than a collection of hidden
+    global side effects.'
+- id: filtering
+  heading: Hysteresis and smoothing solve different problems
+  text: 'Hysteresis stabilizes a decision by keeping state inside a band. A moving average changes the values being
+    considered and introduces a response tradeoff. You can combine them deliberately, but averaging alone does not
+    guarantee the decision will stop toggling near a threshold.
+
+
+    Choose a band using the real signal range, noise, desired sensitivity and acceptable response. A narrow band
+    may still chatter when noise crosses both thresholds; a wide one may ignore changes you care about. Respect
+    the sensor’s valid reading interval. Reading a cached value repeatedly is not a stream of independent measurements.'
+- id: practice
+  heading: Test equalities and invalid values
+  text: 'Practice on paper with 45, 46, 54 and 55 for both starting states. Then change the constants to low = 40
+    and high = 60 and predict the same sample stream again. Keep low below high. Do not silently reinterpret the
+    arbitrary levels as degrees, humidity or ADC volts.
+
+
+    If a real adaptation toggles unexpectedly, log the raw value, validity and prior/next state together. Check
+    units and boundary operators before widening the band. Before connecting hardware, use the exact sensor guide’s
+    electrical and sampling requirements and define what a failed reading should do.'
+- id: upload-steps
+  heading: Use one complete example
+  text: Save this full sketch as hysteresis_demo.ino, select your exact ESP32 board and port, and use Verify before
+    Upload. Open Serial Monitor at 115200 baud after upload; press EN/reset if you missed startup text. No extra
+    library is needed. The example uses no GPIO wiring. The stated results are predictions from source, not a recorded
+    board run.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#analog-path">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: hysteresis_demo.ino
+  wiring: 'USB only; no GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n\nconstexpr int LOW_LEVEL = 45;\nconstexpr int HIGH_LEVEL = 55;\nstatic_assert(LOW_LEVEL\
+    \ < HIGH_LEVEL, \"Thresholds must be ordered\");\nconst int samples[] = {49, 51, 50, 54, 55, 53, 46, 45, 44,\
+    \ -1, 56};\nbool highFlag = false;\n\nbool nextFlag(int validLevel, bool previous) {\n  if (!previous && validLevel\
+    \ >= HIGH_LEVEL) { return true; }\n  if (previous && validLevel <= LOW_LEVEL) { return false; }\n  return previous;\n\
+    }\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  for (size_t i = 0; i < sizeof(samples) / sizeof(samples[0]);\
+    \ ++i) {\n    const int value = samples[i];\n    Serial.print(value); Serial.print(\": \");\n    if (value <\
+    \ 0 || value > 100) {\n      Serial.println(\"INVALID; flag not updated\");\n      continue;\n    }\n    highFlag\
+    \ = nextFlag(value, highFlag);\n    Serial.println(highFlag ? \"ON\" : \"OFF\");\n  }\n}\n\nvoid loop() {\n\
+    \  delay(10);\n}\n"
+  notes: Expected behavior in this guide is a source walkthrough. No firmware compilation or physical board upload
+    was performed for this lesson.
+faqs:
+- question: Does hysteresis average the sensor samples?
+  answer: No. It chooses a decision using the current value and previous state; averaging is a separate operation.
+- question: Is holding the last flag on invalid input always safe?
+  answer: No. This demonstration has no physical output. A real controller must define and test an appropriate fault
+    policy.
+sources:
+- title: TI hysteresis concept
+  url: https://www.ti.com/tool/CIRCUIT060076
+  note: Two-threshold noise rejection in a comparator; conceptual background, not an ESP32 circuit to copy.
+- title: Arduino if
+  url: https://docs.arduino.cc/language-reference/en/structure/control-structure/if/
+  note: Comparison branches for a remembered state.
+- title: Arduino arrays
+  url: https://docs.arduino.cc/language-reference/en/variables/data-types/array/
+  note: Bounded traversal of the illustrative sample stream.
+- title: Arduino-ESP32 3.3.2 Print interface
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Formatting API baseline; no firmware execution claim.
+related_guides:
+- title: Moving average
+  href: /guides/esp32-moving-average.html
+  description: Understand filtering and its response delay separately.
+- title: Analog input fundamentals
+  href: /guides/analog-inputs.html
+  description: Use a documented ADC pin and distinguish counts from volts.
+conclusion: Check both boundaries and startup behavior before choosing a real application’s thresholds.

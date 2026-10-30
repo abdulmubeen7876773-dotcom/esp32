@@ -1,0 +1,153 @@
+slug: esp32-moving-average
+phase: 2
+sort_order: 45
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Moving Average: Smooth Values Without Hiding the Tradeoff | ESP32 Engine'
+headline: 'ESP32 Moving Average: Smooth Values Without Hiding the Tradeoff'
+meta_description: Build a bounded ESP32 moving average with a ring buffer, correct warm-up count and invalid-input
+  checks. Compare raw and averaged illustrative values.
+lead: Build a bounded ESP32 moving average with a ring buffer, correct warm-up count and invalid-input checks. Compare
+  raw and averaged illustrative values.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 Moving Average
+keywords: 'ESP32 Moving Average: Smooth Values Without Hiding the Tradeoff'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No external sensor or output circuit for this
+      exercise.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the first Serial-only upload. For the logic lessons, read the variables, decisions, loops and
+      functions references first.
+  - label: Your goal
+    value: Maintain a four-sample window, avoid zero-padding during startup and explain why a step response takes
+      several samples.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: window
+  heading: Keep a window of valid samples
+  text: 'A simple moving average adds the most recent N samples and divides by the number included. This lesson
+    uses N = 4 and a fixed integer level range 0–100. Its data is an illustrative sequence in software; there is
+    no ADC, temperature sensor or measured accuracy claim.
+
+
+    A ring buffer reuses four slots. Before writing a new sample into a full buffer, subtract the outgoing value
+    from the running sum. Add the new value, advance the write index and wrap it back to zero after the last slot.
+    This keeps storage bounded instead of growing an array indefinitely.'
+- id: warmup
+  heading: Divide by samples received, not empty slots
+  text: 'The array starts with zero-filled storage, but those empty slots are not treated as measured zeros. During
+    the first four accepted samples, count grows from one to four. Divide the running sum by count. Once the window
+    is full, count stays at four and each new valid sample replaces the oldest.
+
+
+    The sum uses int32_t and is sufficient for this explicit domain: at most four values of 100, totaling 400. A
+    wider signal range or larger window requires a new range check for the accumulator. Floating-point division
+    preserves fractions such as 12.5 instead of truncating them with integer arithmetic.'
+- id: worked-window
+  heading: Follow a change through the buffer
+  html: '<div class="wiring-table-wrap"><table class="wiring-table"><caption>Worked sequence: four tens followed
+    by four twenties</caption><thead><tr><th scope="col">Accepted sample number</th><th scope="col">New illustrative
+    value</th><th scope="col">Current mean</th></tr></thead><tbody><tr><th scope="row">1</th><td>10</td><td>10.00;
+    no zero-padding.</td></tr><tr><th scope="row">4</th><td>10</td><td>10.00; four samples are now included.</td></tr><tr><th
+    scope="row">5</th><td>20</td><td>12.50; three tens and one twenty.</td></tr><tr><th scope="row">6</th><td>20</td><td>15.00</td></tr><tr><th
+    scope="row">7</th><td>20</td><td>17.50</td></tr><tr><th scope="row">8</th><td>20</td><td>20.00; old tens have
+    left the window.</td></tr></tbody></table></div>'
+- id: validity
+  heading: Reject invalid input before updating history
+  text: 'The next -1 in the example is outside the defined range, so the code reports it and skips the update. It
+    does not add a zero or increase count. The later valid 20 leaves the mean at 20.00. A run of invalid samples
+    would leave old history in memory; an unchanged mean must not be presented as fresh data.
+
+
+    In a real sensor application, track sample validity and age separately. Reset or expire the window after a long
+    gap if that matches your application. A floating-point adaptation must also reject non-finite input before arithmetic,
+    because one NaN can contaminate the sum. This integer example does not perform floating-point sensor reads.'
+- id: response
+  heading: Understand what smoothing cannot fix
+  text: 'A window can make some sample-to-sample variation less prominent, but it also spreads a sudden change across
+    multiple outputs. A larger window needs more new valid samples to replace all old history. It does not calibrate
+    a sensor, repair wiring or guarantee that every kind of interference disappears.
+
+
+    The example processes a fixed list once, so its table is indexed by sample number rather than elapsed time.
+    If readings are taken at regular intervals, you can relate that window to time. With irregular intervals this
+    is a sample-weighted average, not a time-weighted measurement. Honor the actual sensor’s minimum reading interval;
+    repeated cached values do not add independent information.'
+- id: practice
+  heading: Compare the raw and filtered sequence
+  text: 'The sketch prints each valid raw value alongside the current mean, making the step response visible. Expected
+    values are the worked table plus the invalid message and final 20.00; they are not captured device output. Change
+    WINDOW to two on your own copy and predict how quickly the old tens disappear. Keep the range/accumulator check
+    when extending the example.
+
+
+    When applying a threshold to the mean, decide whether the added response delay is acceptable and whether hysteresis
+    is also needed. Do not smooth a fault code into a plausible-looking measurement. Save the raw value and timestamp
+    when diagnosing a surprising result.'
+- id: upload-steps
+  heading: Use one complete example
+  text: Save this full sketch as moving_average_demo.ino, select your exact ESP32 board and port, and use Verify
+    before Upload. Open Serial Monitor at 115200 baud after upload; press EN/reset if you missed startup text. No
+    extra library is needed. The example uses no GPIO wiring. The stated results are predictions from source, not
+    a recorded board run.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#analog-path">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: moving_average_demo.ino
+  wiring: 'USB only; no GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n#include <stdint.h>\n\nconstexpr size_t WINDOW = 4;\nstatic_assert(WINDOW > 0,\
+    \ \"Window must not be empty\");\nint values[WINDOW] = {};\nsize_t nextSlot = 0;\nsize_t count = 0;\nint32_t\
+    \ total = 0;\nconst int samples[] = {10, 10, 10, 10, 20, 20, 20, 20, -1, 20};\n\nfloat addValidSample(int value)\
+    \ {\n  if (count == WINDOW) {\n    total -= values[nextSlot];\n  } else {\n    ++count;\n  }\n  values[nextSlot]\
+    \ = value;\n  total += value;\n  nextSlot = (nextSlot + 1) % WINDOW;\n  return static_cast<float>(total) / count;\n\
+    }\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  for (size_t i = 0; i < sizeof(samples) / sizeof(samples[0]);\
+    \ ++i) {\n    const int value = samples[i];\n    if (value < 0 || value > 100) {\n      Serial.println(\"INVALID;\
+    \ average history not updated\");\n      continue;\n    }\n    const float mean = addValidSample(value);\n \
+    \   Serial.print(\"raw: \"); Serial.print(value);\n    Serial.print(\" mean: \"); Serial.println(mean, 2);\n\
+    \  }\n}\n\nvoid loop() {\n  delay(10);\n}\n"
+  notes: Expected behavior in this guide is a source walkthrough. No firmware compilation or physical board upload
+    was performed for this lesson.
+faqs:
+- question: Should empty buffer slots count as zero readings?
+  answer: Not in this lesson. The populated count avoids biasing the first valid samples toward zero.
+- question: Does a larger window always make a better measurement?
+  answer: No. It trades response to change for smoothing and does not fix calibration, invalid data or electrical
+    problems.
+sources:
+- title: Arduino smoothing example
+  url: https://raw.githubusercontent.com/arduino/arduino-examples/main/examples/03.Analog/Smoothing/Smoothing.ino
+  note: Running-sum window concept. This lesson adds populated-count warm-up and fixed synthetic inputs; no AVR
+    analog pin assumption.
+- title: Arduino arrays
+  url: https://docs.arduino.cc/language-reference/en/variables/data-types/array/
+  note: Fixed storage and valid array index bounds.
+- title: Arduino float arithmetic
+  url: https://docs.arduino.cc/language-reference/en/variables/data-types/float/
+  note: Fractional results versus integer division; target-specific type assumptions remain separate.
+- title: Arduino-ESP32 3.3.2 Print interface
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Formatting API baseline; no firmware execution claim.
+related_guides:
+- title: Thresholds and hysteresis
+  href: /guides/esp32-sensor-hysteresis.html
+  description: Separate a stable decision from filtering.
+- title: Arrays and strings
+  href: /guides/esp32-arrays-strings.html
+  description: Review bounds, element counts and storage.
+conclusion: Keep raw values, validity and age visible while selecting a useful window size.

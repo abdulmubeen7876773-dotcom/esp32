@@ -1,6 +1,12 @@
 GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 
 GUIDE_IMAGE_BY_SLUG = {
+    "esp32-install-libraries": "/assets/visuals/guides/concepts/esp32-install-libraries-concept.svg",
+    "esp32-compiler-errors": "/assets/visuals/guides/concepts/esp32-compiler-errors-concept.svg",
+    "esp32-state-machines": "/assets/visuals/guides/concepts/esp32-state-machines-concept.svg",
+    "esp32-sensor-hysteresis": "/assets/visuals/guides/concepts/esp32-sensor-hysteresis-concept.svg",
+    "esp32-moving-average": "/assets/visuals/guides/concepts/esp32-moving-average-concept.svg",
+
     "esp32-variables-data-types": "/assets/visuals/guides/concepts/esp32-variables-data-types-concept.svg",
     "esp32-if-else-switch": "/assets/visuals/guides/concepts/esp32-if-else-switch-concept.svg",
     "esp32-for-while-loops": "/assets/visuals/guides/concepts/esp32-for-while-loops-concept.svg",

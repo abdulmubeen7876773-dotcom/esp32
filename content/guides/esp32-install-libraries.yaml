@@ -1,0 +1,151 @@
+slug: esp32-install-libraries
+phase: 1
+sort_order: 41
+guide_type: reference
+concise_layout: true
+title: 'Install Arduino Libraries for ESP32: Names, Versions and Dependencies | ESP32 Engine'
+headline: 'Install Arduino Libraries for ESP32: Names, Versions and Dependencies'
+meta_description: Install the right ESP32 Arduino library, check its author and dependencies, and diagnose missing
+  headers with a complete USB-only header probe.
+lead: Install the right ESP32 Arduino library, check its author and dependencies, and diagnose missing headers with
+  a complete USB-only header probe.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: Install Arduino Libraries for ESP32
+keywords: 'Install Arduino Libraries for ESP32: Names, Versions and Dependencies'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No external sensor or output circuit for this
+      exercise.
+  - label: Software baseline
+    value: Arduino IDE 2; Arduino-ESP32 3.3.2; DHT sensor library by Adafruit 1.4.6 and Adafruit Unified Sensor
+      1.1.15 are the reviewed reference versions, not latest-release claims.
+  - label: Before this lesson
+    value: Complete the first Serial-only upload. For the logic lessons, read the variables, decisions, loops and
+      functions references first.
+  - label: Your goal
+    value: Record the library identity and version, resolve its required headers and distinguish installation from
+      sensor verification.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: package-or-library
+  heading: Separate board support from an extra library
+  text: 'The ESP32 board package supplies the core and board definitions used to build your sketch. A library adds
+    a particular API, such as DHT sensor access. Installing a sensor library does not install the ESP32 core, select
+    your board, choose a USB port or connect the physical sensor.
+
+
+    The reference exercise uses the DHT library already relevant to this site’s DHT11 guides. It only includes headers
+    and prints a type size; it never creates a DHT instance, calls begin(), reads a pin or measures temperature.
+    Its purpose is to separate a missing software dependency from a sensor wiring problem.'
+- id: identity
+  heading: Write down exactly what you intend to install
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Reference versions for reproducibility,
+    not newest-version recommendations</caption><thead><tr><th scope="col">Item</th><th scope="col">Reviewed reference</th><th
+    scope="col">Role</th></tr></thead><tbody><tr><th scope="row">Board package</th><td>esp32 by Espressif Systems,
+    3.3.2</td><td>Core and board support; managed separately.</td></tr><tr><th scope="row">Library</th><td>DHT sensor
+    library by Adafruit, 1.4.6</td><td>Provides DHT.h; not a similarly named package.</td></tr><tr><th scope="row">Dependency</th><td>Adafruit
+    Unified Sensor, 1.1.15</td><td>Provides Adafruit_Sensor.h.</td></tr><tr><th scope="row">Hardware lesson</th><td>DHT11
+    guide</td><td>Only needed when progressing to a real sensor read.</td></tr></tbody></table></div>
+- id: manager
+  heading: Install through Library Manager
+  text: 'In Arduino IDE 2, open Tools > Manage Libraries, or use the Library Manager sidebar. Search the exact library
+    name, check its author and More info link, and select the reference version when reproducing this exercise.
+    Install the library and its required dependency. Record the versions actually installed if you choose a different
+    release.
+
+
+    After installation, open File > Examples and look under the library name if examples are included. Treat those
+    examples as starting points with their own board, sensor and wiring assumptions. Do not upload a DHT22-configured
+    example to a DHT11 circuit without matching the actual type and wiring.'
+- id: zip
+  heading: Use a ZIP only when its identity is clear
+  text: 'For an author-provided release ZIP, use Sketch > Include Library > Add .ZIP Library and choose the library
+    archive. A whole project download can contain nested libraries or unrelated files; it is not necessarily a valid
+    library ZIP. Prefer the Library Manager entry when it already supplies the intended release.
+
+
+    Avoid installing duplicate copies in several locations while debugging. Before replacing a manually installed
+    copy, preserve any changes you made and note its location. A folder in your sketchbook can take precedence over
+    another installed copy. Repeating installation without checking the selected path can leave the same mismatch
+    in place.'
+- id: probe
+  heading: Interpret this small probe correctly
+  text: 'The complete sketch includes DHT.h and Adafruit_Sensor.h, then asks sizeof(sensor_t) for a type supplied
+    by Unified Sensor. The returned size depends on the target ABI; there is deliberately no hard-coded expected
+    byte count. If a later Verify on your computer succeeds, those headers were resolved for that build.
+
+
+    The printed marker, if you upload and run the sketch yourself, confirms reaching setup(). It does not prove
+    the DHT driver reads successfully, nor does it test every driver symbol or API. For an actual temperature/humidity
+    measurement, continue to the complete DHT11 guide and its exact electrical assumptions.'
+- id: troubleshooting
+  heading: Follow the selected file, not just the package name
+  text: 'A missing DHT.h points toward the wrong library identity, unavailable installation or spelling. A missing
+    Adafruit_Sensor.h points toward the dependency. If the output lists multiple matching libraries, inspect the
+    Used path; that informational message alone is not necessarily an error. Keep the complete diagnostic when the
+    build fails.
+
+
+    Practice: note IDE version, board/core version, both library versions and the selected library path in a small
+    project record. Keep a working example before changing a dependency. This makes a later “no member named …”
+    error easier to compare with the API version the guide actually uses.'
+- id: upload-steps
+  heading: Use one complete example
+  text: Save this full sketch as library_headers_demo.ino, select your exact ESP32 board and port, and use Verify
+    before Upload. Open Serial Monitor at 115200 baud after upload; press EN/reset if you missed startup text. Install
+    the two stated Adafruit library reference versions before Verify; a sensor is not required for this probe. The
+    example uses no GPIO wiring. The stated results are predictions from source, not a recorded board run.
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#setup-path">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete USB and Serial-only example
+  filename: library_headers_demo.ino
+  wiring: 'USB only; no GPIO wiring. Serial Monitor: 115200 baud.'
+  content: "#include <Arduino.h>\n#include <DHT.h>\n#include <Adafruit_Sensor.h>\n\nvoid setup() {\n  Serial.begin(115200);\n\
+    \  delay(1000);\n  Serial.println(\"Library header probe reached setup\");\n  Serial.print(\"sensor_t bytes\
+    \ on this target: \");\n  Serial.println(sizeof(sensor_t));\n  Serial.println(\"No sensor read or GPIO operation\
+    \ performed\");\n}\n\nvoid loop() {\n  delay(10);\n}\n"
+  notes: Expected behavior in this guide is a source walkthrough. No firmware compilation or physical board upload
+    was performed for this lesson.
+faqs:
+- question: Does including DHT.h read the sensor?
+  answer: No. This probe does not construct or run a sensor driver. Follow the separate wiring and measurement guide
+    for that.
+- question: Should I install every library with DHT in its name?
+  answer: No. Match the intended author, API and required dependencies, then inspect the library actually selected
+    by the build.
+sources:
+- title: Arduino library installation
+  url: https://support.arduino.cc/hc/en-us/articles/5145457742236-Install-libraries-in-the-Arduino-IDE
+  note: Library Manager, ZIP installation and included examples.
+- title: Adafruit DHT 1.4.6 metadata
+  url: https://raw.githubusercontent.com/adafruit/DHT-sensor-library/1.4.6/library.properties
+  note: Exact library name, version and declared dependency.
+- title: Adafruit Unified Sensor 1.1.15 header
+  url: https://raw.githubusercontent.com/adafruit/Adafruit_Sensor/1.1.15/Adafruit_Sensor.h
+  note: sensor_t type used by the probe.
+- title: Arduino multiple-library message
+  url: https://support.arduino.cc/hc/en-us/articles/4406379650578-Error-Multiple-libraries-were-found
+  note: Check which matching copy was selected.
+- title: Arduino-ESP32 3.3.2 Print interface
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/Print.h
+  note: Formatting API baseline; no firmware execution claim.
+related_guides:
+- title: Read and fix compiler errors
+  href: /guides/esp32-compiler-errors.html
+  description: Separate a missing header from other build failures.
+- title: Complete DHT11 build
+  href: /guides/read-temperature-dht22.html
+  description: Continue to real wiring and measurement only after the software is ready.
+conclusion: Record the exact dependency set, then keep installation checks separate from hardware diagnosis.
