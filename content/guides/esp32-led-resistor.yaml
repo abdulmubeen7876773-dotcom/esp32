@@ -1,0 +1,149 @@
+slug: esp32-led-resistor
+phase: 1
+sort_order: 33
+guide_type: reference
+concise_layout: true
+title: 'ESP32 LED Resistor: Calculate Current and Choose a Safe Value | ESP32 Engine'
+headline: 'ESP32 LED Resistor: Calculate Current and Choose a Safe Value'
+meta_description: Choose a series resistor for a small ESP32 indicator LED. Work through voltage, current, tolerance
+  and power, then apply the documented Blink wiring.
+lead: Choose a series resistor for a small ESP32 indicator LED. Work through voltage, current, tolerance and power,
+  then apply the documented Blink wiring.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 LED Resistor
+keywords: 'ESP32 LED Resistor: Calculate Current and Choose a Safe Value'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: 'For calculation: LED datasheet, resistor values and calculator. For assembly: the exact parts in the
+      linked external-LED Blink guide.'
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the Serial-only first upload in the Arduino IDE setup guide. Check your exact board family and
+      selected port.
+  - label: Your goal
+    value: Calculate an illustrative resistor value and explain why LED colour alone is insufficient.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: series-resistor
+  heading: The resistor limits current
+  text: 'An ordinary indicator LED is not a fixed resistance. Its current changes sharply with voltage, so a direct
+    GPIO connection can damage the LED or output. Put a current-limiting resistor in the same series path. A button
+    pull-up resistor serves another purpose; do not substitute its wiring arrangement.
+
+
+    This lesson concerns one low-current indicator, not LED strips, high-power emitters or motor drivers. Some LED
+    modules already include a resistor or driver. Check the exact circuit before adding a resistor or assuming a
+    module can connect directly.'
+- id: inputs
+  heading: Write down the assumptions
+  text: 'You need the drive voltage available under load, the LED forward voltage at the intended current and a
+    modest target current supported by both LED and board. GPIO HIGH is nominally a logic level, not an ideal bench
+    supply. Loaded output voltage and total chip/board current budgets matter. Absolute-maximum ratings are not
+    recommended operating currents.
+
+
+    Use the actual LED datasheet. Do not assign one forward voltage to every red, green or blue LED. The contributed
+    Blink photos show a green LED but do not establish its exact part, forward voltage or current. A calculation
+    is not a measurement of that photograph.'
+- id: calculation
+  heading: Work a labelled example
+  text: 'Illustrative assumptions only: drive voltage 3.3 V, LED forward voltage 2.0 V at target current 0.002 A
+    (2 mA). The remaining voltage is 1.3 V. R = (Vdrive − Vf) / I gives 650 ohms. The next larger available value,
+    680 ohms, gives approximately 1.3 / 680 = 0.00191 A, or 1.91 mA under those assumptions.
+
+
+    This is not a universal 680-ohm recommendation. If the documented LED forward voltage is close to the actual
+    GPIO HIGH voltage, there may be insufficient headroom for a predictable visible result. Do not remove the resistor
+    to compensate. Use a compatible low-current indicator or a suitable driver design.'
+- id: worked-values
+  heading: Compare values using the same assumptions
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Exactly 3.3 V drive and 2.0 V forward
+    drop assumed; not measured currents or universal selections</caption><thead><tr><th scope="col">Resistor</th><th
+    scope="col">Calculated current</th><th scope="col">Interpretation</th></tr></thead><tbody><tr><th scope="row">220
+    ohms</th><td>About 5.91 mA</td><td>Above this illustrative 2 mA target.</td></tr><tr><th scope="row">330 ohms</th><td>About
+    3.94 mA</td><td>Less current than 220 ohms in this example.</td></tr><tr><th scope="row">680 ohms</th><td>About
+    1.91 mA</td><td>Near this illustrative target.</td></tr><tr><th scope="row">1000 ohms</th><td>About 1.30 mA</td><td>Less
+    current; visibility is LED-specific.</td></tr></tbody></table></div>
+- id: tolerance-power
+  heading: Check tolerance and power
+  text: 'To estimate maximum current, consider the highest plausible drive voltage, lowest plausible forward voltage
+    and lowest resistance permitted by tolerance. For the same illustrative 3.3 V and 2.0 V, a 680-ohm resistor
+    at minus 5% is 646 ohms; current rises to approximately 2.01 mA. That shows only resistor tolerance, not a complete
+    worst-case check of an unidentified LED.
+
+
+    Resistor dissipation is I²R, or voltage across the resistor multiplied by current. At the nominal 680-ohm example,
+    it is about 0.00249 W. Choose a rating above actual worst-case dissipation with suitable margin. A higher power
+    rating cannot repair a resistance that permits excessive current.'
+- id: apply-to-blink
+  heading: Apply it to the documented Blink circuit
+  text: 'Disconnect USB before rewiring. Follow the linked guide’s logical path: GPIO2 → series resistor → LED anode
+    → LED cathode → GND on the stated classic ESP32 board. A resistor can sit on either side electrically if it
+    remains in that single series path; breadboard rows still determine the physical connections.
+
+
+    Use the Blink guide’s documented parts and the real LED specification. Its 220–330-ohm example and this 680-ohm
+    calculation have different stated assumptions; this lesson does not silently change that guide’s parts list.
+    GPIO2 is a boot-strapping pin on classic ESP32, so retain its upload precautions. Do not connect a GPIO directly
+    to an external supply.'
+- id: diagnose
+  heading: If the LED is dim or off
+  text: 'Unplug power and check polarity, GPIO labels, resistor markings and breadboard connectivity. Verify a suspect
+    resistor with a meter on an unpowered circuit. A lit board power indicator does not prove the external LED path
+    is correct.
+
+
+    For a dim LED, inspect its specification and calculation before reducing resistance. If something becomes hot,
+    unplug and investigate; do not increase GPIO drive strength as a shortcut. Measure current only with a correctly
+    configured meter in series and suitable supervision. A current-range meter placed across a supply can short
+    it.'
+- id: practice
+  heading: Try the calculation before the hardware
+  text: 'Choose two hypothetical, documented LED forward voltages and calculate current for the same resistor. Explain
+    which case produces more current. Record assumed drive voltage, Vf, target current, chosen standard value and
+    power estimate.
+
+
+    Then use the complete Blink guide for wiring and code. This calculation lesson intentionally has no new sketch:
+    software does not replace the missing electrical specification.'
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#gpio-foundations">Back to this Learning path</a> · <a href="/learning.html">See
+    the full ESP32 roadmap</a></p>
+code_examples: []
+faqs:
+- question: Is 220 ohms correct for every ESP32 LED?
+  answer: No. Calculate with actual output conditions, LED specification and permitted current. The linked Blink
+    circuit states one indicator example.
+- question: Can I use one resistor for parallel LEDs?
+  answer: Do not apply this single-LED example unchanged. Separate branches generally need separate current limiting;
+    design for the actual driver and load.
+sources:
+- title: 'Adafruit: LED forward voltage and voltage law'
+  url: https://learn.adafruit.com/all-about-leds/forward-voltage-and-kvl
+  note: LED voltage drop and current-limiting calculation.
+- title: 'Adafruit: revisiting resistors'
+  url: https://learn.adafruit.com/all-about-leds/revisiting-resistors
+  note: Resistance, current and brightness.
+- title: Classic ESP32 datasheet
+  url: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  note: Electrical characteristics; use the actual chip and board specifications.
+related_guides:
+- title: Complete external-LED Blink build
+  href: /guides/blink-led-esp32.html
+  description: Wiring, copyable sketch and contributed photos.
+- title: LED PWM guide
+  href: /guides/esp32-pwm.html
+  description: Study duty cycle after the current path is correct.
+conclusion: Use stated assumptions, then check the actual component and board limits before assembly.

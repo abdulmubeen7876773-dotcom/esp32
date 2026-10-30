@@ -1,0 +1,149 @@
+slug: esp32-millis-vs-delay
+phase: 1
+sort_order: 32
+guide_type: reference
+concise_layout: true
+title: 'ESP32 millis() vs delay(): Non-Blocking Timing for Beginners | ESP32 Engine'
+headline: 'ESP32 millis() vs delay(): Non-Blocking Timing for Beginners'
+meta_description: Use millis() to schedule two ESP32 Serial messages while accepting commands. Learn elapsed-time
+  subtraction, rollover and the limits of non-blocking code.
+lead: Use millis() to schedule two ESP32 Serial messages while accepting commands. Learn elapsed-time subtraction,
+  rollover and the limits of non-blocking code.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 millis() vs delay()
+keywords: 'ESP32 millis() vs delay(): Non-Blocking Timing for Beginners'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit and USB data cable. No external circuit.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the Serial-only first upload in the Arduino IDE setup guide. Check your exact board family and
+      selected port.
+  - label: Your goal
+    value: Schedule two periodic actions and accept a Serial command between them.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: why-timing
+  heading: Waiting is a design choice
+  text: 'delay(1000) is convenient for a simple LED or slow print demonstration. While the sketch task waits, later
+    statements in that task do not run. On ESP32, that does not mean all background tasks or interrupts stop. The
+    practical problem is that your own button or server handling placed after the delay waits too.
+
+
+    millis() reports elapsed milliseconds since startup. Reading it does not create a callback or new task. You
+    compare the current value with a saved timestamp on repeated loop calls and do a short action when enough time
+    has passed.'
+- id: comparison
+  heading: Choose the timing pattern
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Sketch-level choices; none is a universal
+    real-time guarantee</caption><thead><tr><th scope="col">Pattern</th><th scope="col">Useful for</th><th scope="col">Limitation</th></tr></thead><tbody><tr><th
+    scope="row">delay(interval)</th><td>Simple single-job demonstration</td><td>Later sketch work waits.</td></tr><tr><th
+    scope="row">Elapsed-time check</th><td>Periodic readings, messages or UI work</td><td>The loop must return often
+    enough.</td></tr><tr><th scope="row">Dedicated timing peripheral</th><td>Tighter timing requirements</td><td>Requires
+    a chip-specific design.</td></tr></tbody></table></div>
+- id: upload-steps
+  heading: Run two schedules and a command
+  text: 'Upload the full timing_demo.ino sketch. Open Serial Monitor at 115200. The heartbeat counter is scheduled
+    every 250 ms and the slower report every 1000 ms. Send ? at different moments: the sketch should acknowledge
+    it between scheduled actions. Newline characters are ignored.
+
+
+    These are expected behaviors, not measured timing results. Serial transport and host buffering can group messages.
+    Too much printing can itself slow the loop. The final delay(1) is a short deliberate yield, not the one-second
+    wait the scheduler replaces.'
+- id: elapsed-time
+  heading: Subtract matching unsigned timestamps
+  text: 'Each schedule stores its own previous timestamp. Compare now - previous with an interval using the same
+    unsigned type. Avoid comparing now against previous + interval: the future timestamp can wrap. Use UL suffixes
+    on the unsigned long timing constants.
+
+
+    The millisecond count wraps; it is not an ever-growing calendar. For a 32-bit millisecond value, a full wrap
+    is about 49.7 days. Unsigned subtraction remains useful across a wrap when the real gap is less than that full
+    range and the loop checks regularly. It cannot recover an unknown number of missed wraps or time powered off.'
+- id: rollover-example
+  heading: Work through rollover on paper
+  text: 'For a deliberately simplified 8-bit counter, previous = 250 and now = 4 produce an unsigned elapsed value
+    of 10. Real millis() has a much larger range, but the modular-arithmetic idea is the same. Do not store actual
+    millis() values in an 8-bit variable; this is only a paper example.
+
+
+    This sketch assigns previous = now after each action. It schedules relative to the time the action was serviced
+    and skips missed events. previous += interval is another policy that can preserve a nominal cadence, but it
+    needs a deliberate catch-up or skip strategy if work falls behind.'
+- id: limits
+  heading: An elapsed-time check cannot shorten other work
+  text: 'A delay-free loop can still wait inside a sensor library, network request or large Serial write. Keep scheduled
+    actions short and understand the calls they make. This example is neither parallel execution nor a universal
+    sensor sampling rate. DHT11 still needs its documented slower reading interval.
+
+
+    These timestamps do not need volatile because only the sketch task accesses them. Interrupts or additional tasks
+    introduce shared-state rules outside this example. Use an appropriate peripheral for precise waveforms instead
+    of treating Serial print timing as proof of GPIO pulse accuracy.'
+- id: practice
+  heading: Change one schedule independently
+  text: 'Set the heartbeat interval to 500UL and keep the report at 1000UL. Predict how many heartbeat messages
+    should fit between reports, allowing for message ordering when both become due. Send ? again to check command
+    handling.
+
+
+    Then inspect your Blink sketch and identify the output state and timestamp needed to replace its long waits.
+    Keep its original wiring and safety assumptions. Running the example on your board is your own verification
+    step.'
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete two-schedule Serial example
+  filename: timing_demo.ino
+  wiring: USB only. Serial Monitor at 115200 baud; send ? for a response.
+  content: "#include <Arduino.h>\n\nconstexpr unsigned long HEARTBEAT_MS = 250UL;\nconstexpr unsigned long REPORT_MS\
+    \ = 1000UL;\nunsigned long lastHeartbeat = 0;\nunsigned long lastReport = 0;\nunsigned long heartbeatCount =\
+    \ 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  const unsigned long start = millis();\n  lastHeartbeat =\
+    \ start;\n  lastReport = start;\n}\n\nvoid loop() {\n  const unsigned long now = millis();\n  if (now - lastHeartbeat\
+    \ >= HEARTBEAT_MS) {\n    lastHeartbeat = now;\n    ++heartbeatCount;\n    Serial.print(\"heartbeat \");\n \
+    \   Serial.println(heartbeatCount);\n  }\n  if (now - lastReport >= REPORT_MS) {\n    lastReport = now;\n  \
+    \  Serial.print(\"uptime ms: \");\n    Serial.println(now);\n  }\n  if (Serial.available() > 0) {\n    const\
+    \ char command = static_cast<char>(Serial.read());\n    if (command == '?') {\n      Serial.println(\"Command\
+    \ received between scheduled actions\");\n    }\n  }\n  delay(1);\n}\n"
+  notes: One loop services both schedules and the command; no additional user-created tasks.
+faqs:
+- question: Does millis() call my action automatically?
+  answer: No. Your loop must check elapsed time and call the action. millis() returns a time count.
+- question: Is delay(1) forbidden here?
+  answer: No. The example deliberately includes a short yield. The goal is to avoid long interval waits holding
+    up other sketch work, not to promise zero latency.
+sources:
+- title: Arduino-ESP32 3.3.2 timing implementation
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/esp32-hal-misc.c
+  note: Timing behavior in the reviewed core.
+- title: Arduino millis reference
+  url: https://docs.arduino.cc/language-reference/en/functions/time/millis/
+  note: Unsigned millisecond count and overflow behavior.
+- title: Arduino delay reference
+  url: https://docs.arduino.cc/language-reference/en/functions/time/delay/
+  note: Delay behavior and alternatives.
+- title: Arduino-ESP32 3.3.2 sketch execution
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/main.cpp
+  note: Core calls setup and repeatedly services loop; reviewed version, not a hardware test.
+related_guides:
+- title: Understand setup and loop
+  href: /guides/esp32-setup-and-loop.html
+  description: Learn execution order and variable lifetime first.
+- title: Button debounce with millis
+  href: /guides/debouncing-buttons.html
+  description: Apply elapsed-time checks to a stable input.
+conclusion: Keep actions short, use consistent unsigned timestamps and choose a missed-event policy deliberately.

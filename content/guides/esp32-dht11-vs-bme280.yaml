@@ -1,0 +1,150 @@
+slug: esp32-dht11-vs-bme280
+phase: 2
+sort_order: 34
+guide_type: reference
+concise_layout: true
+title: 'DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build? | ESP32 Engine'
+headline: 'DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?'
+meta_description: Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements,
+  wiring, sampling and the sensor you own.
+lead: Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements, wiring, sampling
+  and the sensor you own.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: DHT11 vs BME280 with ESP32
+keywords: 'DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: A documented DHT11 or BME280 module and its part documentation. No combined circuit is required for this
+      comparison.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the Serial-only first upload in the Arduino IDE setup guide. Check your exact board family and
+      selected port.
+  - label: Your goal
+    value: Choose a sensor from the measurements needed, electrical compatibility and available hardware.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: decision
+  heading: Start with the measurement
+  text: 'Own a DHT11 and want a first temperature-and-humidity lesson? Use that learning route; you need not buy
+    a BME280 just to reproduce a screenshot. If barometric pressure is required, DHT11 cannot supply it. BME280
+    measures pressure as well as temperature and humidity. Neither directly measures carbon dioxide, air quality
+    or rain.
+
+
+    This compares DHT11 with BME280. DHT22/AM2302 is a distinct part with different specifications, and its existing
+    comparison remains separate. Colour and breakout shape are not reliable sensor identification.'
+- id: comparison
+  heading: Compare capabilities before code
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Match the actual model, module and example;
+    chip limits are not breakout guarantees</caption><thead><tr><th scope="col">Question</th><th scope="col">DHT11</th><th
+    scope="col">BME280</th></tr></thead><tbody><tr><th scope="row">Measurements</th><td>Temperature and relative
+    humidity</td><td>Temperature, humidity and pressure</td></tr><tr><th scope="row">Interface</th><td>One timed
+    bidirectional DATA line; not I2C</td><td>I2C or SPI on the chip; follow the actual module</td></tr><tr><th scope="row">Site
+    starter example</th><td>GPIO4 with the stated pull-up arrangement</td><td>I2C with explicit SDA/SCL and address
+    checks</td></tr><tr><th scope="row">Altitude</th><td>No pressure measurement</td><td>Pressure-based estimate
+    requiring a reference</td></tr><tr><th scope="row">Reading schedule</th><td>Respect the sensor manual and library
+    separately</td><td>Choose sampling/filter settings for the application</td></tr><tr><th scope="row">Electrical
+    compatibility</th><td>Documented 3.3 V-compatible part/module and DATA pull-up</td><td>Check module supply,
+    pull-ups and signal levels</td></tr></tbody></table></div>
+- id: wiring
+  heading: The wiring patterns are different
+  text: 'The DHT11 lesson uses one DATA GPIO plus supply and ground. A bare sensor generally needs an external pull-up;
+    a module may include it. A printed SDA label does not make this sensor I2C. Keep the data pull-up compatible
+    with the ESP32 input.
+
+
+    The linked BME280 lesson uses I2C SDA and SCL, common ground and a compatible supply. Follow its chosen pins
+    and the module labels. BME280 I2C addresses can be 0x76 or 0x77; scan and check the documented address setting.
+    A similar BMP280 has no humidity measurement. Do not move wires on powered modules to discover a working arrangement.'
+- id: accuracy
+  heading: Accuracy is not the number of decimal places
+  text: 'Accuracy describes agreement with a reference under specified conditions. Resolution describes output step
+    size. Extra decimal places do not establish accuracy. The DHT11 manual and Bosch datasheet state their own conditions
+    and limits; compare those conditions before applying a figure to a room or enclosure.
+
+
+    This article reports no side-by-side measured accuracy. BME280 may fit a richer environmental dashboard, but
+    the assembled result depends on placement, actual sensor identity, configuration and calibration needs. A better-specified
+    chip cannot eliminate heat from an ESP32 regulator placed beside it.'
+- id: sampling
+  heading: Do not sample as fast as loop() runs
+  text: 'Follow your actual DHT11 revision. The linked manual specifies more than two seconds between samples and
+    recommends more than five seconds between reads for accurate data. The site reference uses six seconds. A library’s
+    rapid-call cache is a separate rule, not permission to ignore sensor timing.
+
+
+    BME280 oversampling, filtering and operating mode affect conversion time and power. Reading a library value
+    quickly does not prove a fresh conversion completed each time. Start from the documented example, record its
+    configuration and choose a schedule appropriate to the application.'
+- id: interpretation
+  heading: Keep pressure and altitude claims clear
+  text: 'The pressure sensor reports conditions at its location. A weather service can report sea-level-adjusted
+    pressure, so its value need not match. BME280 altitude calculations combine pressure with an assumed sea-level
+    reference. Weather changes can move that estimate even if the board stays still. It is not GPS altitude or an
+    independent height measurement.
+
+
+    Keep both sensor types away from direct sun, warm electronics and breath while checking room conditions. Let
+    them settle in the same environment before comparing trends. A classroom breakout is not automatically weatherproof
+    because its project is called a weather station.'
+- id: choose
+  heading: Choose an action from the parts you have
+  text: 'Have DHT11? Complete the Serial lesson and label its units and reading interval. Have BME280? Confirm identity,
+    supply and I2C address before adding an OLED. Need pressure but own only DHT11? Practise temperature/humidity
+    now and list pressure as a separate hardware requirement instead of inventing a value.
+
+
+    Use each sensor’s own complete code guide. There is no hybrid sketch here that pretends both models work by
+    changing one DHT_TYPE constant. Diagnose model, wiring, library and timing before deciding that either technology
+    is unreliable.'
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#sensor-basics">Back to this Learning path</a> · <a href="/learning.html">See
+    the full ESP32 roadmap</a></p>
+code_examples: []
+faqs:
+- question: Can I replace DHT11 with BME280 by changing DHT_TYPE?
+  answer: No. BME280 uses another interface and library. Use its own complete wiring and code guide.
+- question: Does BME280 measure air quality?
+  answer: No. Its measurements are temperature, relative humidity and pressure, not gas concentration or air-quality
+    index.
+sources:
+- title: Aosong DHT11 manual hosted by Seeed
+  url: https://seeeddoc.github.io/Grove-Temperature_and_Humidity_Sensor/res/DHT11.pdf
+  note: Protocol, documented electrical revision and reading intervals.
+- title: Bosch BME280 product information
+  url: https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/
+  note: Pressure, humidity and temperature capabilities.
+- title: Bosch BME280 datasheet
+  url: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf
+  note: Operating conditions, interfaces, sampling and accuracy qualifications.
+- title: Adafruit DHT library 1.4.6
+  url: https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/DHT.cpp
+  note: Read caching is separate from sensor sampling.
+related_guides:
+- title: DHT11 hands-on tutorial
+  href: /guides/read-temperature-dht22.html
+  description: Use your DHT11 with the documented interval.
+- title: DHT11 reference
+  href: /guides/esp32-dht22.html
+  description: Pin labels, pull-ups and diagnostics; historical URL retained.
+- title: BME280 wiring and code
+  href: /guides/esp32-bme280.html
+  description: Use the complete I2C example.
+- title: Separate DHT22 vs BME280 reference
+  href: /guides/esp32-dht22-vs-bme280.html
+  description: Use only for actual DHT22/AM2302 hardware.
+conclusion: Choose the measurements you need and the hardware you can identify. Follow the corresponding complete
+  sensor guide.

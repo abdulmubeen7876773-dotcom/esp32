@@ -1,6 +1,11 @@
 GUIDE_IMAGE_FALLBACK = "/assets/images/guides/guide-esp32-board-basics.webp"
 
 GUIDE_IMAGE_BY_SLUG = {
+    "esp32-setup-and-loop": "/assets/visuals/guides/concepts/esp32-setup-and-loop-concept.svg",
+    "esp32-millis-vs-delay": "/assets/visuals/guides/concepts/esp32-millis-vs-delay-concept.svg",
+    "esp32-led-resistor": "/assets/visuals/guides/concepts/esp32-led-resistor-concept.svg",
+    "esp32-dht11-vs-bme280": "/assets/visuals/guides/concepts/esp32-dht11-vs-bme280-concept.svg",
+    "esp32-ap-vs-station": "/assets/visuals/guides/concepts/esp32-ap-vs-station-concept.svg",
     "esp32-deep-sleep": "/assets/visuals/guides/concepts/esp32-deep-sleep-concept.svg",
     "esp32-ota-updates": "/assets/visuals/guides/concepts/esp32-ota-updates-concept.svg",
     "esp32-vs-esp32-s3": "/assets/visuals/guides/concepts/esp32-vs-esp32-s3-concept.svg",

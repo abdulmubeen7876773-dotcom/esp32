@@ -1,0 +1,136 @@
+slug: esp32-setup-and-loop
+phase: 1
+sort_order: 31
+guide_type: reference
+concise_layout: true
+title: 'ESP32 setup() and loop(): Understand Your First Arduino Sketch | ESP32 Engine'
+headline: 'ESP32 setup() and loop(): Understand Your First Arduino Sketch'
+meta_description: Learn what setup() and loop() do on ESP32, follow a complete Serial-only sketch, understand variable
+  scope and diagnose repeated startup messages.
+lead: Learn what setup() and loop() do on ESP32, follow a complete Serial-only sketch, understand variable scope
+  and diagnose repeated startup messages.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 setup() and loop()
+keywords: 'ESP32 setup() and loop(): Understand Your First Arduino Sketch'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic ESP32-WROOM DevKit, USB data cable and computer. No external LED or sensor.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the Serial-only first upload in the Arduino IDE setup guide. Check your exact board family and
+      selected port.
+  - label: Your goal
+    value: Predict which message appears once after reset and which messages repeat.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: execution-order
+  heading: One start, then repeated work
+  text: 'An Arduino sketch is C++ code with an entry structure supplied by the core. In the standard Arduino-ESP32
+    application, setup() is called at startup; after it returns, loop() is called repeatedly. You write those functions,
+    not a second main().
+
+
+    Treat this as the sketch-level order, not a claim that the entire ESP32 runs only one task. Background system
+    work can be scheduled separately. A return from setup() allows loop execution; it does not stop the board. Reset,
+    power loss or a restart starts the application again.'
+- id: function-roles
+  heading: Put each job in the right place
+  html: <div class="wiring-table-wrap"><table class="wiring-table"><caption>Roles in this complete Serial-only example</caption><thead><tr><th
+    scope="col">Job</th><th scope="col">Place here</th><th scope="col">Reason</th></tr></thead><tbody><tr><th scope="row">Start
+    Serial</th><td>setup()</td><td>Initialize before printing.</td></tr><tr><th scope="row">Initialize the counter</th><td>Global
+    declaration</td><td>Retain its value between loop calls.</td></tr><tr><th scope="row">Print the startup marker</th><td>setup()</td><td>Separate
+    restarts from repeated work.</td></tr><tr><th scope="row">Increment and report the count</th><td>loop()</td><td>Do
+    one small piece of work each pass.</td></tr></tbody></table></div>
+- id: upload-steps
+  heading: Upload the complete example
+  text: 'Save the entire example as setup_loop_demo.ino. Select the matching ESP32 board and port, then upload.
+    Open Serial Monitor at 115200 baud. If you missed the first line, press the board’s EN/reset button after opening
+    the monitor. No GPIO connection or assumed onboard LED is involved.
+
+
+    The startup wait gives a USB-to-UART monitor time to open, but it is not a guarantee for every board. A late-attached
+    terminal can miss startup output. Use the classic WROOM workflow here; native USB variants need their documented
+    settings.'
+- id: read-output
+  heading: Read the sequence rather than guessing
+  text: 'Expected sequence, not a captured hardware log: setup: once after reset appears before loop count: 1, loop
+    count: 2 and later counts. The sketch waits one second after each count, so the repeat interval also includes
+    execution and printing time. It is not a precision clock.
+
+
+    Pressing EN should begin a new sequence. If the startup marker repeats unexpectedly, distinguish an application
+    reset from closing/reopening a port, whose control signals can reset some boards. Check cable and power with
+    peripherals disconnected. Moving initialization into loop() would hide the distinction rather than fix a reset.'
+- id: variable-lifetime
+  heading: Keep state between loop calls
+  text: 'The global unsigned long count starts at zero once per application startup and remains available on later
+    loop calls. An ordinary local counter initialized to zero inside loop() would recreate that initial value each
+    time. A local static variable can retain state, but start with one clear global in this exercise.
+
+
+    Names are case-sensitive: setup and Setup are different identifiers. Use exactly void setup() and void loop(),
+    with matching braces. An empty function is valid; omitting a required function is different from leaving its
+    body empty. This counter eventually wraps, so it is not a permanent lifetime record.'
+- id: troubleshooting
+  heading: Fix the smallest problem first
+  text: 'For a compiler error, check the first meaningful diagnostic, braces, spelling and semicolons. Do not paste
+    a second setup() or loop() from another example into the same sketch. Combine the work into one pair of functions
+    and use helper functions for clarity.
+
+
+    For a blank monitor, confirm port and baud rate, then reset once. A changing count without the startup line
+    may mean the terminal opened late. A constant count of one can mean the variable is initialized inside loop().
+    Continuous restarts need power and reset diagnosis, not an arbitrarily larger delay.'
+- id: practice
+  heading: Predict a change before making it
+  text: 'Write down what you expect if the startup println moves into loop(). Change only that statement, observe
+    the result on your own board and then restore it. Next change the message while preserving the function names.
+
+
+    This sketch uses delay() deliberately to make the order easy to read. After the sequence is clear, use the next
+    timing lesson to avoid a long wait holding up other sketch work.'
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#programming">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete Serial-only setup and loop example
+  filename: setup_loop_demo.ino
+  wiring: USB only. No GPIO wiring. Set Serial Monitor to 115200 baud.
+  content: "#include <Arduino.h>\n\nunsigned long count = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n\
+    \  Serial.println(\"setup: once after reset\");\n}\n\nvoid loop() {\n  ++count;\n  Serial.print(\"loop count:\
+    \ \");\n  Serial.println(count);\n  delay(1000);\n}\n"
+  notes: The sequence described below is expected behavior, not an uploaded test result.
+faqs:
+- question: Does loop() restart setup()?
+  answer: No. Returning from loop() lets the core call loop() again. setup() runs again when the application restarts.
+- question: Can I have two loop() functions?
+  answer: Not with the same signature in one sketch. Combine the work into one loop(), using helper functions when
+    appropriate.
+sources:
+- title: Arduino-ESP32 3.3.2 sketch execution
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/cores/esp32/main.cpp
+  note: Core calls setup and repeatedly services loop; reviewed version, not a hardware test.
+- title: Arduino language reference
+  url: https://docs.arduino.cc/language-reference/
+  note: Function structure, variable scope and timing references.
+related_guides:
+- title: Arduino IDE first upload
+  href: /guides/installing-arduino-ide-esp32.html
+  description: Start here if upload or Serial output is not working.
+- title: millis() vs delay()
+  href: /guides/esp32-millis-vs-delay.html
+  description: Run more than one timed activity in the sketch loop.
+conclusion: Explain the startup marker and changing count before adding hardware. Keep the working original sketch
+  so you can compare one deliberate change at a time.

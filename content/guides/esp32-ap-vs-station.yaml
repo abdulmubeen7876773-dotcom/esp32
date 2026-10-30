@@ -1,0 +1,164 @@
+slug: esp32-ap-vs-station
+phase: 3
+sort_order: 35
+guide_type: reference
+concise_layout: true
+title: 'ESP32 Access Point vs Station Mode: Choose Your Wi-Fi Setup | ESP32 Engine'
+headline: 'ESP32 Access Point vs Station Mode: Choose Your Wi-Fi Setup'
+meta_description: Understand ESP32 AP, station and AP+STA modes. Run a complete mode-selection sketch, identify
+  the correct IP interface and separate Wi-Fi from internet access.
+lead: Understand ESP32 AP, station and AP+STA modes. Run a complete mode-selection sketch, identify the correct
+  IP interface and separate Wi-Fi from internet access.
+proficiency_level: Beginner
+reading_time: Learning reference
+date_published: '2026-10-30'
+date_modified: '2026-10-30'
+primary_keyword: ESP32 Access Point vs Station Mode
+keywords: 'ESP32 Access Point vs Station Mode: Choose Your Wi-Fi Setup'
+learning_resource_type: Guide
+status: complete
+quality_status: reviewed
+setup:
+  items:
+  - label: Hardware
+    value: Classic 2.4 GHz ESP32-WROOM DevKit, USB data cable and Wi-Fi-capable computer/phone. Station mode needs
+      an authorized compatible router/network.
+  - label: Software baseline
+    value: Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline,
+      not a latest-version claim.
+  - label: Before this lesson
+    value: Complete the Serial-only first upload in the Arduino IDE setup guide. Check your exact board family and
+      selected port.
+  - label: Your goal
+    value: Identify the network creator, the ESP32 interface address and whether an application service exists.
+  - label: Verification limits
+    value: Documentation/API and local content/browser review only. No sketch compilation, board upload or physical
+      hardware test was performed for this lesson.
+sections:
+- id: roles
+  heading: Who creates the network?
+  text: 'In station mode, ESP32 joins an existing access point, commonly a router. Your phone and board can be on
+    that local network, subject to its policy. An assigned IP proves neither internet reachability nor a running
+    web server.
+
+
+    In access-point mode, ESP32 advertises a network for a phone or computer to join. This suits a local setup or
+    bench demonstration without a router. It does not automatically share internet access. Classic WROOM uses 2.4
+    GHz; check actual capabilities for other ESP32 families.'
+- id: mode-table
+  heading: Compare connection paths
+  html: '<div class="wiring-table-wrap"><table class="wiring-table"><caption>Radio roles; HTTP is a separate application
+    service</caption><thead><tr><th scope="col">Question</th><th scope="col">Station: WIFI_STA</th><th scope="col">Access
+    point: WIFI_AP</th></tr></thead><tbody><tr><th scope="row">Network advertiser</th><td>Existing router/access
+    point</td><td>The ESP32</td></tr><tr><th scope="row">Joining device</th><td>ESP32 joins the existing network</td><td>Phone/computer
+    joins ESP32</td></tr><tr><th scope="row">ESP32 address helper</th><td>WiFi.localIP() after IP assignment</td><td>WiFi.softAPIP()
+    after startup</td></tr><tr><th scope="row">Internet expectation</th><td>Depends on routing and network policy</td><td>Not
+    provided automatically</td></tr><tr><th scope="row">First exercise</th><td>Join a permitted network and print
+    status</td><td>Create a local network and inspect its address</td></tr></tbody></table></div>'
+- id: upload-steps
+  heading: Select one mode and upload
+  text: 'The full sketch defaults to AP mode, so its first path needs no home-router credentials. Replace the example
+    AP passphrase with your own 8–63 character passphrase. Open Serial at 115200, read the network name and join
+    it from your phone or computer.
+
+
+    For station mode, set START_AS_AP to false and replace the router placeholders with credentials for a network
+    you may use. Do not publish real passwords in screenshots or source control. Station startup waits at most 20
+    seconds and disables automatic reconnect for this bounded demonstration. Correct the settings and reset to retry;
+    it is not a full reconnect manager.'
+- id: expected-result
+  heading: An IP address does not imply an HTTP server
+  text: 'AP mode should advertise ESP32-Mode-Lab and print the AP interface address. Station mode should print its
+    station address or a timeout message. These are expected results, not captured hardware connection records.
+    Reset once with the monitor open if startup output was missed.
+
+
+    This sketch starts no WebServer, route or HTTP listener. Typing its IP into a browser is therefore not a valid
+    HTTP test, and a browser failure alone does not disprove the Wi-Fi connection. Use the separate complete local
+    web-server guide when you want an actual page response.'
+- id: two-addresses
+  heading: AP+STA has two logical roles
+  text: 'WIFI_AP_STA combines AP and station roles. Their addresses serve different purposes; print both rather
+    than using a remembered helper. On the classic single-radio design, coexistence has channel constraints tied
+    to the station connection. It is not another independent radio adapter.
+
+
+    AP+STA alone does not build a router, NAT gateway, provisioning portal or secure configuration service. Those
+    need additional networking and application design. Do not expose an unauthenticated local demonstration to the
+    internet just to make a dashboard reachable.'
+- id: diagnose
+  heading: Check the network layer before the application
+  text: 'For station mode, verify SSID, passphrase, 2.4 GHz support and client policy. Guest networks may isolate
+    devices even under one SSID. Captive portals and enterprise authentication are not handled by this simple password-based
+    sketch.
+
+
+    For AP mode, keep your phone on the ESP32 network when it warns there is no internet; some phones switch away.
+    In a later HTTP lesson, use that example’s printed address and scheme. A remembered DHCP address or the wrong
+    interface can send a request elsewhere. Follow a timeout with a configuration check rather than an endless blocking
+    loop.'
+- id: practice
+  heading: Draw the route before adding a service
+  text: 'Draw router, ESP32 and phone boxes. In station mode, show ESP32 joining the router’s network. In AP mode,
+    show the phone joining ESP32. Label which ESP32 interface IP you would print.
+
+
+    Then choose the matching follow-up: station diagnostics for a router-connected sensor, or the AP-only HTTP guide
+    for a nearby dashboard. Keep the first service read-only. A Wi-Fi password restricts network entry; it does
+    not supply application authentication or encrypted HTTP.'
+- id: back-to-roadmap
+  heading: Continue your learning path
+  html: <p><a href="/learning.html#iot-basics">Back to this Learning path</a> · <a href="/learning.html">See the
+    full ESP32 roadmap</a></p>
+code_examples:
+- title: Complete AP-or-station diagnostic sketch
+  filename: wifi_mode_demo.ino
+  wiring: USB only; no GPIO wiring. Default AP path needs no router. Choose your own AP passphrase before upload.
+  content: "#include <Arduino.h>\n#include <WiFi.h>\n\nconstexpr bool START_AS_AP = true;\nconst char* AP_SSID =\
+    \ \"ESP32-Mode-Lab\";\nconst char* AP_PASSWORD = \"CHANGE_ME_1234\";\nconst char* ROUTER_SSID = \"YOUR_2_4_GHZ_SSID\"\
+    ;\nconst char* ROUTER_PASSWORD = \"YOUR_ROUTER_PASSWORD\";\nunsigned long lastReport = 0;\nbool apReady = false;\n\
+    \nvoid setup() {\n  Serial.begin(115200);\n  delay(1000);\n  if (START_AS_AP) {\n    apReady = WiFi.mode(WIFI_AP)\
+    \ && WiFi.softAP(AP_SSID, AP_PASSWORD);\n    if (!apReady) {\n      Serial.println(\"AP start failed; check\
+    \ settings and reset.\");\n      return;\n    }\n    Serial.print(\"Join network: \"); Serial.println(AP_SSID);\n\
+    \    Serial.print(\"AP address: \"); Serial.println(WiFi.softAPIP());\n  } else {\n    if (!WiFi.mode(WIFI_STA))\
+    \ {\n      Serial.println(\"STA mode failed; reset after checking settings.\");\n      return;\n    }\n    WiFi.setAutoReconnect(false);\n\
+    \    WiFi.begin(ROUTER_SSID, ROUTER_PASSWORD);\n    const unsigned long started = millis();\n    while (WiFi.status()\
+    \ != WL_CONNECTED && millis() - started < 20000UL) {\n      delay(100);\n    }\n    if (WiFi.status() == WL_CONNECTED)\
+    \ {\n      Serial.print(\"Station address: \"); Serial.println(WiFi.localIP());\n    } else {\n      WiFi.disconnect();\n\
+    \      Serial.println(\"STA timeout; check network and reset to retry.\");\n    }\n  }\n  Serial.println(\"\
+    Mode diagnostic only: no HTTP server is running.\");\n}\n\nvoid loop() {\n  const unsigned long now = millis();\n\
+    \  if (now - lastReport >= 5000UL) {\n    lastReport = now;\n    if (START_AS_AP) {\n      Serial.print(\"AP\
+    \ started: \"); Serial.println(apReady ? \"yes\" : \"no\");\n    } else {\n      Serial.print(\"Station connected:\
+    \ \");\n      Serial.println(WiFi.status() == WL_CONNECTED ? \"yes\" : \"no\");\n    }\n  }\n  delay(2);\n}\n"
+  notes: The startup wait is deliberately bounded. The loop reports state, not retries, HTTP or internet sharing.
+faqs:
+- question: Does AP mode give my phone internet?
+  answer: Not automatically. A basic ESP32 access point creates a local network; internet routing requires additional
+    functionality.
+- question: Why does its printed IP not open a page?
+  answer: This diagnostic example starts no HTTP server. Follow the linked complete web-server guide for a browser
+    response.
+sources:
+- title: Espressif Arduino Wi-Fi API
+  url: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/wifi.html
+  note: AP and station roles; compare signatures with the pinned version.
+- title: Wi-Fi AP API at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/src/WiFiAP.h
+  note: AP startup and address methods.
+- title: Wi-Fi station API at 3.3.2
+  url: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/libraries/WiFi/src/WiFiSTA.h
+  note: Station begin, disconnect, state and reconnect control.
+- title: ESP-IDF 5.5 Wi-Fi guide
+  url: https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32/api-guides/wifi.html
+  note: Shared-radio and coexistence channel constraints.
+related_guides:
+- title: Local AP web server
+  href: /guides/esp32-web-server.html
+  description: Add a real read-only HTTP service.
+- title: Wi-Fi troubleshooting
+  href: /guides/esp32-wifi-troubleshooting.html
+  description: Diagnose association, IP and bounded retries.
+- title: millis scheduling
+  href: /guides/esp32-millis-vs-delay.html
+  description: Keep application work responsive after startup.
+conclusion: Choose the radio role first, verify the corresponding interface, then add an application service.

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>(function(){
+  function cleanPath(path){
+    path = (path || "/").replace(/\/+/g, "/");
+    path = path.replace(/^\/esp32(?=\/|$)/i, "");
+    if (!path || path === "/index.html") return "/";
+    if (/\/index\.html$/i.test(path)) return path.replace(/index\.html$/i, "");
+    if (/^\/(projects|guides|components|learning|parents|teachers|downloads|tools|news|search|about|contact|privacy|terms|disclaimer|sitemap)\/$/i.test(path)) {
+      return path.replace(/\/$/, ".html");
+    }
+    return path;
+  }
+  var normalized = cleanPath(location.pathname);
+  if (normalized !== location.pathname) {
+    location.replace(normalized + (location.search || "") + (location.hash || ""));
+  }
+})();</script>
+<script>window.SITE_GA4 = "G-WLHZKSEFP3";</script>
+<script>
+(function(){
+  if (!/^(www\.)?esp32engine\.com$/.test(location.hostname)) return;
+  window.googlefc = window.googlefc || {};
+  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  if (document.getElementById("adsbygoogle-js")) return;
+  var script = document.createElement("script");
+  script.id = "adsbygoogle-js";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1799305676376920";
+  document.head.appendChild(script);
+})();
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build? | ESP32 Engine</title>
+<meta name="description" content="Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements, wiring, sampling and the sensor you own.">
+<meta name="theme-color" content="#081D3A">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://esp32engine.com/guides/esp32-dht11-vs-bme280.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="ESP32 Engine" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ESP32 Engine">
+<meta property="og:title" content="DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build? | ESP32 Engine">
+<meta property="og:description" content="Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements, wiring, sampling and the sensor you own.">
+<meta property="og:url" content="https://esp32engine.com/guides/esp32-dht11-vs-bme280.html">
+<meta property="og:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ESP32 Engine — ESP32 projects and tutorials">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build? | ESP32 Engine">
+<meta name="twitter:description" content="Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements, wiring, sampling and the sensor you own.">
+<meta name="twitter:image" content="https://esp32engine.com/assets/images/og/esp32-engine-home.webp">
+<meta name="p:domain_verify" content="f71bc8cce0ff2c76eeea8b5cf86dc70b">
+<meta name="google-site-verification" content="Els4sebtkOekRXaW0BMxMlzn9iBdaqDHmuUCmMvfkCI">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);return;}if(window.matchMedia("(prefers-color-scheme: dark)").matches){document.documentElement.setAttribute("data-theme","dark");return;}document.documentElement.setAttribute("data-theme","light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>document.documentElement.classList.add("js")</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Poppins:wght@700;800&display=optional"></noscript>
+<link rel="preload" href="/style.css?v=20260714-visual-corrections" as="style">
+<link rel="stylesheet" href="/style.css?v=20260714-visual-corrections">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ESP32 Engine","url":"https://esp32engine.com/","logo":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","sameAs":["https://github.com/abdulmubeen7876773-dotcom/esp32","https://www.youtube.com/@esp32-engine-projects"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","url":"https://github.com/abdulmubeen7876773-dotcom/esp32/issues"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","learningResourceType":"Guide","headline":"DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?","description":"Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements, wiring, sampling and the sensor you own.","datePublished":"2026-10-30","dateModified":"2026-10-30","image":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp","author":{"@type":"Person","name":"Abdul Mubeen","url":"https://esp32engine.com/author.html"},"reviewedBy":{"@type":"Organization","name":"ESP32 Engine Editorial Team","url":"https://esp32engine.com/editorial-policy.html"},"publisher":{"@type":"Organization","name":"ESP32 Engine","logo":{"@type":"ImageObject","url":"https://esp32engine.com/assets/images/og/esp32-engine-home.webp"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://esp32engine.com/guides/esp32-dht11-vs-bme280.html"},"proficiencyLevel":"Beginner","keywords":"DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://esp32engine.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://esp32engine.com/guides.html"},{"@type":"ListItem","position":3,"name":"DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?","item":"https://esp32engine.com/guides/esp32-dht11-vs-bme280.html"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I replace DHT11 with BME280 by changing DHT_TYPE?","acceptedAnswer":{"@type":"Answer","text":"No. BME280 uses another interface and library. Use its own complete wiring and code guide."}},{"@type":"Question","name":"Does BME280 measure air quality?","acceptedAnswer":{"@type":"Answer","text":"No. Its measurements are temperature, relative humidity and pressure, not gas concentration or air-quality index."}}]}</script>
+</head>
+<body class="reference-guide-page">
+<main>
+<div class="site-nav-sticky">
+<header class="site-header"><div class="wrap header-inner">
+  <a class="site-logo" href="/"><img class="site-logo-img" src="/assets/visuals/brand/esp32engine-logo-header.png" alt="ESP32 Engine" width="132" height="56" decoding="async" fetchpriority="low"></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="top-nav" aria-label="Main">
+    <a href="/">Home</a><a href="/guides.html" class="active">Guides</a><a href="/projects.html">Projects</a><a href="/components.html">Components</a><a href="/learning.html">Learning</a>
+  </nav>
+  <form class="header-search" action="/search.html" method="get" role="search">
+    <label class="visually-hidden" for="header-search-input">Search projects, guides, components</label>
+    <input id="header-search-input" name="q" type="search" placeholder="Search projects, guides, components..." autocomplete="off">
+    <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+  </form>
+  <div class="header-actions">
+    <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"><span class="theme-icon theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="theme-icon theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-open" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3" stroke-linecap="round"/></svg></button>
+    <a class="icon-btn" href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+    <a class="icon-btn" href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+  </div>
+</div></header>
+<div class="nav-spotlight" aria-label="New and popular content">
+  <div class="wrap nav-spotlight-scroll">
+    <div class="nav-spotlight-inner">
+    <span class="nav-spotlight-label">Explore</span>
+    <a class="nav-spotlight-link" href="/projects/esp32-smart-thermostat.html">Smart Thermostat</a><a class="nav-spotlight-link" href="/components/bme280.html">BME280 Sensor</a><a class="nav-spotlight-link" href="/projects/esp32-line-following-robot.html">Line Following Robot</a><a class="nav-spotlight-link nav-spotlight-badge" href="/projects.html">57 Projects</a>
+    </div>
+  </div>
+</div>
+</div>
+<div class="search-overlay" id="search-overlay" hidden inert>
+  <div class="search-overlay-backdrop" data-close-search></div>
+  <div class="search-overlay-panel" role="dialog" aria-label="Search everything">
+    <form class="search-overlay-form" id="global-search-form" action="/search.html" method="get">
+      <label class="visually-hidden" for="global-search">Search</label>
+      <input id="global-search" name="q" type="search" placeholder="Search components, projects, guides…" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <button type="button" class="search-close" data-close-search aria-label="Close search">×</button>
+    </form>
+    <div class="search-results" id="search-results-live" hidden></div>
+  </div>
+</div>
+<section class="section-block wrap page-head static-page guide-page">
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides.html">Guides</a></li><li aria-current="page">DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?</li></ol></nav>
+<p class="hero-eyebrow">Setup guide</p>
+<h1>DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build?</h1>
+<p class="article-lead">Compare DHT11 and BME280 for ESP32 room monitors and weather projects. Choose by measurements, wiring, sampling and the sensor you own.</p>
+<p class="meta guide-meta">Learning reference · Updated 2026-10-30</p>
+<figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/esp32-dht11-vs-bme280-concept.svg" alt="DHT11 vs BME280 with ESP32: Which Sensor Fits Your Build? guide illustration" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
+
+<article class="mission-journey article-concise">
+<details class="article-contents"><summary>Jump to a section</summary><nav class="article-jump-links" aria-label="On this page"><a href="#setup-heading">Before you start</a><a href="#decision-heading">Start with the measurement</a><a href="#comparison-heading">Compare capabilities before code</a><a href="#wiring-heading">The wiring patterns are different</a><a href="#accuracy-heading">Accuracy is not the number of decimal places</a><a href="#sampling-heading">Do not sample as fast as loop() runs</a><a href="#interpretation-heading">Keep pressure and altitude claims clear</a><a href="#choose-heading">Choose an action from the parts you have</a><a href="#back-to-roadmap-heading">Continue your learning path</a><a href="#next-steps-heading">Next steps</a><a href="#faq-heading">FAQ</a><a href="#sources-heading">Technical references</a><a href="#related-guides">Related Guides</a></nav></details>
+<section class="mission-section" id="setup" aria-labelledby="setup-heading"><h2 tabindex="-1" id="setup-heading">Before you start</h2><dl class="article-setup"><dt>Hardware</dt><dd>A documented DHT11 or BME280 module and its part documentation. No combined circuit is required for this comparison.</dd><dt>Software baseline</dt><dd>Arduino IDE 2 and Arduino-ESP32 3.3.2 for the stated classic ESP32 examples. This is an API review baseline, not a latest-version claim.</dd><dt>Before this lesson</dt><dd>Complete the Serial-only first upload in the Arduino IDE setup guide. Check your exact board family and selected port.</dd><dt>Your goal</dt><dd>Choose a sensor from the measurements needed, electrical compatibility and available hardware.</dd><dt>Verification limits</dt><dd>Documentation/API and local content/browser review only. No sketch compilation, board upload or physical hardware test was performed for this lesson.</dd></dl></section>
+<section class="mission-section" id="decision" aria-labelledby="decision-heading"><h2 tabindex="-1" id="decision-heading">Start with the measurement</h2><p>Own a DHT11 and want a first temperature-and-humidity lesson? Use that learning route; you need not buy a BME280 just to reproduce a screenshot. If barometric pressure is required, DHT11 cannot supply it. BME280 measures pressure as well as temperature and humidity. Neither directly measures carbon dioxide, air quality or rain.</p><p>This compares DHT11 with BME280. DHT22/AM2302 is a distinct part with different specifications, and its existing comparison remains separate. Colour and breakout shape are not reliable sensor identification.</p></section>
+<section class="mission-section" id="comparison" aria-labelledby="comparison-heading"><h2 tabindex="-1" id="comparison-heading">Compare capabilities before code</h2><div class="wiring-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="wiring-table"><caption>Match the actual model, module and example; chip limits are not breakout guarantees</caption><thead><tr><th scope="col">Question</th><th scope="col">DHT11</th><th scope="col">BME280</th></tr></thead><tbody><tr><th scope="row">Measurements</th><td>Temperature and relative humidity</td><td>Temperature, humidity and pressure</td></tr><tr><th scope="row">Interface</th><td>One timed bidirectional DATA line; not I2C</td><td>I2C or SPI on the chip; follow the actual module</td></tr><tr><th scope="row">Site starter example</th><td>GPIO4 with the stated pull-up arrangement</td><td>I2C with explicit SDA/SCL and address checks</td></tr><tr><th scope="row">Altitude</th><td>No pressure measurement</td><td>Pressure-based estimate requiring a reference</td></tr><tr><th scope="row">Reading schedule</th><td>Respect the sensor manual and library separately</td><td>Choose sampling/filter settings for the application</td></tr><tr><th scope="row">Electrical compatibility</th><td>Documented 3.3 V-compatible part/module and DATA pull-up</td><td>Check module supply, pull-ups and signal levels</td></tr></tbody></table></div></section>
+<section class="mission-section" id="wiring" aria-labelledby="wiring-heading"><h2 tabindex="-1" id="wiring-heading">The wiring patterns are different</h2><p>The DHT11 lesson uses one DATA GPIO plus supply and ground. A bare sensor generally needs an external pull-up; a module may include it. A printed SDA label does not make this sensor I2C. Keep the data pull-up compatible with the ESP32 input.</p><p>The linked BME280 lesson uses I2C SDA and SCL, common ground and a compatible supply. Follow its chosen pins and the module labels. BME280 I2C addresses can be 0x76 or 0x77; scan and check the documented address setting. A similar BMP280 has no humidity measurement. Do not move wires on powered modules to discover a working arrangement.</p></section>
+<section class="mission-section" id="accuracy" aria-labelledby="accuracy-heading"><h2 tabindex="-1" id="accuracy-heading">Accuracy is not the number of decimal places</h2><p>Accuracy describes agreement with a reference under specified conditions. Resolution describes output step size. Extra decimal places do not establish accuracy. The DHT11 manual and Bosch datasheet state their own conditions and limits; compare those conditions before applying a figure to a room or enclosure.</p><p>This article reports no side-by-side measured accuracy. BME280 may fit a richer environmental dashboard, but the assembled result depends on placement, actual sensor identity, configuration and calibration needs. A better-specified chip cannot eliminate heat from an ESP32 regulator placed beside it.</p></section>
+<section class="mission-section" id="sampling" aria-labelledby="sampling-heading"><h2 tabindex="-1" id="sampling-heading">Do not sample as fast as loop() runs</h2><p>Follow your actual DHT11 revision. The linked manual specifies more than two seconds between samples and recommends more than five seconds between reads for accurate data. The site reference uses six seconds. A library’s rapid-call cache is a separate rule, not permission to ignore sensor timing.</p><p>BME280 oversampling, filtering and operating mode affect conversion time and power. Reading a library value quickly does not prove a fresh conversion completed each time. Start from the documented example, record its configuration and choose a schedule appropriate to the application.</p></section>
+<section class="mission-section" id="interpretation" aria-labelledby="interpretation-heading"><h2 tabindex="-1" id="interpretation-heading">Keep pressure and altitude claims clear</h2><p>The pressure sensor reports conditions at its location. A weather service can report sea-level-adjusted pressure, so its value need not match. BME280 altitude calculations combine pressure with an assumed sea-level reference. Weather changes can move that estimate even if the board stays still. It is not GPS altitude or an independent height measurement.</p><p>Keep both sensor types away from direct sun, warm electronics and breath while checking room conditions. Let them settle in the same environment before comparing trends. A classroom breakout is not automatically weatherproof because its project is called a weather station.</p></section>
+<section class="mission-section" id="choose" aria-labelledby="choose-heading"><h2 tabindex="-1" id="choose-heading">Choose an action from the parts you have</h2><p>Have DHT11? Complete the Serial lesson and label its units and reading interval. Have BME280? Confirm identity, supply and I2C address before adding an OLED. Need pressure but own only DHT11? Practise temperature/humidity now and list pressure as a separate hardware requirement instead of inventing a value.</p><p>Use each sensor’s own complete code guide. There is no hybrid sketch here that pretends both models work by changing one DHT_TYPE constant. Diagnose model, wiring, library and timing before deciding that either technology is unreliable.</p></section>
+<section class="mission-section" id="back-to-roadmap" aria-labelledby="back-to-roadmap-heading"><h2 tabindex="-1" id="back-to-roadmap-heading">Continue your learning path</h2><p><a href="/learning.html#sensor-basics">Back to this Learning path</a> · <a href="/learning.html">See the full ESP32 roadmap</a></p></section>
+<section class="mission-section" id="next-steps" aria-labelledby="next-steps-heading"><h2 tabindex="-1" id="next-steps-heading">Next steps</h2><p>Choose the measurements you need and the hardware you can identify. Follow the corresponding complete sensor guide.</p></section>
+<section class="component-section component-faq-section" id="faq" aria-labelledby="faq-heading">
+  <h2 tabindex="-1" id="faq-heading"><span class="component-section-icon" aria-hidden="true">07</span><span class="component-section-title">FAQ</span></h2>
+  <div class="faq-list component-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Can I replace DHT11 with BME280 by changing DHT_TYPE?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. BME280 uses another interface and library. Use its own complete wiring and code guide.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does BME280 measure air quality?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a" hidden><p>No. Its measurements are temperature, relative humidity and pressure, not gas concentration or air-quality index.</p></div></div></div>
+</section>
+<section class="mission-section" id="sources" aria-labelledby="sources-heading"><h2 tabindex="-1" id="sources-heading">Technical references</h2><ul><li><a href="https://seeeddoc.github.io/Grove-Temperature_and_Humidity_Sensor/res/DHT11.pdf">Aosong DHT11 manual hosted by Seeed</a> — Protocol, documented electrical revision and reading intervals.</li><li><a href="https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/">Bosch BME280 product information</a> — Pressure, humidity and temperature capabilities.</li><li><a href="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf">Bosch BME280 datasheet</a> — Operating conditions, interfaces, sampling and accuracy qualifications.</li><li><a href="https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/DHT.cpp">Adafruit DHT library 1.4.6</a> — Read caching is separate from sensor sampling.</li></ul></section>
+  <h2 tabindex="-1" id="related-guides">Related Guides</h2>
+  <ul class="guide-related-list"><li><a href="/guides/read-temperature-dht22.html"><strong>DHT11 hands-on tutorial</strong></a> <span class="meta">Use your DHT11 with the documented interval.</span></li><li><a href="/guides/esp32-dht22.html"><strong>DHT11 reference</strong></a> <span class="meta">Pin labels, pull-ups and diagnostics; historical URL retained.</span></li><li><a href="/guides/esp32-bme280.html"><strong>BME280 wiring and code</strong></a> <span class="meta">Use the complete I2C example.</span></li><li><a href="/guides/esp32-dht22-vs-bme280.html"><strong>Separate DHT22 vs BME280 reference</strong></a> <span class="meta">Use only for actual DHT22/AM2302 hardware.</span></li></ul>
+</article>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <strong>ESP32 Engine</strong>
+      <p class="footer-tagline">Learn · Build · Explore</p>
+      <p>The world's friendliest ESP32 learning platform — built for students, trusted by parents, loved by makers.</p>
+      <div class="footer-social">
+        <a href="https://github.com/abdulmubeen7876773-dotcom/esp32" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>
+        <a href="https://www.youtube.com/@esp32-engine-projects" rel="noopener noreferrer" target="_blank" aria-label="YouTube"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><p class="footer-col-title">Learn</p><a href="/learning.html">Learning Paths</a><a href="/guides.html">Guides</a><a href="/components.html">Components</a><a href="/projects.html">Projects</a></div>
+    <div class="footer-col"><p class="footer-col-title">Resources</p><a href="/parents.html">For Parents</a><a href="/teachers.html">For Teachers</a><a href="/downloads.html">Learning Resources</a><a href="/tools.html">Tools</a><a href="/testing-methodology.html">Testing Methodology</a></div>
+    <div class="footer-col"><p class="footer-col-title">Company</p><a href="/about.html">About</a><a href="/author.html">Author</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/disclaimer.html">Disclaimer</a></div>
+  </div>
+  <div class="wrap footer-bottom"><button type="button" class="btn btn-secondary" data-cookie-settings>Analytics choices</button><button type="button" class="btn btn-secondary" data-ad-privacy hidden style="display:none">Privacy and cookie settings (ads)</button><p>© 2026 ESP32 Engine. All rights reserved.</p></div>
+</footer>
+<script src="/search.js?v=20260627-header-logo-v2" defer></script>
+<script src="/ui.js?v=20261008-google-cmp" defer></script>
+<script src="/mission-guide.js" defer></script>
+<script>
+document.querySelectorAll(".component-faq .faq-q").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var item = btn.closest(".faq-item");
+    if (!item) return;
+    var open = item.classList.contains("is-open");
+    item.closest(".faq-list").querySelectorAll(".faq-item.is-open").forEach(function(el) {
+      el.classList.remove("is-open");
+      var a = el.querySelector(".faq-a");
+      if (a) a.hidden = true; var q = el.querySelector(".faq-q"); if (q) q.setAttribute("aria-expanded", "false");
+    });
+    item.classList.toggle("is-open", !open);
+    var ans = item.querySelector(".faq-a");
+    if (ans) ans.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+document.querySelectorAll(".component-code-tab").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var key = btn.dataset.codeTab;
+    document.querySelectorAll(".component-code-tab").forEach(function(tab) {
+      var active = tab === btn;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".component-code-panel").forEach(function(panel) {
+      var active = panel.dataset.codePanel === key;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+  });
+});
+document.querySelectorAll("[data-copy-url]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    var value = btn.dataset.copyUrl;
+    if (navigator.clipboard) navigator.clipboard.writeText(value);
+    btn.textContent = "Copied";
+    setTimeout(function(){ btn.textContent = "Copy link"; }, 1600);
+  });
+});
+</script>
+</body>
+</html>
