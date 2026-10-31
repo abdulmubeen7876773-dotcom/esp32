@@ -25,7 +25,6 @@ def public_file(relative: Path) -> bool:
         return True
     if relative.as_posix() in {
         'assets/downloads/guides/contributor-media-20261101/button_control_led_code.ino',
-        'assets/downloads/guides/contributor-media-20261101/dht11_guide_6s.ino',
         'assets/downloads/guides/contributor-media-20261101/dht11_original_2s.ino',
         'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.ino',
         'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.zip',
