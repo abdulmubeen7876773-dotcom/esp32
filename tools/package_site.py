@@ -23,6 +23,15 @@ def public_file(relative: Path) -> bool:
                 or relative.name.startswith("esp32engineindex") and relative.suffix == ".txt")
     if relative.parts[:4] == ("assets", "downloads", "guides", "blink-led") and relative.name == "blink_led.ino":
         return True
+    if relative.as_posix() in {
+        'assets/downloads/guides/contributor-media-20261101/button_control_led_code.ino',
+        'assets/downloads/guides/contributor-media-20261101/dht11_guide_6s.ino',
+        'assets/downloads/guides/contributor-media-20261101/dht11_original_2s.ino',
+        'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.ino',
+        'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.zip',
+        'assets/downloads/guides/contributor-media-20261101/oled_hello_maker.ino',
+    }:
+        return True
     if relative.parts[0] == "assets":
         return relative.suffix.lower() in {".svg", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".ico", ".css", ".js", ".woff", ".woff2", ".ttf", ".mp4", ".pdf"}
     return relative.parts[0] in PUBLIC_DIRS and relative.suffix == ".html"
