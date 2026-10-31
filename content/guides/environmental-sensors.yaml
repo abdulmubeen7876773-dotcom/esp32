@@ -15,7 +15,7 @@
   "proficiency_level": "Beginner",
   "reading_time": "50-60 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-10-26",
+  "date_modified": "2026-10-31",
   "academy": {
     "mission_id": "Mission 11",
     "level": "Foundation",
@@ -308,7 +308,7 @@
         "text": "showOnDisplay() formats the same values for the OLED so the project can stand alone."
       }
     ],
-    "expected_output": "The OLED should show a compact live dashboard:\n\nEnvironment\nTemp: 24.6 C\nHum:  48.3 %\nPres: 1012.7 hPa\n\nSerial Monitor should print matching lines about every two seconds:\n\nMission 11: Environmental sensor ready\nTemperature: 24.6 C | Humidity: 48.3 % | Pressure: 1012.7 hPa\nTemperature: 24.7 C | Humidity: 48.1 % | Pressure: 1012.6 hPa\n\nDo not expect every line to be identical. Real air moves, the sensor has noise, and pressure changes through the day.\n\nA failed runtime chip check or invalid sample shows Sensor unavailable on OLED/Serial, without reusing old numeric readings. The next scheduled sample attempts a read again. No recovery time or actual hardware result is claimed.",
+    "expected_output": "Illustrative expected output, not recorded hardware data:\n\nThe OLED should show a compact live dashboard:\n\nEnvironment\nTemp: 24.6 C\nHum:  48.3 %\nPres: 1012.7 hPa\n\nSerial Monitor should print matching lines about every two seconds:\n\nMission 11: Environmental sensor ready\nTemperature: 24.6 C | Humidity: 48.3 % | Pressure: 1012.7 hPa\nTemperature: 24.7 C | Humidity: 48.1 % | Pressure: 1012.6 hPa\n\nDo not expect every line to be identical. Real air moves, the sensor has noise, and pressure changes through the day.\n\nA failed runtime chip check or invalid sample shows Sensor unavailable on OLED/Serial, without reusing old numeric readings. The next scheduled sample attempts a read again. No recovery time or actual hardware result is claimed.",
     "common_mistakes": [
       {
         "problem": "Misconception: a stable room should give identical readings",
@@ -424,7 +424,7 @@
     ],
     "complete": {
       "subtitle": "Your ESP32 can now observe the air and present useful information.",
-      "summary": "You used the BME280 as a real environmental sensor, read temperature, humidity, and pressure over I2C, then showed the values on both OLED and Serial Monitor.\n\nYou also learned the engineering mindset behind sensor data: readings move, cheap sensors are still useful, placement matters, pressure changes naturally, and averaging helps software make calmer decisions.",
+      "summary": "This example combines BME280 readings with an OLED and Serial display. Verify identity, units and unavailable-sensor behavior before extending it into the capstone.",
       "skills": [
         "Read BME280 environmental data",
         "Display sensor values on OLED",
@@ -447,5 +447,37 @@
     ]
   },
   "quality_status": "golden",
-  "status": "complete"
+  "status": "complete",
+  "setup": {
+    "items": [
+      {
+        "label": "Board and software",
+        "value": "Classic ESP32-WROOM DevKit / ESP32 Dev Module, Arduino IDE 2 and Arduino-ESP32 3.3.2 review baseline, not a latest-release claim. Match GPIO labels, not header positions."
+      },
+      {
+        "label": "Circuit and dependencies",
+        "value": "3.3 V-compatible BME280 (not BMP280) and 128×64 I2C SSD1306, sharing SDA21/SCL22/GND. BME280 2.3.0, SSD1306 2.5.13, GFX 1.12.1, Unified Sensor 1.1.15, BusIO 1.17.0."
+      },
+      {
+        "label": "Before this lesson",
+        "value": "I2C Communication"
+      },
+      {
+        "label": "Evidence limits",
+        "value": "Expected behavior describes the example, not a hardware test performed in this review. Contributor media, where present, is identified separately; no compilation, board upload or accuracy measurement is claimed."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "title": "Adafruit BME280 2.3.0 implementation",
+      "url": "https://github.com/adafruit/Adafruit_BME280_Library/blob/2.3.0/Adafruit_BME280.cpp",
+      "note": "Initialization, chip ID, units and pressure-derived altitude."
+    },
+    {
+      "title": "Adafruit SSD1306 2.5.13 implementation",
+      "url": "https://github.com/adafruit/Adafruit_SSD1306/blob/2.5.13/Adafruit_SSD1306.cpp",
+      "note": "Framebuffer allocation, begin arguments and display updates; not a device-identification test."
+    }
+  ]
 }

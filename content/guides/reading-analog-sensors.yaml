@@ -1,5 +1,9 @@
 {
-  "tutorial_video": {"youtube_id": "ichJgT5DDEo", "title": "ESP32 analog sensors: reading an LDR — video tutorial", "note": "Follow this guide’s hardware, supply-voltage limits, wiring and GPIO assignments when building; the video may use different pins or a different board."},
+  "tutorial_video": {
+    "youtube_id": "ichJgT5DDEo",
+    "title": "ESP32 analog sensors: reading an LDR — video tutorial",
+    "note": "Follow this guide’s hardware, supply-voltage limits, wiring and GPIO assignments when building; the video may use different pins or a different board."
+  },
   "format": "mission",
   "phase": 1,
   "sort_order": 9,
@@ -8,13 +12,13 @@
   "guide_type": "quick_build",
   "title": "ESP32 Reading Analog Sensors Tutorial | ESP32 Engine",
   "headline": "Reading Analog Sensors",
-  "meta_description": "Mission 09 - learn how ESP32 analog sensors turn real-world changes into voltage, read an LDR light sensor, calibrate values, and use thresholds.",
+  "meta_description": "Mission 09 - learn how ESP32 analog sensors turn real-world changes into voltage, read an LDR light sensor, characterize readings, and use thresholds.",
   "lead": "A potentiometer is a dial you control by hand. Analog sensors use the same ADC idea, but the real world turns the dial for you.",
   "keywords": "ESP32 analog sensor, ESP32 LDR tutorial, ESP32 light sensor, ESP32 ADC threshold, ESP32 sensor calibration",
   "proficiency_level": "Beginner",
   "reading_time": "40-45 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-07-01",
+  "date_modified": "2026-10-31",
   "academy": {
     "mission_id": "Mission 09",
     "level": "Foundation",
@@ -29,7 +33,7 @@
       "Explain how analog sensors convert real-world changes into voltage",
       "Wire an LDR light sensor as a voltage divider",
       "Read live sensor values in Serial Monitor",
-      "Calibrate dark and bright readings before choosing thresholds",
+      "Characterize dark and bright readings before choosing thresholds",
       "Use raw analog readings to make simple decisions"
     ],
     "components_required": [
@@ -42,7 +46,7 @@
     ],
     "estimated_time": "40-45 min",
     "difficulty": "Beginner",
-    "expected_outcome": "You will build a light sensor circuit, print live ADC readings, calibrate bright and dark values, and trigger simple light/dark decisions.",
+    "expected_outcome": "You will build a light sensor circuit, print live ADC readings, characterize bright and dark readings, and trigger simple light/dark decisions.",
     "mini_challenge": "Find your own dark and bright threshold values, then make Serial Monitor print DAY, DIM, or NIGHT.",
     "previous_mission": {
       "slug": "analog-inputs-reading-real-world",
@@ -79,7 +83,7 @@
       {
         "title": "ESP32 Soil Moisture Monitor",
         "href": "/projects/esp32-soil-moisture-monitor.html",
-        "description": "Soil moisture sensors use calibration and thresholds like the LDR circuit."
+        "description": "Soil moisture projects also compare observed sensor ranges before choosing thresholds."
       },
       {
         "title": "ESP32 Smart Irrigation System",
@@ -123,7 +127,7 @@
     },
     {
       "question": "What is calibration?",
-      "answer": "Calibration means measuring the real values your sensor produces in known conditions before deciding what those values mean."
+      "answer": "Calibration compares an instrument against documented reference values under specified conditions. This lesson only characterizes relative bright/dark counts; it does not calibrate illuminance in lux."
     },
     {
       "question": "What is a threshold?",
@@ -139,7 +143,7 @@
     },
     {
       "question": "Can I use ADC2 pins for analog sensors with WiFi?",
-      "answer": "Avoid ADC2 pins when using WiFi on ESP32. Use ADC1 pins such as GPIO34 for beginner analog sensor projects."
+      "answer": "On classic ESP32, ADC2 shares hardware with Wi-Fi. This example uses ADC1 GPIO34. Check the target-specific ADC documentation for other families."
     },
     {
       "question": "Why does covering the LDR make the number go up in some circuits?",
@@ -147,7 +151,7 @@
     },
     {
       "question": "How do soil moisture sensors relate to this mission?",
-      "answer": "Many soil moisture modules output a changing analog voltage. You calibrate dry and wet values just like dark and bright values."
+      "answer": "Many soil moisture modules output a changing analog voltage. Observe dry and wet reference conditions before choosing relative thresholds, just as this lesson characterizes dark and bright readings. This alone does not establish calibrated physical moisture units."
     },
     {
       "question": "Should I convert every sensor value to percent?",
@@ -168,15 +172,15 @@
     "title": "Turn Light into Numbers",
     "story": "Mission 08 used a potentiometer, which is a human-controlled analog input. You turned the knob, the voltage changed, and the ESP32 printed a different number.\n\nMission 09 replaces your hand with a sensor. An LDR changes when light changes. That means the room itself can move the ADC value. This is the bridge from reading a test dial to building projects that react to the environment.",
     "eli12": "A sensor is like a translator. Light, moisture, pressure, or position is not something the ESP32 understands directly.\n\nThe sensor turns that real-world condition into an electrical signal. For an analog sensor, that signal is usually a voltage. The ESP32 ADC reads the voltage and turns it into a number.\n\nYour job is to learn what the number means in your real room, with your real sensor.",
-    "mission_goal": "Read an LDR light sensor with the ESP32 ADC, observe live sensor values, calibrate bright and dark readings, and use a threshold to make a simple decision.",
+    "mission_goal": "Read an LDR light sensor with the ESP32 ADC, observe live sensor values, characterize bright and dark readings, and use a threshold to make a simple decision.",
     "learning_objectives": [
       "Explain how analog sensors turn real-world changes into voltage.",
       "Wire an LDR and resistor as a voltage divider.",
       "Read live light values with analogRead().",
-      "Calibrate sensor ranges using real Serial Monitor readings.",
+      "Characterize relative sensor ranges using your own Serial Monitor readings.",
       "Use thresholds to turn raw readings into decisions."
     ],
-    "what_you_build": "- An LDR light sensor circuit connected to GPIO34.\n- Serial Monitor output showing raw ADC values.\n- A percent-like light estimate based on calibration.\n- A simple threshold decision that reports BRIGHT or DARK.",
+    "what_you_build": "- A 3.3 V LDR divider on GPIO34.\n- Serial raw ADC counts.\n- An illustrative threshold classifying the higher-count side as BRIGHT; no lux or percentage measurement.",
     "things_you_need": [
       {
         "item": "ESP32 DevKit board",
@@ -224,13 +228,12 @@
     "component_spotlight_lead": "The LDR is a simple analog sensor: light changes resistance, and the voltage divider converts that resistance change into a voltage the ESP32 can read.",
     "concept": {
       "title": "Sensors Turn Conditions into Signals",
-
       "image": "/assets/visuals/guides/concepts/reading-analog-sensors-concept.svg",
       "illustration_alt": "ESP32 reading an LDR voltage divider on GPIO34 while light changes the ADC value",
       "body": "The ESP32 cannot see light directly. It can only read electrical signals.\n\nAn LDR changes resistance when light changes. A resistor divider converts that changing resistance into a changing voltage. The ADC converts that voltage into a number.\n\nThat chain is the core idea of analog sensing: real world change, electrical change, digital number, software decision."
     },
-    "engineering_explanation": "An LDR is a light-dependent resistor. In many common LDRs, resistance becomes lower in bright light and higher in darkness. The ESP32 ADC cannot measure resistance directly, so the LDR is paired with a fixed resistor to create a voltage divider.\n\nThe voltage at the divider midpoint depends on the balance between the LDR and the fixed resistor. When light changes the LDR resistance, the midpoint voltage changes. GPIO34 reads that voltage and analogRead() returns a raw number.\n\nThe exact raw range depends on your LDR, resistor value, wiring direction, room light, and shadows. That is why calibration matters. Instead of assuming 'dark is 3000' or 'bright is 500,' you first print values in your own environment. Cover the LDR, shine light on it, and record the numbers.\n\nA threshold turns a continuous value into a decision. For example, if your bright reading is around 700 and your dark reading is around 3200, a threshold near 2000 might separate bright from dark. If your wiring direction is reversed, the comparison may also reverse. Good engineering starts by measuring the real range before writing final logic.\n\nAnalog sensors are useful but noisy. A few counts of movement are normal. Avoid thresholds too close to the boundary, and later you can average several readings to make decisions more stable.",
-    "real_life_analogy": "Think of a weather thermometer. The outside world changes gradually, but you still need a number before you can make a decision such as 'wear a jacket.'\n\nAn analog sensor does the same kind of translation. The LDR does not tell the ESP32 'sunny' or 'dark.' It changes an electrical value. Your code decides what that value means.\n\nCalibration is like learning a new person's handwriting. You do not guess from one mark. You look at examples, learn the range, and then read it with confidence.",
+    "engineering_explanation": "For the wiring shown, the LDR is above the divider midpoint and the fixed 10 kΩ resistor is below it. Vout = V3V3 × Rfixed / (RLDR + Rfixed). A typical LDR has lower resistance in brighter light, so this arrangement produces higher midpoint voltage and usually higher ADC counts in bright light. Darkness lowers the count. Reversing the two divider parts reverses that trend.\n\nUse raw readings to characterize your own bright/dark conditions before setting LIGHT_THRESHOLD. The value 2000 is illustrative, not calibrated lux or a universal light boundary. This sketch configures 12-bit ADC resolution and 11 dB attenuation explicitly. Classic ESP32's documented useful range at that attenuation is approximately 150–3100 mV; a 3V3-powered divider can saturate near an endpoint. Attenuation is not overvoltage protection.\n\nUse GPIO34 (ADC1) when adding Wi-Fi on the classic chip; its ADC2 sharing restriction is not universal to all ESP32 families. Noise can cause a single-threshold decision to chatter. Start by inspecting wiring and raw counts, then use the existing hysteresis or moving-average lesson if the application needs steadier decisions. Relative bright/dark characterization is not calibrated illuminance measurement.",
+    "real_life_analogy": "Think of a weather thermometer. The outside world changes gradually, but you still need a number before you can make a decision such as 'wear a jacket.'\n\nAn analog sensor does the same kind of translation. The LDR does not tell the ESP32 'sunny' or 'dark.' It changes an electrical value. Your code decides what that value means.\n\nCharacterizing the range is like learning a new person's handwriting. You do not guess from one mark. You look at examples, learn the range, and then read it with confidence.",
     "wiring": {
       "illustration_alt": "ESP32 3.3V connected to LDR, LDR connected to GPIO34 divider point, 10 kOhm resistor from divider point to GND",
       "image": "/assets/visuals/guides/wiring/reading-analog-sensors-wiring.svg",
@@ -273,8 +276,8 @@
     ],
     "code": {
       "filename": "ldr_light_sensor_threshold.ino",
-      "notes": "- GPIO34 reads the LDR voltage divider.\n- The raw ADC number depends on your real circuit and room lighting.\n- Start by observing raw values, then adjust LIGHT_THRESHOLD for your environment.\n- This wiring usually gives lower values in brighter light and higher values in darkness.",
-      "content": "const int LDR_PIN = 34;\n\nconst int LIGHT_THRESHOLD = 2000;\n\nvoid setup() {\n  Serial.begin(115200);\n  delay(500);\n\n  Serial.println(\"Mission 09: Analog light sensor ready\");\n  Serial.println(\"Cover the LDR, then shine light on it, and watch the raw values.\");\n}\n\nvoid loop() {\n  int rawLight = analogRead(LDR_PIN);\n\n  Serial.print(\"Light ADC: \");\n  Serial.print(rawLight);\n\n  if (rawLight > LIGHT_THRESHOLD) {\n    Serial.println(\"  |  DARK\");\n  } else {\n    Serial.println(\"  |  BRIGHT\");\n  }\n\n  delay(250);\n}\n"
+      "notes": "LDR to 3V3; fixed 10 kΩ to GND; midpoint on GPIO34. With this topology bright light normally increases counts. The 2000-count threshold is illustrative; characterize your own conditions. Core 3.3.2, 12-bit ADC and 11 dB attenuation; no extra library.",
+      "content": "const int LDR_PIN = 34;\n\nconst int LIGHT_THRESHOLD = 2000;\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(LDR_PIN, ADC_11db);\n  delay(500);\n\n  Serial.println(\"Mission 09: Analog light sensor ready\");\n  Serial.println(\"Cover the LDR, then shine light on it, and watch the raw values.\");\n}\n\nvoid loop() {\n  int rawLight = analogRead(LDR_PIN);\n\n  Serial.print(\"Light ADC: \");\n  Serial.print(rawLight);\n\n  if (rawLight < LIGHT_THRESHOLD) {\n    Serial.println(\"  |  DARK\");\n  } else {\n    Serial.println(\"  |  BRIGHT\");\n  }\n\n  delay(250);\n}\n"
     },
     "code_explanation": [
       {
@@ -296,13 +299,13 @@
         "text": "The if statement compares the raw reading with LIGHT_THRESHOLD."
       },
       {
-        "text": "With this wiring, higher readings usually mean darker conditions. If your circuit behaves the opposite way, swap the comparison or swap the divider direction."
+        "text": "With the LDR connected to 3V3 and the fixed resistor to GND, brighter light normally raises counts. Reversing those two parts reverses the relationship."
       },
       {
         "text": "delay(250) slows the Serial Monitor output so you can read changes while covering and uncovering the sensor."
       }
     ],
-    "expected_output": "Serial Monitor should show values changing when light changes:\n\nMission 09: Analog light sensor ready\nCover the LDR, then shine light on it, and watch the raw values.\nLight ADC: 650  |  BRIGHT\nLight ADC: 720  |  BRIGHT\nLight ADC: 2380  |  DARK\nLight ADC: 3180  |  DARK\n\nYour values may be very different. The goal is to observe your actual bright and dark numbers, then move LIGHT_THRESHOLD to a sensible point between them.",
+    "expected_output": "Illustrative format, not recorded measurements:\nLight ADC: 650  |  DARK\nLight ADC: 2380  |  BRIGHT\n\nFor the shown divider, covering the LDR should lower the count. Your values depend on the part, wiring, lighting and ADC saturation. Choose a threshold between your own observed ranges. No percentage or lux is calculated.",
     "common_mistakes": [
       {
         "problem": "Choosing a threshold before measuring",
@@ -343,13 +346,13 @@
       },
       {
         "problem": "The value is always near 4095",
-        "cause": "GPIO34 may be tied to 3.3 V or the resistor may not reach GND.",
-        "fix": "Confirm the fixed resistor connects from the GPIO34 row to GND."
+        "cause": "The input may be miswired to 3V3, the ground resistor may be disconnected, or bright light may drive this divider beyond the useful ADC range.",
+        "fix": "Power off to trace the midpoint and fixed resistor to GND. A legitimate high-end plateau can be saturation; do not increase the supply or treat 4095 as a voltage."
       },
       {
         "problem": "BRIGHT and DARK seem reversed",
         "cause": "The divider direction changes whether light makes the reading rise or fall.",
-        "fix": "Either reverse the comparison in code or swap the LDR and fixed resistor positions."
+        "fix": "Power off and confirm LDR to 3V3, fixed resistor to GND and midpoint to GPIO34. The shown topology should increase counts with light; only reverse the code comparison if you deliberately use the opposite divider topology."
       },
       {
         "problem": "The decision flickers near the threshold",
@@ -358,7 +361,7 @@
       }
     ],
     "engineer_tip": "Never trust an analog threshold until you have measured the sensor in the real conditions where the project will run. Calibrate first, decide second.",
-    "remember_forever": "A sensor value is not automatically meaning.\n\nMeaning comes from calibration: measure the range, choose the threshold, then let code decide.",
+    "remember_forever": "A raw count is not automatically a physical unit.\n\nCharacterize your own bright and covered conditions, choose a threshold, and keep that relative decision distinct from calibrated lux.",
     "challenge_items": [
       {
         "icon": "CAL",
@@ -379,7 +382,7 @@
     ],
     "complete": {
       "subtitle": "Your ESP32 can now react to the real world, not just test knobs.",
-      "summary": "You learned how an analog sensor changes voltage as the environment changes. The LDR circuit turned light into an ADC number, and calibration turned that number into meaning.\n\nThis is the core pattern behind many real projects: read the raw sensor, observe the range, choose thresholds or mapping rules, and then make decisions. Soil moisture, battery voltage, sound level, and many simple environmental sensors follow the same thinking.",
+      "summary": "You learned how an analog sensor changes voltage as the environment changes. The LDR circuit turned light into an ADC number, and observing bright and dark ranges helped you choose a relative threshold.\n\nThis is the core pattern behind many real projects: read the raw sensor, observe the range, choose thresholds or mapping rules, and then make decisions. Soil moisture, battery voltage, sound level, and many simple environmental sensors follow the same thinking.",
       "skills": [
         "Read an LDR sensor",
         "Understand sensor voltage dividers",
@@ -396,10 +399,37 @@
       {
         "slug": "analog-inputs-reading-real-world",
         "title": "Analog Inputs",
-        "description": "Review the potentiometer mission if calibration or ADC values still feel unclear."
+        "description": "Review the potentiometer mission if raw ADC readings still feel unclear."
       }
     ]
   },
   "quality_status": "golden",
-  "status": "complete"
+  "status": "complete",
+  "setup": {
+    "items": [
+      {
+        "label": "Board and software",
+        "value": "Classic ESP32-WROOM DevKit / ESP32 Dev Module, Arduino IDE 2 and Arduino-ESP32 3.3.2 review baseline, not a latest-release claim. Match GPIO labels, not header positions."
+      },
+      {
+        "label": "Circuit and dependencies",
+        "value": "LDR from 3V3 to GPIO34, 10 kΩ resistor from GPIO34 to GND. GPIO34 is input-only ADC1, without internal pulls. No 5 V or negative input. This circuit measures relative light, not lux."
+      },
+      {
+        "label": "Before this lesson",
+        "value": "Analog Inputs"
+      },
+      {
+        "label": "Evidence limits",
+        "value": "Expected behavior describes the example, not a hardware test performed in this review. Contributor media, where present, is identified separately; no compilation, board upload or accuracy measurement is claimed."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "title": "Arduino-ESP32 3.3.2 ADC API",
+      "url": "https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst",
+      "note": "Raw counts, calibrated millivolts, attenuation and family-dependent ranges."
+    }
+  ]
 }

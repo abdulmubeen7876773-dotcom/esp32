@@ -15,15 +15,15 @@
   "proficiency_level": "Beginner",
   "reading_time": "35-40 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-10-09",
+  "date_modified": "2026-10-31",
   "academy": {
     "mission_id": "Mission 08",
     "level": "Foundation",
     "prerequisites": [
       {
-        "slug": "pwm-fundamentals",
-        "title": "PWM Fundamentals",
-        "description": "You should understand that some outputs can feel gradual even when the ESP32 is digital."
+        "slug": "analog-inputs-reading-real-world",
+        "title": "Analog Inputs: Reading the Real World",
+        "description": "First observe raw counts and identify the wiper connection; this reference then explains voltage estimation and limits."
       }
     ],
     "skills_learned": [
@@ -167,8 +167,8 @@
     "badge": "Mission 08",
     "icon": "ADC",
     "title": "Read a Dial with the ESP32 ADC",
-    "story": "So far, most of your inputs have been digital. A button is pressed or released. A GPIO is HIGH or LOW. That kind of thinking is powerful, but the real world is rarely only two choices.\n\nRoom light changes gradually. A volume knob turns smoothly. Soil becomes wetter or drier by degrees. A battery voltage falls slowly. Mission 08 teaches the ESP32 to measure those in-between values.",
-    "eli12": "A digital input is like asking, 'Is the door open?' The answer is yes or no.\n\nAn analog input is like asking, 'How open is the door?' It might be closed, halfway open, almost open, or anywhere between.\n\nThe ESP32 cannot directly think in smooth voltages, so it uses an ADC. The ADC looks at the voltage and turns it into a number. Low voltage becomes a small number. Higher voltage becomes a bigger number.",
+    "story": "The raw-count lesson shows a dial changing a number. This reference takes the next step: distinguish raw ADC counts from calibrated millivolt estimates, choose explicit attenuation, and recognize endpoint saturation on the classic ESP32.",
+    "eli12": "A raw ADC count is a mark on an electronic ruler. Calibration estimates the voltage represented by that mark, but the ruler still has a limited useful range and measurement error. More printed digits do not extend that range.",
     "mission_goal": "Read a potentiometer on classic ESP32 ADC1 and distinguish raw 12-bit counts from calibrated voltage estimates.",
     "learning_objectives": [
       "Explain what an analog signal is.",
@@ -225,7 +225,7 @@
       "body": "An analog input measures a changing voltage rather than only HIGH or LOW. A potentiometer produces that voltage at its wiper.\n\nWith the sketch configured for 12 bits, analogRead() returns raw counts from 0 to 4095. Counts are not volts and are not a calibrated knob-position percentage. analogReadMilliVolts() performs another conversion and returns a calibrated voltage estimate in millivolts."
     },
     "engineering_explanation": "This example assumes a classic ESP32-WROOM DevKit, GPIO34 (ADC1), and Arduino-ESP32 3.3.2 as the review baseline, not a claim about the latest release. GPIO34 is input-only and has no internal pull-up or pull-down. Other ESP32 families have different ADC pins and ranges.\n\nThe potentiometer is a voltage divider between 3V3 and GND. Its wiper can approach the full supply voltage. Never apply 5 V or a negative voltage to GPIO34. Keep external signals within the board's 3.3 V supply rails; attenuation is a measurement setting, not overvoltage protection.\n\nanalogReadResolution(12) selects 0–4095 raw counts. analogSetPinAttenuation(POT_PIN, ADC_11db) selects the wider ADC input range. Espressif documents approximately 150–3100 mV for this setting on classic ESP32. A 3.3 V-powered dial can therefore saturate near its upper end; readings near either endpoint are less useful for accurate voltage measurement. A count of 4095 does not prove the voltage is 3.3 V.\n\nanalogReadMilliVolts() uses ADC calibration to estimate voltage. It and analogRead() take separate samples, so the displayed pair can differ slightly as the dial moves. Calibration reduces chip-to-chip error; it does not turn the ADC into a precision voltmeter. Check important measurements against known voltages and a suitable meter within the documented measurement range.\n\nOn classic ESP32, ADC2 shares hardware with Wi-Fi. Use an ADC1 pin such as GPIO34 for readings while Wi-Fi operates. This restriction is not a universal rule for every ESP32 family. Short wires, stable power and averaging can reduce noise, but cannot correct saturation or unsafe input voltage.",
-    "real_life_analogy": "A light switch is digital: it is either off or on. A volume knob is analog: it can be quiet, medium, loud, or anywhere between. That is the first analog idea: not two answers, but a range of answers.\n\nA thermometer is another example. Temperature does not jump only between cold and hot. It moves gradually. Analog inputs let a microcontroller notice those gradual changes.\n\nThink of the ADC like a ruler for voltage. The voltage is the real-world length. The ADC number is the ruler marking closest to where the voltage lands. The ruler is useful, but it still has marks, so the ESP32 reports a nearby number rather than an infinite perfect value.",
+    "real_life_analogy": "",
     "wiring": {
       "illustration_alt": "ESP32 3.3V connected to one outer potentiometer leg, GND to the other outer leg, and GPIO34 to the middle wiper pin",
       "image": "/assets/visuals/guides/wiring/analog-inputs-wiring.svg",
@@ -417,5 +417,32 @@
     ]
   },
   "quality_status": "golden",
-  "status": "complete"
+  "status": "complete",
+  "setup": {
+    "items": [
+      {
+        "label": "Board and software",
+        "value": "Classic ESP32-WROOM DevKit / ESP32 Dev Module, Arduino IDE 2 and Arduino-ESP32 3.3.2 review baseline, not a latest-release claim. Match GPIO labels, not header positions."
+      },
+      {
+        "label": "Circuit and dependencies",
+        "value": "GPIO34 ADC1; 10 kΩ potentiometer between 3V3 and GND. Compare separate raw and calibrated-millivolt samples; endpoint clipping is expected."
+      },
+      {
+        "label": "Before this lesson",
+        "value": "PWM Fundamentals"
+      },
+      {
+        "label": "Evidence limits",
+        "value": "Expected behavior describes the example, not a hardware test performed in this review. Contributor media, where present, is identified separately; no compilation, board upload or accuracy measurement is claimed."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "title": "Arduino-ESP32 3.3.2 ADC API",
+      "url": "https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst",
+      "note": "Raw counts, calibrated millivolts, attenuation and family-dependent ranges."
+    }
+  ]
 }

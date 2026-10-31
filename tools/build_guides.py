@@ -99,7 +99,7 @@ def faq_section_html(faqs: list[dict]) -> str:
         q = item.get("question") or item.get("q", "")
         a = item.get("answer") or item.get("a", "")
         items.append(
-            f'<div class="faq-item"><button type="button" class="faq-q">{esc(q)}<span class="plus">+</span></button>'
+            f'<div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">{esc(q)}<span class="plus" aria-hidden="true">+</span></button>'
             f'<div class="faq-a"><p>{esc(a)}</p></div></div>'
         )
     return f"""  <h2 id="faqs">Frequently Asked Questions</h2>
@@ -188,7 +188,7 @@ def guide_schema(guide: dict, faqs: list[dict]) -> str:
 def guide_trust_block(guide: dict, mission: bool = True) -> str:
     updated = guide.get("date_modified", "2026-06-26")
     level = guide.get("proficiency_level", "Beginner")
-    reading = guide.get("reading_time", "10-20 min")
+    reading = guide.get("reading_time", "Self-paced reference")
     refs = [
         ("Testing Methodology", "/testing-methodology.html"),
         ("Editorial Policy", "/editorial-policy.html"),
@@ -225,8 +225,11 @@ document.querySelectorAll(".guide-faq .faq-q").forEach(function(btn) {
       el.classList.remove("open");
       var a = el.querySelector(".faq-a");
       if (a) a.style.display = "none";
+      var q = el.querySelector(".faq-q");
+      if (q) q.setAttribute("aria-expanded", "false");
     });
     item.classList.toggle("open", !open);
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
     var ans = item.querySelector(".faq-a");
     if (ans) ans.style.display = open ? "none" : "block";
   });
@@ -293,7 +296,29 @@ def render_legacy_guide(guide: dict) -> str:
     related = guide.get("related_guides", [])
     body = normalize_body(guide.get("body_html", ""))
     copy_script = ""
-    if guide.get("copy_code_filename"):
+    if guide.get("copy_code_blocks"):
+        # Explicit zero-based pre/code indices distinguish sketches from output,
+        # configuration URLs and deliberately labelled conceptual fragments.
+        from guide_mission import code_panel
+        selected = guide["copy_code_blocks"]
+        seen = set()
+        block_index = -1
+        def selected_code(match):
+            nonlocal block_index
+            block_index += 1
+            key = str(block_index)
+            if key not in selected:
+                return match.group(0)
+            content = unescape(match.group(1))
+            if "void setup()" not in content or "void loop()" not in content:
+                raise ValueError("Copy selection must be a complete Arduino sketch")
+            seen.add(key)
+            return code_panel({"filename": selected[key], "content": content})
+        body = re.sub(r"<pre><code>(.*?)</code></pre>", selected_code, body, flags=re.S)
+        if seen != set(selected):
+            raise ValueError("Unknown copy_code_blocks index")
+        copy_script = '\n<script src="/mission-guide.js" defer></script>'
+    elif guide.get("copy_code_filename"):
         # Opt in only the first complete sketch; leave sample output untouched.
         from guide_mission import code_panel
         body, count = re.subn(
@@ -307,6 +332,13 @@ def render_legacy_guide(guide: dict) -> str:
         if not count:
             raise ValueError("copy_code_filename requires a pre/code sketch block")
         copy_script = '\n<script src="/mission-guide.js" defer></script>'
+    from article_sections import prepare_article, setup_section, sources_section, jump_links
+    body = setup_section(guide.get("setup", {}), "guide-technical-content") + body
+    body += sources_section(guide.get("sources", []), "guide-technical-content")
+    body = prepare_article(body)
+    body = re.sub(r'<pre(?![^>]*tabindex)', '<pre tabindex="0" role="region" aria-label="Example code or output; scroll horizontally if needed"', body)
+    if 'aria-label="On this page"' not in body:
+        body = jump_links(body) + body
     canon = f"guides/{slug}.html"
     schema = guide_schema(guide, faqs)
     headline = guide.get("headline") or page_title.split("|")[0].strip()
@@ -325,7 +357,7 @@ def render_legacy_guide(guide: dict) -> str:
   <p class="hero-eyebrow">Background reading</p>
   <h1>{esc(headline)}</h1>
   <p class="article-lead">{esc(lead)}</p>
-  <p class="meta guide-meta">{esc(guide.get("reading_time", "14 min read"))} · Updated {esc(guide.get("date_modified", "2026-06-26"))}</p>
+  <p class="meta guide-meta">{esc(guide.get("reading_time", "Self-paced reference"))} · Updated {esc(guide.get("date_modified", "2026-06-26"))}</p>
 {guide_hero_image_html(guide)}
 {intro}
 {tutorial_video_section(guide)}
@@ -357,6 +389,16 @@ def render_mission_page(guide: dict) -> str:
     schema = guide_schema(guide, guide.get("faqs", []))
     headline = guide.get("headline") or page_title.split("|")[0].strip()
     breadcrumb = f"""<nav class="breadcrumb breadcrumb-light" aria-label="Breadcrumb"><ol><li><a href="{site_href()}">Home</a></li><li><a href="{site_href('guides.html')}">Guides</a></li><li aria-current="page">{esc(headline)}</li></ol></nav>"""
+    mission_body = render_mission_guide(guide)
+    if not guide.get("section_order"):
+        # The opt-in concise layout already places these authored sections.
+        # Keep the shared mission renderer/project callers unchanged.
+        from article_sections import setup_section, sources_section, prepare_article
+        mission_body = mission_body.replace(
+            '<article class="mission-journey">',
+            '<article class="mission-journey">' + setup_section(guide.get("setup", {})), 1)
+        mission_body = mission_body.replace('</article>', sources_section(guide.get("sources", [])) + '</article>')
+        mission_body = prepare_article(mission_body)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -380,7 +422,7 @@ def render_mission_page(guide: dict) -> str:
 </div>
 <section class="section-block wrap mission-guide-shell">
 {beginner_navigation(slug)}{guide_trust_block(guide, mission=True)}
-{render_mission_guide(guide)}
+{mission_body}
 {beginner_continue(slug)}</section>
 </main>
 {footer_html()}

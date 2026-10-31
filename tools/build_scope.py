@@ -22,14 +22,16 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}):
-        raise ValueError("Scope requires guides, projects and categories; components, homepage, navigation or pages is optional")
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}):
+        raise ValueError("Scope requires guides, projects and categories; one optional selector is components, homepage, navigation, pages or guide_catalog_only")
     if "navigation" in scope and (scope["navigation"] is not True or any(scope[k] for k in required)):
         raise ValueError("Navigation-only scope requires true and empty article selections")
     if "homepage" in scope and scope["homepage"] is not True:
         raise ValueError("Homepage-only scope must set homepage to true")
+    if "guide_catalog_only" in scope and (scope["guide_catalog_only"] is not True or not scope["guides"] or scope["projects"] or scope["categories"]):
+        raise ValueError("Guide catalog scope requires true, selected guides and no projects/categories")
     if any(not isinstance(v, list) or any(not isinstance(s, str) for s in v)
-           for k, v in scope.items() if k not in {"homepage", "navigation"}):
+           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only"}):
         raise ValueError("Scope values must be lists of names")
     store = get_content_store()
     guides = {g["slug"]: g for g in store.guides()}
@@ -105,6 +107,11 @@ def generate_scope(manifest: Path):
             write(f"{slug}.html", cms_page_html(pages[slug]))
     write("guides.html", render_guides_index(store.guides()))
     write("search-index.json", json.dumps(build_index(), ensure_ascii=False, indent=2))
+    if scope.get("guide_catalog_only"):
+        # A guide review must not import unrelated homepage/project drift.
+        # Keep full content/release validation in build_all and normal scopes.
+        validate_sitemap(scope)
+        return
     records = [listing.parent_listing_record(p) for p in projects.values()]
     write("projects.json", json.dumps([listing.project_json_record(p) for p in records],
                                       ensure_ascii=False, separators=(",", ":")))

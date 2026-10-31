@@ -114,7 +114,7 @@
   <p class="hero-eyebrow">Background reading</p>
   <h1>ESP32 DHT11 Reference: Pinout, Wiring and Troubleshooting</h1>
   <p class="article-lead">Build a dependable ESP32 temperature-and-humidity reader with the DHT11. Identify the sensor pins, wire a bare sensor or module safely, install the Arduino library, and understand the complete sketch before extending it.</p>
-  <p class="meta guide-meta">14 min read · Updated 2026-10-29</p>
+  <p class="meta guide-meta">Self-paced reference · Updated 2026-10-29</p>
 <figure class="guide-hero-image" style="margin:1.5rem 0 0;"><img src="/assets/visuals/guides/concepts/read-temperature-dht11-concept.svg" alt="DHT11 temperature and humidity guide concept illustration, not a hardware photograph" width="1200" height="675" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-md);object-fit:contain;background:var(--surface);"></figure>
 <div class="guide-friendly-intro">
 <div class="reference-intro-card">
@@ -144,21 +144,21 @@
 
 <section class="guide-technical-content" id="review-and-references" aria-labelledby="trust-heading">
   <h2 id="trust-heading">Review, Testing, and References</h2>
-  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-10-29. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner. <strong>Estimated time:</strong> 10-20 min.</p>
+  <p><strong>Author:</strong> Abdul Mubeen and the ESP32 Engine editorial team. <strong>Last updated:</strong> 2026-10-29. <strong>Reviewed:</strong> educational accuracy and beginner safety. <strong>Level:</strong> Beginner. <strong>Estimated time:</strong> Self-paced reference.</p>
   <p>This guide is written for learning and bench prototyping. Check the testing notes before adapting the circuit to different boards, batteries, relays, motors, or outdoor hardware.</p>
   <ul class="guide-related-list"><li><a href="/testing-methodology.html">Testing Methodology</a></li><li><a href="/editorial-policy.html">Editorial Policy</a></li><li><a href="/author.html">Author &amp; Editorial Team</a></li><li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener noreferrer">Espressif ESP32 Documentation</a></li><li><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Arduino ESP32 Core</a></li></ul>
 </section>
   <div class="guide-technical-content">
   <nav aria-label="On this page"><p><strong>On this page:</strong> <a href="#identify-pins">Pin identification</a> · <a href="#wiring">Wiring</a> · <a href="#arduino-setup">Setup</a> · <a href="#complete-code">Code</a> · <a href="#serial-output">Expected output</a> · <a href="#troubleshooting">Troubleshooting</a> · <a href="#references">References</a></p></nav>
   <p>This reference now uses DHT11 throughout. Its historical URL is retained for existing links. For the step-by-step assembly lesson and existing video, use <a href="/guides/read-temperature-dht22.html">Read Temperature with DHT11</a>. The reference below concentrates on pin identification, electrical assumptions and diagnosis.</p>
-  <h2 id="what-dht22-measures">What the DHT11 measures</h2>
+  <h2 tabindex="-1" id="what-dht22-measures">What the DHT11 measures</h2>
   <p>The DHT11 is a digital sensor for <strong>air temperature</strong> and <strong>relative humidity</strong>. Its controller sends the measurements as a timed digital signal on one bidirectional data line. The ESP32 library decodes that signal; this is not an analog sensor and it does not use the I2C bus.</p>
   <p>A DHT11 does not measure barometric pressure, air quality, or altitude. It is useful for basic room, greenhouse, or classroom monitoring, but its update rate is slow and readings depend on placement and the sensor's documented operating conditions. Do not treat it as a precision instrument or as a fast feedback sensor. This reference assumes an actual DHT11, a classic ESP32-WROOM DevKit exposing GPIO4, short breadboard leads, a USB data cable and a documented 3.3 V-compatible sensor/module. Colour alone does not establish the sensor model.</p>
 
-  <h2 id="dht22-am2302">DHT11 is different from DHT22 and AM2302</h2>
+  <h2 tabindex="-1" id="dht22-am2302">DHT11 is different from DHT22 and AM2302</h2>
   <p>DHT11 is not the same sensor as DHT22/AM2302. Match the actual part to the library type. A bare four-pin sensor and a three-pin breakout can also have different physical pin orders and power circuitry. Follow the exact part documentation and labels; do not infer the pinout from an illustration.</p>
 
-  <h2 id="identify-pins">Identify the sensor pins</h2>
+  <h2 tabindex="-1" id="identify-pins">Identify the sensor pins</h2>
   <p>A common bare DHT11 package has four pins: <strong>VDD/VCC</strong>, <strong>DATA</strong> (sometimes marked SDA), <strong>NC</strong> (no connection), and <strong>GND</strong>. On the usual front view with the grille toward you and pins pointing down, those pins are arranged left to right in that order. Check the datasheet for your exact sensor before wiring because package drawings and clone markings can differ.</p>
   <p>Three-pin breakout boards typically label the connections with some combination of <strong>VCC/+ </strong>, <strong>DATA/S/OUT</strong>, and <strong>GND/-</strong>. A module's physical pin order is board-specific; follow its silkscreen or wiring diagram rather than copying the bare sensor's left-to-right order. The <a href="/assets/visuals/guides/wiring/read-temperature-dht11-wiring.svg">DHT11 wiring diagram</a> shows one example connection.</p>
   <div class="pin-table-wrap">
@@ -173,7 +173,7 @@
     </table>
   </div>
 
-  <h2 id="wiring">ESP32 DHT11 wiring</h2>
+  <h2 tabindex="-1" id="wiring">ESP32 DHT11 wiring</h2>
   <ol>
     <li>Disconnect USB before wiring.</li>
     <li>Connect the sensor's VDD/VCC to ESP32 3V3, but only if the exact sensor or module documentation allows a 3.3 V supply.</li>
@@ -188,7 +188,7 @@
   <p>The DHT11's one-wire data line is released between signals, so it needs a pull-up to return to a HIGH level. A bare sensor normally needs an external resistor between DATA and its supply. The manufacturer shows 5.1 kΩ as a typical pull-up for short connections; Adafruit's example uses 10 kΩ. For this ESP32 example, connect the pull-up to <strong>3.3 V</strong>, not 5 V.</p>
   <p>Many three-pin modules include a pull-up on the small board, but this is not guaranteed. Check the module documentation or circuit. If a pull-up is already present, an additional resistor may be unnecessary. Never allow a 5 V pull-up to drive an ESP32 GPIO directly. The exact bare-sensor electrical limits and timing are in the <a href="https://seeeddoc.github.io/Grove-Temperature_and_Humidity_Sensor/res/DHT11.pdf" target="_blank" rel="noopener noreferrer">manufacturer's DHT11 manual</a>.</p>
 
-  <h2 id="arduino-setup">Arduino IDE and library setup</h2>
+  <h2 tabindex="-1" id="arduino-setup">Arduino IDE and library setup</h2>
   <p>Review baseline: <strong>Arduino-ESP32 3.3.2</strong>, <strong>Adafruit DHT sensor library 1.4.6</strong> and <strong>Adafruit Unified Sensor 1.1.15</strong>. These are reviewed versions, not latest-release claims. Compilation and physical hardware testing were not performed for this update.</p>
   <p>The linked DHT11 manual permits 3.3–5.5 V for that revision, but other revisions/modules can specify a higher minimum. Use the direct circuit only for a documented 3.3 V-compatible part, with DATA pulled up to 3.3 V. Otherwise use a documented compatible signal interface; do not simply change this circuit to 5 V. A module regulator does not prove its DATA level is safe.</p>
   <ol>
@@ -200,7 +200,7 @@
   </ol>
   <p>The library and its current dependencies are documented in the <a href="https://github.com/adafruit/DHT-sensor-library/tree/1.4.6" target="_blank" rel="noopener noreferrer">Adafruit DHT sensor library repository</a>. Avoid installing multiple libraries that provide a different <code>DHT.h</code> header; that can cause compile errors or inconsistent behavior.</p>
 
-  <h2 id="complete-code">Complete ESP32 DHT11 Arduino code</h2>
+  <h2 tabindex="-1" id="complete-code">Complete ESP32 DHT11 Arduino code</h2>
   <div class="code-panel">
   <div class="code-panel-head">
     <div class="code-panel-chrome" aria-hidden="true">
@@ -214,7 +214,7 @@
       <span class="btn-copy-label">Copy</span>
     </button>
   </div>
-  <pre class="code-block"><code class="language-arduino"><span class="tok-pre">    #include &lt;Arduino.h&gt;</span>
+  <pre class="code-block" tabindex="0" role="region" aria-label="Arduino code; scroll horizontally if needed"><code class="language-arduino"><span class="tok-pre">    #include &lt;Arduino.h&gt;</span>
 <span class="tok-pre">    #include &lt;DHT.h&gt;</span>
 
     <span class="tok-com">// Example for a common original ESP32 DevKit. Match this to your wiring.</span>
@@ -253,7 +253,7 @@
     }</code></pre>
 </div>
 
-  <h2 id="code-explained">How the code works</h2>
+  <h2 tabindex="-1" id="code-explained">How the code works</h2>
   <ul>
     <li><strong><code>DHT_PIN</code>:</strong> the ESP32 GPIO connected to the sensor's DATA line. If you change the wire, update this constant too.</li>
     <li><strong><code>DHT_TYPE</code>:</strong> tells the library to use DHT11 timing rather than another DHT model.</li>
@@ -264,14 +264,14 @@
     <li><strong><code>isnan()</code>:</strong> detects an invalid reading so the sketch can report an error instead of printing a misleading number.</li>
   </ul>
 
-  <h2 id="serial-output">Serial Monitor output</h2>
+  <h2 tabindex="-1" id="serial-output">Serial Monitor output</h2>
   <p>Choose <strong>115200 baud</strong> in Serial Monitor to match <code>Serial.begin(115200)</code>. The following is illustrative output, not recorded hardware measurements; your room's values will differ:</p>
-  <pre><code>ESP32 DHT11 reader ready
+  <pre tabindex="0" role="region" aria-label="Example code or output; scroll horizontally if needed"><code>ESP32 DHT11 reader ready
   Temperature: 24.0 °C
   Humidity: 58.0 %</code></pre>
   <p>If you see the failure message or <code>nan</code>, the reading did not succeed. Use the checks below before changing the library or repeatedly resetting the board.</p>
 
-  <h2 id="troubleshooting">DHT11 troubleshooting</h2>
+  <h2 tabindex="-1" id="troubleshooting">DHT11 troubleshooting</h2>
   <h3 id="failed-readings">Failed readings or NaN</h3>
   <ul>
     <li>Verify <code>DHT_PIN</code> matches the DATA wire and <code>DHT_TYPE</code> is <code>DHT11</code>.</li>
@@ -291,12 +291,12 @@
 
   <p>Printed decimal places are formatting, not evidence of 0.1-degree accuracy. Repeated values are normal in steady room conditions; this example is not a calibration test.</p>
 
-  <h2 id="limits">Limitations and choosing a different sensor</h2>
+  <h2 tabindex="-1" id="limits">Limitations and choosing a different sensor</h2>
   <p>The DHT11 is a useful learning sensor for basic temperature and humidity logging, but it updates slowly and has no pressure measurement. Choose a BME280 if pressure or pressure-based altitude estimation matters. For faster response, a different sensor may be a better fit; check the model's documented update rate, accuracy, interface, and electrical requirements before choosing it.</p>
 
-  <h2 id="references">Technical references</h2>
+  <h2 tabindex="-1" id="references">Technical references</h2>
   <ul><li><a href="https://seeeddoc.github.io/Grove-Temperature_and_Humidity_Sensor/res/DHT11.pdf">Aosong DHT11 manual hosted by Seeed</a>: pinout, documented supply, pull-ups and sampling.</li><li><a href="https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/DHT.cpp">Adafruit DHT 1.4.6 implementation</a>: sensor handling and separate read caching.</li><li><a href="https://github.com/adafruit/Adafruit_Sensor/tree/1.1.15">Adafruit Unified Sensor 1.1.15</a>: reviewed dependency.</li><li><a href="https://github.com/espressif/arduino-esp32/tree/3.3.2">Arduino-ESP32 3.3.2</a>: core review baseline.</li></ul>
-  <h2 id="next-steps">What to build next</h2>
+  <h2 tabindex="-1" id="next-steps">What to build next</h2>
   <ul>
     <li>Follow the <a href="/guides/read-temperature-dht22.html">DHT11 hands-on mission</a> to practice sensor reads, timing, and error handling.</li>
     <li>This separate project uses DHT22; review its hardware before adapting the DHT11 example for <a href="/projects/esp32-home-climate-automation.html">ESP32 home climate automation</a>.</li>
@@ -305,7 +305,7 @@
   </ul>
   </div>
   <h2 id="faqs">Frequently Asked Questions</h2>
-  <div class="faq-list guide-faq"><div class="faq-item"><button type="button" class="faq-q">Is DHT11 the same sensor as DHT22 or AM2302?<span class="plus">+</span></button><div class="faq-a"><p>No. DHT22 and AM2302 refer to a different sensor family. This page now uses DHT11; its historical URL is retained. Match the library type, pinout and supply requirements to your actual part.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Does every DHT11 module need an external pull-up resistor?<span class="plus">+</span></button><div class="faq-a"><p>A bare four-pin sensor needs a pull-up on DATA. Many three-pin modules include one, but module designs vary; check its documentation or circuit before adding another resistor.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Which GPIO should I use for ESP32 DHT11 DATA?<span class="plus">+</span></button><div class="faq-a"><p>This example uses GPIO4 on a common original ESP32 DevKit. GPIO availability varies across ESP32 boards, so confirm the pinout for your board and update DHT_PIN to match the wire.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Why does the DHT11 return NaN?<span class="plus">+</span></button><div class="faq-a"><p>NaN means the library did not get a valid reading. Check the selected GPIO, VCC and GND, the DATA pull-up, the DHTTYPE setting, library installation, and the interval between reads.</p></div></div><div class="faq-item"><button type="button" class="faq-q">How often should I read a DHT11?<span class="plus">+</span></button><div class="faq-a"><p>The linked DHT11 manual specifies a period greater than two seconds and recommends more than five seconds between reads. This example waits six seconds. The separate 2000 ms cache in Adafruit DHT 1.4.6 is a library policy, not the sensor sampling specification.</p></div></div><div class="faq-item"><button type="button" class="faq-q">Can the DHT11 measure air pressure?<span class="plus">+</span></button><div class="faq-a"><p>No. It measures temperature and relative humidity. For pressure readings or pressure-based altitude estimates, use a sensor such as the BME280 instead.</p></div></div></div>
+  <div class="faq-list guide-faq"><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Is DHT11 the same sensor as DHT22 or AM2302?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a"><p>No. DHT22 and AM2302 refer to a different sensor family. This page now uses DHT11; its historical URL is retained. Match the library type, pinout and supply requirements to your actual part.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Does every DHT11 module need an external pull-up resistor?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a"><p>A bare four-pin sensor needs a pull-up on DATA. Many three-pin modules include one, but module designs vary; check its documentation or circuit before adding another resistor.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Which GPIO should I use for ESP32 DHT11 DATA?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a"><p>This example uses GPIO4 on a common original ESP32 DevKit. GPIO availability varies across ESP32 boards, so confirm the pinout for your board and update DHT_PIN to match the wire.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Why does the DHT11 return NaN?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a"><p>NaN means the library did not get a valid reading. Check the selected GPIO, VCC and GND, the DATA pull-up, the DHTTYPE setting, library installation, and the interval between reads.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">How often should I read a DHT11?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a"><p>The linked DHT11 manual specifies a period greater than two seconds and recommends more than five seconds between reads. This example waits six seconds. The separate 2000 ms cache in Adafruit DHT 1.4.6 is a library policy, not the sensor sampling specification.</p></div></div><div class="faq-item"><button type="button" class="faq-q" aria-expanded="false">Can the DHT11 measure air pressure?<span class="plus" aria-hidden="true">+</span></button><div class="faq-a"><p>No. It measures temperature and relative humidity. For pressure readings or pressure-based altitude estimates, use a sensor such as the BME280 instead.</p></div></div></div>
 
   <h2 id="conclusion">Conclusion</h2>
   <p>Start with the 3.3 V wiring, a suitable DATA pull-up, and a six-second sampling interval. Once the Serial Monitor readings are stable, continue to the guided DHT11 beginner build or adapt the sensor for a climate-control or MQTT project. Use a different sensor when your project needs pressure, faster updates, or tighter documented performance.</p>
@@ -343,8 +343,11 @@ document.querySelectorAll(".guide-faq .faq-q").forEach(function(btn) {
       el.classList.remove("open");
       var a = el.querySelector(".faq-a");
       if (a) a.style.display = "none";
+      var q = el.querySelector(".faq-q");
+      if (q) q.setAttribute("aria-expanded", "false");
     });
     item.classList.toggle("open", !open);
+    btn.setAttribute("aria-expanded", open ? "false" : "true");
     var ans = item.querySelector(".faq-a");
     if (ans) ans.style.display = open ? "none" : "block";
   });

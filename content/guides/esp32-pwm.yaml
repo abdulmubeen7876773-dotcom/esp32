@@ -4,40 +4,57 @@ slug: esp32-pwm
 guide_type: reference
 title: 'ESP32 PWM: Complete Guide to PWM, Pins, Frequency & Duty Cycle | ESP32 Engine'
 headline: 'ESP32 PWM: Complete Guide to PWM, Pins, Frequency & Duty Cycle'
-meta_description: 'Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness control, code examples, and troubleshooting.'
-lead: ESP32 PWM lets a digital GPIO create smooth-looking LED brightness, motor-driver speed commands, buzzer tones, and other adjustable outputs. This guide explains PWM from first principles, then shows the current Arduino IDE pattern for changing duty cycle safely.
+meta_description: 'Learn ESP32 PWM with Arduino IDE: PWM pins, channels, frequency, duty cycle, resolution, LED brightness
+  control, code examples, and troubleshooting.'
+lead: ESP32 PWM lets a digital GPIO create smooth-looking LED brightness, motor-driver speed commands, buzzer tones,
+  and other adjustable outputs. This guide explains PWM from first principles, then shows the current Arduino IDE pattern
+  for changing duty cycle safely.
 intro:
-  story: 'A normal digital output is simple: ON or OFF. PWM is what you use when a project needs something that feels adjustable, such as dim LED light, RGB color mixing, or a speed command sent to a motor driver.'
-  eli12: 'PWM means the ESP32 switches a pin ON and OFF very quickly. More ON time looks brighter. Less ON time looks dimmer. The pin is still digital, but the average effect becomes useful.'
+  story: 'A normal digital output is simple: ON or OFF. PWM is what you use when a project needs something that feels
+    adjustable, such as dim LED light, RGB color mixing, or a speed command sent to a motor driver.'
+  eli12: PWM means the ESP32 switches a pin ON and OFF very quickly. More ON time looks brighter. Less ON time looks
+    dimmer. The pin is still digital, but the average effect becomes useful.
   safety:
   - text: Use a current-limiting resistor with LEDs, even when PWM makes the LED look dim.
   - text: Do not power motors, pumps, relays, or large LED loads directly from an ESP32 GPIO pin.
   - text: ESP32 GPIO is 3.3 V logic. Choose parts and driver modules that accept 3.3 V control signals.
-keywords: ESP32 PWM, ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LED brightness, ESP32 Arduino PWM
+keywords: ESP32 PWM, ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LED brightness,
+  ESP32 Arduino PWM
 primary_keyword: ESP32 PWM
-secondary_keywords: ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LEDC, ESP32 Arduino PWM, ESP32 LED brightness
+secondary_keywords: ESP32 PWM pins, ESP32 PWM channels, ESP32 PWM frequency, ESP32 duty cycle, ESP32 LEDC, ESP32 Arduino
+  PWM, ESP32 LED brightness
 proficiency_level: Beginner
 reading_time: 18 min read
 date_published: '2026-09-23'
-date_modified: '2026-09-23'
-conclusion: 'ESP32 PWM is fast digital switching with a controlled duty cycle. Use duty cycle to change average output energy, choose frequency based on the load, choose resolution based on the duty steps you need, and use output-capable GPIO pins with suitable external drivers for anything larger than a small LED. Start with LED brightness, then apply the same idea to RGB projects, motor drivers, buzzers, and automation outputs.'
+date_modified: '2026-10-31'
+conclusion: ESP32 PWM is fast digital switching with a controlled duty cycle. Use duty cycle to change average output
+  energy, choose frequency based on the load, choose resolution based on the duty steps you need, and use output-capable
+  GPIO pins with suitable external drivers for anything larger than a small LED. Start with LED brightness, then apply
+  the same idea to RGB projects, motor drivers, buzzers, and automation outputs.
 faqs:
 - question: What does PWM mean on ESP32?
-  answer: PWM means Pulse Width Modulation. The ESP32 switches a GPIO ON and OFF quickly and changes the ON-time percentage, called duty cycle, to create an adjustable average effect.
+  answer: PWM means Pulse Width Modulation. The ESP32 switches a GPIO ON and OFF quickly and changes the ON-time percentage,
+    called duty cycle, to create an adjustable average effect.
 - question: Which ESP32 pins support PWM?
-  answer: Many output-capable ESP32 GPIO pins can generate PWM through the LEDC peripheral. Avoid input-only pins such as GPIO34-GPIO39 on classic ESP32 boards, flash pins, and boot-sensitive pins unless you understand the board.
+  answer: Many output-capable ESP32 GPIO pins can generate PWM through the LEDC peripheral. Avoid input-only pins such
+    as GPIO34-GPIO39 on classic ESP32 boards, flash pins, and boot-sensitive pins unless you understand the board.
 - question: What is an ESP32 PWM channel?
-  answer: A PWM channel is a hardware timing resource used by the ESP32 LEDC peripheral. Current Arduino-ESP32 APIs can allocate this for you when you attach a pin, while older examples often selected channel numbers manually.
+  answer: A PWM channel is a hardware timing resource used by the ESP32 LEDC peripheral. Current Arduino-ESP32 APIs can
+    allocate this for you when you attach a pin, while older examples often selected channel numbers manually.
 - question: What PWM frequency should I use for LED dimming?
   answer: 5000 Hz is a practical beginner value for LED dimming in Arduino examples. Other loads may need different frequencies.
 - question: What is PWM duty cycle?
-  answer: Duty cycle is the percentage of each PWM cycle that the signal is ON. Higher duty cycle sends more average energy to the load.
+  answer: Duty cycle is the percentage of each PWM cycle that the signal is ON. Higher duty cycle sends more average
+    energy to the load.
 - question: Is ESP32 PWM a real analog voltage?
-  answer: No. The GPIO still switches between digital LOW and HIGH. PWM creates an analog-like average effect through fast switching.
+  answer: No. The GPIO still switches between digital LOW and HIGH. PWM creates an analog-like average effect through
+    fast switching.
 - question: Can ESP32 PWM drive a motor directly?
-  answer: No. Use PWM as a control signal into a motor driver, MOSFET circuit, or suitable module. Do not connect a motor directly to a GPIO pin.
+  answer: No. Use PWM as a control signal into a motor driver, MOSFET circuit, or suitable module. Do not connect a motor
+    directly to a GPIO pin.
 - question: Should I use ledcAttach or ledcSetup?
-  answer: For current Arduino-ESP32 cores, prefer ledcAttach(pin, frequency, resolution) and ledcWrite(pin, duty). Older tutorials may use ledcSetup, ledcAttachPin, and channel-based ledcWrite as legacy API context.
+  answer: For current Arduino-ESP32 cores, prefer ledcAttach(pin, frequency, resolution) and ledcWrite(pin, duty). Older
+    tutorials may use ledcSetup, ledcAttachPin, and channel-based ledcWrite as legacy API context.
 related_guides:
 - title: ESP32 with Arduino IDE
   href: /guides/esp32-arduino-ide.html
@@ -105,7 +122,7 @@ body_html: |
   <p>The resistor is required. PWM changes average brightness, but when the pin is ON, the LED still needs current limiting.</p>
 
   <h2 id="arduino-code">ESP32 PWM with Arduino IDE</h2>
-  <p>Current Arduino-ESP32 cores support the pin-based LEDC helpers shown below. This keeps the beginner sketch clear: attach PWM to a pin, then write duty values to that same pin.</p>
+  <p>Arduino-ESP32 3.x (review baseline 3.3.2) supports the pin-based LEDC helpers shown below. This keeps the beginner sketch clear: attach PWM to a pin, then write duty values to that same pin.</p>
   <pre><code>const int PWM_PIN = 18;
   const int PWM_FREQUENCY = 5000;
   const int PWM_RESOLUTION = 8;
@@ -167,7 +184,7 @@ body_html: |
   <pre><code>ledcSetup(channel, frequency, resolution);
   ledcAttachPin(pin, channel);
   ledcWrite(channel, duty);</code></pre>
-  <p>That style is common in older Arduino-ESP32 core examples and in some existing learning material. For new code on current Arduino-ESP32 cores, prefer the pin-based style:</p>
+  <p>This is a conceptual Arduino-ESP32 2.x fragment, not a complete sketch. That style is common in older Arduino-ESP32 core examples and in some existing learning material. For new code on current Arduino-ESP32 cores, prefer the pin-based style (also a conceptual fragment; use the complete sketch above):</p>
   <pre><code>ledcAttach(pin, frequency, resolution);
   ledcWrite(pin, duty);</code></pre>
   <p>If old code fails with an error such as <code>ledcAttachPin was not declared</code>, check your installed ESP32 board package version and update the PWM API style.</p>
@@ -210,3 +227,9 @@ body_html: |
   </ul>
 quality_status: golden
 status: complete
+copy_code_blocks:
+  '0': pwm_reference.ino
+sources:
+- title: Arduino-ESP32 3.3.2 LEDC API
+  url: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/ledc.rst
+  note: Pin-based APIs and frequency/resolution constraints.
