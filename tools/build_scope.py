@@ -10,6 +10,35 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def component_sitemap_lastmods(sitemap: str, components: list[dict]) -> str:
+    """Update existing selected dates without reserializing unrelated XML."""
+    from datetime import date
+
+    dates = {}
+    for component in components:
+        value = str(component.get("date_modified", ""))
+        dates[f"https://esp32engine.com/components/{component['slug']}.html"] = date.fromisoformat(value).isoformat()
+    seen = {url: 0 for url in dates}
+
+    def update(match):
+        block = match.group(0)
+        loc = re.search(r"<loc>\s*([^<]+?)\s*</loc>", block)
+        if not loc or loc.group(1) not in dates:
+            return block
+        url = loc.group(1)
+        seen[url] += 1
+        block, count = re.subn(r"(<lastmod>)[^<]*(</lastmod>)",
+                               lambda item: item[1] + dates[url] + item[2], block)
+        if count != 1:
+            raise ValueError(f"Component update requires one existing lastmod: {url}")
+        return block
+
+    result = re.sub(r"<url\b[^>]*>.*?</url>", update, sitemap, flags=re.S)
+    if any(count != 1 for count in seen.values()):
+        raise ValueError("Component update requires one existing sitemap entry per selected component")
+    return result
+
+
 def generate_scope(manifest: Path):
     from content_store import get_content_store
     from build_guides import render_guide, render_guides_index
@@ -22,17 +51,21 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}):
-        raise ValueError("Scope requires guides, projects and categories; one optional selector is components, homepage, navigation, pages or guide_catalog_only")
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}, required | {"components", "component_updates_only"}):
+        raise ValueError("Scope requires guides, projects and categories; optional selectors include components with component_updates_only, homepage, navigation, pages or guide_catalog_only")
     if "navigation" in scope and (scope["navigation"] is not True or any(scope[k] for k in required)):
         raise ValueError("Navigation-only scope requires true and empty article selections")
     if "homepage" in scope and scope["homepage"] is not True:
         raise ValueError("Homepage-only scope must set homepage to true")
     if "guide_catalog_only" in scope and (scope["guide_catalog_only"] is not True or not scope["guides"] or scope["projects"] or scope["categories"]):
         raise ValueError("Guide catalog scope requires true, selected guides and no projects/categories")
+    if "component_updates_only" in scope and (scope["component_updates_only"] is not True or not scope["components"] or any(scope[k] for k in required)):
+        raise ValueError("Component update scope requires true, selected components and empty guide/project/category selections")
     if any(not isinstance(v, list) or any(not isinstance(s, str) for s in v)
-           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only"}):
+           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only", "component_updates_only"}):
         raise ValueError("Scope values must be lists of names")
+    if scope.get("component_updates_only") and len(set(scope["components"])) != len(scope["components"]):
+        raise ValueError("Component update scope cannot select a component twice")
     store = get_content_store()
     guides = {g["slug"]: g for g in store.guides()}
     projects = {p["slug"]: p for p in public_projects(store.projects())}
@@ -69,6 +102,29 @@ def generate_scope(manifest: Path):
         records = [listing.parent_listing_record(p) for p in projects.values()]
         write("index.html", listing.home_html(records))
         validate_sitemap(scope)
+        return
+
+    if scope.get("component_updates_only"):
+        from build_components import component_page_html, index_html
+
+        # Existing-record edits only: additions/reordering need the broader
+        # catalog scope so that other previous/next links can be refreshed.
+        catalog = list(components.values())
+        for slug in selected_components:
+            if not (ROOT / "components" / f"{slug}.html").is_file():
+                raise ValueError(f"Component update requires an existing page: {slug}")
+        validate_sitemap(scope)
+        sitemap = component_sitemap_lastmods(
+            (ROOT / "sitemap.xml").read_text(encoding="utf-8"),
+            [components[slug] for slug in selected_components])
+        for i, component in enumerate(catalog):
+            if component["slug"] in selected_components:
+                previous = catalog[i - 1] if i else None
+                following = catalog[i + 1] if i + 1 < len(catalog) else None
+                write(f"components/{component['slug']}.html",
+                      component_page_html(component, previous, following))
+        write("components.html", index_html(catalog, store.component_categories()))
+        write("sitemap.xml", sitemap)
         return
 
     if selected_components:
