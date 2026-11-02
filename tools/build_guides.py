@@ -1,4 +1,5 @@
 import sys
+from responsive_images import responsive_attributes
 import re
 from html import unescape
 from pathlib import Path
@@ -437,18 +438,19 @@ def recorded_media_section(media: dict) -> str:
     """Opt-in contributed media; captions describe the recorded setup, not test claims."""
     notes = "".join(f"<p>{esc(note)}</p>" for note in media.get("notes", []))
     figures = []
-    for image in media.get("images", []):
+    images = media.get("images", [])
+    for index, image in enumerate(images, start=1):
+        overview = index == 1 and len(images) > 2 and image["src"].lower().endswith((".jpeg", ".jpg"))
+        card_class = "recorded-media-card recorded-media-card--overview" if overview else "recorded-media-card"
         figures.append(
-            f'<figure style="margin:0"><a href="{esc(image["src"])}">'
+            f'<figure class="{card_class}"><a class="recorded-media-image" href="{esc(image["src"])}">'
             f'<img src="{esc(image["src"])}" alt="{esc(image["alt"])}" '
-            f'width="{int(image["width"])}" height="{int(image["height"])}" '
-            'loading="lazy" decoding="async" style="display:block;width:100%;height:auto;border-radius:var(--radius-md)"></a>'
-            f'<figcaption>{esc(image["caption"])}</figcaption></figure>'
+            f'width="{int(image["width"])}" height="{int(image["height"])}" loading="lazy" decoding="async"></a>'
+            f'<figcaption><span class="recorded-media-label">Image {index:02d}</span>'
+            f'<p>{esc(image["caption"])}</p>'
+            f'<a class="recorded-media-open" href="{esc(image["src"])}">View full-size image <span aria-hidden="true">↗</span></a></figcaption></figure>'
         )
-    gallery = (
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1.25rem">'
-        + "".join(figures) + "</div>"
-    ) if figures else ""
+    gallery = ('<div class="recorded-media-grid">' + "".join(figures) + "</div>") if figures else ""
     video = media.get("video")
     clip = ""
     if video:
@@ -467,9 +469,12 @@ def recorded_media_section(media: dict) -> str:
         for item in media.get("downloads", [])
     )
     return (
-        '<section class="mission-section" id="recorded-media" aria-labelledby="recorded-media-heading">'
+        '<section class="mission-section recorded-media" id="recorded-media" aria-labelledby="recorded-media-heading">'
         f'<h2 id="recorded-media-heading" tabindex="-1">{esc(media["heading"])}</h2>'
-        + notes + gallery + clip + (f"<ul>{downloads}</ul>" if downloads else "") + "</section>\n"
+        + '<p class="recorded-media-intro">Explore the build photos and recorded results. Open any image to inspect the details.</p>'
+        + (f'<details class="recorded-media-notes"><summary>About this recorded build</summary>{notes}</details>' if notes else "")
+        + gallery + clip
+        + (f'<div class="recorded-media-downloads"><h3>Code and files</h3><ul>{downloads}</ul></div>' if downloads else "") + "</section>\n"
     )
 
 
@@ -533,7 +538,7 @@ def render_guides_index(guides: list[dict]) -> str:
   <p class="guide-count-summary meta">{len(missions)} mission journeys · {len(legacy)} reference guides</p>
   <p class="meta">New to ESP32? Read <a href="{site_href('guides/what-is-esp32.html')}">What Is ESP32?</a>, set up the <a href="{site_href('guides/installing-arduino-ide-esp32.html')}">Arduino IDE</a>, then build <a href="{site_href('guides/blink-led-esp32.html')}">Blink an LED</a>.</p>
     </div>
-    <div class="premium-page-visual"><img src="/assets/images/heroes/guides-hero.webp" alt="ESP32 guide workspace with development board, laptop, and printed wiring notes" width="1024" height="576" loading="eager" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;"></div>
+    <div class="premium-page-visual"><img src="/assets/images/heroes/guides-hero.webp"{responsive_attributes("/assets/images/heroes/guides-hero.webp", "(max-width: 900px) 100vw, 50vw")} fetchpriority="high" alt="ESP32 guide workspace with development board, laptop, and printed wiring notes" width="1024" height="576" loading="eager" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;"></div>
   </section>
 <nav class="journey-jumps" aria-label="Guide sections"><a href="#start-here">Beginner sequence</a><a href="#missions">Hands-on tutorials</a><a href="#reference">Setup and reference</a><a href="/learning.html">Ordered learning paths</a></nav>
 {beginner_route_html(guides)}

@@ -1,4 +1,5 @@
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from site_layout import badge_class, esc, site_href
@@ -59,8 +60,16 @@ def illustration_block(
     if image:
         rel = image.lstrip("/")
         if (_ROOT / rel).is_file():
+            dimensions = ""
+            if Path(rel).suffix.lower() == ".svg":
+                svg = ET.parse(_ROOT / rel).getroot()
+                view_box = svg.get("viewBox", "").split()
+                if len(view_box) == 4:
+                    width, height = float(view_box[2]), float(view_box[3])
+                    if width > 0 and height > 0:
+                        dimensions = f' width="{width:g}" height="{height:g}"'
             return f"""<figure class="mission-illustration mission-illustration--image" aria-label="{esc(alt)}">
-  <img src="{esc(image)}" alt="{esc(alt)}" loading="lazy" decoding="async">
+  <img src="{esc(image)}" alt="{esc(alt)}"{dimensions} loading="lazy" decoding="async">
 </figure>"""
     return illustration_placeholder(alt, label, icon)
 

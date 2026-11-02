@@ -49,12 +49,14 @@
   }
 
   function showInViewReveals() {
+    // Read all positions before changing classes, avoiding repeated layout flushes.
+    var visible = [];
+    var viewportHeight = window.innerHeight;
     document.querySelectorAll('.reveal:not(.is-visible)').forEach(function (el) {
       var rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
-        showReveal(el);
-      }
+      if (rect.top < viewportHeight && rect.bottom > 0) visible.push(el);
     });
+    visible.forEach(showReveal);
   }
 
   function initReveals() {
@@ -110,8 +112,12 @@
 
   var sticky = document.querySelector('.site-nav-sticky');
   if (sticky) {
+    var stickyScrolled = null;
     var onScroll = function () {
-      sticky.classList.toggle('is-scrolled', window.scrollY > 8);
+      var next = window.scrollY > 8;
+      if (next === stickyScrolled) return;
+      stickyScrolled = next;
+      sticky.classList.toggle('is-scrolled', next);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -232,11 +238,17 @@
   btt.setAttribute('aria-label', 'Back to top');
   btt.textContent = '↑';
   document.body.appendChild(btt);
+  var backToTopVisible = null;
+  function updateBackToTop() {
+    var next = window.scrollY > 320;
+    if (next === backToTopVisible) return;
+    backToTopVisible = next;
+    btt.classList.toggle('visible', next);
+  }
+  updateBackToTop();
   window.addEventListener(
     'scroll',
-    function () {
-      btt.classList.toggle('visible', window.scrollY > 320);
-    },
+    updateBackToTop,
     { passive: true }
   );
   btt.addEventListener('click', function () {

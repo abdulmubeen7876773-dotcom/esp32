@@ -61,6 +61,7 @@ def main():
     print("Static-first build (Phase 1) — files only, no runtime server.")
     started = time.perf_counter()
     warnings: list[str] = []
+    warnings.extend(run_step("build_stylesheets.py"))
     if args.scope:
         warnings.extend(run_step("validate_content.py"))
         sys.path.insert(0, str(TOOLS))

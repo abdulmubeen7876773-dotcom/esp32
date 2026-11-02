@@ -1,4 +1,6 @@
 import html
+import hashlib
+from pathlib import Path
 import json
 import re
 
@@ -10,7 +12,7 @@ from site_counts import site_counts
 _cfg = load_site_settings()
 CSS_VERSION = _cfg["css_version"]
 JS_VERSION = _cfg.get("js_version", CSS_VERSION)
-UI_JS_SRC = "/ui.js?v=20261008-google-cmp"
+UI_JS_SRC = "/ui.js?v=20261102-layout-batching"
 SEARCH_JS_SRC = f"/search.js?v={JS_VERSION}"
 SITE_DOMAIN = _cfg["site_domain"]
 SITE_NAME = _cfg["site_name"]
@@ -567,12 +569,18 @@ def pinterest_verification_meta() -> str:
 
 
 def stylesheet_links_html(homepage_perf: bool = False) -> str:
+    root = Path(__file__).resolve().parent.parent
+    source = (root / "style.css").read_text(encoding="utf-8")
+    digest = hashlib.sha256(source.encode()).hexdigest()[:12]
+    compact = root / "assets/style.compact.css"
+    current = compact.exists() and compact.read_text(encoding="utf-8").startswith(f"/* source-sha256: {digest} */")
+    css_href = f"/assets/style.compact.css?v={digest}" if current else f"/style.css?v={CSS_VERSION}"
     if homepage_perf:
         return f"""<link rel="stylesheet" href="/assets/critical-home.css?v={CSS_VERSION}">
-<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="/style.css?v={CSS_VERSION}"></noscript>"""
-    return f"""<link rel="preload" href="/style.css?v={CSS_VERSION}" as="style">
-<link rel="stylesheet" href="/style.css?v={CSS_VERSION}">"""
+<link rel="preload" href="{css_href}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{css_href}"></noscript>"""
+    return f"""<link rel="preload" href="{css_href}" as="style">
+<link rel="stylesheet" href="{css_href}">"""
 
 
 def homepage_hero_preload_html() -> str:
