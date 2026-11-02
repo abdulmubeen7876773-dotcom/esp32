@@ -575,10 +575,9 @@ def stylesheet_links_html(homepage_perf: bool = False) -> str:
     compact = root / "assets/style.compact.css"
     current = compact.exists() and compact.read_text(encoding="utf-8").startswith(f"/* source-sha256: {digest} */")
     css_href = f"/assets/style.compact.css?v={digest}" if current else f"/style.css?v={CSS_VERSION}"
-    if homepage_perf:
-        return f"""<link rel="stylesheet" href="/assets/critical-home.css?v={CSS_VERSION}">
-<link rel="preload" href="{css_href}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="{css_href}"></noscript>"""
+    # Use the same deterministic CSS order on home and article pages.
+    # The old homepage critical sheet described a previous design; applying the
+    # full sheet asynchronously could repaint the hero after its image arrived.
     return f"""<link rel="preload" href="{css_href}" as="style">
 <link rel="stylesheet" href="{css_href}">"""
 

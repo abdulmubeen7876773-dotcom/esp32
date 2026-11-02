@@ -334,7 +334,7 @@ def home_html(projects):
 {head_html("", title, desc, canonical_path="/", extra_schema=schema, include_index_redirect=True, homepage_perf=True)}
 <link rel="preload" as="image" href="{home['clean_premium']['hero_image'] if clean else (home['cinematic']['hero_image'] if cinematic else '/assets/images/heroes/home-hero.webp')}"{responsive_attributes(home['clean_premium']['hero_image'], HOME_HERO_SIZES).replace(' srcset=', ' imagesrcset=').replace(' sizes=', ' imagesizes=') if clean else ''} type="image/webp" fetchpriority="high">
 {'<link rel="stylesheet" href="/assets/cinematic-home.css?v=20261017-cinematic-maker">' if cinematic else ''}
-{'<link rel="stylesheet" href="/assets/clean-premium-home.css?v=20261026">' if clean else ''}
+{'<style data-home-theme="clean-premium">' + (ROOT / 'assets/clean-premium-home.css').read_text(encoding='utf-8') + '</style>' if clean else ''}
 </head>
 <body class="home-page{' clean-premium' if clean else (' cinematic-maker' if cinematic else '')}">
 <main>
