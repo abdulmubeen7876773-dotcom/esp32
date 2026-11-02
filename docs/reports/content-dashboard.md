@@ -1,10 +1,10 @@
 # Content Dashboard
 
-Generated: 2026-09-19T06:02:37Z
+Generated: 2026-11-02T17:22:17Z
 
 ## Components
 
-- Complete: 8
+- Complete: 44
 - Planned: 210
 
 ## Guides
@@ -14,29 +14,29 @@ Generated: 2026-09-19T06:02:37Z
 
 ## Projects
 
-- Complete: 50
-- Planned: 50
+- Complete: 58
+- Planned: 58
 
 ## Mission Count
 
-16
+15
 
 ## Illustrations
 
-- Complete: 16
+- Complete: 15
 - Missing: 0
 
 ## Photos
 
-- Complete: 8
+- Complete: 44
 - Missing: 0
 
 ## Pinouts
 
-- Complete: 8
+- Complete: 44
 - Missing: 0
 
 ## Wiring
 
-- Complete: 24
+- Complete: 59
 - Missing: 0

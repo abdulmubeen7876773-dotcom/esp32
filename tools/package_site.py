@@ -29,6 +29,13 @@ def public_file(relative: Path) -> bool:
         'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.ino',
         'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.zip',
         'assets/downloads/guides/contributor-media-20261101/oled_hello_maker.ino',
+        'assets/downloads/guides/contributor-media-20261102/gpio27-debounce.ino',
+        'assets/downloads/guides/contributor-media-20261102/multiple-buttons.ino',
+        'assets/downloads/guides/contributor-media-20261102/gpio27-external-pulldown.ino',
+        'assets/downloads/guides/contributor-media-20261102/gpio27-internal-pullup.ino',
+        'assets/downloads/guides/contributor-media-20261102/gpio34-potentiometer.ino',
+        'assets/downloads/guides/contributor-media-20261102/gpio34-ldr-threshold-800.ino',
+        'assets/downloads/guides/contributor-media-20261102/gpio18-pwm-led-fade.ino',
     }:
         return True
     if relative.parts[0] == "assets":

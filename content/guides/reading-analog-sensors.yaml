@@ -18,13 +18,13 @@
   "proficiency_level": "Beginner",
   "reading_time": "40-45 min",
   "date_published": "2026-07-01",
-  "date_modified": "2026-10-31",
+  "date_modified": "2026-11-02",
   "academy": {
     "mission_id": "Mission 09",
     "level": "Foundation",
     "prerequisites": [
       {
-        "slug": "analog-inputs-reading-real-world",
+        "slug": "analog-inputs",
         "title": "Analog Inputs",
         "description": "You should understand how the ESP32 ADC reads changing voltages from 0 to 4095."
       }
@@ -49,7 +49,7 @@
     "expected_outcome": "You will build a light sensor circuit, print live ADC readings, characterize bright and dark readings, and trigger simple light/dark decisions.",
     "mini_challenge": "Find your own dark and bright threshold values, then make Serial Monitor print DAY, DIM, or NIGHT.",
     "previous_mission": {
-      "slug": "analog-inputs-reading-real-world",
+      "slug": "analog-inputs",
       "title": "Analog Inputs",
       "description": "You learned how a potentiometer creates a changing voltage for the ESP32 ADC."
     },
@@ -93,7 +93,7 @@
     ],
     "future_paths": [
       {
-        "slug": "analog-inputs-reading-real-world",
+        "slug": "analog-inputs",
         "title": "Analog Inputs",
         "description": "Review the potentiometer mission if raw ADC values still feel confusing."
       },
@@ -232,7 +232,7 @@
       "illustration_alt": "ESP32 reading an LDR voltage divider on GPIO34 while light changes the ADC value",
       "body": "The ESP32 cannot see light directly. It can only read electrical signals.\n\nAn LDR changes resistance when light changes. A resistor divider converts that changing resistance into a changing voltage. The ADC converts that voltage into a number.\n\nThat chain is the core idea of analog sensing: real world change, electrical change, digital number, software decision."
     },
-    "engineering_explanation": "For the wiring shown, the LDR is above the divider midpoint and the fixed 10 kΩ resistor is below it. Vout = V3V3 × Rfixed / (RLDR + Rfixed). A typical LDR has lower resistance in brighter light, so this arrangement produces higher midpoint voltage and usually higher ADC counts in bright light. Darkness lowers the count. Reversing the two divider parts reverses that trend.\n\nUse raw readings to characterize your own bright/dark conditions before setting LIGHT_THRESHOLD. The value 2000 is illustrative, not calibrated lux or a universal light boundary. This sketch configures 12-bit ADC resolution and 11 dB attenuation explicitly. Classic ESP32's documented useful range at that attenuation is approximately 150–3100 mV; a 3V3-powered divider can saturate near an endpoint. Attenuation is not overvoltage protection.\n\nUse GPIO34 (ADC1) when adding Wi-Fi on the classic chip; its ADC2 sharing restriction is not universal to all ESP32 families. Noise can cause a single-threshold decision to chatter. Start by inspecting wiring and raw counts, then use the existing hysteresis or moving-average lesson if the application needs steadier decisions. Relative bright/dark characterization is not calibrated illuminance measurement.",
+    "engineering_explanation": "For the wiring shown, the LDR is above the divider midpoint and the fixed 10 kΩ resistor is below it. Vout = V3V3 × Rfixed / (RLDR + Rfixed). A typical LDR has lower resistance in brighter light, so this arrangement produces higher midpoint voltage and usually higher ADC counts in bright light. Darkness lowers the count. Reversing the two divider parts reverses that trend.\n\nUse raw readings to characterize your own bright/dark conditions before setting LIGHT_THRESHOLD. The value 800 matches the supplied demonstration setup; it is illustrative, not calibrated lux or a universal light boundary. This sketch configures 12-bit ADC resolution and 11 dB attenuation explicitly. Classic ESP32's documented useful range at that attenuation is approximately 150–3100 mV; a 3V3-powered divider can saturate near an endpoint. Attenuation is not overvoltage protection.\n\nUse GPIO34 (ADC1) when adding Wi-Fi on the classic chip; its ADC2 sharing restriction is not universal to all ESP32 families. Noise can cause a single-threshold decision to chatter. Start by inspecting wiring and raw counts, then use the existing hysteresis or moving-average lesson if the application needs steadier decisions. Relative bright/dark characterization is not calibrated illuminance measurement.",
     "real_life_analogy": "Think of a weather thermometer. The outside world changes gradually, but you still need a number before you can make a decision such as 'wear a jacket.'\n\nAn analog sensor does the same kind of translation. The LDR does not tell the ESP32 'sunny' or 'dark.' It changes an electrical value. Your code decides what that value means.\n\nCharacterizing the range is like learning a new person's handwriting. You do not guess from one mark. You look at examples, learn the range, and then read it with confidence.",
     "wiring": {
       "illustration_alt": "ESP32 3.3V connected to LDR, LDR connected to GPIO34 divider point, 10 kOhm resistor from divider point to GND",
@@ -276,8 +276,8 @@
     ],
     "code": {
       "filename": "ldr_light_sensor_threshold.ino",
-      "notes": "LDR to 3V3; fixed 10 kΩ to GND; midpoint on GPIO34. With this topology bright light normally increases counts. The 2000-count threshold is illustrative; characterize your own conditions. Core 3.3.2, 12-bit ADC and 11 dB attenuation; no extra library.",
-      "content": "const int LDR_PIN = 34;\n\nconst int LIGHT_THRESHOLD = 2000;\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(LDR_PIN, ADC_11db);\n  delay(500);\n\n  Serial.println(\"Mission 09: Analog light sensor ready\");\n  Serial.println(\"Cover the LDR, then shine light on it, and watch the raw values.\");\n}\n\nvoid loop() {\n  int rawLight = analogRead(LDR_PIN);\n\n  Serial.print(\"Light ADC: \");\n  Serial.print(rawLight);\n\n  if (rawLight < LIGHT_THRESHOLD) {\n    Serial.println(\"  |  DARK\");\n  } else {\n    Serial.println(\"  |  BRIGHT\");\n  }\n\n  delay(250);\n}\n"
+      "notes": "LDR to 3V3; fixed 10 kΩ to GND; midpoint on GPIO34. With this topology bright light normally increases counts. The 800-count threshold matches the supplied demonstration setup; it is illustrative; characterize your own conditions. Core 3.3.2, 12-bit ADC and 11 dB attenuation; no extra library.",
+      "content": "constexpr uint8_t LDR_PIN = 34;\nconstexpr uint16_t LIGHT_THRESHOLD = 800;\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(LDR_PIN, ADC_11db);\n  delay(500);\n  Serial.println(\"Mission 09: Analog light sensor ready\");\n  Serial.println(\"Cover the LDR, then shine light on it, and watch the raw values.\");\n}\n\nvoid loop() {\n  const uint16_t rawLight = analogRead(LDR_PIN);\n\n  Serial.print(\"Light ADC: \");\n  Serial.print(rawLight);\n\n  if (rawLight < LIGHT_THRESHOLD) {\n    Serial.println(\" | DARK\");\n  } else {\n    Serial.println(\" | BRIGHT\");\n  }\n\n  delay(250);\n}\n"
     },
     "code_explanation": [
       {
@@ -397,7 +397,7 @@
         "description": "Next you will learn how the ESP32 talks to smart digital components such as displays and environmental sensors."
       },
       {
-        "slug": "analog-inputs-reading-real-world",
+        "slug": "analog-inputs",
         "title": "Analog Inputs",
         "description": "Review the potentiometer mission if raw ADC readings still feel unclear."
       }
@@ -431,5 +431,42 @@
       "url": "https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst",
       "note": "Raw counts, calibrated millivolts, attenuation and family-dependent ranges."
     }
-  ]
+  ],
+  "media_evidence": {
+    "heading": "Recorded LDR bright and dark readings",
+    "before_id": "output",
+    "notes": [
+      "Contributor-supplied build photos and Arduino captures. These records are not an independent hardware retest. Some breadboard contacts are hidden; follow the documented pin connections.",
+      "The 800-count threshold belongs to this recorded setup. Choose a threshold from readings in your own lighting; these counts are not calibrated lux."
+    ],
+    "images": [
+      {
+        "src": "/assets/visuals/guides/photos/contributor-media-20261102/ldr-wiring.jpeg",
+        "width": 1200,
+        "height": 1600,
+        "alt": "ESP32 with LDR and fixed resistor divider",
+        "caption": "Supplied LDR and resistor build for GPIO34. Hidden contacts and the resistor value cannot be established from this image alone."
+      },
+      {
+        "src": "/assets/visuals/guides/photos/contributor-media-20261102/ldr-bright.png",
+        "width": 1360,
+        "height": 705,
+        "alt": "Serial Monitor showing Light ADC values and BRIGHT",
+        "caption": "Supplied bright capture: raw ADC values approximately 862–877 are above the sketch threshold of 800."
+      },
+      {
+        "src": "/assets/visuals/guides/photos/contributor-media-20261102/ldr-dark.png",
+        "width": 1360,
+        "height": 704,
+        "alt": "Serial Monitor showing Light ADC zero and DARK",
+        "caption": "Supplied dark capture: raw ADC count 0 is below the sketch threshold of 800."
+      }
+    ],
+    "downloads": [
+      {
+        "href": "/assets/downloads/guides/contributor-media-20261102/gpio34-ldr-threshold-800.ino",
+        "label": "Download the supplied LDR sketch with threshold 800"
+      }
+    ]
+  }
 }
