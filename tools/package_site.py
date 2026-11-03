@@ -36,6 +36,8 @@ def public_file(relative: Path) -> bool:
         'assets/downloads/guides/contributor-media-20261102/gpio34-potentiometer.ino',
         'assets/downloads/guides/contributor-media-20261102/gpio34-ldr-threshold-800.ino',
         'assets/downloads/guides/contributor-media-20261102/gpio18-pwm-led-fade.ino',
+        'assets/downloads/guides/contributor-media-20261103/gpio34-oled-values.ino',
+        'assets/downloads/guides/contributor-media-20261103/bme280-i2c-readings.ino',
     }:
         return True
     if relative.parts[0] == "assets":

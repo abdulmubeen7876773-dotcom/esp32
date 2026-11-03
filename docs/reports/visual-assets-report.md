@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-11-02T19:19:58Z
+Generated: 2026-11-03T14:20:56Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
@@ -8,11 +8,11 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 
 ## Summary
 
-- Total assets required: **584**
-- Completed: **281**
+- Total assets required: **595**
+- Completed: **292**
 - Missing: **0**
 - Placeholder: **303**
-- Completion: **48.1%**
+- Completion: **49.1%**
 
 ## By type
 
@@ -26,7 +26,7 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 | guide_output | 15 | 0 | 0 | 15 |
 | icon | 16 | 0 | 0 | 16 |
 | project_hero | 75 | 18 | 0 | 57 |
-| project_illustration | 129 | 72 | 0 | 57 |
+| project_illustration | 140 | 83 | 0 | 57 |
 | project_output | 57 | 0 | 0 | 57 |
 | project_wiring | 57 | 41 | 0 | 16 |
 | wiring_diagram | 17 | 17 | 0 | 0 |
@@ -34,6 +34,13 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 ## Validation
 
 - No blocking errors.
+
+### Warnings
+
+- Duplicate filename dht11-module.jpeg across paths: disk:/assets/visuals/guides/photos/contributor-media-20261101/dht11-module.jpeg, disk:/assets/visuals/guides/photos/contributor-media-20261103/dht11-module.jpeg
+- Duplicate filename dht11-serial.png across paths: disk:/assets/visuals/guides/photos/contributor-media-20261101/dht11-serial.png, disk:/assets/visuals/guides/photos/contributor-media-20261103/dht11-serial.png
+- Duplicate filename dht11-upload.png across paths: disk:/assets/visuals/guides/photos/contributor-media-20261101/dht11-upload.png, disk:/assets/visuals/guides/photos/contributor-media-20261103/dht11-upload.png
+- Duplicate filename dht11-wiring.jpeg across paths: disk:/assets/visuals/guides/photos/contributor-media-20261101/dht11-wiring.jpeg, disk:/assets/visuals/guides/photos/contributor-media-20261103/dht11-wiring.jpeg
 
 ## Missing assets
 
