@@ -394,7 +394,14 @@ def simple_list_section(section_id: str, icon: str, title: str, items: list, css
         text = item if isinstance(item, str) else item.get("text") or item.get("name", "")
         note = "" if isinstance(item, str) else item.get("note", "")
         note_html = f'<span class="project-part-note">{esc(note)}</span>' if note else ""
-        rows.append(f"<li>{esc(text)}{note_html}</li>")
+        href = item.get("href", "") if isinstance(item, dict) and section_id == "downloads" else ""
+        # Only local downloadable assets and on-page sections are accepted here.
+        linked = (href.startswith("/assets/downloads/")
+                  or href.startswith("/assets/visuals/projects/wiring/")
+                  or href.startswith("#"))
+        label_html = f'<a href="{esc(href)}">{esc(text)}</a>' if linked else esc(text)
+        separator = "<br>" if section_id == "downloads" and note_html else ""
+        rows.append(f"<li>{label_html}{separator}{note_html}</li>")
     extra = f" {css_class}" if css_class else ""
     return f"""<section class="project-section{extra}" id="{section_id}" aria-labelledby="{section_id}-heading">
   {project_section_heading(section_id, icon, title)}

@@ -15,7 +15,7 @@ sensor: two analog IR line sensors
 output: dual H-bridge motor driver
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-11-03'
 keywords:
 - ESP32
 - ESP32 Line Following Robot
@@ -38,7 +38,7 @@ project:
   difficulty: Intermediate
   age: Ages 12+
   estimated_time: 90-150 min
-  budget: Under $35
+  budget: Varies by motors, chassis and supply
   what_you_build: A working ESP32 line following robot that reads two analog IR reflectance sensors, calibrates
     separate left and right thresholds, drives a dual H-bridge motor driver, and prints raw sensor readings in Serial Monitor.
   components:
@@ -49,14 +49,17 @@ project:
   - item: Two analog IR reflectance sensor modules
     note: Left and right line sensors
     icon: PART
-  - item: Dual H-bridge motor driver
-    note: Direction-control inputs for two DC motors
+  - item: Pololu TB6612FNG dual motor driver carrier (#713)
+    note: Reference carrier; VCC at 3.3 V, separate motor supply, enable pins wired as shown
     icon: PART
   - item: Breadboard and jumper wires
     note: Prototype wiring
     icon: PART
   - item: USB data cable
     note: Programming and testing
+    icon: PART
+  - item: Two matched low-power DC gearmotors, chassis and motor supply
+    note: Use motors rated for the chosen 4.5-6 V supply, with documented stall current within carrier limits
     icon: PART
   bom:
   - part: ESP32 DevKit
@@ -67,48 +70,75 @@ project:
     qty: '2'
     estimated_cost: $2-$10
     notes: Use analog AO outputs for this build
-  - part: Dual H-bridge motor driver
+  - part: 'TB6612FNG carrier (Pololu #713 reference)'
     qty: '1'
-    estimated_cost: $3-$12
-    notes: Direction-input style such as TB6612FNG or L298N-compatible modules
+    estimated_cost: Check vendor
+    notes: Use this documented interface, not an assumed L298N pin-for-pin replacement
   - part: Breadboard and wires
     qty: 1 set
     estimated_cost: $3-$5
     notes: Prototype wiring
+  - part: Two DC gearmotors, chassis and switched motor supply
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Match motor voltage and stall current to the carrier and supply; original estimate excludes this set
   wiring:
-    illustration_alt: ESP32 Line Following Robot wiring diagram
-    summary: Wire the analog outputs of two IR reflectance sensors first, calibrate raw readings over your track,
-      then connect the dual H-bridge motor driver direction inputs.
+    illustration_alt: Logical connection map for classic ESP32 WROOM, analog line sensors and Pololu TB6612FNG
+      carrier with enable and supply connections
+    image: /assets/visuals/projects/wiring/esp32-line-following-robot-tb6612-map.svg
+    summary: This reference circuit uses a Pololu TB6612FNG carrier (#713) and a classic ESP32-WROOM board with
+      GPIO16/17 free. It is a logical connection map, not a physical header layout or a hardware-tested build.
+      L298N modules need their own enable and supply wiring.
     steps:
-    - Unplug USB before placing modules on the breadboard.
-    - Connect both IR sensor modules to the voltage recommended by the module, but keep any signal sent to the ESP32 within 3.3 V.
-    - Connect the left sensor analog output AO to GPIO34 and the right sensor analog output AO to GPIO35.
-    - Leave digital DO outputs disconnected for this build; DO-only modules need different digital reading logic.
-    - Connect left motor direction inputs to GPIO16 and GPIO17, and right motor direction inputs to GPIO18 and GPIO19.
-    - Power motors through the motor driver from an appropriate low-voltage motor supply, not from ESP32 GPIO pins.
-    - Share a ground/reference between the ESP32 and motor driver control side when your driver module requires it.
-    - Upload the sketch with the robot lifted first, record raw line/background readings, then place it on the floor.
+    - Disconnect USB and the separate motor supply before wiring. Leave motor power disconnected during sensor
+      calibration.
+    - Use documented 3.3 V-compatible analog reflectance modules. Connect their supply to 3V3 and grounds to
+      GND; left AO to GPIO34, right AO to GPIO35. Do not use a 5 V AO signal or substitute DO-only modules.
+    - Connect carrier VCC to ESP32 3V3 and all signal grounds together. VCC is the logic supply; VMOT is the
+      separate motor supply.
+    - Connect GPIO16 to AIN1, GPIO17 to AIN2, GPIO18 to BIN1 and GPIO19 to BIN2. This WROOM example is not for
+      WROVER boards reserving GPIO16/17.
+    - Connect PWMA, PWMB and STBY to the 3.3 V logic rail for this full-speed direction-only sketch. They must
+      not float. There is no software PWM speed control or software standby in this example.
+    - Connect the left motor to AO1/AO2 and the right motor to BO1/BO2. Motor mounting may require swapping that
+      motor pair to make the forward command move forward.
+    - With power off, connect the switched motor supply positive to VMOT and negative to carrier GND. Use a motor-rated
+      4.5-6 V supply and compatible small motors. Verify documented stall current against the carrier rating
+      (1 A continuous per channel); do not design around its brief peak-current number. Keep motor current out
+      of ESP32/breadboard signal rails.
+    - With only USB on, print line/floor readings and set both thresholds and sensor polarity. The loop already
+      issues motor commands; motor supply stays off during calibration.
+    - Lift the wheels before enabling motor power and keep its switch accessible. Hard-wired STBY does not provide
+      a reset-time motor interlock. Verify start, steering and stop commands before floor testing.
   gpio_map:
-  - signal: Left IR sensor AO
-    esp32_pin: GPIO34
+  - signal: Left / right sensor AO
+    esp32_pin: GPIO34 / GPIO35
     direction: Analog input
-    notes: ADC1 input-only pin for raw reflectance reading
-  - signal: Right IR sensor AO
-    esp32_pin: GPIO35
-    direction: Analog input
-    notes: ADC1 input-only pin for raw reflectance reading
-  - signal: Left motor IN1 / IN2
-    esp32_pin: GPIO16/GPIO17
+    notes: 3.3 V-compatible driven AO; no DO substitution
+  - signal: AIN1 / AIN2 (left)
+    esp32_pin: GPIO16 / GPIO17
     direction: Output
-    notes: Direction inputs on a dual H-bridge motor driver
-  - signal: Right motor IN1 / IN2
-    esp32_pin: GPIO18/GPIO19
+    notes: Classic WROOM; verify pins are exposed and free
+  - signal: BIN1 / BIN2 (right)
+    esp32_pin: GPIO18 / GPIO19
     direction: Output
-    notes: Direction inputs on a dual H-bridge motor driver
-  - signal: Serial Monitor
-    esp32_pin: USB
-    direction: Debug
-    notes: 115200 baud
+    notes: Direction commands from existing sketch
+  - signal: VCC, PWMA, PWMB, STBY
+    esp32_pin: 3V3 logic rail
+    direction: Power / enable
+    notes: All four tied to logic supply; enables are not left floating
+  - signal: VMOT
+    esp32_pin: Separate switched motor supply +
+    direction: Motor power
+    notes: 4.5-6 V, matched motors and current limits; never ESP32 3V3
+  - signal: Carrier / sensors / supply negative
+    esp32_pin: Common GND
+    direction: Ground
+    notes: Motor return runs to carrier/supply, not through ESP32 signal wiring
+  - signal: AO1/AO2; BO1/BO2
+    esp32_pin: Left motor; right motor
+    direction: Driver outputs
+    notes: Do not connect motor leads to ESP32 GPIO
   code:
     filename: line-following-robot.ino
     content: |
@@ -228,10 +258,12 @@ project:
   related_guides:
   - title: ESP32 Robotics Learning Path
     href: /learning.html#robotics-basics
-    description: Follow the robotics sequence from PWM and motor-driver basics to distance sensing and robot control.
+    description: Follow the robotics sequence from PWM and motor-driver basics to distance sensing and robot
+      control.
   - title: ESP32 Analog Inputs Tutorial
     href: /guides/analog-inputs.html
-    description: Review analogRead(), ADC values, GPIO34, and why raw readings must be printed before choosing thresholds.
+    description: Review analogRead(), ADC values, GPIO34, and why raw readings must be printed before choosing
+      thresholds.
   - title: Reading Analog Sensors
     href: /guides/reading-analog-sensors.html
     description: Practice turning raw sensor readings into decisions before the robot starts moving.
@@ -241,6 +273,9 @@ project:
   - title: Connect an OLED Display
     href: /guides/connect-oled-esp32.html
     description: Optional debugging upgrade for showing left and right sensor values without a laptop.
+  - title: Pololu TB6612FNG carrier reference
+    href: https://www.pololu.com/product/713/
+    description: Selected carrier pin labels, supply and current limits; not a generic module wiring promise.
   related_projects:
   - title: ESP32 WiFi Robot Controller
     href: /projects/esp32-wifi-robot-controller.html
@@ -281,14 +316,29 @@ project:
   - Control a dual H-bridge motor driver on GPIO16-GPIO19 using simple two-sensor steering logic.
   - Use Serial Monitor as an engineering tool, not only as a success message.
   - Identify sensor, steering, motor direction, and power faults using a repeatable test checklist.
-  circuit_explanation: |
-    The core build assumes two compatible IR reflectance modules using their analog AO outputs. The left sensor AO goes to GPIO34 and the right sensor AO goes to GPIO35. On the classic ESP32, GPIO34 and GPIO35 are input-only ADC1 pins, which makes them suitable for sensor inputs. GPIO34-GPIO39 do not provide internal pull-up or pull-down resistors on the classic ESP32, but this analog sensor build normally does not need internal pulls because the module drives an analog output voltage.
+  circuit_explanation: 'The core build assumes two compatible IR reflectance modules using their analog AO outputs.
+    The left sensor AO goes to GPIO34 and the right sensor AO goes to GPIO35. On the classic ESP32, GPIO34 and
+    GPIO35 are input-only ADC1 pins, which makes them suitable for sensor inputs. GPIO34-GPIO39 do not provide
+    internal pull-up or pull-down resistors on the classic ESP32, but this analog sensor build normally does
+    not need internal pulls because the module drives an analog output voltage.
 
-    If your module exposes only a digital DO output, use a different sketch that reads HIGH/LOW with digitalRead(). This tutorial is teaching analog calibration with analogRead().
 
-    The motor side assumes a dual H-bridge motor driver with two direction inputs per motor. The left motor uses GPIO16/GPIO17 and the right motor uses GPIO18/GPIO19. TB6612FNG-style and L298N-compatible boards may use this kind of direction-control idea, but their pin labels and enable pins are not identical, so follow your module's datasheet.
+    If your module exposes only a digital DO output, use a different sketch that reads HIGH/LOW with digitalRead().
+    This tutorial is teaching analog calibration with analogRead().
 
-    ESP32 GPIO pins provide control signals only. Do not power DC motors directly from a GPIO. Power motors through the driver from an appropriate low-voltage motor supply, and share a ground/reference between the ESP32 and driver control side when your module requires it. Motor startup current can reset the ESP32 if power is poorly designed.
+
+    The selected TB6612FNG carrier uses GPIO16/17 for AIN1/AIN2 and GPIO18/19 for BIN1/BIN2. Logic VCC, PWMA,
+    PWMB and STBY connect to 3V3. Motor power enters VMOT separately; left and right motors connect to AO1/AO2
+    and BO1/BO2. Hard-wired PWM inputs enable full-speed direction control; this sketch does not set motor speed.
+    L298N wiring is not interchangeable.
+
+
+    ESP32 GPIO pins provide control signals only. Do not power DC motors directly from a GPIO. Power motors through
+    the driver from an appropriate low-voltage motor supply, and share a ground/reference between the ESP32 and
+    driver control side when your module requires it. Motor startup current can reset the ESP32 if power is poorly
+    designed.
+
+    '
   engineering_explanation: |
     Calibrate before driving. Upload the sketch with the robot lifted so the wheels cannot run away. Record LEFT and RIGHT raw readings over the dark line, then over the light background, at the actual sensor mounting height. Choose LEFT_THRESHOLD and RIGHT_THRESHOLD roughly between each sensor's dark-line and light-floor readings, then re-test under the room lighting where the robot will run.
 
@@ -304,6 +354,8 @@ project:
 
     Serial Monitor prints both the raw numbers and the interpreted state, for example "L:2350 LINE | R: 900 FLOOR". The motor code then follows the same four-row state table explained above.
   testing_checklist:
+  - Keep the switched motor supply OFF while collecting ADC calibration readings; the sketch issues motor commands
+    immediately in loop.
   - ESP32 appears on the correct port and accepts a basic blink upload.
   - Ground is shared between every module that exchanges signals with the ESP32.
   - Each GPIO in the code matches the wire connected on the breadboard.
@@ -311,10 +363,14 @@ project:
   - Raw left and right ADC readings are recorded over both dark line and light background before floor testing.
   - LEFT_THRESHOLD and RIGHT_THRESHOLD are set between each sensor's measured line and floor values.
   - LINE_IS_HIGH matches the actual sensor polarity seen in Serial Monitor.
-  - The dual H-bridge direction inputs match GPIO16/GPIO17 for the left motor and GPIO18/GPIO19 for the right motor.
-  - The robot drives forward on LINE/LINE, corrects left or right on single-sensor line detection, and stops on FLOOR/FLOOR.
+  - The dual H-bridge direction inputs match GPIO16/GPIO17 for the left motor and GPIO18/GPIO19 for the right
+    motor.
+  - The robot drives forward on LINE/LINE, corrects left or right on single-sensor line detection, and stops
+    on FLOOR/FLOOR.
   - The motor supply does not reset the ESP32 when the wheels start.
   - The circuit still behaves correctly after power is removed and restored.
+  - Verify VCC/PWMA/PWMB/STBY at 3.3 V, separate VMOT supply, common GND and all motor terminal connections against
+    the selected carrier labels.
   build_photos:
   - title: Breadboard overview
     note: Show the ESP32, module placement, and power rails clearly.
@@ -323,12 +379,18 @@ project:
   - title: Working output
     note: Show Serial Monitor raw sensor readings and the robot following a dark line after calibration.
   downloads:
-  - text: ESP32 Line Following Robot Arduino sketch
-    note: Use the code section as the downloadable source until file downloads are published.
-  - text: Wiring checklist
-    note: Match the GPIO table and wiring steps before powering the circuit.
-  - text: Troubleshooting worksheet
-    note: Record symptoms, Serial output, voltage checks, and fixes.
+  - text: Download the Arduino sketch (.ino)
+    href: /assets/downloads/projects/review-fixes-20261103/line-following-robot.ino
+    note: Same code as the complete sketch on this page.
+  - text: Wiring steps
+    href: '#wiring'
+    note: On-page connection instructions.
+  - text: Testing checklist
+    href: '#testing'
+    note: On-page checks to perform on your build.
+  - text: Open wiring map full size (SVG)
+    href: /assets/visuals/projects/wiring/esp32-line-following-robot-tb6612-map.svg
+    note: Enlarge the logical connection map; it is not a physical header layout.
   real_world_applications:
   - Classroom line-following robot trainer
   - STEM lab calibration demonstration

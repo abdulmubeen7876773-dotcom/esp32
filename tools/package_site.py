@@ -24,6 +24,8 @@ def public_file(relative: Path) -> bool:
     if relative.parts[:4] == ("assets", "downloads", "guides", "blink-led") and relative.name == "blink_led.ino":
         return True
     if relative.as_posix() in {
+        'assets/downloads/projects/review-fixes-20261103/iot-weather-station.ino',
+        'assets/downloads/projects/review-fixes-20261103/line-following-robot.ino',
         'assets/downloads/guides/contributor-media-20261101/button_control_led_code.ino',
         'assets/downloads/guides/contributor-media-20261101/dht11_original_2s.ino',
         'assets/downloads/guides/contributor-media-20261101/floating_gpio27_original.ino',
