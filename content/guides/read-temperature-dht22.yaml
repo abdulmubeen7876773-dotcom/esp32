@@ -19,7 +19,7 @@ keywords: ESP32 DHT11, DHT11 ESP32 tutorial, ESP32 temperature sensor, ESP32 hum
 proficiency_level: Beginner
 reading_time: 14-18 min
 date_published: '2026-06-26'
-date_modified: '2026-11-03'
+date_modified: '2026-11-04'
 section_order:
 - parts
 - concept
@@ -82,7 +82,7 @@ mission:
     '
   what_you_build: '- A breadboard circuit with a DHT11 connected to ESP32 GPIO4.
 
-    - Arduino code that reads humidity and temperature about every 2 seconds.
+    - Arduino code that reads humidity and temperature about every 6 seconds.
 
     - Serial Monitor output that shows real room values.
 
@@ -138,8 +138,8 @@ mission:
 
 
       The linked Aosong DHT11 manual specifies a sampling period greater than 2 seconds and recommends more
-      than 5 seconds between reads for accurate data. The supplied example waits 2 seconds to match the recorded
-      build; this is not a claim that it meets that manual’s longer timing recommendation. Separately, Adafruit
+      than 5 seconds between reads for accurate data. The edited main example waits 6 seconds. The original recorded
+      two-second sketch is preserved separately and does not establish compliance with that recommendation. Separately, Adafruit
       DHT 1.4.6 returns its cached result if another read is requested within 2000 ms. That library limit does
       not establish the sensor’s sampling specification or guarantee a new physical measurement on every line.
       The DHT11 provides coarse readings; showing a decimal digit does not imply greater sensor accuracy.
@@ -161,7 +161,7 @@ mission:
     - Leave the unused NC pin on a bare DHT11 disconnected.
     - In Arduino IDE, install "DHT sensor library" by Adafruit and "Adafruit Unified Sensor" from Library Manager.
   code:
-    filename: dht11_original_2s.ino
+    filename: dht11_reviewed_6s.ino
     notes: '- DHTPIN must match the GPIO you wired to the DATA pin.
 
       - DHTTYPE must be DHT11 to match the sensor used in this mission and video.
@@ -169,9 +169,9 @@ mission:
       - Review baseline: classic ESP32-WROOM, Arduino-ESP32 3.3.2, Adafruit DHT sensor library 1.4.6 and Adafruit
       Unified Sensor. This is not a latest-release claim.
 
-      - The supplied code waits 2 seconds between reads, matching the recorded example. The linked manual specifies
-      more than 2 seconds and recommends more than 5 seconds; the supplied timing is not an accuracy recommendation.
-      The library’s separate cache interval is 2000 ms.
+      - This edited example waits 6 seconds at startup and between read attempts, following the linked manual’s
+      recommendation of more than 5 seconds. The original recorded sketch uses 2 seconds and remains available
+      separately. The library’s cache interval is a separate 2000 ms policy.
 
       - Humidity and temperature calls use the same cached transaction; do not force repeated reads to bypass
       timing.
@@ -183,18 +183,17 @@ mission:
       '
     content: "#include \"DHT.h\"\n\n// DHT11 data pin connected to ESP32 GPIO4.\n#define DHTPIN 4\n\n// Tell\
       \ the library which DHT sensor model you are using.\n#define DHTTYPE DHT11\n\nDHT dht(DHTPIN, DHTTYPE);\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  delay(2000);\n\n  dht.begin();\n  Serial.println(\"DHT11\
-      \ ESP32 room sensor ready\");\n  Serial.println(\"Reading every 2 seconds...\");\n}\n\nvoid loop() {\n\
-      \  float humidity = dht.readHumidity();\n  float temperatureC = dht.readTemperature();\n  float temperatureF\
-      \ = dht.readTemperature(true);\n\n  if (isnan(humidity) || isnan(temperatureC) || isnan(temperatureF))\
-      \ {\n    Serial.println(\"Read failed. Check wiring, power, pull-up resistor, and library setup.\");\n\
-      \    delay(2000);\n    return;\n  }\n\n  float heatIndexC = dht.computeHeatIndex(temperatureC, humidity,\
-      \ false);\n\n  Serial.print(\"Temperature: \");\n  Serial.print(temperatureC, 1);\n  Serial.print(\"\
-      \ C / \");\n  Serial.print(temperatureF, 1);\n  Serial.print(\" F  |  Humidity: \");\n  Serial.print(humidity,\
-      \ 1);\n  Serial.print(\" %  |  Heat index: \");\n  Serial.print(heatIndexC, 1);\n  Serial.println(\"\
-      \ C\");\n\n  delay(2000);\n}"
-  expected_output: 'Open Serial Monitor at 115200 baud. After the startup delay, readings appear about every
-    2 seconds. Illustrative output, not a recorded measurement:
+      \nvoid setup() {\n  Serial.begin(115200);\n  delay(6000);\n\n  dht.begin();\n  Serial.println(\"DHT11 ESP32\
+      \ room sensor ready\");\n  Serial.println(\"Reading every 6 seconds...\");\n}\n\nvoid loop() {\n  float\
+      \ humidity = dht.readHumidity();\n  float temperatureC = dht.readTemperature();\n  float temperatureF =\
+      \ dht.readTemperature(true);\n\n  if (isnan(humidity) || isnan(temperatureC) || isnan(temperatureF)) {\n\
+      \    Serial.println(\"Read failed. Check wiring, power, pull-up resistor, and library setup.\");\n    delay(6000);\n\
+      \    return;\n  }\n\n  float heatIndexC = dht.computeHeatIndex(temperatureC, humidity, false);\n\n  Serial.print(\"\
+      Temperature: \");\n  Serial.print(temperatureC, 1);\n  Serial.print(\" C / \");\n  Serial.print(temperatureF,\
+      \ 1);\n  Serial.print(\" F  |  Humidity: \");\n  Serial.print(humidity, 1);\n  Serial.print(\" %  |  Heat\
+      \ index: \");\n  Serial.print(heatIndexC, 1);\n  Serial.println(\" C\");\n\n  delay(6000);\n}"
+  expected_output: 'Open Serial Monitor at 115200 baud. After the six-second startup delay, readings appear about every
+    6 seconds. Illustrative output, not a recorded measurement:
 
 
     Temperature: 24.0 C / 75.2 F  |  Humidity: 55.0 %  |  Heat index: 23.9 C
@@ -211,8 +210,8 @@ mission:
     - Yes; every printed decimal is a new accurate measurement
     - Yes; Serial Monitor controls sensor accuracy
     correct: 0
-    explanation: The supplied sketch waits 2 seconds. That matches the recorded build, but the linked manual
-      specifies a longer sampling period and the library has its own 2000 ms cache policy.
+    explanation: The original recorded sketch waits 2 seconds. The main edited example now waits 6 seconds, following
+      the linked manual’s longer recommendation. The library has a separate 2000 ms cache policy.
   - question: What does NaN mean in the Serial output?
     options:
     - The reading failed, usually because of wiring, timing, or library setup
@@ -306,6 +305,9 @@ media_evidence:
   heading: Supplied DHT11 build and Serial readings
   before_id: output
   notes:
+  - The photos and IDE captures document the original two-second sketch, not the edited six-second example
+    above. The six-second variant has been documentation-reviewed, not compiled or hardware-tested in this
+    update.
   - Owner-supplied build records. Photos can hide breadboard contacts; use the guide wiring and actual module
     labels. These captures are not an independent hardware retest or accuracy measurement.
   - Guide 19 uses the blue DHT11 module and DHTTYPE DHT11 on GPIO4. The existing URL is retained so previous
@@ -344,5 +346,7 @@ media_evidence:
     caption: 'Displayed results: 30.1 C, 47.0% RH and calculated heat index 30.7 C; these are supplied readings,
       not accuracy validation.'
   downloads:
+  - href: /assets/downloads/guides/timing-review-20261104/dht11_reviewed_6s.ino
+    label: Download the main six-second example (edited; not hardware-tested)
   - href: /assets/downloads/guides/contributor-media-20261101/dht11_original_2s.ino
-    label: Download the matching DHT11 sketch (2-second interval)
+    label: Download the original recorded two-second sketch (unchanged)
