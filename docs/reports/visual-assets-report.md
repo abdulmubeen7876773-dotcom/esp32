@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-11-03T19:22:17Z
+Generated: 2026-11-03T19:58:08Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
