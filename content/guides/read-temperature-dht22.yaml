@@ -12,10 +12,9 @@ title: ESP32 DHT11 Temperature and Humidity Sensor Tutorial | ESP32 Engine
 headline: Read Temperature with DHT11
 meta_description: Learn how to connect a DHT11 temperature and humidity sensor to ESP32, wire it safely, install
   the Arduino library, upload working code, and fix common sensor errors.
-lead: Build a real ESP32 room sensor with the DHT11. You will wire power, ground, and one data pin, then read
-  temperature and humidity in Arduino Serial Monitor.
-keywords: ESP32 DHT11, DHT11 ESP32 tutorial, ESP32 temperature sensor, ESP32 humidity sensor, Arduino DHT11
-  ESP32
+lead: Build a real ESP32 room sensor with the DHT11. You will wire power, ground, and one data pin, then read temperature
+  and humidity in Arduino Serial Monitor.
+keywords: ESP32 DHT11, DHT11 ESP32 tutorial, ESP32 temperature sensor, ESP32 humidity sensor, Arduino DHT11 ESP32
 proficiency_level: Beginner
 reading_time: 14-18 min
 date_published: '2026-06-26'
@@ -42,9 +41,9 @@ academy:
     description: The 2000 ms cache is a library policy, separate from the sensor timing requirements.
 faqs:
 - question: Can I power the DHT11 from 5 V with an ESP32?
-  answer: This circuit assumes a documented 3.3 V-compatible DHT11/module with DATA pulled up to 3.3 V. Some
-    revisions specify a higher minimum supply; check the actual part. A 5 V-powered module may pull DATA to
-    5 V and require suitable signal-level interfacing. Do not simply change this circuit’s supply to 5 V.
+  answer: This circuit assumes a documented 3.3 V-compatible DHT11/module with DATA pulled up to 3.3 V. Some revisions
+    specify a higher minimum supply; check the actual part. A 5 V-powered module may pull DATA to 5 V and require
+    suitable signal-level interfacing. Do not simply change this circuit’s supply to 5 V.
 - question: Why does the DHT11 sometimes return NaN?
   answer: NaN means the library did not receive a valid reading. The usual causes are wrong pin number, missing
     pull-up resistor, loose jumper wires, incorrect library, or reading faster than the sensor can update.
@@ -52,8 +51,8 @@ faqs:
   answer: Yes. Change DHTTYPE to DHT22 and follow the separate DHT22 component reference at /components/dht22.html.
     This mission and its code use DHT11.
 - question: Which ESP32 GPIO should I use for DHT11 data?
-  answer: GPIO4 is a safe beginner choice. GPIO16, GPIO17, GPIO18, GPIO19, GPIO21, GPIO22, GPIO23, GPIO25,
-    GPIO26, and GPIO27 can also work. Avoid boot strapping pins until you understand their startup behavior.
+  answer: GPIO4 is a safe beginner choice. GPIO16, GPIO17, GPIO18, GPIO19, GPIO21, GPIO22, GPIO23, GPIO25, GPIO26,
+    and GPIO27 can also work. Avoid boot strapping pins until you understand their startup behavior.
 mission:
   show_output_preview: false
   repeat_explanations: false
@@ -63,26 +62,26 @@ mission:
   story: 'Your ESP32 already knows how to blink an LED. Now it needs a sense of the room around it.
 
 
-    The DHT11 is a beginner-friendly digital sensor that measures air temperature and relative humidity. It
-    is used in small weather stations, room comfort monitors, greenhouse controllers, smart thermostats, and
-    school science projects.
+    The DHT11 is a beginner-friendly digital sensor that measures air temperature and relative humidity. It is used
+    in small weather stations, room comfort monitors, greenhouse controllers, smart thermostats, and school science
+    projects.
 
 
-    In this mission you will connect the DHT11 to one ESP32 GPIO pin, read live values in Serial Monitor, and
-    learn why sensor timing, pull-up resistors, and clean power matter.
+    In this mission you will connect the DHT11 to one ESP32 GPIO pin, read live values in Serial Monitor, and learn
+    why sensor timing, pull-up resistors, and clean power matter.
 
     '
-  eli12: 'The DHT11 is like a tiny weather reporter. It has power, ground, and one data wire. The ESP32 asks,
-    "What is the room like right now?" and the sensor replies with two numbers: temperature and humidity.
+  eli12: 'The DHT11 is like a tiny weather reporter. It has power, ground, and one data wire. The ESP32 asks, "What
+    is the room like right now?" and the sensor replies with two numbers: temperature and humidity.
 
 
-    Humidity means how much water vapor is in the air. High humidity can feel sticky. Low humidity can feel
-    dry. Temperature tells you how warm the air is.
+    Humidity means how much water vapor is in the air. High humidity can feel sticky. Low humidity can feel dry.
+    Temperature tells you how warm the air is.
 
     '
   what_you_build: '- A breadboard circuit with a DHT11 connected to ESP32 GPIO4.
 
-    - Arduino code that reads humidity and temperature about every 6 seconds.
+    - Arduino code that reads humidity and temperature about every 2 seconds.
 
     - Serial Monitor output that shows real room values.
 
@@ -91,8 +90,8 @@ mission:
     '
   things_you_need:
   - item: ESP32 DevKit board
-    note: Classic ESP32-WROOM DevKit / ESP32 Dev Module. This guide uses GPIO4; other families require their
-      own pin check.
+    note: Classic ESP32-WROOM DevKit / ESP32 Dev Module. This guide uses GPIO4; other families require their own
+      pin check.
     link: /components/esp32-devkit.html
     icon: 🖥
   - item: DHT11 temperature and humidity sensor module
@@ -111,37 +110,36 @@ mission:
     note: Charge-only cables can power the board but cannot upload code.
     icon: 🔌
   safety:
-  - text: Use a DHT11 sensor/module whose own documentation supports 3.3 V supply, with DATA pulled up to 3.3
-      V. The linked Aosong manual supports this supply, but other revisions may specify a higher minimum; do
-      not assume all modules match.
+  - text: Use a DHT11 sensor/module whose own documentation supports 3.3 V supply, with DATA pulled up to 3.3 V.
+      The linked Aosong manual supports this supply, but other revisions may specify a higher minimum; do not assume
+      all modules match.
   - text: Do not connect a 5 V pulled-up data signal to an ESP32 input pin.
   - text: Unplug USB before moving wires on the breadboard.
   - text: Keep water, soil, and condensation away from the ESP32 and breadboard.
-  component_spotlight_lead: 'These two parts do most of the work: the ESP32 reads the signal, and the DHT11
-    measures the air.'
+  component_spotlight_lead: 'These two parts do most of the work: the ESP32 reads the signal, and the DHT11 measures
+    the air.'
   concept:
     title: How the DHT11 Actually Works
     image: /assets/visuals/guides/concepts/read-temperature-dht11-concept.svg
     illustration_alt: DHT11 data line connected to ESP32 GPIO4 with 3.3 V, ground, and a pull-up resistor
-    body: 'The DHT11 is a digital temperature and humidity sensor. Inside the package are a humidity sensing
-      element, a temperature sensor, and a small controller that converts the measurement into a digital signal.
+    body: 'The DHT11 is a digital temperature and humidity sensor. Inside the package are a humidity sensing element,
+      a temperature sensor, and a small controller that converts the measurement into a digital signal.
 
 
-      It does not behave like an analog sensor. The ESP32 cannot use analogRead() here. Instead, the ESP32
-      sends a start signal on one GPIO pin. The DHT11 replies by pulling that same data line HIGH and LOW in
-      a timed pattern. The Arduino DHT library measures those pulses and converts them into humidity and temperature
-      values.
+      It does not behave like an analog sensor. The ESP32 cannot use analogRead() here. Instead, the ESP32 sends
+      a start signal on one GPIO pin. The DHT11 replies by pulling that same data line HIGH and LOW in a timed pattern.
+      The Arduino DHT library measures those pulses and converts them into humidity and temperature values.
 
 
-      The data line needs a pull-up resistor so it normally rests at 3.3 V. Many DHT11 modules already include
-      this resistor. A bare DHT11 sensor usually needs an external 10 k ohm resistor between DATA and 3.3 V.
+      The data line needs a pull-up resistor so it normally rests at 3.3 V. Many DHT11 modules already include this
+      resistor. A bare DHT11 sensor usually needs an external 10 k ohm resistor between DATA and 3.3 V.
 
 
-      The linked Aosong DHT11 manual specifies a sampling period greater than 2 seconds and recommends more
-      than 5 seconds between reads for accurate data. The edited main example waits 6 seconds. The original recorded
-      two-second sketch is preserved separately and does not establish compliance with that recommendation. Separately, Adafruit
-      DHT 1.4.6 returns its cached result if another read is requested within 2000 ms. That library limit does
-      not establish the sensor’s sampling specification or guarantee a new physical measurement on every line.
+      The linked Aosong DHT11 manual specifies a sampling period greater than 2 seconds and recommends more than
+      5 seconds between reads for accurate data. The supplied example uses a two-second delay, matching its recorded
+      build. This is the contributor timing, not proof of compliance with the manual recommendation. Separately,
+      Adafruit DHT 1.4.6 returns its cached result if another read is requested within 2000 ms. That library limit
+      does not establish the sensor’s sampling specification or guarantee a new physical measurement on every line.
       The DHT11 provides coarse readings; showing a decimal digit does not imply greater sensor accuracy.
 
       '
@@ -151,8 +149,8 @@ mission:
     image: /assets/visuals/guides/wiring/read-temperature-dht11-wiring.svg
     steps:
     - Unplug the ESP32 USB cable before wiring.
-    - Place the DHT11 module on the breadboard so each pin has its own row. Follow its printed labels; module
-      pin order varies.
+    - Place the DHT11 module on the breadboard so each pin has its own row. Follow its printed labels; module pin
+      order varies.
     - For a bare 4-pin sensor viewed from the front grille, pins left to right are VCC, DATA, NC, and GND.
     - Connect DHT11 VCC or + to ESP32 3.3 V.
     - Connect DHT11 GND or - to ESP32 GND.
@@ -161,7 +159,7 @@ mission:
     - Leave the unused NC pin on a bare DHT11 disconnected.
     - In Arduino IDE, install "DHT sensor library" by Adafruit and "Adafruit Unified Sensor" from Library Manager.
   code:
-    filename: dht11_reviewed_6s.ino
+    filename: dht11_original_2s.ino
     notes: '- DHTPIN must match the GPIO you wired to the DATA pin.
 
       - DHTTYPE must be DHT11 to match the sensor used in this mission and video.
@@ -169,38 +167,37 @@ mission:
       - Review baseline: classic ESP32-WROOM, Arduino-ESP32 3.3.2, Adafruit DHT sensor library 1.4.6 and Adafruit
       Unified Sensor. This is not a latest-release claim.
 
-      - This edited example waits 6 seconds at startup and between read attempts, following the linked manual’s
-      recommendation of more than 5 seconds. The original recorded sketch uses 2 seconds and remains available
-      separately. The library’s cache interval is a separate 2000 ms policy.
+      - The supplied example waits 2 seconds at startup and between read attempts. It matches the original contributor
+      sketch. The library cache interval is a separate 2000 ms policy; printed lines do not guarantee fresh physical
+      samples.
 
-      - Humidity and temperature calls use the same cached transaction; do not force repeated reads to bypass
-      timing.
+      - Humidity and temperature calls use the same cached transaction; do not force repeated reads to bypass timing.
 
       - Documentation review only; compilation and hardware testing were not performed.
 
       - isnan() protects your program from printing bad values when a read fails.
 
       '
-    content: "#include \"DHT.h\"\n\n// DHT11 data pin connected to ESP32 GPIO4.\n#define DHTPIN 4\n\n// Tell\
-      \ the library which DHT sensor model you are using.\n#define DHTTYPE DHT11\n\nDHT dht(DHTPIN, DHTTYPE);\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  delay(6000);\n\n  dht.begin();\n  Serial.println(\"DHT11 ESP32\
-      \ room sensor ready\");\n  Serial.println(\"Reading every 6 seconds...\");\n}\n\nvoid loop() {\n  float\
-      \ humidity = dht.readHumidity();\n  float temperatureC = dht.readTemperature();\n  float temperatureF =\
-      \ dht.readTemperature(true);\n\n  if (isnan(humidity) || isnan(temperatureC) || isnan(temperatureF)) {\n\
-      \    Serial.println(\"Read failed. Check wiring, power, pull-up resistor, and library setup.\");\n    delay(6000);\n\
-      \    return;\n  }\n\n  float heatIndexC = dht.computeHeatIndex(temperatureC, humidity, false);\n\n  Serial.print(\"\
-      Temperature: \");\n  Serial.print(temperatureC, 1);\n  Serial.print(\" C / \");\n  Serial.print(temperatureF,\
-      \ 1);\n  Serial.print(\" F  |  Humidity: \");\n  Serial.print(humidity, 1);\n  Serial.print(\" %  |  Heat\
-      \ index: \");\n  Serial.print(heatIndexC, 1);\n  Serial.println(\" C\");\n\n  delay(6000);\n}"
-  expected_output: 'Open Serial Monitor at 115200 baud. After the six-second startup delay, readings appear about every
-    6 seconds. Illustrative output, not a recorded measurement:
+    content: "#include \"DHT.h\"\n\n// DHT11 data pin connected to ESP32 GPIO4.\n#define DHTPIN 4\n\n// Tell the\
+      \ library which DHT sensor model you are using.\n#define DHTTYPE DHT11\n\nDHT dht(DHTPIN, DHTTYPE);\n\nvoid\
+      \ setup() {\n  Serial.begin(115200);\n  delay(2000);\n\n  dht.begin();\n  Serial.println(\"DHT11 ESP32 room\
+      \ sensor ready\");\n  Serial.println(\"Reading every 2 seconds...\");\n}\n\nvoid loop() {\n  float humidity\
+      \ = dht.readHumidity();\n  float temperatureC = dht.readTemperature();\n  float temperatureF = dht.readTemperature(true);\n\
+      \n  if (isnan(humidity) || isnan(temperatureC) || isnan(temperatureF)) {\n    Serial.println(\"Read failed.\
+      \ Check wiring, power, pull-up resistor, and library setup.\");\n    delay(2000);\n    return;\n  }\n\n  float\
+      \ heatIndexC = dht.computeHeatIndex(temperatureC, humidity, false);\n\n  Serial.print(\"Temperature: \");\n\
+      \  Serial.print(temperatureC, 1);\n  Serial.print(\" C / \");\n  Serial.print(temperatureF, 1);\n  Serial.print(\"\
+      \ F  |  Humidity: \");\n  Serial.print(humidity, 1);\n  Serial.print(\" %  |  Heat index: \");\n  Serial.print(heatIndexC,\
+      \ 1);\n  Serial.println(\" C\");\n\n  delay(2000);\n}"
+  expected_output: 'Open Serial Monitor at 115200 baud. After the two-second startup delay, readings appear about
+    every 2 seconds. Illustrative output, not a recorded measurement:
 
 
     Temperature: 24.0 C / 75.2 F  |  Humidity: 55.0 %  |  Heat index: 23.9 C
 
 
-    Warm the sensor gently with your hand or breathe near it from a short distance. Temperature or humidity
-    should change slowly. Do not touch the sensor grill or expose the board to moisture.
+    Warm the sensor gently with your hand or breathe near it from a short distance. Temperature or humidity should
+    change slowly. Do not touch the sensor grill or expose the board to moisture.
 
     '
   quiz:
@@ -210,8 +207,8 @@ mission:
     - Yes; every printed decimal is a new accurate measurement
     - Yes; Serial Monitor controls sensor accuracy
     correct: 0
-    explanation: The original recorded sketch waits 2 seconds. The main edited example now waits 6 seconds, following
-      the linked manual’s longer recommendation. The library has a separate 2000 ms cache policy.
+    explanation: The supplied sketch waits 2 seconds. Sensor timing and the library cache are separate limits, so
+      a printed line does not guarantee a fresh accurate sample.
   - question: What does NaN mean in the Serial output?
     options:
     - The reading failed, usually because of wiring, timing, or library setup
@@ -237,34 +234,31 @@ mission:
     text: Combine this with the OLED mission and show the values on a display.
   common_problems:
   - problem: Serial Monitor says "Read failed"
-    cause: DATA is on the wrong GPIO, DHTTYPE does not match the sensor, the pull-up resistor is missing, or
-      the sensor is being read too quickly.
-    fix: Confirm DHTTYPE is DHT11 and DATA goes to GPIO4, use 3.3 V and GND, add a 10 k ohm pull-up for a bare
-      sensor, and increase the sampling interval according to your sensor’s documentation if reads fail.
+    cause: DATA is on the wrong GPIO, DHTTYPE does not match the sensor, the pull-up resistor is missing, or the
+      sensor is being read too quickly.
+    fix: Confirm DHTTYPE is DHT11 and DATA goes to GPIO4, use 3.3 V and GND, add a 10 k ohm pull-up for a bare sensor,
+      and increase the sampling interval according to your sensor’s documentation if reads fail.
   - problem: Code does not compile because DHT.h is missing
     cause: The Adafruit DHT library is not installed, or the wrong library was installed.
-    fix: Open Arduino IDE Library Manager and install "DHT sensor library" by Adafruit plus "Adafruit Unified
-      Sensor".
+    fix: Open Arduino IDE Library Manager and install "DHT sensor library" by Adafruit plus "Adafruit Unified Sensor".
   - problem: Values are unrealistic or stuck
-    cause: Loose jumper wires, poor breadboard contact, heat from your fingers, or airflow directly onto the
-      sensor.
-    fix: Reseat the wires, keep the sensor away from the warm ESP32 board, and wait a few readings for the
-      value to settle.
+    cause: Loose jumper wires, poor breadboard contact, heat from your fingers, or airflow directly onto the sensor.
+    fix: Reseat the wires, keep the sensor away from the warm ESP32 board, and wait a few readings for the value
+      to settle.
   - problem: ESP32 uploads fail after wiring the sensor
-    cause: The sensor may be connected to a boot strapping pin or a wiring mistake may pull a pin into the
-      wrong state during reset.
+    cause: The sensor may be connected to a boot strapping pin or a wiring mistake may pull a pin into the wrong
+      state during reset.
     fix: Use GPIO4 for this beginner circuit and disconnect power before rewiring.
   - problem: Sensor works on Arduino Uno examples but not ESP32
     cause: Some examples use 5 V assumptions or a different pin number.
     fix: Use 3.3 V logic, update DHTPIN to your ESP32 GPIO number, and select an ESP32 board in Arduino IDE.
   complete:
-    summary: 'Your ESP32 can now measure the real world. You connected a digital sensor safely, learned why
-      pull-up resistors matter, read temperature and humidity in Arduino code, and practiced debugging failed
-      sensor reads.
+    summary: 'Your ESP32 can now measure the real world. You connected a digital sensor safely, learned why pull-up
+      resistors matter, read temperature and humidity in Arduino code, and practiced debugging failed sensor reads.
 
 
-      These same skills appear in weather stations, smart thermostats, greenhouse monitors, classroom data
-      loggers, and home automation systems.
+      These same skills appear in weather stations, smart thermostats, greenhouse monitors, classroom data loggers,
+      and home automation systems.
 
       '
     skills:
@@ -293,30 +287,27 @@ setup:
   - label: Before this lesson
     value: Complete the Serial-only Arduino IDE upload first.
   - label: Evidence limits
-    value: Expected behavior describes the example, not a hardware test performed in this review. Contributor
-      media, where present, is identified separately; no compilation, board upload or accuracy measurement
-      is claimed.
+    value: Expected behavior describes the example, not a hardware test performed in this review. Contributor media,
+      where present, is identified separately; no compilation, board upload or accuracy measurement is claimed.
 sources:
 - title: Adafruit DHT 1.4.6 implementation
   url: https://github.com/adafruit/DHT-sensor-library/blob/1.4.6/DHT.cpp
   note: DHT model selection, invalid reads and independent 2000 ms read caching.
-
 media_evidence:
   heading: Supplied DHT11 build and Serial readings
   before_id: output
   notes:
-  - The photos and IDE captures document the original two-second sketch, not the edited six-second example
-    above. The six-second variant has been documentation-reviewed, not compiled or hardware-tested in this
-    update.
-  - Owner-supplied build records. Photos can hide breadboard contacts; use the guide wiring and actual module
-    labels. These captures are not an independent hardware retest or accuracy measurement.
-  - Guide 19 uses the blue DHT11 module and DHTTYPE DHT11 on GPIO4. The existing URL is retained so previous
-    links continue to work.
-  - The library capture shows Adafruit DHT sensor library 1.4.7 installed. This records the supplied setup;
-    the separate documentation review baseline remains 1.4.6. The installed ESP32 core and dependency versions
-    are not shown.
-  - Serial Monitor shows about 30.1 C, 47.0% RH and a calculated 30.7 C heat index at 115200 baud. Repeated
-    displayed values do not establish fresh samples or calibrated accuracy.
+  - The photos and IDE captures document the supplied two-second sketch displayed above. No independent compilation,
+    board upload or accuracy measurement was performed in this integration.
+  - Owner-supplied build records. Photos can hide breadboard contacts; use the guide wiring and actual module labels.
+    These captures are not an independent hardware retest or accuracy measurement.
+  - Guide 19 uses the blue DHT11 module and DHTTYPE DHT11 on GPIO4. The existing URL is retained so previous links
+    continue to work.
+  - The library capture shows Adafruit DHT sensor library 1.4.7 installed. This records the supplied setup; the
+    separate documentation review baseline remains 1.4.6. The installed ESP32 core and dependency versions are not
+    shown.
+  - Serial Monitor shows about 30.1 C, 47.0% RH and a calculated 30.7 C heat index at 115200 baud. Repeated displayed
+    values do not establish fresh samples or calibrated accuracy.
   images:
   - src: /assets/visuals/guides/photos/contributor-media-20261103/dht11-wiring.jpeg
     width: 1600
@@ -346,7 +337,5 @@ media_evidence:
     caption: 'Displayed results: 30.1 C, 47.0% RH and calculated heat index 30.7 C; these are supplied readings,
       not accuracy validation.'
   downloads:
-  - href: /assets/downloads/guides/timing-review-20261104/dht11_reviewed_6s.ino
-    label: Download the main six-second example (edited; not hardware-tested)
   - href: /assets/downloads/guides/contributor-media-20261101/dht11_original_2s.ino
-    label: Download the original recorded two-second sketch (unchanged)
+    label: Download the supplied two-second DHT11 sketch

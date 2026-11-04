@@ -1,6 +1,6 @@
 # Visual Assets Report
 
-Generated: 2026-11-03T19:58:08Z
+Generated: 2026-11-04T14:54:47Z
 
 Manifest: [assets/visuals/manifest.json](../../assets/visuals/manifest.json)
 
@@ -8,11 +8,11 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 
 ## Summary
 
-- Total assets required: **596**
-- Completed: **293**
+- Total assets required: **609**
+- Completed: **306**
 - Missing: **0**
 - Placeholder: **303**
-- Completion: **49.2%**
+- Completion: **50.2%**
 
 ## By type
 
@@ -26,7 +26,7 @@ Run `py tools/validate_visual_assets.py` to refresh this report.
 | guide_output | 15 | 0 | 0 | 15 |
 | icon | 16 | 0 | 0 | 16 |
 | project_hero | 75 | 18 | 0 | 57 |
-| project_illustration | 140 | 83 | 0 | 57 |
+| project_illustration | 153 | 96 | 0 | 57 |
 | project_output | 57 | 0 | 0 | 57 |
 | project_wiring | 58 | 42 | 0 | 16 |
 | wiring_diagram | 17 | 17 | 0 | 0 |

@@ -462,7 +462,7 @@ def recorded_media_section(media: dict) -> str:
             f'<source src="{esc(video["src"])}" type="video/mp4">'
             f'<a href="{esc(video["src"])}">Download the demonstration clip</a></video>'
             f'<figcaption>{esc(video["caption"])}</figcaption></figure>'
-            f'<p><a href="{esc(video["src"])}">Open the silent demonstration clip</a></p>'
+            f'<p><a href="{esc(video["src"])}">Open the {"silent " if video.get("silent", True) else ""}demonstration clip</a></p>'
         )
     downloads = "".join(
         f'<li><a href="{esc(item["href"])}" download>{esc(item["label"])}</a></li>'
