@@ -51,7 +51,7 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}, required | {"components", "component_updates_only"}):
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}, required | {"components", "component_updates_only"}, required | {"guide_catalog_only", "pages", "refresh_project_counts"}):
         raise ValueError("Scope requires guides, projects and categories; optional selectors include components with component_updates_only, homepage, navigation, pages or guide_catalog_only")
     if "navigation" in scope and (scope["navigation"] is not True or any(scope[k] for k in required)):
         raise ValueError("Navigation-only scope requires true and empty article selections")
@@ -59,10 +59,12 @@ def generate_scope(manifest: Path):
         raise ValueError("Homepage-only scope must set homepage to true")
     if "guide_catalog_only" in scope and (scope["guide_catalog_only"] is not True or not scope["guides"] or scope["projects"] or scope["categories"]):
         raise ValueError("Guide catalog scope requires true, selected guides and no projects/categories")
+    if "refresh_project_counts" in scope and scope["refresh_project_counts"] is not True:
+        raise ValueError("Project count refresh must be true")
     if "component_updates_only" in scope and (scope["component_updates_only"] is not True or not scope["components"] or any(scope[k] for k in required)):
         raise ValueError("Component update scope requires true, selected components and empty guide/project/category selections")
     if any(not isinstance(v, list) or any(not isinstance(s, str) for s in v)
-           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only", "component_updates_only"}):
+           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only", "component_updates_only", "refresh_project_counts"}):
         raise ValueError("Scope values must be lists of names")
     if scope.get("component_updates_only") and len(set(scope["components"])) != len(scope["components"]):
         raise ValueError("Component update scope cannot select a component twice")
@@ -167,6 +169,24 @@ def generate_scope(manifest: Path):
         # A guide review must not import unrelated homepage/project drift.
         # Keep full content/release validation in build_all and normal scopes.
         validate_sitemap(scope)
+        if scope.get("refresh_project_counts"):
+            import xml.etree.ElementTree as ET
+            from urllib.parse import urlsplit
+
+            # Update only the shared count label, never regenerate unrelated bodies.
+            count = len(projects)
+            for entry in ET.parse(ROOT / "sitemap.xml").findall("{*}url/{*}loc"):
+                path = ROOT / urlsplit(entry.text).path.lstrip("/")
+                if path.is_dir():
+                    path /= "index.html"
+                before = path.read_text(encoding="utf-8")
+                after, found = re.subn(
+                    r'(<a\b[^>]*\bclass="[^"]*\bnav-spotlight-badge\b[^"]*"[^>]*>)\d+ Projects(</a>)',
+                    lambda match: match[1] + f"{count} Projects" + match[2], before)
+                if found != 1:
+                    raise ValueError(f"Expected one project count badge: {path}")
+                if after != before:
+                    write(path.relative_to(ROOT), after)
         return
     records = [listing.parent_listing_record(p) for p in projects.values()]
     write("projects.json", json.dumps([listing.project_json_record(p) for p in records],
