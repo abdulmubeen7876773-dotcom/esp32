@@ -1,7 +1,6 @@
 """Opt-in Clean Premium homepage; production controls and catalogs stay shared."""
 from html import escape as esc
 from learning_journey import journey_catalog
-from home_cinematic import ICONS
 from responsive_images import responsive_attributes, HOME_HERO_SIZES
 from site_layout import home_learning_adventure
 
@@ -13,10 +12,8 @@ def clean_home(home, guides, projects, components, counts):
     steps, notes, cards = [], [], []
     for n, step in enumerate(route['steps']):
         assert step['slug'] in guide_slugs
-        icon = ICONS[n]
-        if n == 1:
-            icon = icon.replace('#f0ae36', '#e34d36').replace('#95621f', '#a52e22')
-        steps.append(f'''<li><a href="/guides/{esc(step['slug'])}.html"><span class="cp-number">{n+1}</span><span class="cp-step-icon">{icon}</span><h3>{esc(step['label'])}</h3><p>{esc(config['route_captions'][n])}</p></a></li>''')
+        photo = config['route_photos'][n]
+        steps.append(f'''<li><a href="/guides/{esc(step['slug'])}.html"><span class="cp-number">{n+1}</span><span class="cp-step-photo"><img src="{esc(photo['image'])}" alt="{esc(photo['alt'])}" width="{photo['width']}" height="{photo['height']}" loading="lazy" decoding="async"></span><h3>{esc(step['label'])}</h3><p>{esc(config['route_captions'][n])}</p></a></li>''')
         notes.append(f'''<li><strong>{esc(step['label'])}</strong><p>{esc(step['learn'])}</p><p><strong>Parts:</strong> {esc(step['parts'])}</p><p><strong>Before you start:</strong> {esc(step['ready'])}</p></li>''')
     for item in config['builds']:
         assert item['slug'] in guide_slugs
