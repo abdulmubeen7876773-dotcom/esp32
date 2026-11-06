@@ -24,6 +24,11 @@ def public_file(relative: Path) -> bool:
     if relative.parts[:4] == ("assets", "downloads", "guides", "blink-led") and relative.name == "blink_led.ino":
         return True
     if relative.as_posix() in {
+        'assets/downloads/guides/contributor-media-20261106/wifi-diagnostics-supplied.ino',
+        'assets/downloads/guides/contributor-media-20261106/local-ap-webserver-supplied.ino',
+        'assets/downloads/guides/contributor-media-20261106/ble-readable-characteristic-supplied.ino',
+        'assets/downloads/guides/contributor-media-20261106/ota-usb-baseline-supplied.ino',
+        'assets/downloads/guides/contributor-media-20261106/deep-sleep-timer-button-supplied.ino',
         'assets/downloads/guides/contributor-media-20261104/environmental_sensor_oled.ino',
         'assets/downloads/guides/contributor-media-20261104/i2c_scanner_esp32.ino',
         'assets/downloads/guides/contributor-media-20261104/smart_environment_monitor_capstone.ino',
