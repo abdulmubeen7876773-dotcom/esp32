@@ -13,7 +13,7 @@ sensor: TSOP38238 OUT
 output: IR LED driver
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-22'
+date_modified: '2026-11-10'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
@@ -140,7 +140,8 @@ project:
   estimated_time: 60-75 min
   budget: Under 20 USD
   adult_supervision: Adult help recommended when checking transistor and IR LED polarity.
-  classroom_use: Use a classroom TV remote or spare consumer remote and discuss protocols without promising universal compatibility.
+  classroom_use: Use a classroom TV remote or spare consumer remote and discuss protocols without promising universal
+    compatibility.
   parent_prompt: Ask why a transmitter needs line of sight and why high-current LEDs need a driver.
   screen_free_activity: Draw carrier pulses, receiver output pulses, and a transistor-driven IR LED.
   skills_practiced:
@@ -158,15 +159,17 @@ project:
   - Compare two remote protocols.
   - Block line of sight and observe failure.
   next_challenge: Store learned codes only after basic receive/send behavior is reliable.
-  what_you_build: A safe ESP32 IR remote control learning demo that receives consumer remote codes with a TSOP38238 module,
-    stores one NEC address and command in memory, and replays that learned NEC command through a transistor-driven IR LED.
+  what_you_build: A safe ESP32 IR remote control learning demo that receives consumer remote codes with a TSOP38238
+    module, stores one NEC address and command in memory, and replays that learned NEC command through a transistor-driven
+    IR LED.
   story: This project receives real IR codes and can replay learned NEC commands from devices you own. It is a learning
-    remote for line-of-sight consumer electronics, not a universal compatibility promise or access-control bypass tool.
-  eli12: A remote blinks invisible light in patterns. The receiver turns those patterns into numbers, and the ESP32 can blink
-    an IR LED with the same pattern.
-  parent_safety: Use IR for safe consumer devices you own, such as a classroom TV or spare media remote. Do not use it to
-    bypass access-control systems. Drive the IR LED through a transistor stage, not directly from an ESP32 GPIO. Unplug USB
-    and external power before rewiring.
+    remote for line-of-sight consumer electronics, not a universal compatibility promise or access-control bypass
+    tool.
+  eli12: A remote blinks invisible light in patterns. The receiver turns those patterns into numbers, and the ESP32
+    can blink an IR LED with the same pattern.
+  parent_safety: Use IR for safe consumer devices you own, such as a classroom TV or spare media remote. Do not
+    use it to bypass access-control systems. Drive the IR LED through a transistor stage, not directly from an ESP32
+    GPIO. Unplug USB and external power before rewiring.
   learning_objectives: *id001
   components:
   - item: ESP32 DevKit board
@@ -174,12 +177,12 @@ project:
     link: /components/esp32-devkit.html
   - item: TSOP38238 IR receiver
     note: 38 kHz demodulating receiver, OUT to GPIO15.
-  - item: 940 nm IR LED
-    note: Transmitter LED; use correct polarity.
-  - item: 2N2222 NPN transistor
-    note: Drives IR LED current from GPIO4 control signal.
-  - item: Resistors
-    note: Base and LED current limiting resistors.
+  - item: Vishay TSAL6200 940 nm IR LED
+    note: Emitter anode fed through 220 Ω from regulated 5.0 V ±0.1 V; cathode switched by the NPN.
+  - item: onsemi P2N2222A TO-92
+    note: Pin 1 collector, 2 base, 3 emitter for this exact package; other 2N2222-family packages may differ.
+  - item: 220 Ω (1%, ¼ W), 680 Ω, 100 kΩ resistors; 100 nF capacitor
+    note: LED series, base series, base-emitter pull-down; receiver supply decoupling respectively.
   - item: Breadboard and jumper wires
     note: For low-voltage prototyping.
   bom:
@@ -191,34 +194,41 @@ project:
     qty: '1'
     estimated_cost: Varies
     notes: 38 kHz demodulating receiver, OUT to GPIO15.
-  - part: 940 nm IR LED
+  - part: Vishay TSAL6200 940 nm IR LED
     qty: '1'
     estimated_cost: Varies
-    notes: Transmitter LED; use correct polarity.
-  - part: 2N2222 NPN transistor
+    notes: Emitter anode fed through 220 Ω from regulated 5.0 V ±0.1 V; cathode switched by the NPN.
+  - part: onsemi P2N2222A TO-92
     qty: '1'
     estimated_cost: Varies
-    notes: Drives IR LED current from GPIO4 control signal.
-  - part: Resistors
+    notes: Pin 1 collector, 2 base, 3 emitter for this exact package; other 2N2222-family packages may differ.
+  - part: 220 Ω (1%, ¼ W), 680 Ω, 100 kΩ resistors; 100 nF capacitor
     qty: '1'
     estimated_cost: Varies
-    notes: Base and LED current limiting resistors.
+    notes: LED series, base series, base-emitter pull-down; receiver supply decoupling respectively.
   - part: Breadboard and jumper wires
     qty: '1'
     estimated_cost: Varies
     notes: For low-voltage prototyping.
   wiring:
+    full_size_link: true
     illustration_alt: Build an ESP32 IR Learning Remote Demo wiring diagram
-    summary: TSOP38238 OUT goes to GPIO15 for receive data. GPIO4 drives a transistor stage for the IR LED transmitter, so
-      the ESP32 controls the LED without sourcing LED current directly from the GPIO.
+    summary: TSOP38238 OUT goes to GPIO15 for receive data. GPIO4 drives a transistor stage for the IR LED transmitter,
+      so the ESP32 controls the LED without sourcing LED current directly from the GPIO.
     steps:
-    - Unplug USB before wiring.
-    - Connect TSOP38238 VCC to 3.3 V, GND to GND, and OUT to GPIO15.
-    - Connect GPIO4 through a base resistor to the 2N2222 base.
-    - Wire the IR LED and current-limiting resistor through the transistor driver, observing LED polarity.
-    - Keep the receiver window aimed at the handheld remote during learning.
-    - Keep the IR LED aimed at the same safe consumer device during replay.
-    - Upload the sketch and open Serial Monitor.
+    - Disconnect both supplies before wiring. Use the manufacturer package views; this is a logical circuit, not
+      a lead-orientation photograph.
+    - 'Bare Vishay TSOP38238: pin 3 VS -> ESP32 3V3; pin 2 GND -> common GND; pin 1 OUT -> GPIO15. Add 100 nF across
+      VS/GND near the receiver. Do not infer another receiver/module pin order.'
+    - GPIO4 -> 680 Ω -> P2N2222A base (2); 100 kΩ from base (2) to emitter (3). Emitter -> common GND.
+    - External regulated 5.0 V ±0.1 V -> 220 Ω -> TSAL6200 anode; LED cathode -> transistor collector (1). GPIO4
+      supplies only base current.
+    - Join external supply GND and ESP32 GND; keep external +5 V off board power pins. Power USB before the external
+      rail, and switch the external rail off first.
+    - GPIO15 is a strapping pin; do not attach a receiver board with a conflicting reset pull. Check boot with the
+      documented circuit attached.
+    - Aim the receiver at your own safe consumer remote; aim the emitter at that device for NEC replay. Upload and
+      open Serial Monitor at 115200 baud.
   gpio_map:
   - signal: TSOP38238 OUT
     esp32_pin: GPIO15
@@ -228,80 +238,59 @@ project:
     esp32_pin: GPIO4
     direction: Output
     notes: Controls transistor base through resistor.
-  circuit_explanation: The TSOP38238 receiver demodulates 38 kHz infrared light into digital pulses on GPIO15. On transmit,
-    GPIO4 switches the 2N2222 transistor, and the transistor pulses the IR LED through its current-limiting resistor.
-  engineering_explanation: Consumer remotes encode address and command values inside timed IR pulse patterns. This sketch
-    logs the decoded protocol, address, and command for study, then stores and retransmits NEC commands only. Unsupported
-    protocols can still be observed in Serial Monitor, but they are not replayed by this beginner sketch. IR also needs line
-    of sight, correct LED polarity, and a compatible target device.
+  - signal: Transmitter load
+    esp32_pin: External 5.0 V ±0.1 V
+    direction: Power
+    notes: 220 Ω -> TSAL6200 -> NPN collector; not a GPIO current path.
+  - signal: Receiver VS
+    esp32_pin: ESP32 3V3
+    direction: Power
+    notes: Bare TSOP38238 pin 3; 100 nF VS/GND.
+  - signal: Common reference
+    esp32_pin: GND
+    direction: Ground
+    notes: Receiver pin 2, transistor emitter and both supplies.
+  circuit_explanation: The TSOP38238 receiver demodulates 38 kHz infrared light into digital pulses on GPIO15. On
+    transmit, GPIO4 switches the 2N2222 transistor, and the transistor pulses the IR LED through its current-limiting
+    resistor. The 680 Ω base resistor limits GPIO current; 100 kΩ holds the transistor OFF during reset. The 220
+    Ω emitter resistor bounds LED current below 23.5 mA even if LED and transistor voltage drops are ignored at
+    5.1 V and -1% resistance. Actual current is lower and must be checked on the build; this is not a maximum-range
+    transmitter.
+  engineering_explanation: Consumer remotes encode address and command values inside timed IR pulse patterns. This
+    sketch logs the decoded protocol, address, and command for study, then stores and retransmits NEC commands only.
+    Unsupported protocols can still be observed in Serial Monitor, but they are not replayed by this beginner sketch.
+    IR also needs line of sight, correct LED polarity, and a compatible target device.
   libraries:
-  - name: IRremote
-    note: Install Arduino-IRremote library.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM review baseline.
+  - name: Arduino-IRremote 4.4.1
+    note: IrReceiver.begin, IrSender.begin(pin) and sendNEC are reviewed against tag v4.4.1. Replay supports NEC
+      only; no compilation or hardware test is claimed.
   code:
     filename: esp32-ir-remote-control.ino
-    content: |
-      // ESP32 IR receive-and-send learning demo
-      // Learn codes from your own remote before transmitting.
-      #include <IRremote.hpp>
-
-      const int IR_RECV_PIN = 15;
-      const int IR_SEND_PIN = 4;
-
-      uint16_t learnedAddress = 0;
-      uint16_t learnedCommand = 0;
-      decode_type_t learnedProtocol = UNKNOWN;
-      bool hasLearnedCode = false;
-
-      void sendLearnedCodeIfRequested() {
-        if (!Serial.available()) return;
-
-        char c = Serial.read();
-        if ((c == 's' || c == 'S') && hasLearnedCode && learnedProtocol == NEC) {
-          IrSender.sendNEC(learnedAddress, learnedCommand, 2);
-          Serial.println("Sent learned NEC command.");
-        } else if (c == 's' || c == 'S') {
-          Serial.println("Learn an NEC code before sending.");
-        }
-      }
-
-      void setup() {
-        Serial.begin(115200);
-        IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);
-        IrSender.begin(IR_SEND_PIN);
-        Serial.println("IR demo ready. Point a safe consumer remote at the receiver.");
-      }
-
-      void loop() {
-        sendLearnedCodeIfRequested();
-
-        if (!IrReceiver.decode()) return;
-
-        Serial.println("IR signal received");
-        Serial.print("Protocol: ");
-        Serial.println(getProtocolString(IrReceiver.decodedIRData.protocol));
-        Serial.print("Address: 0x");
-        Serial.println(IrReceiver.decodedIRData.address, HEX);
-        Serial.print("Command: 0x");
-        Serial.println(IrReceiver.decodedIRData.command, HEX);
-
-        if (IrReceiver.decodedIRData.protocol == NEC) {
-          learnedProtocol = NEC;
-          learnedAddress = IrReceiver.decodedIRData.address;
-          learnedCommand = IrReceiver.decodedIRData.command;
-          hasLearnedCode = true;
-          Serial.println("Stored NEC code. Type s in Serial Monitor to send it.");
-        } else {
-          Serial.println("This sketch retransmits NEC only. Use raw examples for other protocols.");
-        }
-
-        IrReceiver.resume();
-      }
-  code_explanation: The sketch decodes any received IR signal, prints the protocol, address, and command, stores NEC
-    address/command values, and then checks Serial Monitor for s or S on every loop so the learned NEC command can be sent
-    after learning.
-  expected_output: Serial Monitor shows protocol, address, and command whenever a remote signal is received. If the protocol
-    is NEC, the sketch stores the command. After that, type s in Serial Monitor to retransmit the learned NEC command toward
-    the same safe consumer device.
+    content: "// ESP32 IR receive-and-send learning demo\n// Learn codes from your own remote before transmitting.\n\
+      #include <IRremote.hpp>\n\nconst int IR_RECV_PIN = 15;\nconst int IR_SEND_PIN = 4;\n\nuint16_t learnedAddress\
+      \ = 0;\nuint16_t learnedCommand = 0;\ndecode_type_t learnedProtocol = UNKNOWN;\nbool hasLearnedCode = false;\n\
+      \nvoid sendLearnedCodeIfRequested() {\n  if (!Serial.available()) return;\n\n  char c = Serial.read();\n \
+      \ if ((c == 's' || c == 'S') && hasLearnedCode && learnedProtocol == NEC) {\n    IrSender.sendNEC(learnedAddress,\
+      \ learnedCommand, 2);\n    Serial.println(\"Sent learned NEC command.\");\n  } else if (c == 's' || c == 'S')\
+      \ {\n    Serial.println(\"Learn an NEC code before sending.\");\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);\n  IrSender.begin(IR_SEND_PIN);\n  Serial.println(\"\
+      IR demo ready. Point a safe consumer remote at the receiver.\");\n}\n\nvoid loop() {\n  sendLearnedCodeIfRequested();\n\
+      \n  if (!IrReceiver.decode()) return;\n\n  Serial.println(\"IR signal received\");\n  Serial.print(\"Protocol:\
+      \ \");\n  Serial.println(getProtocolString(IrReceiver.decodedIRData.protocol));\n  Serial.print(\"Address:\
+      \ 0x\");\n  Serial.println(IrReceiver.decodedIRData.address, HEX);\n  Serial.print(\"Command: 0x\");\n  Serial.println(IrReceiver.decodedIRData.command,\
+      \ HEX);\n\n  if (IrReceiver.decodedIRData.protocol == NEC) {\n    learnedProtocol = NEC;\n    learnedAddress\
+      \ = IrReceiver.decodedIRData.address;\n    learnedCommand = IrReceiver.decodedIRData.command;\n    hasLearnedCode\
+      \ = true;\n    Serial.println(\"Stored NEC code. Type s in Serial Monitor to send it.\");\n  } else {\n  \
+      \  Serial.println(\"This sketch retransmits NEC only. Use raw examples for other protocols.\");\n  }\n\n \
+      \ IrReceiver.resume();\n}\n"
+  code_explanation: The sketch decodes any received IR signal, prints the protocol, address, and command, stores
+    NEC address/command values, and then checks Serial Monitor for s or S on every loop so the learned NEC command
+    can be sent after learning.
+  expected_output: Serial Monitor shows protocol, address, and command whenever a remote signal is received. If
+    the protocol is NEC, the sketch stores the command. After that, type s in Serial Monitor to retransmit the learned
+    NEC command toward the same safe consumer device.
   common_mistakes:
   - text: Expecting universal compatibility from a beginner NEC replay sketch.
   - text: Driving a high-current IR LED directly from GPIO instead of using the transistor driver.
@@ -310,16 +299,17 @@ project:
   - text: Reversing the IR LED polarity or aiming the LED away from the appliance.
   troubleshooting:
   - problem: No receive data
-    fix: Check the TSOP38238 pinout, confirm OUT is on GPIO15, and aim the handheld remote directly at the receiver window.
+    fix: Check the TSOP38238 pinout, confirm OUT is on GPIO15, and aim the handheld remote directly at the receiver
+      window.
   - problem: Protocol UNKNOWN
-    fix: The remote may use an unsupported or complex protocol. Use the Serial output for study, but replay only works for
-      stored NEC commands in this sketch.
+    fix: The remote may use an unsupported or complex protocol. Use the Serial output for study, but replay only
+      works for stored NEC commands in this sketch.
   - problem: Transmit does not work
-    fix: Check IR LED polarity, transistor wiring, line of sight, and whether the target appliance responds to the learned
-      NEC command.
+    fix: Check IR LED polarity, transistor wiring, line of sight, and whether the target appliance responds to the
+      learned NEC command.
   - problem: Typing s does nothing
-    fix: Learn a NEC command first, keep Serial Monitor focused at 115200 baud, and type s or S after the sketch prints that
-      it stored the NEC code.
+    fix: Learn a NEC command first, keep Serial Monitor focused at 115200 baud, and type s or S after the sketch
+      prints that it stored the NEC code.
   testing_checklist:
   - Decode a known consumer remote.
   - Learn one NEC command.
@@ -328,8 +318,14 @@ project:
   - Test in moderate lighting.
   - Keep examples to owned consumer devices.
   - Label learned codes by device and button.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  upgrade_ideas:
+  - Store learned NEC codes in Preferences.
+  - Add OLED display for the last decoded command.
+  - Add a web page after local transmit works.
+  real_world_applications:
+  - Consumer remote protocol lesson
+  - IR receiver test fixture
+  - Line-of-sight communication demo
   related_guides:
   - title: Digital Inputs and Floating Pins
     href: /guides/digital-inputs-floating-pins.html
@@ -349,22 +345,33 @@ project:
     description: Review why access-control projects need stronger safety boundaries.
   faqs:
   - question: Will this ESP32 IR remote control every appliance?
-    answer: No. This beginner sketch stores and replays NEC commands only. Many appliances use other protocols, repeat frames, or timing details that need separate handling.
+    answer: No. This beginner sketch stores and replays NEC commands only. Many appliances use other protocols,
+      repeat frames, or timing details that need separate handling.
   - question: Can I copy any remote?
-    answer: Only learn and replay codes for safe consumer devices you own and are allowed to control. Do not use the project to bypass access-control, security, or safety systems.
+    answer: Only learn and replay codes for safe consumer devices you own and are allowed to control. Do not use
+      the project to bypass access-control, security, or safety systems.
   - question: Why use a transistor for the IR LED?
-    answer: IR LEDs often need more pulse current than an ESP32 GPIO should provide directly. The transistor lets GPIO4 control the LED while the LED current flows through the driver stage.
+    answer: IR LEDs often need more pulse current than an ESP32 GPIO should provide directly. The transistor lets
+      GPIO4 control the LED while the LED current flows through the driver stage.
   - question: Why does IR transmit fail even after learning a code?
-    answer: Check line of sight, IR LED polarity, target compatibility, and whether the learned protocol is NEC. Bright light and poor aiming can also reduce range.
+    answer: Check line of sight, IR LED polarity, target compatibility, and whether the learned protocol is NEC.
+      Bright light and poor aiming can also reduce range.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - IR receiving
     - Protocol decoding
     - Transistor driver
-keywords:
-- ESP32
-- Build an ESP32 IR Learning Remote Demo
-- TSOP38238 OUT
-- IR LED driver
-- Arduino tutorial
+  references:
+  - title: Vishay TSOP382/384 datasheet Rev.2.1
+    href: https://www.vishay.com/docs/82491/tsop382.pdf
+  - title: Vishay TSAL6200 emitter
+    href: https://www.vishay.com/en/product/81010/
+  - title: onsemi P2N2222A Rev.7
+    href: https://www.onsemi.com/pdf/datasheet/p2n2222a-d.pdf
+  - title: Arduino-IRremote v4.4.1
+    href: https://github.com/Arduino-IRremote/Arduino-IRremote/tree/v4.4.1
+  - title: Classic ESP32-WROOM strap definitions
+    href: https://documentation.espressif.com/esp32-wroom-32_datasheet_en.html

@@ -6,16 +6,16 @@ og_image: /assets/images/og/esp32-ac-power-monitor.webp
 hero_image: /assets/images/generated/esp32-ac-power-monitor.webp
 featured_image: /assets/images/generated/esp32-ac-power-monitor.webp
 image: /assets/images/generated/esp32-ac-power-monitor.webp
-description: Use an ESP32 with an isolated SCT-013 current transformer to estimate AC current safely on the low-voltage side,
-  without putting mains on a breadboard.
-meta_description: Build a bounded ESP32 AC current monitor prototype with an SCT-013 clamp, ADC biasing, calibration limits,
-  and strict mains-safety guidance.
+description: Explore an SCT-013-030 current transformer using an isolated, current-limited 12 V AC bench source,
+  ADC biasing and explicitly uncalibrated current estimates. No mains wiring exercise.
+meta_description: 'Low-voltage SCT-013-030 and ESP32 current-sensing exercise: isolated 12 V AC source, GPIO34 bias
+  network, EmonLib assumptions and measurement limits.'
 source_base: esp32-ac-power-monitor-legacy-import
 sensor: Biased CT waveform
 output: Bias midpoint
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-11-10'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 3
@@ -91,34 +91,38 @@ project:
   recommended_age: Ages 14+
   estimated_time: 90-120 min
   budget: Under 35 USD
-  adult_supervision: Qualified adult or electrician required for anything involving real mains conductors.
-  classroom_use: Use a low-voltage signal source or a pre-wired isolated demonstration lead; do not expose live terminals.
-  parent_prompt: Ask which side of the circuit is isolated from mains and why that matters.
-  screen_free_activity: Draw the separation between mains wiring, current clamp, conditioning network, and ESP32 ADC input.
+  adult_supervision: Qualified supervision for low-voltage bench wiring and instrument checks. Mains work is outside
+    this exercise.
+  classroom_use: Use only an isolated, current-limited 12 V AC source and a load rated for that source. Do not build
+    or open a mains transformer or adapter.
+  parent_prompt: Ask why the CT needs AC current and why a low-voltage source is different from accessible mains
+    wiring.
+  screen_free_activity: Draw the isolated 12 V AC source/load loop and the separate CT-to-ESP32 signal circuit.
   skills_practiced:
   - Isolated sensing
   - ADC biasing
   - RMS estimate
   - Calibration limits
   learning_outcomes: &id001
-  - Use an SCT-013 current transformer clamp without opening live wiring.
-  - Bias an AC waveform around the ESP32 ADC midpoint.
-  - Print current and apparent-power estimates without claiming billing accuracy.
-  - Explain isolation, enclosure, and calibration limits.
+  - Use the selected voltage-output CT on an isolated low-voltage AC loop.
+  - Verify bias and waveform headroom before connecting the ADC.
+  - Distinguish uncalibrated current and nominal-voltage VA estimates from power measurement.
   mini_experiments:
-  - Record zero-current baseline.
-  - Change ASSUMED_VOLTAGE and observe only the apparent-power estimate change.
-  - Compare a known safe load with a qualified reference meter.
-  next_challenge: Add an isolated voltage module only in a qualified, enclosed setup; keep beginner work current-only.
-  what_you_build: A low-voltage ESP32 current-monitor prototype using an SCT-013-030 clamp, ADC midpoint bias, and EmonLib
-    RMS calculations.
-  story: ""
-  eli12: The clamp acts like a sensor around one insulated wire. It creates a small safe signal that the ESP32 can estimate,
-    after the circuit shifts it into the ADC range. The ESP32 reads a signal, checks it against a simple rule, and prints
-    or changes an output so you can see what happened.
-  parent_safety: Do not place mains voltage on a breadboard. Do not open panels or live wiring. This is not a certified or
-    billing-grade energy meter. Unplug USB and external power before rewiring. Stop if hardware becomes hot, uncomfortable,
-    unstable, or unclear.
+  - Record unloaded noise without calling it current accuracy.
+  - Compare one-conductor and whole-two-wire-cable clamp positions with the low-voltage source switched off during
+    repositioning.
+  next_challenge: Record the actual low-voltage source, load and reference-instrument details before considering
+    a separate calibration exercise.
+  what_you_build: An isolated low-voltage AC current-sensing exercise. Use a factory-isolated, current-limited 12
+    V AC bench source (not DC), a matching low-voltage load and an SCT-013-030 voltage-output clamp. No mains conductors,
+    panels or appliance leads are part of this tutorial.
+  story: ''
+  eli12: The clamp surrounds one insulated wire in a low-voltage AC loop. It produces an AC signal on a separate
+    winding. The bias circuit shifts that signal around mid-rail for the ESP32 ADC.
+  parent_safety: This exercise is limited to an isolated low-voltage AC arrangement with a current limit or fuse
+    appropriate to the load and conductors. Never open mains wiring or connect mains to this circuit. A clamp does
+    not make mains work beginner-safe. Power off both bench source and USB before rewiring. Not a certified or billing-grade
+    meter.
   learning_objectives: *id001
   components:
   - item: ESP32 DevKit board
@@ -132,6 +136,9 @@ project:
     note: AC-couples the CT signal into the biased ADC node.
   - item: 3.5 mm jack socket
     note: Matches the SCT-013 plug; keep low-voltage side enclosed.
+  - item: Factory-isolated, current-limited 12 V AC source and matching load
+    note: Only its low-voltage output is used; no DC source and no mains assembly. SCT-013-030 has poor sensitivity
+      for small bench loads; near-zero/noise is possible.
   bom:
   - part: ESP32 DevKit board
     qty: '1'
@@ -153,53 +160,73 @@ project:
     qty: '1'
     estimated_cost: Varies
     notes: Matches the SCT-013 plug; keep low-voltage side enclosed.
+  - part: Factory-isolated, current-limited 12 V AC source and matching load
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Only its low-voltage output is used; no DC source and no mains assembly. SCT-013-030 has poor sensitivity
+      for small bench loads; near-zero/noise is possible.
   wiring:
+    full_size_link: true
     illustration_alt: Build an Isolated AC Current Monitor Prototype wiring diagram
-    summary: GPIO34 reads the biased CT waveform. The 10 kOhm divider creates a 1.65 V midpoint; the CT signal couples through
-      a capacitor.
+    summary: Only the isolated 12 V AC source and its low-voltage load form the sensed loop. The SCT-013-030 has
+      a built-in burden; its secondary output feeds the separate biased GPIO34 circuit.
     steps:
     - Unplug USB before changing the ADC bias circuit.
     - Build the 10 kOhm / 10 kOhm divider between 3.3 V and GND.
     - Connect the divider midpoint to GPIO34.
-    - Couple the SCT-013 tip signal into the midpoint through the 10 uF capacitor, observing capacitor polarity for the biased
-      node.
+    - Couple the SCT-013 tip signal into the midpoint through the 10 uF capacitor, observing capacitor polarity
+      for the biased node.
     - Connect the SCT-013 sleeve to ESP32 GND on the low-voltage side.
-    - Clamp only around one insulated conductor in a qualified setup; never expose live mains on the breadboard.
+    - With the isolated 12 V AC source OFF, clamp around ONE insulated conductor between that source and its matching
+      low-voltage load. Do not clamp the complete two-wire cable; no mains lead is used.
+    - 'Before GPIO34 is connected, verify the midpoint and waveform with a meter/oscilloscope: keep the complete
+      waveform within approximately 0.2–2.9 V for headroom inside the classic ESP32 11 dB measurement range. Limit
+      the low-voltage source/load accordingly. The bias divider is not an overvoltage clamp.'
   gpio_map:
   - signal: Biased CT waveform
     esp32_pin: GPIO34
     direction: Input
-    notes: ADC1 input-only; signal must stay within 0-3.3 V.
+    notes: ADC1 input-only. Verify waveform about 0.2–2.9 V; nominal bias alone does not guarantee protection.
   - signal: Bias midpoint
     esp32_pin: 3.3 V / GND
     direction: Power
     notes: 10 kOhm divider creates about mid-rail.
-  circuit_explanation: The SCT-013 produces an isolated AC signal proportional to current. The bias network shifts that waveform
-    into the ESP32 ADC range so EmonLib can estimate RMS current.
-  engineering_explanation: The sketch estimates current and apparent power only. True power, power factor, and kWh require
-    voltage measurement, phase calibration, isolation, and proper enclosure.
+  circuit_explanation: The SCT-013 produces an isolated AC signal proportional to current. The bias network shifts
+    that waveform into the ESP32 ADC range so EmonLib can estimate RMS current.
+  engineering_explanation: The SCT-013-030 is the 30 A / 1 V voltage-output version with an internal burden; it
+    is not interchangeable with an SCT-013-000 current-output clamp. A small low-voltage bench load may produce
+    readings dominated by ADC noise. The two 10 kΩ resistors bias the input nominally to 1.65 V; the 10 µF coupling
+    capacitor has its positive terminal toward the biased ADC node. Verify actual waveform bounds, not just midpoint.
+    EmonLib 1.1.0 assumes 10-bit counts on non-ARM builds; this example explicitly requests that resolution. Neither
+    that change nor the library establishes calibration. The assumed 12 V multiplication is only an illustrative
+    VA estimate, not measured voltage, watts, power factor or energy.
   libraries:
-  - name: EmonLib
-    note: Install EmonLib by OpenEnergyMonitor.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM review baseline. Uses 10-bit analogRead here to match EmonLib non-ARM ADC_COUNTS,
+      not the default 12-bit setting.
+  - name: EmonLib 1.1.0
+    note: OpenEnergyMonitor library. ICAL=29 is an unvalidated starter factor; ADC transfer, CT tolerance and coupling
+      network require a separate calibration. No ESP32 firmware compilation or current-accuracy result is claimed.
   code:
     filename: esp32-ac-power-monitor.ino
-    content: "// ESP32 Isolated AC Current Monitor Prototype\n// Educational estimate only. Mains wiring must be handled by\
-      \ a qualified adult/electrician.\n#include \"EmonLib.h\"\n\nEnergyMonitor emon;\nconst int CT_PIN = 34;          //\
-      \ ADC1 input at 1.65 V biased midpoint\nconst float ICAL = 29.0;        // Starter calibration; tune with a known safe\
-      \ reference\nconst float ASSUMED_VOLTAGE = 120.0; // Change to your region only for apparent-power estimates\n\nvoid\
-      \ setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(CT_PIN, ADC_11db);\n  emon.current(CT_PIN,\
-      \ ICAL);\n  Serial.println(\"Educational isolated CT current monitor. Not billing-grade.\");\n}\n\nvoid loop() {\n \
-      \ double irms = emon.calcIrms(1480);\n  double apparentPower = irms * ASSUMED_VOLTAGE;\n  Serial.printf(\"Irms estimate:\
-      \ %.3f A  Apparent power estimate: %.1f VA\\n\", irms, apparentPower);\n  delay(5000);\n}\n"
-  code_explanation: CT_PIN is GPIO34. EmonLib samples the biased waveform, estimates RMS current, and multiplies by an assumed
-    voltage only for apparent-power practice.
-  expected_output: Serial Monitor prints Irms estimate and apparent power estimate every five seconds. Treat both as prototype
-    estimates that need calibration.
+    content: "// ESP32 Isolated AC Current Monitor Prototype\n// Isolated current-limited 12 V AC bench loop ONLY;\
+      \ no mains wiring.\n// Arduino-ESP32 3.3.2 / EmonLib 1.1.0 review baseline; uncalibrated estimate.\n#include\
+      \ \"EmonLib.h\"\n\nEnergyMonitor emon;\nconst int CT_PIN = 34;          // ADC1 input at 1.65 V biased midpoint\n\
+      const float ICAL = 29.0;        // Starter calibration; tune with a known safe reference\nconst float ASSUMED_VOLTAGE\
+      \ = 12.0; // Nominal bench AC source, not measured voltage\n\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(10);\n\
+      \  analogSetPinAttenuation(CT_PIN, ADC_11db);\n  emon.current(CT_PIN, ICAL);\n  Serial.println(\"Educational\
+      \ isolated CT current monitor. Not billing-grade.\");\n}\n\nvoid loop() {\n  double irms = emon.calcIrms(1480);\n\
+      \  double apparentPower = irms * ASSUMED_VOLTAGE;\n  Serial.printf(\"Irms estimate: %.3f A  Apparent power\
+      \ estimate: %.1f VA\\n\", irms, apparentPower);\n  delay(5000);\n}\n"
+  code_explanation: CT_PIN is GPIO34. EmonLib samples the biased waveform, estimates RMS current, and multiplies
+    by an assumed voltage only for apparent-power practice.
+  expected_output: Serial Monitor prints Irms estimate and apparent power estimate every five seconds. Treat both
+    as prototype estimates that need calibration.
   common_mistakes:
-  - text: Putting mains voltage on a breadboard.
-  - text: Clamping around both live and neutral, which cancels the magnetic field.
-  - text: Claiming billing-grade accuracy.
-  - text: Letting the ADC input exceed 3.3 V.
+  - text: 'Using a DC source: a current transformer requires changing current.'
+  - text: Clamping around both low-voltage source and return conductors, cancelling the field.
+  - text: Assuming a mid-rail divider prevents excessive waveform peaks.
+  - text: Treating a nominal-voltage VA calculation as measured watts or billing energy.
   troubleshooting:
   - problem: Current reads near zero
     fix: Confirm the clamp surrounds one conductor only and the jack wiring reaches GPIO34.
@@ -208,16 +235,22 @@ project:
   - problem: Values disagree with a meter
     fix: Tune ICAL against a known safe reference; do not claim precision.
   testing_checklist:
-  - Verify midpoint voltage before connecting the CT.
-  - Run with no load and record baseline.
-  - Use a known safe load under qualified supervision.
-  - Power-cycle and confirm readings remain estimates.
+  - Confirm the source is factory-isolated 12 V AC with an appropriate current limit/fuse and matching low-voltage
+    load.
+  - Verify bias and waveform limits before connecting GPIO34.
+  - Record unloaded noise and a supervised low-voltage load observation separately from any reference measurement.
+  - Do not infer useful low-current precision from plausible Serial output.
   engineer_tips:
-  - Keep mains and ESP32 wiring physically separated.
-  - Use an enclosure for the low-voltage interface.
-  - Document calibration assumptions with every reading.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  - Use only the isolated low-voltage AC arrangement described here.
+  - Check the CT model and secondary plug contacts before wiring.
+  - Keep all accuracy claims pending an actual reference comparison.
+  upgrade_ideas:
+  - Display the explicitly uncalibrated estimate on an OLED.
+  - Log the bench source, load and ADC settings with each observation.
+  real_world_applications:
+  - Current transformer lesson
+  - Energy-estimation prototype
+  - Electrical-safety discussion
   related_guides:
   - title: What is ESP32?
     href: /guides/what-is-esp32.html
@@ -233,15 +266,34 @@ project:
     href: /projects/esp32-mqtt-sensor-dashboard.html
     description: Publish calibrated estimates only after local readings make sense.
   faqs:
-  - question: Can this measure billing energy?
-    answer: No. It is not calibrated or certified for billing.
-  - question: Can I wire mains to the breadboard?
-    answer: No. Mains work requires qualified handling and proper enclosure.
-  - question: Why only apparent power?
-    answer: The starter circuit measures current only and assumes voltage.
+  - question: Is mains wiring covered?
+    answer: No. Only the isolated, current-limited low-voltage AC loop is supported; a clamp does not make mains
+      work safe for beginners.
+  - question: Why can a small load read almost zero?
+    answer: The selected CT is rated 30 A / 1 V. A small bench current produces a small secondary voltage and may
+      be obscured by ADC noise.
+  - question: Are the displayed amps or VA calibrated?
+    answer: No. ICAL is an unvalidated starter value and 12 V is assumed, not measured. No accuracy result is supplied.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - Isolated sensing
     - ADC biasing
     - RMS estimate
+  references:
+  - title: YHDC SCT-013-030 manufacturer datasheet (manufacturer document hosted by MikroElektronika)
+    href: https://download.mikroe.com/documents/datasheets/STC-013-030_datasheet.pdf
+  - title: OpenEnergyMonitor EmonLib ADC resolution definitions
+    href: https://github.com/openenergymonitor/EmonLib/blob/master/EmonLib.h
+  - title: EmonLib 1.1.0 metadata
+    href: https://github.com/openenergymonitor/EmonLib/blob/master/library.json
+  - title: Arduino-ESP32 3.3.2 ADC API
+    href: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/docs/en/api/adc.rst
+  safety_standards:
+  - Only the documented low-voltage circuit is supported. No mains wiring or life-safety function is covered.
+  - Disconnect USB and every external supply before rewiring; check actual voltage and terminal labels before attaching
+    a GPIO.
+  - Review the selected parts and supply budget. Documentation review and calculated limits are not physical hardware
+    validation.

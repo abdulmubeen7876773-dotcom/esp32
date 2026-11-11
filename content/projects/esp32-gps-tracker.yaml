@@ -14,7 +14,7 @@ sensor: NEO-6M TX
 output: GPS VCC/GND
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-11-10'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
@@ -25,12 +25,14 @@ hardware:
   sensor_name: NEO-6M TX
   output_name: GPS VCC/GND
   wiring:
-  - component: NEO-6M TX
-    pin: GPIO16
-  - component: NEO-6M RX
-    pin: GPIO17
-  - component: GPS VCC/GND
-    pin: Module-rated VCC / GND
+  - component: Carrier TX, native 3.3 V UART
+    pin: GPIO16 / RX2
+  - component: Carrier RX
+    pin: Not connected
+  - component: Documented carrier supply input
+    pin: External regulated 3.3 V
+  - component: Common reference
+    pin: GND
 levels:
   beginner:
     level: beginner
@@ -117,18 +119,20 @@ project:
   - Log satellite count without sharing coordinates.
   next_challenge: Add an OLED display after the serial fix state is reliable.
   what_you_build: A local GPS/GNSS reader that prints valid coordinates from a NEO-6M module to Serial Monitor.
-  story: The project is a receiver, not a cellular tracker or theft-recovery device. It does not upload location anywhere.
-  eli12: The GPS module listens to satellites and sends text lines to the ESP32. The ESP32 waits until the lines contain a
-    real fix before printing coordinates.
-  parent_safety: Do not track people, vehicles, or property without consent. Do not publish real coordinates from a private
-    location. Unplug USB and external power before rewiring.
+  story: The project is a receiver, not a cellular tracker or theft-recovery device. It does not upload location
+    anywhere.
+  eli12: The GPS module listens to satellites and sends text lines to the ESP32. The ESP32 waits until the lines
+    contain a real fix before printing coordinates.
+  parent_safety: Do not track people, vehicles, or property without consent. Do not publish real coordinates from
+    a private location. Unplug USB and external power before rewiring.
   learning_objectives: *id001
   components:
   - item: ESP32 DevKit board
     note: USB-programmable ESP32 board for the low-voltage logic side.
     link: /components/esp32-devkit.html
   - item: NEO-6M GPS/GNSS module with antenna
-    note: UART module; use its documented supply range and logic level.
+    note: 'Supported only: a documented NEO-6M carrier with a 3.3 V-rated supply input and native 3.3 V UART TX.
+      Confirm its schematic; this is not a claim about every GY-GPS6MV2 or other unmarked board.'
   - item: Breadboard and jumper wires
     note: Keep UART wiring short for bench testing.
   - item: Optional USB power bank
@@ -141,7 +145,8 @@ project:
   - part: NEO-6M GPS/GNSS module with antenna
     qty: '1'
     estimated_cost: Varies
-    notes: UART module; use its documented supply range and logic level.
+    notes: 'Supported only: a documented NEO-6M carrier with a 3.3 V-rated supply input and native 3.3 V UART TX.
+      Confirm its schematic; this is not a claim about every GY-GPS6MV2 or other unmarked board.'
   - part: Breadboard and jumper wires
     qty: '1'
     estimated_cost: Varies
@@ -151,54 +156,72 @@ project:
     estimated_cost: Varies
     notes: Useful for outdoor sky-view tests without exposing location online.
   wiring:
+    full_size_link: true
     illustration_alt: Build a Local NEO-6M GPS Reader wiring diagram
-    summary: GPS TX connects to ESP32 GPIO16 RX2. GPS RX can connect to GPIO17 TX2 if configuration commands are needed.
+    summary: 'Read-only UART connection: documented 3.3 V carrier TX -> classic ESP32-WROOM GPIO16 (RX2), with common
+      GND. GPS RX is left disconnected. Identify the actual carrier supply circuit first.'
     steps:
-    - Unplug USB before wiring.
-    - Connect GPS GND to ESP32 GND.
-    - Connect GPS VCC to the voltage specified by your module breakout.
-    - Connect GPS TX to ESP32 GPIO16.
-    - Optionally connect GPS RX to ESP32 GPIO17.
-    - Place the antenna with clear sky view before expecting a valid fix.
+    - Disconnect power. Obtain the exact carrier schematic and identify its supply input, regulator and UART output
+      voltage. If these are unknown, stop rather than applying 5 V.
+    - The supported carrier must accept regulated 3.3 V at the identified input and expose native 3.3 V UART TX.
+      Use an adequately rated external 3.3 V supply, with its positive kept off ESP32 USB/VIN/3V3.
+    - Join carrier GND, external supply GND and ESP32 GND. Connect GPS TX to ESP32 GPIO16 (RX2). Leave GPS RX disconnected;
+      this sketch sends no configuration commands.
+    - Use a classic ESP32-WROOM board that exposes GPIO16; some WROVER boards reserve GPIO16/17 for PSRAM.
+    - Power ESP32 USB before the carrier supply; switch carrier power off before USB. Confirm a 9600-baud NMEA stream
+      before diagnosing satellite reception.
+    - Give the antenna clear sky view with permission to record location; indoor satellite acquisition is not promised.
   gpio_map:
-  - signal: NEO-6M TX
-    esp32_pin: GPIO16
-    direction: UART RX input
-    notes: GPS transmits NMEA to ESP32 RX2.
-  - signal: NEO-6M RX
-    esp32_pin: GPIO17
-    direction: UART TX output
-    notes: Optional; not needed for basic reading.
-  - signal: GPS VCC/GND
-    esp32_pin: Module-rated VCC / GND
+  - signal: Carrier TX, native 3.3 V UART
+    esp32_pin: GPIO16 / RX2
+    direction: Input
+    notes: TX crosses to ESP32 RX; default NEO-6 NMEA setting is 9600 baud unless reconfigured.
+  - signal: Carrier RX
+    esp32_pin: Not connected
+    direction: Unused
+    notes: Read-only example; ESP32 TX GPIO17 is configured but physically unwired.
+  - signal: Documented carrier supply input
+    esp32_pin: External regulated 3.3 V
     direction: Power
-    notes: Follow the breakout's voltage rating.
-  circuit_explanation: The GNSS module streams NMEA sentences at 9600 baud. TinyGPS++ decodes bytes into fix status, coordinates,
-    satellites, and HDOP.
-  engineering_explanation: GPS needs sky view and time for a cold start. Indoor tests often receive UART text but no valid
-    coordinates.
+    notes: Only a carrier explicitly rated for this input; common ground. Not universal VIN.
+  - signal: Common reference
+    esp32_pin: GND
+    direction: Ground
+    notes: GPS and ESP32 UART require a shared reference.
+  circuit_explanation: The GNSS module streams NMEA sentences at 9600 baud. TinyGPS++ decodes bytes into fix status,
+    coordinates, satellites, and HDOP.
+  engineering_explanation: GPS needs sky view and time for a cold start. Indoor tests often receive UART text but
+    no valid coordinates. The u-blox NEO-6M silicon module is specified for 2.7–3.6 V VCC; that is not the same
+    as a carrier VIN rating. Some carrier regulators need a higher input because of dropout; those carriers are
+    outside this 3.3 V-input exercise unless their documentation identifies a supported 3.3 V connection. A regulator
+    on VIN does not prove that UART tolerates 5 V. No particular unmarked carrier has been verified here.
   libraries:
-  - name: TinyGPSPlus
-    note: Install TinyGPS++ from Arduino Library Manager.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM UART2 review baseline.
+  - name: TinyGPSPlus 1.0.3
+    note: Mikal Hart official release tag v1.0.3 (package version); the TinyGPS++.h parsing API used here is present
+      in that tag. Serial communication and satellite fix are separate checks.
   code:
     filename: esp32-gps-tracker.ino
-    content: "// ESP32 NEO-6M GPS reader\n// Prints only valid fixes; no fabricated coordinates are used.\n#include <TinyGPS++.h>\n\
-      \nTinyGPSPlus gps;\nHardwareSerial gpsSerial(2);\n\nconst int GPS_RX = 16; // ESP32 receives GPS TX here\nconst int\
-      \ GPS_TX = 17; // Optional ESP32 TX to GPS RX\n\nunsigned long lastStatusMs = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  gpsSerial.begin(9600, SERIAL_8N1, GPS_RX, GPS_TX);\n  Serial.println(\"GPS reader ready. Place the antenna with a\
-      \ clear sky view.\");\n}\n\nvoid loop() {\n  while (gpsSerial.available()) {\n    gps.encode(gpsSerial.read());\n  }\n\
-      \n  if (gps.location.isUpdated()) {\n    if (gps.location.isValid()) {\n      Serial.print(\"Latitude: \");\n      Serial.println(gps.location.lat(),\
-      \ 6);\n      Serial.print(\"Longitude: \");\n      Serial.println(gps.location.lng(), 6);\n      Serial.print(\"Satellites:\
-      \ \");\n      Serial.println(gps.satellites.value());\n      Serial.print(\"HDOP: \");\n      Serial.println(gps.hdop.isValid()\
-      \ ? gps.hdop.hdop() : 0.0, 2);\n      Serial.println(\"---\");\n    } else {\n      Serial.println(\"GPS data received,\
-      \ but no valid location fix yet.\");\n    }\n  }\n\n  if (millis() - lastStatusMs > 5000) {\n    lastStatusMs = millis();\n\
-      \    if (gps.charsProcessed() < 10) {\n      Serial.println(\"No NMEA characters yet. Check TX-to-RX wiring and module\
-      \ power.\");\n    } else if (!gps.location.isValid()) {\n      Serial.println(\"Waiting for satellite lock. Move antenna\
-      \ near a window or outdoors.\");\n    }\n  }\n}\n"
-  code_explanation: UART2 reads GPS bytes on GPIO16/GPIO17. The sketch prints location only when TinyGPS++ reports a valid
-    updated fix.
-  expected_output: Before satellite lock, Serial Monitor says it is waiting for a fix. After a valid fix, it prints latitude,
-    longitude, satellites, and HDOP.
+    content: "// ESP32 NEO-6M GPS reader\n// Prints only valid fixes; no fabricated coordinates are used.\n#include\
+      \ <TinyGPS++.h>\n\nTinyGPSPlus gps;\nHardwareSerial gpsSerial(2);\n\nconst int GPS_RX = 16; // ESP32 receives\
+      \ GPS TX here\nconst int GPS_TX = 17; // Configured UART TX, physically unwired; no commands sent.\n\nunsigned\
+      \ long lastStatusMs = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  gpsSerial.begin(9600, SERIAL_8N1, GPS_RX,\
+      \ GPS_TX);\n  Serial.println(\"GPS reader ready. Place the antenna with a clear sky view.\");\n}\n\nvoid loop()\
+      \ {\n  while (gpsSerial.available()) {\n    gps.encode(gpsSerial.read());\n  }\n\n  if (gps.location.isUpdated())\
+      \ {\n    if (gps.location.isValid()) {\n      Serial.print(\"Latitude: \");\n      Serial.println(gps.location.lat(),\
+      \ 6);\n      Serial.print(\"Longitude: \");\n      Serial.println(gps.location.lng(), 6);\n      Serial.print(\"\
+      Satellites: \");\n      Serial.println(gps.satellites.value());\n      Serial.print(\"HDOP: \");\n      Serial.println(gps.hdop.isValid()\
+      \ ? gps.hdop.hdop() : 0.0, 2);\n      Serial.println(\"---\");\n    } else {\n      Serial.println(\"GPS data\
+      \ received, but no valid location fix yet.\");\n    }\n  }\n\n  if (millis() - lastStatusMs > 5000) {\n  \
+      \  lastStatusMs = millis();\n    if (gps.charsProcessed() < 10) {\n      Serial.println(\"No NMEA characters\
+      \ yet. Check TX-to-RX wiring and module power.\");\n    } else if (!gps.location.isValid()) {\n      Serial.println(\"\
+      Waiting for satellite lock. Move antenna near a window or outdoors.\");\n    }\n  }\n}\n"
+  code_explanation: UART2 receives 9600-baud NMEA on GPIO16. GPIO17 is configured as UART TX but left physically
+    unconnected; the sketch sends no configuration commands. TinyGPS++ parses the incoming stream; received characters
+    alone do not prove a valid satellite fix.
+  expected_output: Before satellite lock, Serial Monitor says it is waiting for a fix. After a valid fix, it prints
+    latitude, longitude, satellites, and HDOP.
   common_mistakes:
   - text: Swapping GPS TX/RX incorrectly.
   - text: Publishing real private coordinates.
@@ -219,8 +242,14 @@ project:
   - Keep the patch antenna facing upward.
   - Use fake example coordinates in notes.
   - Separate GPS from Wi-Fi geolocation in explanations.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  upgrade_ideas:
+  - Add OLED display.
+  - Save local CSV logs only with consent.
+  - Add a waypoint distance calculator using fake demo coordinates.
+  real_world_applications:
+  - Satellite navigation lesson
+  - Outdoor data logger prototype
+  - Consent-based field mapping demo
   related_guides:
   - title: Digital Inputs and Floating Pins
     href: /guides/digital-inputs-floating-pins.html
@@ -243,14 +272,19 @@ project:
   - question: Why are coordinates missing indoors?
     answer: GPS signals are weak indoors and usually need sky view.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - UART2 wiring
     - NMEA parsing
     - No-fix handling
-keywords:
-- ESP32
-- Build a Local NEO-6M GPS Reader
-- NEO-6M TX
-- GPS VCC/GND
-- Arduino tutorial
+  references:
+  - title: u-blox NEO-6 datasheet GPS.G6-HW-09005-E
+    href: https://content.u-blox.com/sites/default/files/products/documents/NEO-6_DataSheet_(GPS.G6-HW-09005).pdf
+  - title: TinyGPSPlus v1.0.3 official release
+    href: https://github.com/mikalhart/TinyGPSPlus/tree/v1.0.3
+  - title: ESP32-WROOM pins and GPIO voltage
+    href: https://documentation.espressif.com/esp32-wroom-32_datasheet_en.html
+  - title: Arduino-ESP32 3.3.2 HardwareSerial implementation
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/HardwareSerial.cpp

@@ -10,14 +10,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def component_sitemap_lastmods(sitemap: str, components: list[dict]) -> str:
+def component_sitemap_lastmods(sitemap: str, components: list[dict], *, section: str = "components") -> str:
     """Update existing selected dates without reserializing unrelated XML."""
     from datetime import date
 
+    if section not in {"components", "projects"}:
+        raise ValueError("Selected sitemap dates support components or projects only")
     dates = {}
     for component in components:
         value = str(component.get("date_modified", ""))
-        dates[f"https://esp32engine.com/components/{component['slug']}.html"] = date.fromisoformat(value).isoformat()
+        url = f"https://esp32engine.com/{section}/{component['slug']}.html"
+        if url in dates:
+            raise ValueError(f"Duplicate selected sitemap record: {url}")
+        dates[url] = date.fromisoformat(value).isoformat()
     seen = {url: 0 for url in dates}
 
     def update(match):
@@ -51,7 +56,7 @@ def generate_scope(manifest: Path):
 
     scope = json.loads(manifest.read_text(encoding="utf-8"))
     required = {"guides", "projects", "categories"}
-    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}, required | {"components", "component_updates_only"}, required | {"guide_catalog_only", "pages", "refresh_project_counts"}):
+    if set(scope) not in (required, required | {"components"}, required | {"homepage"}, required | {"navigation"}, required | {"pages"}, required | {"guide_catalog_only"}, required | {"components", "component_updates_only"}, required | {"guide_catalog_only", "pages", "refresh_project_counts"}, required | {"project_lastmods"}):
         raise ValueError("Scope requires guides, projects and categories; optional selectors include components with component_updates_only, homepage, navigation, pages or guide_catalog_only")
     if "navigation" in scope and (scope["navigation"] is not True or any(scope[k] for k in required)):
         raise ValueError("Navigation-only scope requires true and empty article selections")
@@ -61,10 +66,12 @@ def generate_scope(manifest: Path):
         raise ValueError("Guide catalog scope requires true, selected guides and no projects/categories")
     if "refresh_project_counts" in scope and scope["refresh_project_counts"] is not True:
         raise ValueError("Project count refresh must be true")
+    if "project_lastmods" in scope and (scope["project_lastmods"] is not True or not scope["projects"] or scope["guides"]):
+        raise ValueError("Project lastmod scope requires true, selected projects and no guides")
     if "component_updates_only" in scope and (scope["component_updates_only"] is not True or not scope["components"] or any(scope[k] for k in required)):
         raise ValueError("Component update scope requires true, selected components and empty guide/project/category selections")
     if any(not isinstance(v, list) or any(not isinstance(s, str) for s in v)
-           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only", "component_updates_only", "refresh_project_counts"}):
+           for k, v in scope.items() if k not in {"homepage", "navigation", "guide_catalog_only", "component_updates_only", "refresh_project_counts", "project_lastmods"}):
         raise ValueError("Scope values must be lists of names")
     if scope.get("component_updates_only") and len(set(scope["components"])) != len(scope["components"]):
         raise ValueError("Component update scope cannot select a component twice")
@@ -91,6 +98,14 @@ def generate_scope(manifest: Path):
         if not path.exists() or path.read_text(encoding="utf-8") != body:
             path.write_text(body, encoding="utf-8")
         print(f"Scoped output: {relative}")
+
+    # Opt-in only: existing scopes retain their date-preservation behavior.
+    # Validate the full selected XML boundary before writing any output.
+    selected_project_sitemap = None
+    if scope.get("project_lastmods"):
+        selected_project_sitemap = component_sitemap_lastmods(
+            (ROOT / "sitemap.xml").read_text(encoding="utf-8"),
+            [projects[slug] for slug in scope["projects"]], section="projects")
 
     if scope.get("navigation"):
         from project_catalog import generate_navigation_scope
@@ -210,6 +225,8 @@ def generate_scope(manifest: Path):
             raise ValueError(f"Scoped RSS requires one existing item: {slug}")
         feed = feed.replace(found[0], feed_item(projects[slug]))
     write("feed.xml", feed)
+    if selected_project_sitemap is not None:
+        write("sitemap.xml", selected_project_sitemap)
 
     # Already-reviewed sitemap is authoritative for this selective release.
     # Verify all selected URLs exist instead of replacing unrelated lastmod dates.

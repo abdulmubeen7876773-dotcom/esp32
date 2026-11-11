@@ -15,7 +15,7 @@ sensor: LoRa SCK
 output: DHT22 DATA
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-11-10'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
@@ -142,8 +142,8 @@ project:
   - RF packet validation
   - DHT22 readings
   - Legal radio awareness
-  learning_outcomes: &id001
-  - Wire a generic SX1276/SX1278 breakout on VSPI.
+  learning_outcomes:
+  - Wire a HopeRF RFM95W 868/915 MHz breakout on VSPI.
   - Transmit DHT22 readings as short packets.
   - Reject malformed receiver packets.
   - Explain point-to-point LoRa versus LoRaWAN.
@@ -152,21 +152,26 @@ project:
   - Change packet interval and observe received sequence gaps.
   - Rotate the connected antenna or add indoor obstruction while keeping the correct antenna attached.
   next_challenge: Add a simple checksum byte to the packet.
-  what_you_build: A two-node point-to-point LoRa DHT22 link using generic SX1276/SX1278 SPI breakouts.
+  what_you_build: A two-node point-to-point LoRa DHT22 link using HopeRF RFM95W 868/915 MHz SPI breakouts.
   story: This project is a local radio link, not LoRaWAN, not TTN, and not an emergency communication system.
-  eli12: One ESP32 reads temperature and humidity, turns the numbers into a short message, and sends it by radio. The other
-    ESP32 checks the message before printing it.
-  parent_safety: Never transmit without the correct antenna connected. Use only legal frequencies and power settings for your
-    region. Unplug USB and external power before rewiring.
-  learning_objectives: *id001
+  eli12: One ESP32 reads temperature and humidity, turns the numbers into a short message, and sends it by radio.
+    The other ESP32 checks the message before printing it.
+  parent_safety: Never transmit without the correct antenna connected. Use only legal frequencies and power settings
+    for your region. Unplug USB and external power before rewiring.
+  learning_objectives:
+  - Wire a HopeRF RFM95W 868/915 MHz breakout on VSPI.
+  - Transmit DHT22 readings as short packets.
+  - Reject malformed receiver packets.
+  - Explain point-to-point LoRa versus LoRaWAN.
   components:
   - item: ESP32 DevKit board
     note: Main 3.3 V logic controller.
     link: /components/esp32-devkit.html
   - item: Second ESP32 DevKit board
     note: Receiver node.
-  - item: Two SX1276/SX1278 LoRa breakouts
-    note: 3.3 V logic SPI radios; match module frequency to region.
+  - item: Two HopeRF RFM95W 868/915 MHz modules on labelled adapters
+    note: Selected external SPI radio family, 3.3 V power/logic; not Heltec integrated-board wiring and not an SX1278
+      433 MHz substitution.
   - item: DHT22 temperature and humidity sensor
     note: Sender-node sensor on GPIO4.
     link: /components/dht22.html
@@ -183,10 +188,11 @@ project:
     qty: '1'
     estimated_cost: Varies
     notes: Receiver node.
-  - part: Two SX1276/SX1278 LoRa breakouts
+  - part: Two HopeRF RFM95W 868/915 MHz modules on labelled adapters
     qty: '1'
     estimated_cost: Varies
-    notes: 3.3 V logic SPI radios; match module frequency to region.
+    notes: Selected external SPI radio family, 3.3 V power/logic; not Heltec integrated-board wiring and not an
+      SX1278 433 MHz substitution.
   - part: DHT22 temperature and humidity sensor
     qty: '1'
     estimated_cost: Varies
@@ -200,15 +206,19 @@ project:
     estimated_cost: Varies
     notes: For low-voltage prototyping.
   wiring:
+    full_size_link: true
     illustration_alt: ESP32 LoRa Remote Sensor Node (Point-to-Point) wiring diagram
-    summary: Each LoRa breakout uses VSPI SCK GPIO18, MISO GPIO19, MOSI GPIO23, CS GPIO5, RST GPIO14, and DIO0 GPIO26. Sender
-      DHT22 DATA uses GPIO4.
+    summary: Each LoRa breakout uses VSPI SCK GPIO18, MISO GPIO19, MOSI GPIO23, CS GPIO5, RST GPIO14, and DIO0 GPIO26.
+      Sender DHT22 DATA uses GPIO4. This is an external RFM95W adapter on a classic ESP32-WROOM DevKit, not a Heltec
+      integrated-board pin map. Connections are logical net labels, not a physical module orientation.
     steps:
     - Unplug USB before wiring both nodes.
-    - Connect each LoRa module VCC to 3.3 V and GND to GND.
+    - Use a regulated 3.3 V radio supply with at least 150 mA capacity per RFM95W and local 100 nF + 10 µF decoupling.
+      Join its ground to ESP32 GND. Never apply 5 V; do not parallel external positive with ESP32 3V3.
     - Wire SCK GPIO18, MISO GPIO19, MOSI GPIO23, NSS/CS GPIO5, RST GPIO14, and DIO0 GPIO26.
     - Connect the correct antenna before powering or transmitting.
-    - On the sender, connect DHT22 DATA to GPIO4 with a pull-up if needed.
+    - 'Sender only: DHT22 VCC to ESP32 3V3, GND to common GND, DATA to GPIO4 with 10 kΩ pull-up to 3V3 unless the
+      documented module already includes one.'
     - Set LORA_FREQUENCY_HZ to a legal frequency for your region and module.
   gpio_map:
   - signal: LoRa SCK
@@ -237,48 +247,64 @@ project:
     notes: Packet event line.
   - signal: DHT22 DATA
     esp32_pin: GPIO4
-    direction: Input
-    notes: Sender only.
-  circuit_explanation: The radio uses SPI for control and the DHT22 supplies sender readings. The receiver validates comma-separated
-    packets before printing.
-  engineering_explanation: Range depends on legal power, antennas, terrain, obstruction, and frequency. The page intentionally
-    avoids fixed distance claims.
+    direction: Bidirectional data
+    notes: Sender only; pull up to 3.3 V, not 5 V.
+  - signal: RFM95W power
+    esp32_pin: External regulated 3.3 V / common GND
+    direction: Power
+    notes: At least 150 mA supply capacity per radio, 100 nF + 10 µF at module. No 5 V.
+  - signal: DHT22 power
+    esp32_pin: ESP32 3V3 / GND
+    direction: Power
+    notes: Sender only; DATA pull-up 10 kΩ to 3V3.
+  circuit_explanation: The radio uses SPI for control and the DHT22 supplies sender readings. The receiver validates
+    comma-separated packets before printing.
+  engineering_explanation: 'Range depends on legal power, antennas, terrain, obstruction, and frequency. The page
+    intentionally avoids fixed distance claims. HopeRF datasheet v2.0 distinguishes the 868/915 MHz RFM95W from
+    other RF variants. The 915 MHz code setting is only for matching hardware in a region where permitted; otherwise
+    configure both radios for a permitted frequency supported by that exact module. RF legality, duty cycle and
+    antenna gain still require local review. GPIO5 is a classic ESP32 strapping pin: do not add an external pull-down
+    or use an adapter that drives NSS during reset.'
   libraries:
-  - name: LoRa
-    note: Sandeep Mistry LoRa library.
-  - name: DHT sensor library
-    note: Adafruit DHT library and dependency.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM DevKit review baseline.
+  - name: LoRa 0.8.0, Sandeep Mistry
+    note: Official setPins/SPI API; same settings on both radios.
+  - name: Adafruit DHT sensor library 1.4.6
+    note: Install Adafruit Unified Sensor 1.1.15 as dependency; sender uses DHT22.
   code:
     filename: esp32-lora-remote-sensor-node.ino
-    content: "// ESP32 LoRa point-to-point DHT22 sender/receiver\n// Select NODE_MODE_SENDER on one board and NODE_MODE_RECEIVER\
-      \ on the second board.\n// Always connect the correct antenna before transmitting.\n#include <SPI.h>\n#include <LoRa.h>\n\
-      #include <DHT.h>\n\n#define NODE_MODE_SENDER 1\n\nconst long LORA_FREQUENCY_HZ = 915E6; // Change to a legal frequency\
-      \ for your region and module.\nconst int LORA_SCK = 18;\nconst int LORA_MISO = 19;\nconst int LORA_MOSI = 23;\nconst\
-      \ int LORA_CS = 5;\nconst int LORA_RST = 14;\nconst int LORA_DIO0 = 26;\nconst int DHT_PIN = 4;\n\nDHT dht(DHT_PIN,\
-      \ DHT22);\nuint32_t sequenceNumber = 0;\nuint32_t badPackets = 0;\n\nbool initLoRa() {\n  SPI.begin(LORA_SCK, LORA_MISO,\
-      \ LORA_MOSI, LORA_CS);\n  LoRa.setPins(LORA_CS, LORA_RST, LORA_DIO0);\n  if (!LoRa.begin(LORA_FREQUENCY_HZ)) return\
-      \ false;\n  LoRa.setTxPower(10); // Conservative starter value; obey local legal limits.\n  return true;\n}\n\nbool\
-      \ parsePacket(String packet, int &node, float &tempC, float &humidity, uint32_t &seq) {\n  packet.trim();\n  int a =\
-      \ packet.indexOf(',');\n  int b = packet.indexOf(',', a + 1);\n  int c = packet.indexOf(',', b + 1);\n  if (a < 0 ||\
-      \ b < 0 || c < 0) return false;\n  node = packet.substring(0, a).toInt();\n  tempC = packet.substring(a + 1, b).toFloat();\n\
-      \  humidity = packet.substring(b + 1, c).toFloat();\n  seq = (uint32_t) packet.substring(c + 1).toInt();\n  if (node\
-      \ < 1 || node > 99) return false;\n  if (tempC < -40.0 || tempC > 80.0) return false;\n  if (humidity < 0.0 || humidity\
-      \ > 100.0) return false;\n  return true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  dht.begin();\n  if (!initLoRa())\
-      \ {\n    Serial.println(\"LoRa init failed. Check SPI wiring, power, frequency, and antenna.\");\n    while (true) delay(10);\n\
-      \  }\n  Serial.println(NODE_MODE_SENDER ? \"LoRa sender ready.\" : \"LoRa receiver ready.\");\n}\n\nvoid loop() {\n\
-      #if NODE_MODE_SENDER\n  float tempC = dht.readTemperature();\n  float humidity = dht.readHumidity();\n  if (isnan(tempC)\
-      \ || isnan(humidity)) {\n    Serial.println(\"DHT22 read failed; packet not sent.\");\n    delay(5000);\n    return;\n\
-      \  }\n\n  String packet = \"1,\" + String(tempC, 1) + \",\" + String(humidity, 1) + \",\" + String(sequenceNumber++);\n\
-      \  LoRa.beginPacket();\n  LoRa.print(packet);\n  LoRa.endPacket();\n  Serial.print(\"Sent: \");\n  Serial.println(packet);\n\
-      \  delay(15000);\n#else\n  int size = LoRa.parsePacket();\n  if (!size) return;\n  String packet = LoRa.readString();\n\
-      \  int node = 0;\n  float tempC = 0;\n  float humidity = 0;\n  uint32_t seq = 0;\n  if (!parsePacket(packet, node, tempC,\
-      \ humidity, seq)) {\n    badPackets++;\n    Serial.print(\"Rejected malformed packet #\");\n    Serial.println(badPackets);\n\
-      \    return;\n  }\n  Serial.printf(\"Node %d seq %lu  temp %.1f C  humidity %.1f %%  RSSI %d dBm\\n\",\n           \
-      \     node, (unsigned long)seq, tempC, humidity, LoRa.packetRssi());\n#endif\n}\n"
-  code_explanation: One compile-time mode sends DHT22 packets. Receiver mode parses field count and plausible ranges, then
-    logs RSSI.
-  expected_output: Receiver prints node ID, sequence number, temperature, humidity, and RSSI for valid packets; malformed
-    packets are rejected.
+    content: "// ESP32 LoRa point-to-point DHT22 sender/receiver\n// Set NODE_MODE_SENDER to 1 on the sender and\
+      \ 0 on the receiver.\n// Always connect the correct antenna before transmitting.\n#include <SPI.h>\n#include\
+      \ <LoRa.h>\n#include <DHT.h>\n\n#define NODE_MODE_SENDER 1\n\nconst long LORA_FREQUENCY_HZ = 915E6; // Change\
+      \ to a legal frequency for your region and module.\nconst int LORA_SCK = 18;\nconst int LORA_MISO = 19;\n\
+      const int LORA_MOSI = 23;\nconst int LORA_CS = 5;\nconst int LORA_RST = 14;\nconst int LORA_DIO0 = 26;\nconst\
+      \ int DHT_PIN = 4;\n\nDHT dht(DHT_PIN, DHT22);\nuint32_t sequenceNumber = 0;\nuint32_t badPackets = 0;\n\n\
+      bool initLoRa() {\n  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);\n  LoRa.setPins(LORA_CS, LORA_RST,\
+      \ LORA_DIO0);\n  if (!LoRa.begin(LORA_FREQUENCY_HZ)) return false;\n  LoRa.setTxPower(10); // Conservative\
+      \ starter value; obey local legal limits.\n  return true;\n}\n\nbool parsePacket(String packet, int &node,\
+      \ float &tempC, float &humidity, uint32_t &seq) {\n  packet.trim();\n  int a = packet.indexOf(',');\n  int\
+      \ b = packet.indexOf(',', a + 1);\n  int c = packet.indexOf(',', b + 1);\n  if (a < 0 || b < 0 || c < 0) return\
+      \ false;\n  node = packet.substring(0, a).toInt();\n  tempC = packet.substring(a + 1, b).toFloat();\n  humidity\
+      \ = packet.substring(b + 1, c).toFloat();\n  seq = (uint32_t) packet.substring(c + 1).toInt();\n  if (node\
+      \ < 1 || node > 99) return false;\n  if (tempC < -40.0 || tempC > 80.0) return false;\n  if (humidity < 0.0\
+      \ || humidity > 100.0) return false;\n  return true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  dht.begin();\n\
+      \  if (!initLoRa()) {\n    Serial.println(\"LoRa init failed. Check SPI wiring, power, frequency, and antenna.\"\
+      );\n    while (true) delay(10);\n  }\n  Serial.println(NODE_MODE_SENDER ? \"LoRa sender ready.\" : \"LoRa\
+      \ receiver ready.\");\n}\n\nvoid loop() {\n#if NODE_MODE_SENDER\n  float tempC = dht.readTemperature();\n\
+      \  float humidity = dht.readHumidity();\n  if (isnan(tempC) || isnan(humidity)) {\n    Serial.println(\"DHT22\
+      \ read failed; packet not sent.\");\n    delay(5000);\n    return;\n  }\n\n  String packet = \"1,\" + String(tempC,\
+      \ 1) + \",\" + String(humidity, 1) + \",\" + String(sequenceNumber++);\n  LoRa.beginPacket();\n  LoRa.print(packet);\n\
+      \  LoRa.endPacket();\n  Serial.print(\"Sent: \");\n  Serial.println(packet);\n  delay(15000);\n#else\n  int\
+      \ size = LoRa.parsePacket();\n  if (!size) return;\n  String packet = LoRa.readString();\n  int node = 0;\n\
+      \  float tempC = 0;\n  float humidity = 0;\n  uint32_t seq = 0;\n  if (!parsePacket(packet, node, tempC, humidity,\
+      \ seq)) {\n    badPackets++;\n    Serial.print(\"Rejected malformed packet #\");\n    Serial.println(badPackets);\n\
+      \    return;\n  }\n  Serial.printf(\"Node %d seq %lu  temp %.1f C  humidity %.1f %%  RSSI %d dBm\\n\",\n \
+      \               node, (unsigned long)seq, tempC, humidity, LoRa.packetRssi());\n#endif\n}\n"
+  code_explanation: One compile-time mode sends DHT22 packets. Receiver mode parses field count and plausible ranges,
+    then logs RSSI.
+  expected_output: Receiver prints node ID, sequence number, temperature, humidity, and RSSI for valid packets;
+    malformed packets are rejected.
   common_mistakes:
   - text: Transmitting without an antenna.
   - text: Using a frequency illegal for your region.
@@ -299,8 +325,14 @@ project:
   - Keep packets short.
   - Label node roles.
   - Check local regulations before every transmit test.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  upgrade_ideas:
+  - Add checksum byte.
+  - Add ACK/retry.
+  - Add battery-voltage field using a safe divider.
+  real_world_applications:
+  - Remote classroom sensor demo
+  - Point-to-point telemetry lesson
+  - RF packet validation exercise
   related_guides:
   - title: What is ESP32?
     href: /guides/what-is-esp32.html
@@ -323,14 +355,19 @@ project:
   - question: How far will it go?
     answer: It depends on legal power, antenna, terrain, and obstruction; no fixed range is promised.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - SPI wiring
     - RF packet validation
     - DHT22 readings
-keywords:
-- ESP32
-- ESP32 LoRa Remote Sensor Node (Point-to-Point)
-- LoRa SCK
-- DHT22 DATA
-- Arduino tutorial
+  references:
+  - title: HopeRF RFM95W/96W/98W datasheet v2.0
+    href: https://www.hoperf.com/uploads/RFM95W-V2.0_1695351437.pdf
+  - title: LoRa library 0.8.0
+    href: https://github.com/sandeepmistry/arduino-LoRa/tree/0.8.0
+  - title: Adafruit DHT library 1.4.6
+    href: https://github.com/adafruit/DHT-sensor-library/tree/1.4.6
+  - title: Classic ESP32-WROOM pin and strap definitions
+    href: https://documentation.espressif.com/esp32-wroom-32_datasheet_en.html

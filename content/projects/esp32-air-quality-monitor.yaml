@@ -1,36 +1,38 @@
 slug: esp32-air-quality-monitor
-title: ESP32 Air Quality Monitor
+title: ESP32 MQ135 Raw Sensor Monitor
 category: Environmental
-image_alt: ESP32 air quality monitor with gas sensor module and local display on a workbench
+image_alt: Illustrative MQ135 project scene; use the logical wiring diagram for the supported bare-sensor circuit
 og_image: /assets/images/og/esp32-air-quality-monitor.webp
 hero_image: /assets/images/generated/esp32-air-quality-monitor.webp
 featured_image: /assets/images/generated/esp32-air-quality-monitor.webp
 image: /assets/images/generated/esp32-air-quality-monitor.webp
-description: Monitor indoor air trends with an ESP32, MQ135 analog gas sensor, GPIO34 ADC readings, and a low-voltage
-  fan or relay output on GPIO26 after warm-up and baseline testing.
+description: Explore raw MQ135 readings with a documented bare-sensor circuit, a protected ESP32 ADC input and manually
+  armed low-voltage outputs. Not a safety alarm or calibrated air-quality meter.
 source_base: esp32-air-quality-monitor-for-low-power-use
-sensor: MQ135 gas sensor
-output: fan relay
+sensor: Bare Winsen MQ135, divided RAW
+output: Adafruit 4409 relay bench indicator
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-26'
+date_modified: '2026-11-10'
 hardware:
   sensor_pin: GPIO34
   output_pin: GPIO26
-  sensor_name: Mq135 Gas Sensor signal
-  output_name: Fan Relay control
+  sensor_name: MQ135 divided RAW
+  output_name: Adafruit 4409 relay bench indicator
   wiring:
-  - component: Mq135 Gas Sensor signal
+  - component: Divided RAW
     pin: GPIO34
-  - component: Fan Relay control
-    pin: GPIO26
-  - component: VCC
-    pin: 3.3V/5V
-  - component: GND
+  - component: Sensor H pair / A pair
+    pin: External regulated 5.0 V ±0.1 V
+  - component: B pair RAW
+    pin: RL 10 kΩ to GND
+  - component: Common reference
     pin: GND
-meta_description: Build an ESP32 MQ135 air quality monitor with GPIO34 analog readings, warm-up and baseline testing,
-  GPIO26 fan or relay output, raw Serial data, and safety limits.
-meta_title: ESP32 Air Quality Monitor Tutorial with ESP32
+  - component: Adafruit 4409 signal
+    pin: GPIO26
+meta_description: 'Build a bounded MQ135 bench demonstration: 5 V heater, 12k/10k ADC divider, conditioning, relative
+  thresholds and explicit safety limitations.'
+meta_title: ESP32 MQ135 Raw Sensor Monitor
 levels:
   beginner:
     level: beginner
@@ -95,161 +97,231 @@ keywords:
 - Environmental
 project:
   icon: AIR
-  mission_title: Build an Indoor Air Quality Monitor
-  difficulty: Beginner
+  mission_title: Explore MQ135 Raw Sensor Trends
+  difficulty: Intermediate
   age: Ages 12+
-  estimated_time: 75-100 min
+  estimated_time: Assembly varies; initial sensor conditioning is separate (48+ hours)
   budget: Under 30 USD
-  what_you_build: An ESP32 monitor that reads an MQ135 gas sensor, prints live raw values, and drives an alert output
-    or fan relay when air quality crosses a tested threshold.
-  story: 'ESP32 Air Quality Monitor solves a real beginner problem: turning an ESP32 reading into a useful physical
-    or networked result. Build this to learn slow analog sensors, warm-up behavior, threshold tuning, and why gas
-    sensor projects need calibration before automation.
-
-
-    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
-    then test the output under real conditions.'
-  eli12: The MQ135 behaves like a smoke-sensitive nose that needs time to wake up. The ESP32 watches how the reading
-    changes, then reacts only after you decide what counts as normal for your room.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
-    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
-    unless a proper driver, enclosure, and adult supervision are used.
+  what_you_build: A manually armed MQ135 relative-reading demonstration on a classic ESP32-WROOM DevKit. It uses
+    the bare six-pin Winsen sensor, not an unidentified AOUT/DOUT breakout. GPIO26 controls an explicitly supported
+    relay module and a separate battery-powered LED load.
+  story: Follow one documented electrical circuit before interpreting changing numbers. This page does not establish
+    gas concentration, AQI, clean-air safety, smoke detection or successful hardware operation.
+  eli12: The heated sensing material changes resistance. A resistor turns that change into a voltage; a second network
+    reduces the voltage before the ESP32 reads it. Many gases and environmental changes can affect the same reading.
+  parent_safety: Not a certified smoke/fire alarm, gas detector or safety system. Do not use flame, fuel gas, deliberate
+    smoke or solvents as classroom stimuli. The sensor heater becomes hot; use a ventilated, nonflammable bench
+    and supervised power. No mains loads. Turn off both supplies before rewiring.
   learning_objectives:
-  - Read a gas sensor as an analog input.
-  - Create a fresh-air baseline before choosing an alert threshold.
-  - Drive a relay or fan control signal safely from an ESP32 GPIO.
-  - Understand why gas sensors need warm-up and calibration.
-  - Separate trend monitoring from precise air-quality measurement.
+  - Separate heater power from 3.3 V GPIO signals.
+  - Read a divided analog voltage on ADC1 GPIO34.
+  - Distinguish initial conditioning, power-up warm-up and observed baseline stability.
+  - Use manually armed relative-count thresholds without claiming calibration.
   components:
-  - item: ESP32 Dev Board
-    note: Required for this build
-    icon: PART
-    link: /components/esp32-devkit.html
-  - item: Mq135 Gas Sensor
-    note: Required for this build
-    icon: PART
-  - item: Fan Relay
-    note: Required for this build
-    icon: PART
-  - item: 5V Power Supply
-    note: Required for this build
-    icon: PART
-  - item: Breadboard and jumper wires
-    note: For safe low-voltage prototyping
-    icon: PART
-  - item: USB data cable
-    note: Programming and bench power
-    icon: PART
+  - item: Classic ESP32-WROOM DevKit
+    note: USB-powered; Arduino-ESP32 3.3.2 review baseline. Not an S3/C3 pin map.
+  - item: Bare Winsen MQ135 six-pin sensor
+    note: Identify the H heater pair and A/B electrode pairs using the manufacturer lead-view drawing before wiring;
+      no module DOUT is used.
+  - item: Regulated 5.0 V ±0.1 V external supply, at least 500 mA
+    note: Heater and sensing-loop supply only; never ESP32 VIN/USB. The 950 mW heater rating corresponds to about
+      190 mA at 5 V; allow startup margin.
+  - item: 10 kΩ load resistor RL; 12 kΩ and 10 kΩ divider resistors
+    note: Divider resistors must be 1%; RL is separate from the 10 kΩ divider leg.
+  - item: 100 nF ceramic capacitor
+    note: At GPIO34 to common GND; filtering does not replace the divider.
+  - item: Adafruit STEMMA non-latching relay, product 4409
+    note: Documented 3 V logic-compatible, HIGH-active signal input; do not substitute an unknown active-LOW relay
+      board.
+  - item: 10 kΩ input pull-down; 3 V battery, red LED and 330 Ω resistor
+    note: Pull-down from GPIO26/relay signal to GND. Separate battery LED load through COM/NO; NC unused. No fan
+      or mains load is wired in this exercise.
+  - item: Separate regulated 4.5 V ±5% output rail, at least 200 mA
+    note: A separate bench supply output powers the selected relay/buzzer inside its documented 3–5 V range. Its
+      GND joins common GND; positive remains off ESP32 power pins and off the 5 V heater rail.
   bom:
-  - part: ESP32 Dev Board
+  - part: Classic ESP32-WROOM DevKit
+    qty: As listed
+    estimated_cost: Varies
+    notes: USB-powered; Arduino-ESP32 3.3.2 review baseline. Not an S3/C3 pin map.
+  - part: Bare Winsen MQ135 six-pin sensor
+    qty: As listed
+    estimated_cost: Varies
+    notes: Identify the H heater pair and A/B electrode pairs using the manufacturer lead-view drawing before wiring;
+      no module DOUT is used.
+  - part: Regulated 5.0 V ±0.1 V external supply, at least 500 mA
+    qty: As listed
+    estimated_cost: Varies
+    notes: Heater and sensing-loop supply only; never ESP32 VIN/USB. The 950 mW heater rating corresponds to about
+      190 mA at 5 V; allow startup margin.
+  - part: 10 kΩ load resistor RL; 12 kΩ and 10 kΩ divider resistors
+    qty: As listed
+    estimated_cost: Varies
+    notes: Divider resistors must be 1%; RL is separate from the 10 kΩ divider leg.
+  - part: 100 nF ceramic capacitor
+    qty: As listed
+    estimated_cost: Varies
+    notes: At GPIO34 to common GND; filtering does not replace the divider.
+  - part: Adafruit STEMMA non-latching relay, product 4409
+    qty: As listed
+    estimated_cost: Varies
+    notes: Documented 3 V logic-compatible, HIGH-active signal input; do not substitute an unknown active-LOW relay
+      board.
+  - part: 10 kΩ input pull-down; 3 V battery, red LED and 330 Ω resistor
+    qty: As listed
+    estimated_cost: Varies
+    notes: Pull-down from GPIO26/relay signal to GND. Separate battery LED load through COM/NO; NC unused. No fan
+      or mains load is wired in this exercise.
+  - part: Separate regulated 4.5 V ±5% output rail, at least 200 mA
     qty: '1'
     estimated_cost: Varies
-    notes: Required for this build
-  - part: Mq135 Gas Sensor
-    qty: '1'
-    estimated_cost: Varies
-    notes: Required for this build
-  - part: Fan Relay
-    qty: '1'
-    estimated_cost: Varies
-    notes: Required for this build
-  - part: 5V Power Supply
-    qty: '1'
-    estimated_cost: Varies
-    notes: Required for this build
-  - part: Breadboard and jumper wires
-    qty: 1 set
-    estimated_cost: Varies
-    notes: For safe low-voltage prototyping
+    notes: A separate bench supply output powers the selected relay/buzzer inside its documented 3–5 V range. Its
+      GND joins common GND; positive remains off ESP32 power pins and off the 5 V heater rail.
   wiring:
-    illustration_alt: ESP32 Air Quality Monitor wiring diagram
-    summary: Power the MQ135, wait for warm-up, record a fresh-air baseline on GPIO34, then connect the GPIO26 fan or relay input only after the raw readings behave consistently. The module output is useful for trend and threshold practice, not calibrated ppm measurement.
+    full_size_link: true
+    illustration_alt: Logical MQ135 bare-sensor heater, load resistor and 12 kΩ/10 kΩ ESP32 interface with qualified
+      output stage
+    summary: One bounded bare-sensor circuit. Heater and sensing-loop supply are 5.0 V ±0.1 V; ESP32 signals remain
+      in the 3.3 V domain. Unknown comparator breakouts are not covered.
     steps:
-    - Unplug USB before changing wires.
-    - Connect Mq135 Gas Sensor signal to GPIO34.
-    - Connect Fan Relay control to GPIO26.
-    - Connect VCC to 3.3V/5V.
-    - Connect GND to GND.
-    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+    - Disconnect USB and the external supply. Confirm the manufacturer pin-view orientation; the logical drawing
+      is not a physical pin layout.
+    - Connect the bare MQ135 H heater pair across external regulated 5.0 V ±0.1 V. Connect both A electrode pins
+      to that same 5 V rail; join both B pins as RAW.
+    - Connect a separate RL = 10 kΩ from RAW to common GND. Connect RAW through 12 kΩ (1%) to the ADC node, then
+      10 kΩ (1%) from that node to GND.
+    - Connect only the divided node to GPIO34. Add 100 nF from that node to GND. There is no DOUT connection in
+      this circuit.
+    - Join ESP32 GND, 5 V heater-supply GND and 4.5 V output-supply GND. Keep both external positive rails off USB/VIN/3V3
+      and separate from each other.
+    - Adafruit 4409 V+ -> separate regulated 4.5 V ±5%, GND -> common GND, signal -> GPIO26; 10 kΩ signal to GND
+      keeps the input LOW during reset.
+    - Separate 3 V battery + -> relay COM; NO -> 330 Ω -> red LED anode; cathode -> battery minus. NC unused. The
+      contact load is separate from the ESP32 supply.
+    - Before attaching GPIO34, check the divider values and output with a meter. Power USB first, then the heater/output
+      supply; type d to disarm and switch both external rails off before USB to avoid back-power through a signal
+      pin.
+    - Complete the sensor conditioning procedure, observe the actual warm-up trend, and record stable reference
+      conditions before typing b then a. No automatic delay proves stability.
   gpio_map:
-  - signal: Mq135 Gas Sensor signal
+  - signal: Divided RAW
     esp32_pin: GPIO34
-    direction: Input
-    notes: Match this wire to the code constant.
-  - signal: Fan Relay control
-    esp32_pin: GPIO26
-    direction: Output
-    notes: Match this wire to the code constant.
-  - signal: VCC
-    esp32_pin: 3.3V/5V
+    direction: Analog input
+    notes: 12 kΩ upper / 10 kΩ lower, 1%; 100 nF to GND. Never RAW directly.
+  - signal: Sensor H pair / A pair
+    esp32_pin: External regulated 5.0 V ±0.1 V
     direction: Power
-    notes: Match this wire to the code constant.
-  - signal: GND
+    notes: Not ESP32 3V3; external positive remains off board power pins.
+  - signal: B pair RAW
+    esp32_pin: RL 10 kΩ to GND
+    direction: Analog node
+    notes: Also feeds the upper 12 kΩ resistor; no DOUT.
+  - signal: Common reference
     esp32_pin: GND
     direction: Ground
-    notes: Match this wire to the code constant.
-  circuit_explanation: The MQ135 module changes its analog output as gas concentration changes near the heated sensing
-    element. The ESP32 reads that voltage on an ADC pin. The relay or fan input is controlled from a GPIO pin, but
-    the fan power must come from a suitable external supply or relay module, not directly from the ESP32 pin.
-  engineering_explanation: Low-cost MQ gas modules are useful for trend detection, not laboratory-grade air measurement.
-    They need warm-up time, stable power, fresh-air baseline readings, and threshold testing in the actual room.
-    Treat the raw number as a relative indicator unless you have calibrated equipment and a known sensor curve.
+    notes: ESP32 and both external supplies share GND; positive rails remain separate.
+  - signal: Adafruit 4409 signal
+    esp32_pin: GPIO26
+    direction: Output
+    notes: HIGH active; 10 kΩ pull-down. Built-in relay driver; only a separate 3 V LED contact load.
+  - signal: Selected relay/buzzer power
+    esp32_pin: External regulated 4.5 V ±5%
+    direction: Power
+    notes: Separate ≥200 mA rail, common GND. Not the 5.1 V worst-case heater rail.
+  circuit_explanation: 'The A/B sensing element and RL form a resistance-to-voltage circuit. The extra 12 kΩ + 10
+    kΩ ADC divider also loads RAW: the effective load is 10 kΩ || 22 kΩ ≈ 6.875 kΩ. Do not reuse a manufacturer
+    response curve as a ppm conversion for this altered load. The upper divider resistor is 12 kΩ; the lower is
+    10 kΩ, not reversed.'
+  engineering_explanation: 'Interface calculation: assume RAW can reach the full 5.1 V supply. Nominal ratio is
+    10/22, so 5.0 V becomes 2.273 V. With 1% resistors, maximum ratio is 10.1/(11.88+10.1): 5.1 V becomes 2.344
+    V. This leaves about 0.756 V below the classic ESP32 11 dB documented 3.1 V measurement ceiling, as well as
+    margin below the GPIO logic supply. Even 5.25 V would stay below 2.413 V, but that does not permit exceeding
+    the heater’s 5.1 V maximum. Readings below about 150 mV are outside the documented ADC measurement range. These
+    calculations assume intact resistors, correct wiring, common ground and a powered ESP32; the divider is not
+    fault-rated protection or isolation. Verify actual voltages before connecting the pin. The separate 4.5 V ±5%
+    output rail spans 4.275–4.725 V, inside the selected relay/buzzer 3–5 V supply range. Do not simply parallel
+    it with the 5 V heater rail.'
   libraries:
-  - name: Arduino ESP32 core
-    note: Install ESP32 board support in Arduino IDE.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM review baseline; analogReadResolution(12) and analogSetPinAttenuation(GPIO34, ADC_11db).
+      No extra sensor library. No firmware compilation or hardware test is established by this example.
   code:
     filename: esp32-air-quality-monitor.ino
-    content: "// ESP32 Air Quality Monitor for Indoor Air\nconst int SENSOR_PIN = 34;\nconst int OUTPUT_PIN = 26;\n\
-      const int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: air quality monitor\
-      \ for indoor air\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop() {\n\
-      \  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Mq135 Gas Sensor signal: \");\n  Serial.println(reading);\n\
-      \  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n\
-      }"
-  code_explanation: The sketch reads the MQ135 analog output on GPIO34 every 300 ms, prints the raw ADC value, compares
-    it with THRESHOLD, and drives GPIO26 for a low-voltage fan or relay input. The threshold is a classroom test
-    value, not a calibrated ppm limit.
-  expected_output: 'Serial Monitor prints "Starting: air quality monitor for indoor air", the threshold, and repeated "Mq135 Gas Sensor signal" raw ADC values. GPIO26 changes only when the reading crosses the tested threshold.'
+    content: "// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline.\n// Bare Winsen MQ135, RL 10k;\
+      \ RAW -> 12k -> GPIO34 -> 10k -> GND (1%).\n// Educational relative-count demo, NOT a safety alarm or calibrated\
+      \ gas meter.\nconst int SENSOR_PIN = 34;\nconst int OUTPUT_PIN = 26; // Adafruit 4409 HIGH-active input.\n\
+      const int ON_OFFSET = 200;   // Illustrative raw counts, not a gas limit.\nconst int OFF_OFFSET = 100;  //\
+      \ Hysteresis below ON_OFFSET.\nbool armed = false, baselineSet = false, active = false, sampled = false;\n\
+      int baseline = 0, reading = 0;\nunsigned long lastSample = 0;\n\nbool usable() { return sampled && reading\
+      \ > 20 && reading < 3800; }\n\nvoid setOutputs(bool enabled, bool alert) {\n  digitalWrite(OUTPUT_PIN, enabled\
+      \ && alert ? HIGH : LOW);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(OUTPUT_PIN, OUTPUT);\n\
+      \  digitalWrite(OUTPUT_PIN, LOW);\n  pinMode(SENSOR_PIN, INPUT);\n  analogReadResolution(12);\n  analogSetPinAttenuation(SENSOR_PIN,\
+      \ ADC_11db);\n  Serial.println(\"DISARMED. Complete sensor conditioning and observe baseline stability first.\"\
+      );\n  Serial.println(\"b = capture reference count; a = arm demo; d = disarm. Not calibration.\");\n}\n\n\
+      void loop() {\n  if (millis() - lastSample >= 1000) {\n    lastSample = millis();\n    unsigned long sum =\
+      \ 0;\n    for (int i = 0; i < 16; ++i) {\n      sum += analogRead(SENSOR_PIN);\n      delayMicroseconds(200);\n\
+      \    }\n    reading = sum / 16;\n    sampled = true;\n    if (!usable()) { armed = false; active = false;\
+      \ }\n    if (armed) {\n      if (!active && reading >= baseline + ON_OFFSET) active = true;\n      if (active\
+      \ && reading <= baseline + OFF_OFFSET) active = false;\n    }\n    Serial.printf(\"raw=%d reference=%d armed=%d\
+      \ thresholdState=%d\\n\",\n                  reading, baseline, armed, active);\n    if (!usable()) Serial.println(\"\
+      ADC near a rail: demo disabled; inspect power and wiring.\");\n  }\n  while (Serial.available()) {\n    char\
+      \ c = Serial.read();\n    if (c == 'd' || c == 'b') { armed = false; active = false; }\n    if (c == 'b')\
+      \ {\n      baselineSet = usable() && reading <= 3500;\n      if (baselineSet) baseline = reading;\n      Serial.println(baselineSet\
+      \ ? \"Reference captured; still disarmed.\" : \"Reference refused.\");\n    }\n    if (c == 'a') {\n     \
+      \ armed = baselineSet && usable();\n      Serial.println(armed ? \"Demo armed; not a safety monitor.\" : \"\
+      Capture a usable reference first.\");\n    }\n  }\n  setOutputs(armed && usable(), active);\n}\n"
+  code_explanation: Startup and reset are disarmed with all outputs OFF. Once per second the sketch averages 16
+    raw ADC samples. Type b to capture a reference count only after independently checking conditioning and stability;
+    type a to arm, d to disarm. The +200/+100 raw-count thresholds provide illustrative hysteresis, not a health
+    or fire limit. Near-rail counts disable the output, but this cannot detect every disconnected sensor or wiring
+    fault.
+  expected_output: At 115200 baud, expect raw, reference, armed and thresholdState fields. A reboot never arms automatically.
+    After b then a, outputs change only with the chosen relative-count thresholds. No ppm, AQI, gas identity, safe-air
+    status or confirmed fire detection is produced.
   common_mistakes:
-  - text: Expecting accurate ppm values from an uncalibrated MQ135 module.
-  - text: Powering a fan or relay coil directly from an ESP32 GPIO.
-  - text: Testing the sensor immediately after power-up before the heater stabilizes.
-  - text: Forgetting common ground between ESP32 and the relay module.
-  - text: Using GPIO34 as an output; it is input-only.
+  - text: Substituting an unidentified comparator module for the bare sensor circuit.
+  - text: Connecting RAW, heater power or a 5 V DOUT to a GPIO.
+  - text: Reversing the 12 kΩ upper and 10 kΩ lower divider resistors.
+  - text: Treating a green LED or a plausible number as evidence of safe air.
+  - text: Using a fixed 30-second timer as proof of conditioning or stability.
   troubleshooting:
-  - problem: Sensor value never changes
-    fix: Wait several minutes for warm-up, confirm VCC/GND, and print raw analog values before threshold logic.
-  - problem: Relay chatters on and off
-    fix: Add hysteresis or require several bad readings before turning the fan on.
-  - problem: ESP32 resets when the fan starts
-    fix: Use a separate power supply for the fan and relay module, and add proper flyback protection if using an
-      inductive load.
-  - problem: Values are high all the time
-    fix: Move the sensor away from solder fumes, cleaners, smoke, or direct airflow and create a new baseline.
+  - problem: Counts drift after switch-on
+    fix: 'Winsen specifies at least 48 hours initial preheating under its standard conditions (MQ135: over 48 hours).
+      Storage may require additional aging. Later power-ups still need warm-up; log the actual trend under unchanged
+      conditions. No universal short delay establishes stability or calibration.'
+  - problem: ADC near zero or full scale
+    fix: Disarm, turn both supplies off, inspect H/A/B identification, common ground, RL and divider orientation.
+      Measure the divided voltage before reconnecting GPIO34. Do not raise the threshold to conceal an electrical
+      fault.
+  - problem: Output remains OFF
+    fix: Reboot is deliberately disarmed. Observe usable counts, type b then a; verify the exact active-HIGH output
+      stage. Do not test with smoke or gas.
+  - problem: Reference changes with environment
+    fix: Humidity, temperature, oxygen, contamination and multiple gases influence MQ response. A stable baseline
+      is a record of conditions, not proof of air safety or calibration.
   testing_checklist:
-  - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Power the MQ135 and wait for warm-up before judging readings.
-  - Connect the GPIO34 signal and record a fresh-air baseline in Serial Monitor.
-  - Adjust THRESHOLD from your own baseline before connecting a fan or relay.
-  - Connect the GPIO26 output only after the raw readings look believable.
-  - Power-cycle the project and confirm it starts in a safe state.
+  - With power off, compare the H/A/B wiring with the manufacturer lead-view drawing.
+  - Verify the 5.0 V ±0.1 V rail and the divided node with a meter before attaching the ESP32 input.
+  - Complete initial conditioning; record actual power-up settling observations separately.
+  - Check disarmed startup, b/a/d commands and output polarity using only low-voltage bench loads.
+  - If demonstrating threshold logic without a sensor change, adjust the illustrative offsets in code; never create
+    smoke or release gas.
+  - Switch off the external supply before USB. These are checks to perform, not a claim that this build was tested.
   engineer_tips:
-  - Use the raw ADC number until you have a real calibration method.
-  - Keep the sensor away from the ESP32 regulator heat.
-  - Add hysteresis so the fan does not rapidly toggle near the threshold.
-  - Never connect mains-powered fans directly on a breadboard.
-  - Log baseline values at different times of day before deciding thresholds.
+  - The divider upper bound is an electrical calculation, not hardware verification.
+  - A captured reference count is not a calibration.
+  - Keep heater heat away from the ESP32 regulator and flammable materials.
   performance_tips:
   - Sample slowly because MQ sensors respond slowly.
   - Use moving averages for smoother decisions.
   - Turn Wi-Fi publishing into a timed task instead of blocking sensor reads.
   - Use local threshold control if the network is unavailable.
-  upgrade_ideas: *id001
+  upgrade_ideas:
+  - Log raw counts with temperature, humidity and elapsed powered time.
+  - Display the armed/disarmed state clearly on an OLED.
   real_world_applications:
-  - Classroom air trend indicator
-  - Workshop fume awareness
-  - Smart ventilation prototype
-  - Home Assistant environmental node
+  - Supervised analog-interface lesson
+  - Relative-count threshold and hysteresis demonstration
   downloads:
   - text: ESP32 Air Quality Monitor Arduino sketch
     note: Use the code section as the source sketch.
@@ -273,22 +345,32 @@ project:
     href: /projects/esp32-iot-weather-station.html
     description: Use calibrated BME280 environmental readings when temperature, humidity, and pressure are the goal.
   faqs:
-  - question: Does the MQ135 sensor need warm-up time?
-    answer: Yes. The project troubleshooting already expects the raw value to settle after power-up, so wait several
-      minutes before judging thresholds or turning the relay/fan logic on.
-  - question: Can this monitor identify every harmful gas?
-    answer: No. This build uses a simple MQ135 analog threshold, so treat it as an educational air-quality indicator,
-      not as a certified safety monitor or gas detector.
-  - question: Where should I place the sensor while testing?
-    answer: Keep it away from solder fumes, cleaners, smoke, and direct fan airflow while you create a baseline.
-      Those conditions can make the reading look high all the time.
+  - question: Can this replace a certified alarm?
+    answer: No. Continue using approved smoke, fire and gas safety equipment; this circuit is an educational demonstration
+      only.
+  - question: Can I reuse an AOUT/DOUT breakout?
+    answer: Not without its exact schematic, heater specification and verified output limits. This page supports
+      the bare sensor circuit only; there is no DOUT wire.
+  - question: When is the sensor ready?
+    answer: Initial manufacturer conditioning and subsequent warm-up are different. Observe the actual baseline;
+      elapsed time or typing b does not demonstrate stability, selectivity or calibration.
   references:
-  - title: Espressif ADC Documentation
-    href: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_oneshot.html
-  - title: Arduino ESP32 Core Documentation
-    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  - title: Winsen MQ135 manual v1.6 (2021)
+    href: https://www.winsen-sensor.com/manual/mq135.html?lang=en
+  - title: Arduino-ESP32 3.3.2 ADC API and classic ESP32 measurement range
+    href: https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.2/docs/en/api/adc.rst
+  - title: Classic ESP32-WROOM-32 datasheet
+    href: https://documentation.espressif.com/esp32-wroom-32_datasheet_en.html
+  - title: 'Adafruit STEMMA relay 4409: logic and polarity'
+    href: https://www.adafruit.com/product/4409
+  - title: onsemi P2N2222A datasheet Rev.7
+    href: https://www.onsemi.com/pdf/datasheet/p2n2222a-d.pdf
+  - title: Arduino-ESP32 3.3.2 GPIO initialization and digitalWrite
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.c
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - Read and verify project input hardware
     - Map signals to safe ESP32 GPIO pins
@@ -302,3 +384,9 @@ project:
     note: Show signal pins clearly enough for learners to compare.
   - title: Working output
     note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.
+  safety_standards:
+  - Only the documented low-voltage circuit is supported. No mains wiring or life-safety function is covered.
+  - Disconnect USB and every external supply before rewiring; check actual voltage and terminal labels before attaching
+    a GPIO.
+  - Review the selected parts and supply budget. Documentation review and calculated limits are not physical hardware
+    validation.

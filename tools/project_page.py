@@ -312,7 +312,7 @@ def wiring_section(p: dict, wiring: dict) -> str:
     steps = wiring.get("steps", [])
     summary_html = _paragraphs(summary) if summary else ""
     image_link = (f'<p><a href="{esc(image)}">Open wiring diagram full size</a></p>'
-                  if image and (p.get("project") or {}).get("tutorial_flow") else "")
+                  if image and ((p.get("project") or {}).get("tutorial_flow") or wiring.get("full_size_link")) else "")
     steps_html = ""
     if steps:
         items = []
