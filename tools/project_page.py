@@ -79,7 +79,8 @@ def project_meta_badges(p: dict) -> str:
         parts.append(f'<span class="badge badge-time">{esc(proj["estimated_time"])}</span>')
     if proj.get("budget"):
         parts.append(f'<span class="badge badge-budget">{esc(proj["budget"])}</span>')
-    parts.append('<span class="badge badge-parent-safe">Parent Safe</span>')
+    safety_label = proj.get("safety_badge", "Parent Safe")
+    parts.append(f'<span class="badge badge-parent-safe">{esc(safety_label)}</span>')
     return f'<div class="project-meta-row">{"".join(parts)}</div>'
 
 

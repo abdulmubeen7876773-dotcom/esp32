@@ -1,21 +1,21 @@
 slug: esp32-ecg-monitor
-title: Build an Educational ECG Waveform Viewer
+title: ESP32 AD8232 Bench Signal Viewer — No Electrodes
 category: Healthcare
-image_alt: ESP32 educational ECG waveform viewer with sensor module and serial waveform display
-og_image: /assets/images/og/esp32-ecg-monitor.webp
-hero_image: /assets/images/generated/esp32-ecg-monitor.webp
-featured_image: /assets/images/generated/esp32-ecg-monitor.webp
-image: /assets/images/generated/esp32-ecg-monitor.webp
-description: Use an AD8232 module with ESP32 ADC input to view an educational biopotential waveform, with strong medical and
-  isolation boundaries.
-meta_description: Build an educational ESP32 AD8232 waveform viewer with ADC sampling, leads-off checks, battery/isolation
-  guidance, and no medical claims.
+image_alt: Logical non-body-connected bench data flow; no electrodes or measured ECG shown
+og_image: /assets/visuals/projects/heroes/esp32-ecg-monitor-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-ecg-monitor-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-ecg-monitor-overview.svg
+image: /assets/visuals/projects/heroes/esp32-ecg-monitor-overview.svg
+description: Read AD8232 output and leads-off flags on ESP32 with every electrode port disconnected. A USB
+  bench acquisition demo, not a body-connected ECG.
+meta_description: Read AD8232 output and leads-off flags on ESP32 with every electrode port disconnected. A
+  USB bench acquisition demo, not a body-connected ECG.
 source_base: esp32-ecg-monitor-legacy-import
-sensor: AD8232 OUT
-output: AD8232 LO-
+sensor: AD8232 bench OUTPUT
+output: USB Serial raw data
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-11-11'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
@@ -23,229 +23,307 @@ import_source: batch-php
 hardware:
   sensor_pin: GPIO34
   output_pin: GPIO33
-  sensor_name: AD8232 OUT
-  output_name: AD8232 LO-
+  sensor_name: AD8232 bench OUTPUT
+  output_name: USB Serial raw data
   wiring:
-  - component: AD8232 OUT
+  - component: AD8232 OUTPUT
     pin: GPIO34
   - component: AD8232 LO+
     pin: GPIO32
-  - component: AD8232 LO-
+  - component: AD8232 LO−
     pin: GPIO33
+  - component: Board 3.3V / GND
+    pin: 3V3 / GND
+  - component: SDN
+    pin: Not connected
+  - component: Electrode jack and RA/LA/RL
+    pin: Not connected
 levels:
   beginner:
     level: beginner
-    overview_html: <p>An educational AD8232 waveform viewer that prints raw ADC samples to Serial Plotter at about 250 Hz.
-      This is not a medical device and must not be used for diagnosis or health decisions. Use battery power and proper medical
-      isolation for any body-connected demo; never use damaged leads or uncomfortable electrodes.</p>
+    overview_html: <p>A non-body-connected acquisition demo using a SparkFun SEN-12650 AD8232 board (v10 schematic)
+      and classic ESP32-WROOM DevKit. It prints actual raw ADC samples and leads-off flags to USB Serial. The
+      historical ECG URL remains, but this exercise does not acquire an ECG from a person.</p>
     components:
-    - ESP32 DevKit board
-    - AD8232 ECG module
-    - Disposable ECG electrode pads
-    - ECG lead cable
-    - Battery power or medical isolation
+    - Classic ESP32-WROOM DevKit
+    - SparkFun AD8232 Single Lead Heart Rate Monitor SEN-12650
+    - Breadboard, short jumper wires and USB data cable
     wiring:
-    - - AD8232 OUT
+    - - AD8232 OUTPUT
       - GPIO34
-      - ADC1 input-only analog waveform.
+      - ADC1 input-only pin; 12-bit raw counts, not GPIO output.
     - - AD8232 LO+
       - GPIO32
-      - Leads-off positive.
-    - - AD8232 LO-
+      - Actual leads-off comparator status.
+    - - AD8232 LO−
       - GPIO33
-      - Leads-off negative.
+      - Actual leads-off comparator status.
+    - - Board 3.3V / GND
+      - 3V3 / GND
+      - One USB-powered low-voltage bench; no patient isolation claimed.
+    - - SDN
+      - Not connected
+      - SparkFun v10 pull-up holds it enabled.
+    - - Electrode jack and RA/LA/RL
+      - Not connected
+      - No leads, pads or external source attached.
     key_concepts:
-    - The AD8232 conditions a small biopotential waveform into an ESP32-readable analog signal. Leads-off pins help detect
-      disconnected electrodes.
-    - ESP32 ADC readings are raw counts and may include noise, baseline drift, motion artifacts, and contact problems. The
-      sketch does not compute clinical units or heart-rate accuracy.
-    applications: &id003
-    - Biopotential waveform lesson
-    - ADC sampling demo
-    - Medical-device safety discussion
+    - AD8232 is an analog signal-conditioning front end, not an ADC or an isolation barrier. The selected carrier
+      sets its gain, filters and leads-off mode using external components. USB ground joins the ESP32 and board.
+      No patient-safe power/data barrier is present; keeping the electrode ports empty is the actual supported
+      boundary.
+    - The code requests 12-bit raw ADC counts (0–4095), not millivolts or physiological units. Classic ESP32
+      at 11 dB has an approximately 0.15–3.1 V documented measurement range; this differs from the board's
+      3.3 V supply and GPIO limits. A 3.3 V-powered AD8232 output can approach its rails and clip the measurement;
+      a flat or noisy trace with open inputs is not a measured ECG. LO flags are status bits, not signal-quality
+      or safety certification. Target polling is 100 readings/s, with software/Serial jitter; this is not a
+      clinical acquisition bandwidth claim.
+    applications: &id002
+    - Non-body-connected ADC interface lesson
+    - Leads-off status and signal-provenance discussion
     troubleshooting:
-    - - Flat line
-      - Check LO+ and LO- status and electrode contact.
-    - - Very noisy waveform
-      - Reduce movement, improve contact, and use battery/isolated power.
-    - - Signal clips
-      - Check module power and electrode connection; do not force clinical conclusions.
-    improvements: &id002
-    - Save raw samples to CSV.
-    - Add offline smoothing for visualization.
-    - Add a clear on-screen safety banner.
-    code: "// ESP32 Educational ECG Waveform Viewer\n// Not a medical device. Use battery power and medical isolation for\
-      \ any body-connected demo.\nconst int ECG_PIN = 34;\nconst int LO_PLUS = 32;\nconst int LO_MINUS = 33;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n  pinMode(LO_PLUS, INPUT);\n  pinMode(LO_MINUS, INPUT);\n  analogReadResolution(12);\n\
-      \  analogSetPinAttenuation(ECG_PIN, ADC_11db);\n  Serial.println(\"Educational waveform viewer only - not for diagnosis.\"\
-      );\n}\n\nvoid loop() {\n  if (digitalRead(LO_PLUS) == HIGH || digitalRead(LO_MINUS) == HIGH) {\n    Serial.println(2048);\n\
-      \    delayMicroseconds(4000);\n    return;\n  }\n  int sample = analogRead(ECG_PIN);\n  Serial.println(sample);\n  delayMicroseconds(4000);\n\
-      }\n"
-    code_filename: esp32-ecg-monitor-beginner.ino
+    - - Flat, rail-limited or noisy trace
+      - With electrode ports deliberately empty, this is not proof of a failed or working ECG system. Check
+        the 3.3 V rail and OUTPUT-to-GPIO34 connection; do not attach electrodes to make the graph look better.
+    - - LO flags differ from expectations
+      - Check LO+/LO− labels, carrier revision, SDN pull-up and dc/ac leads-off configuration. Do not bypass
+        the flags or treat LOW as permission for body contact.
+    - - ADC path needs an independent check
+      - Power off and disconnect module OUTPUT first. Ground GPIO34 and inspect its actual low-end counts after
+        power-up. This checks the ADC path only, not the AD8232, isolation or biological operation.
+    - - Plotter is blank
+      - Select the correct port and 115200 baud; close other serial clients. Read the same labelled records
+        in Serial Monitor. Confirm a USB data cable and matching board selection.
+    improvements: &id001
+    - Save raw bench records with configuration notes.
+    - Study filtering offline without calling the result a verified ECG.
+    code: "// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2; no external library.\n// SparkFun AD8232 SEN-12650\
+      \ v10: BENCH ONLY, no leads or electrodes attached.\n// USB Serial is permitted only in this non-body-connected\
+      \ arrangement.\nconst int SIGNAL_PIN = 34; // AD8232 OUTPUT -> ADC1 input, never a GPIO output.\nconst\
+      \ int LO_PLUS = 32;\nconst int LO_MINUS = 33;\nconst uint32_t PERIOD_US = 10000; // Target 100 readings/s,\
+      \ not precision timing.\nuint32_t lastSampleUs = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(SIGNAL_PIN,\
+      \ INPUT);\n  pinMode(LO_PLUS, INPUT);\n  pinMode(LO_MINUS, INPUT);\n  analogReadResolution(12);\n  analogSetPinAttenuation(SIGNAL_PIN,\
+      \ ADC_11db);\n  lastSampleUs = micros();\n}\n\nvoid loop() {\n  uint32_t now = micros();\n  if ((uint32_t)(now\
+      \ - lastSampleUs) < PERIOD_US) return;\n  lastSampleUs = now; // Do not manufacture catch-up samples\
+      \ after a delay.\n  uint16_t raw = analogRead(SIGNAL_PIN);\n  int loPlus = digitalRead(LO_PLUS);\n  int\
+      \ loMinus = digitalRead(LO_MINUS);\n  // Always show actual ADC conversion and actual flags, even with\
+      \ open inputs.\n  Serial.printf(\"raw:%u\\tlo_plus:%d\\tlo_minus:%d\\n\",\n                (unsigned\
+      \ int)raw, loPlus, loMinus);\n}\n"
+    code_filename: esp32-ecg-monitor.ino
 related_slugs:
 - esp32-pulse-oximeter-logger
 - esp32-iot-weather-station
-meta_title: ESP32 Educational ECG Waveform Viewer
+meta_title: ESP32 AD8232 Bench Signal Viewer — No Electrodes
 format: golden
 project:
   icon: ECG
-  mission_title: Build an Educational ECG Waveform Viewer
+  mission_title: View AD8232 Bench Samples — No Electrodes
   difficulty: Advanced
   age: Ages 14+
   recommended_age: Ages 14+
-  estimated_time: 75-90 min
-  budget: Under 30 USD
-  adult_supervision: Adult supervision required. Stop for discomfort, damaged leads, irritation, or uncertainty.
-  classroom_use: Prefer simulated signal or demonstration module output; body-connected demos need medical isolation and consent.
-  parent_prompt: Ask why a visible waveform is not a diagnosis.
-  screen_free_activity: 'Draw noise sources: motion, loose pads, USB power, and poor contact.'
+  estimated_time: Assembly time varies
+  budget: Parts cost varies
+  adult_supervision: Supervise low-voltage wiring; no person or animal connects to this circuit.
+  classroom_use: Study ADC counts and open-input status with every electrode port empty.
+  parent_prompt: Why does a plotted shape not establish a biological signal or a safe patient interface?
+  screen_free_activity: Draw the boundary between a USB-connected bench and a body-connected instrument.
   skills_practiced:
-  - ADC1 sampling
-  - Leads-off detection
-  - Medical safety limits
-  - Serial Plotter
-  learning_outcomes: &id001
-  - Read AD8232 OUT on GPIO34.
-  - Use LO+ and LO- pins to avoid plotting disconnected leads.
-  - Explain ADC noise and waveform artifacts.
-  - State that the project is not a medical device.
+  - ADC1 acquisition
+  - Digital status inputs
+  - Serial display
+  - Signal provenance
+  learning_outcomes:
+  - Read actual AD8232 OUTPUT counts on GPIO34.
+  - Record LO+ and LO− pin states separately.
+  - Explain clipping and open-input noise without interpreting it medically.
+  - Keep all electrode pads, jack and lead cables disconnected.
   mini_experiments:
-  - Plot a stable simulated or module output.
-  - Move the lead cable gently and observe artifacts.
-  - Disconnect a lead and confirm midscale output.
-  next_challenge: Add offline filtering to saved sample data rather than making health claims.
-  what_you_build: An educational AD8232 waveform viewer that prints raw ADC samples to Serial Plotter at about 250 Hz.
-  story: ""
-  eli12: The AD8232 makes a small body-signal waveform easier for the ESP32 to read. The ESP32 prints numbers so the Serial
-    Plotter can draw the shape. The ESP32 reads a signal, checks it against a simple rule, and prints or changes an output
-    so you can see what happened.
-  parent_safety: This is not a medical device and must not be used for diagnosis or health decisions. Use battery power and
-    proper medical isolation for any body-connected demo; never use damaged leads or uncomfortable electrodes. Unplug USB
-    and external power before rewiring. Stop if hardware becomes hot, uncomfortable, unstable, or unclear.
-  learning_objectives: *id001
+  - Observe the open-input output and leads-off states without attaching anything to the electrode connectors.
+  - For an ADC wiring check, power off, disconnect AD8232 OUTPUT from GPIO34, then connect GPIO34 to GND. Restore
+    power and compare the actual low-end counts. Power off again before restoring the original wiring.
+  next_challenge: Use the separate analog-input guide and a potentiometer for a controlled waveform exercise;
+    do not add electrodes to this USB bench.
+  what_you_build: A non-body-connected acquisition demo using a SparkFun SEN-12650 AD8232 board (v10 schematic)
+    and classic ESP32-WROOM DevKit. It prints actual raw ADC samples and leads-off flags to USB Serial. The
+    historical ECG URL remains, but this exercise does not acquire an ECG from a person.
+  story: ''
+  eli12: An analog front end amplifies and filters a small input. The ESP32 can digitize its output, but an
+    unplugged input can float, clip or pick up interference. Drawing that output does not turn it into a heartbeat.
+  parent_safety: No body connection is supported. Remove the electrode cable and leave the 3.5 mm jack and
+    RA/LA/RL pads empty throughout upload, Serial Monitor and Plotter use. Do not connect a person or animal
+    to any terminal. USB provides a computer ground path; a battery alone does not make the system medically
+    isolated, and no isolated patient arrangement is specified here.
+  safety_standards:
+  - Bench-only, no electrodes, no skin contact and no health measurements.
+  - Disconnect USB before wiring or changing the ADC test connection.
+  - Use only ESP32 3V3 for the selected AD8232 board; no 5 V module supply or external signal generator is
+    part of this exercise.
   components:
-  - item: ESP32 DevKit board
-    note: USB-programmable ESP32 board used for the low-voltage control side.
+  - item: Classic ESP32-WROOM DevKit
+    note: USB-powered; exposed GPIO34 (ADC1), GPIO32 and GPIO33; Arduino-ESP32 3.3.2.
     link: /components/esp32-devkit.html
-  - item: AD8232 ECG module
-    note: Educational analog front-end; OUT to GPIO34, LO pins to GPIO32/GPIO33.
-  - item: Disposable ECG electrode pads
-    note: Use only clean intact pads; stop for skin irritation.
-  - item: ECG lead cable
-    note: Use only undamaged leads.
-  - item: Battery power or medical isolation
-    note: Required safety boundary for body-connected demonstrations.
-  bom:
-  - part: ESP32 DevKit board
-    qty: '1'
-    estimated_cost: Varies
-    notes: USB-programmable ESP32 board used for the low-voltage control side.
-  - part: AD8232 ECG module
-    qty: '1'
-    estimated_cost: Varies
-    notes: Educational analog front-end; OUT to GPIO34, LO pins to GPIO32/GPIO33.
-  - part: Disposable ECG electrode pads
-    qty: '1'
-    estimated_cost: Varies
-    notes: Use only clean intact pads; stop for skin irritation.
-  - part: ECG lead cable
-    qty: '1'
-    estimated_cost: Varies
-    notes: Use only undamaged leads.
-  - part: Battery power or medical isolation
-    qty: '1'
-    estimated_cost: Varies
-    notes: Required safety boundary for body-connected demonstrations.
+  - item: SparkFun AD8232 Single Lead Heart Rate Monitor SEN-12650
+    note: Use the documented v10 board configuration. OUTPUT, LO−, LO+, 3.3V and GND labels are the reference;
+      do not assume another carrier has the same order.
+  - item: Breadboard, short jumper wires and USB data cable
+    note: No electrode cable, pads, battery/isolation adapter or external generator is required.
   wiring:
-    illustration_alt: Build an Educational ECG Waveform Viewer wiring diagram
-    summary: AD8232 OUT goes to ADC1 GPIO34. LO+ and LO- go to GPIO32 and GPIO33. Power the module from 3.3 V and common ground.
+    full_size_link: true
+    illustration_alt: 'Logical non-body-connected AD8232 bench: OUTPUT to GPIO34 input, LO+ to GPIO32, LO−
+      to GPIO33, 3.3V and GND; all electrode ports empty.'
+    summary: Only the electronics header connects to the ESP32. SparkFun SEN-12650 OUTPUT → GPIO34, LO+ → GPIO32,
+      LO− → GPIO33, 3.3V → 3V3 and GND → GND. Leave the electrode jack and RA/LA/RL pads completely empty.
     steps:
-    - Unplug USB before wiring the AD8232.
-    - Connect AD8232 OUT to GPIO34.
-    - Connect LO+ to GPIO32 and LO- to GPIO33.
-    - Connect AD8232 3.3 V to ESP32 3V3 and GND to GND.
-    - Use battery power or proper medical isolation before any body-connected test.
-    - Attach electrodes only at a high-level educational placement with consent and stop for discomfort.
+    - Unplug USB. Remove every electrode lead and pad; inspect that no person, animal or other instrument connects
+      to the electrode side.
+    - Connect board 3.3V to ESP32 3V3 and board GND to GND. Do not substitute 5 V power.
+    - 'Connect OUTPUT to GPIO34 (input only), LO+ to GPIO32 and LO− to GPIO33. Leave SDN unconnected: the selected
+      SparkFun v10 board includes its pull-up. Verify any different carrier before use.'
+    - Keep the 3.5 mm jack and RA/LA/RL pads empty. Do not short them or attach a signal generator as an undocumented
+      substitute.
+    - Upload with Arduino-ESP32 3.3.2 and open Serial Monitor or Serial Plotter at 115200 baud. USB is used
+      only with this non-body-connected arrangement.
+    - Observe actual raw and lo_plus/lo_minus fields. Leads-off is expected with open inputs; no waveform or
+      health value is being validated.
   gpio_map:
-  - signal: AD8232 OUT
+  - signal: AD8232 OUTPUT
     esp32_pin: GPIO34
-    direction: Input
-    notes: ADC1 input-only analog waveform.
+    direction: Analog input
+    notes: ADC1 input-only pin; 12-bit raw counts, not GPIO output.
   - signal: AD8232 LO+
     esp32_pin: GPIO32
-    direction: Input
-    notes: Leads-off positive.
-  - signal: AD8232 LO-
+    direction: Digital input
+    notes: Actual leads-off comparator status.
+  - signal: AD8232 LO−
     esp32_pin: GPIO33
-    direction: Input
-    notes: Leads-off negative.
-  circuit_explanation: The AD8232 conditions a small biopotential waveform into an ESP32-readable analog signal. Leads-off
-    pins help detect disconnected electrodes.
-  engineering_explanation: ESP32 ADC readings are raw counts and may include noise, baseline drift, motion artifacts, and
-    contact problems. The sketch does not compute clinical units or heart-rate accuracy.
+    direction: Digital input
+    notes: Actual leads-off comparator status.
+  - signal: Board 3.3V / GND
+    esp32_pin: 3V3 / GND
+    direction: Power / reference
+    notes: One USB-powered low-voltage bench; no patient isolation claimed.
+  - signal: SDN
+    esp32_pin: Not connected
+    direction: Board pull-up
+    notes: SparkFun v10 pull-up holds it enabled.
+  - signal: Electrode jack and RA/LA/RL
+    esp32_pin: Not connected
+    direction: No body connection
+    notes: No leads, pads or external source attached.
+  circuit_explanation: AD8232 is an analog signal-conditioning front end, not an ADC or an isolation barrier.
+    The selected carrier sets its gain, filters and leads-off mode using external components. USB ground joins
+    the ESP32 and board. No patient-safe power/data barrier is present; keeping the electrode ports empty is
+    the actual supported boundary.
+  engineering_explanation: The code requests 12-bit raw ADC counts (0–4095), not millivolts or physiological
+    units. Classic ESP32 at 11 dB has an approximately 0.15–3.1 V documented measurement range; this differs
+    from the board's 3.3 V supply and GPIO limits. A 3.3 V-powered AD8232 output can approach its rails and
+    clip the measurement; a flat or noisy trace with open inputs is not a measured ECG. LO flags are status
+    bits, not signal-quality or safety certification. Target polling is 100 readings/s, with software/Serial
+    jitter; this is not a clinical acquisition bandwidth claim.
   libraries:
-  - name: Arduino ESP32 core
-    note: No external libraries required.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM review baseline; analogReadResolution(12), ADC_11db and digitalRead. No external
+      sensor library is required.
   code:
     filename: esp32-ecg-monitor.ino
-    content: "// ESP32 Educational ECG Waveform Viewer\n// Not a medical device. Use battery power and medical isolation for\
-      \ any body-connected demo.\nconst int ECG_PIN = 34;\nconst int LO_PLUS = 32;\nconst int LO_MINUS = 33;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n  pinMode(LO_PLUS, INPUT);\n  pinMode(LO_MINUS, INPUT);\n  analogReadResolution(12);\n\
-      \  analogSetPinAttenuation(ECG_PIN, ADC_11db);\n  Serial.println(\"Educational waveform viewer only - not for diagnosis.\"\
-      );\n}\n\nvoid loop() {\n  if (digitalRead(LO_PLUS) == HIGH || digitalRead(LO_MINUS) == HIGH) {\n    Serial.println(2048);\n\
-      \    delayMicroseconds(4000);\n    return;\n  }\n  int sample = analogRead(ECG_PIN);\n  Serial.println(sample);\n  delayMicroseconds(4000);\n\
-      }\n"
-  code_explanation: GPIO34 is sampled about every 4 ms. If LO+ or LO- is HIGH, the sketch prints midscale instead of plotting
-    disconnected-lead noise.
-  expected_output: Serial Plotter shows raw ADC counts. A body-connected waveform may be noisy or distorted and must not be
-    interpreted medically.
+    content: "// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2; no external library.\n// SparkFun AD8232\
+      \ SEN-12650 v10: BENCH ONLY, no leads or electrodes attached.\n// USB Serial is permitted only in this\
+      \ non-body-connected arrangement.\nconst int SIGNAL_PIN = 34; // AD8232 OUTPUT -> ADC1 input, never a\
+      \ GPIO output.\nconst int LO_PLUS = 32;\nconst int LO_MINUS = 33;\nconst uint32_t PERIOD_US = 10000;\
+      \ // Target 100 readings/s, not precision timing.\nuint32_t lastSampleUs = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  pinMode(SIGNAL_PIN, INPUT);\n  pinMode(LO_PLUS, INPUT);\n  pinMode(LO_MINUS, INPUT);\n  analogReadResolution(12);\n\
+      \  analogSetPinAttenuation(SIGNAL_PIN, ADC_11db);\n  lastSampleUs = micros();\n}\n\nvoid loop() {\n \
+      \ uint32_t now = micros();\n  if ((uint32_t)(now - lastSampleUs) < PERIOD_US) return;\n  lastSampleUs\
+      \ = now; // Do not manufacture catch-up samples after a delay.\n  uint16_t raw = analogRead(SIGNAL_PIN);\n\
+      \  int loPlus = digitalRead(LO_PLUS);\n  int loMinus = digitalRead(LO_MINUS);\n  // Always show actual\
+      \ ADC conversion and actual flags, even with open inputs.\n  Serial.printf(\"raw:%u\\tlo_plus:%d\\tlo_minus:%d\\\
+      n\",\n                (unsigned int)raw, loPlus, loMinus);\n}\n"
+  code_explanation: About every 10 ms the sketch prints the actual ADC conversion and both actual digital states.
+    It does not replace an open-lead sample with 2048 or invent a waveform. Serial Monitor shows labelled fields;
+    Serial Plotter can show raw, lo_plus and lo_minus as three series, with the 0/1 flags close to the bottom
+    of the ADC scale. The scheduler skips catch-up work rather than fabricating missed samples. It does not
+    validate leads, guarantee cadence or determine heart rate.
+  expected_output: At 115200 baud, records contain raw:<actual count>, lo_plus:<0 or 1> and lo_minus:<0 or
+    1>, separated by tabs. In the selected dc leads-off configuration, open electrode inputs are expected to
+    assert their corresponding flags; settling, noise or clipping may be visible. No numeric trace or measurement
+    from hardware is supplied here. No ECG shape, BPM, diagnosis or medical accuracy is promised.
   common_mistakes:
-  - text: Using the project for diagnosis.
-  - text: Connecting a body-connected circuit to unsafe mains-powered equipment.
-  - text: Claiming heart-rate accuracy.
-  - text: Ignoring lead-off or skin discomfort.
+  - text: Connecting electrodes while a USB cable provides a computer ground path.
+  - text: Assuming a battery or a generic USB isolator establishes a complete patient-safe arrangement.
+  - text: Reading GPIO34 as a GPIO output or powering the AD8232 carrier from 5 V.
+  - text: Interpreting an open-input trace or synthetic midscale as a valid biological signal.
   troubleshooting:
-  - problem: Flat line
-    fix: Check LO+ and LO- status and electrode contact.
-  - problem: Very noisy waveform
-    fix: Reduce movement, improve contact, and use battery/isolated power.
-  - problem: Signal clips
-    fix: Check module power and electrode connection; do not force clinical conclusions.
+  - problem: Flat, rail-limited or noisy trace
+    fix: With electrode ports deliberately empty, this is not proof of a failed or working ECG system. Check
+      the 3.3 V rail and OUTPUT-to-GPIO34 connection; do not attach electrodes to make the graph look better.
+  - problem: LO flags differ from expectations
+    fix: Check LO+/LO− labels, carrier revision, SDN pull-up and dc/ac leads-off configuration. Do not bypass
+      the flags or treat LOW as permission for body contact.
+  - problem: ADC path needs an independent check
+    fix: Power off and disconnect module OUTPUT first. Ground GPIO34 and inspect its actual low-end counts
+      after power-up. This checks the ADC path only, not the AD8232, isolation or biological operation.
+  - problem: Plotter is blank
+    fix: Select the correct port and 115200 baud; close other serial clients. Read the same labelled records
+      in Serial Monitor. Confirm a USB data cable and matching board selection.
   testing_checklist:
-  - Run the sketch before attaching electrodes.
-  - Check leads-off behavior.
-  - Use a simulated or safe educational signal when possible.
-  - Record only raw counts and safety observations.
+  - Verify that electrode cable, jack and RA/LA/RL pads remain unconnected.
+  - Check module power, common ground and GPIO34 input direction.
+  - Confirm all output fields come from analogRead/digitalRead, with no forced 2048 value.
+  - Distinguish the optional grounded-ADC check from sensor/hardware validation.
+  - These are planned checks, not a record of hardware testing.
   engineer_tips:
-  - Prefer battery power.
-  - Keep cables still.
-  - Treat every waveform as educational only.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  - Keep acquisition provenance with every saved trace.
+  - Do not call a leads-off flag an isolation or physiological validity test.
+  - Use the existing analog-input guide for an independently controlled signal.
+  upgrade_ideas: *id001
+  real_world_applications: *id002
   related_guides:
-  - title: What is ESP32?
-    href: /guides/what-is-esp32.html
-    description: Review ESP32 pins, power, Wi-Fi, and safe beginner wiring.
   - title: Reading Analog Sensors
     href: /guides/reading-analog-sensors.html
-    description: Practice ADC readings, thresholds, and serial evidence before advanced projects.
+    description: Use its complete potentiometer example for controlled ADC input. Keep the AD8232 disconnected
+      during that separate exercise.
+  - title: What Is ESP32?
+    href: /guides/what-is-esp32.html
+    description: Review board families and power versus GPIO logic.
   related_projects:
-  - title: ESP32 Air Quality Monitor
-    href: /projects/esp32-air-quality-monitor.html
-    description: Compare another sensor project that stays within educational measurement limits.
-  - title: ESP32 Smart Energy Meter
-    href: /projects/esp32-smart-energy-meter.html
-    description: Review another measurement project with strong calibration limits.
+  - title: MAX30102 Raw Red/IR Signal Logger
+    href: /projects/esp32-pulse-oximeter-logger.html
+    description: Compare raw optical counts without a saturation or pulse-rate estimate.
   faqs:
-  - question: Is this a medical ECG monitor?
-    answer: No. It is only an educational waveform viewer.
-  - question: Can I use this for health decisions?
-    answer: No. Do not use it for diagnosis or health decisions.
-  - question: Why print midscale when leads are off?
-    answer: It keeps the plotter stable and avoids treating disconnected noise as a waveform.
+  - question: Can I attach electrodes if I use a battery?
+    answer: No. This page specifies only an electrode-disconnected bench demo. It provides no complete isolated
+      body-connected arrangement; a battery alone does not establish one.
+  - question: Why keep samples when leads are off?
+    answer: To inspect the actual electrical output alongside its status flags. These are open-input bench
+      records, not valid ECG data; replacing them with 2048 would conceal that distinction.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Check the actual fields and wiring against this bench-only arrangement. A graph is not proof of
+      a biological signal, successful compilation, patient isolation or hardware validation.
     skills:
-    - ADC1 sampling
-    - Leads-off detection
-    - Medical safety limits
+    - Read ADC1 input counts
+    - Observe status bits
+    - Keep electrode ports empty
+  references:
+  - href: https://www.analog.com/media/en/technical-documentation/data-sheets/ad8232.pdf
+    title: Analog Devices AD8232 datasheet, Rev.D
+  - href: https://cdn.sparkfun.com/datasheets/Sensors/Biometric/AD8232_Heart_Rate_Monitor_v10.pdf
+    title: SparkFun SEN-12650 v10 schematic, 15 July 2014
+  - href: https://learn.sparkfun.com/tutorials/ad8232-heart-rate-monitor-hookup-guide/all
+    title: SparkFun AD8232 board labels (body-connection steps are not adopted)
+  - href: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst
+    title: Arduino-ESP32 3.3.2 ADC API and classic ESP32 measurement range
+  bom:
+  - part: Classic ESP32-WROOM DevKit
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-powered; exposed GPIO34 (ADC1), GPIO32 and GPIO33; Arduino-ESP32 3.3.2.
+  - part: SparkFun AD8232 Single Lead Heart Rate Monitor SEN-12650
+    qty: '1'
+    estimated_cost: Varies
+    notes: Use the documented v10 board configuration. OUTPUT, LO−, LO+, 3.3V and GND labels are the reference;
+      do not assume another carrier has the same order.
+  - part: Breadboard, short jumper wires and USB data cable
+    qty: '1'
+    estimated_cost: Varies
+    notes: No electrode cable, pads, battery/isolation adapter or external generator is required.
+  safety_badge: Bench only — no electrodes

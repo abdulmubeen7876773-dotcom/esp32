@@ -1,22 +1,22 @@
 slug: esp32-pulse-oximeter-logger
-title: Build an Educational Pulse Oximeter Logger
+title: ESP32 MAX30102 Raw Red/IR Signal Logger
 category: Healthcare
-image_alt: ESP32 educational pulse oximeter logger with sensor module and serial data display
-og_image: /assets/images/og/esp32-pulse-oximeter-logger.webp
-hero_image: /assets/images/generated/esp32-pulse-oximeter-logger.webp
-featured_image: /assets/images/generated/esp32-pulse-oximeter-logger.webp
-image: /assets/images/generated/esp32-pulse-oximeter-logger.webp
-description: Use a MAX30102 with ESP32 I2C to log educational estimated BPM/SpO2 values while suppressing invalid
-  no-finger readings.
-meta_title: ESP32 Educational Pulse Oximeter Logger
-meta_description: Build an educational ESP32 MAX30102 logger with SDA GPIO21, SCL GPIO22, estimated-only output,
-  no-finger suppression, and medical-use warnings.
+image_alt: Logical raw-count data flow illustration, not a hardware photograph or measured trace
+og_image: /assets/visuals/projects/heroes/esp32-pulse-oximeter-logger-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-pulse-oximeter-logger-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-pulse-oximeter-logger-overview.svg
+image: /assets/visuals/projects/heroes/esp32-pulse-oximeter-logger-overview.svg
+description: Log paired MAX30102 red/IR optical counts with ESP32, a specified reference board and FIFO diagnostics.
+  No BPM or oxygen-saturation estimate.
+meta_title: ESP32 MAX30102 Raw Red/IR Signal Logger
+meta_description: Log paired MAX30102 red/IR optical counts with ESP32, a specified reference board and FIFO
+  diagnostics. No BPM or oxygen-saturation estimate.
 source_base: esp32-pulse-oximeter-logger-golden-batch-6
-sensor: MAX30102 red/IR sensor
-output: Serial Monitor
+sensor: MAX30102 red/IR FIFO counts
+output: USB Serial raw data
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-10'
+date_modified: '2026-11-11'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
@@ -25,191 +25,238 @@ format: golden
 hardware:
   sensor_pin: GPIO21
   output_pin: GPIO22
-  sensor_name: MAX30102 SDA
-  output_name: MAX30102 SCL
+  sensor_name: MAX30102 red/IR FIFO counts
+  output_name: USB Serial raw data
   wiring:
-  - component: MAX30102 SDA
-    pin: GPIO21
-  - component: MAX30102 SCL
-    pin: GPIO22
-  - component: MAX30102 VCC
-    pin: 3.3V
-  - component: MAX30102 GND
+  - component: MAXREFDES117# VIN
+    pin: 3V3
+  - component: MAXREFDES117# GND
     pin: GND
+  - component: Host SDA
+    pin: GPIO21
+  - component: Host SCL
+    pin: GPIO22
+  - component: INT
+    pin: Not connected
 project:
   icon: PULSE
-  mission_title: Build an Educational Pulse Oximeter Logger
+  mission_title: Log MAX30102 Raw Red and IR Signals
   difficulty: Advanced
   age: Ages 14+
   recommended_age: Ages 14+
-  estimated_time: 60-75 min
-  budget: Under 35 USD
-  adult_supervision: Required for shared classroom use and for understanding the medical boundary.
-  classroom_use: Use this as an optics and signal-processing lesson, not as a health screening station.
-  parent_prompt: Ask why an estimated classroom sensor reading is not the same as a clinical measurement.
-  screen_free_activity: Draw how red and infrared light pass through a fingertip and scatter back to the sensor.
+  estimated_time: Assembly time varies
+  budget: Parts cost varies
+  adult_supervision: Supervise power and board identification; no health screening.
+  classroom_use: Compare reflected-light counts using a clean white card, not people's health data.
+  parent_prompt: Why are reflected-light counts different from oxygen saturation?
+  screen_free_activity: Draw light travelling from an LED to a card and back to a photodetector.
   skills_practiced:
   - I2C wiring
-  - Optical sensor setup
-  - Validity checks
-  - Medical-safety wording
+  - Paired FIFO acquisition
+  - Raw-data logging
+  - Measurement limits
   learning_outcomes:
-  - Wire MAX30102 SDA to GPIO21 and SCL to GPIO22.
-  - Suppress stale readings when no finger is detected.
-  - Label BPM and SpO2 as estimated educational values.
-  - Explain why the project is not a medical device.
+  - Identify the supported MAXREFDES117# board and its VIN/host I2C pads.
+  - Read red and IR counts from the same FIFO record.
+  - Separate host receipt time from the sensor sample cadence.
+  - Explain why this sketch outputs neither BPM nor SpO₂.
   mini_experiments:
-  - Watch IR values change when a finger is placed on the sensor.
-  - Compare stable and moving-finger readings.
-  - Adjust the finger threshold only after recording idle sensor values.
-  next_challenge: Log raw red/IR values to CSV and analyze motion artifacts offline.
-  what_you_build: A MAX30102 I2C logger that prints estimated BPM, estimated SpO2, and raw red/IR values while suppressing
-    no-finger readings.
-  story: ""
-  eli12: The MAX30102 shines red and infrared light into a fingertip and measures how much light comes back. The
-    ESP32 watches the changing numbers and prints estimated values so you can learn about optical sensing. If there
-    is no finger, the sketch refuses to show stale estimates.
-  parent_safety: This is a 3.3 V USB-powered education project only. Unplug USB before rewiring. Do not use readings
-    for diagnosis, treatment, emergency decisions, fitness clearance, or health reassurance. Clean the contact area
-    between users and stop if anyone feels uncomfortable.
+  - Move a clean, nonconductive white card above the optical window and compare raw counts.
+  - Record ambient-light conditions alongside a short capture; do not treat changes as biological measurements.
+  next_challenge: Save the serial CSV and graph raw optical counts; do not add a saturation conversion without
+    a separately reviewed algorithm and validation.
+  what_you_build: A USB Serial CSV logger for paired red/IR optical counts, using a MAX30102 on the documented
+    MAXREFDES117# board and a classic ESP32-WROOM DevKit. It produces no oxygen-saturation, heart-rate or finger-presence
+    result. The historical pulse-oximeter URL is retained.
+  story: ''
+  eli12: Two LEDs illuminate a target in turn. A detector measures reflected light. The sensor digitizes each
+    channel and stores paired readings in a queue; the ESP32 copies those numbers to Serial Monitor.
+  parent_safety: 'Use only the identified low-voltage board and disconnect USB before rewiring. Do not use
+    this logger for diagnosis, health reassurance, screening or emergency decisions. No skin contact is needed:
+    use a nonconductive card as the optical target. Do not press objects onto or damage the optical window.'
+  safety_standards:
+  - No medical measurement or calibrated light-intensity result is implemented.
+  - Use MAXREFDES117# VIN at 3.3 V and host-side I2C at 3.3 V. An unknown MAX30102 breakout is not an interchangeable
+    board.
+  - Keep supplies off while wiring. No electrodes or conductive body connections are part of this optical exercise.
   components:
-  - item: ESP32 DevKit board
-    note: Use 3.3 V logic and I2C on GPIO21/GPIO22.
+  - item: Classic ESP32-WROOM DevKit
+    note: USB-powered; exposed GPIO21/GPIO22; Arduino-ESP32 3.3.2 review baseline.
     link: /components/esp32-devkit.html
-  - item: MAX30102 breakout module
-    note: Optical red/IR sensor module; this project uses educational estimates only.
-  - item: Breadboard and jumper wires
-    note: Short, firm connections reduce I2C and power problems.
-  - item: USB data cable
-    note: Needed for upload and Serial Monitor.
-  - item: Cleaning wipes for shared demos
-    note: Clean the finger-contact area between users.
-  bom:
-  - part: ESP32 DevKit board
-    qty: '1'
-    estimated_cost: Varies
-    notes: Use 3.3 V logic and I2C on GPIO21/GPIO22.
-  - part: MAX30102 breakout module
-    qty: '1'
-    estimated_cost: Varies
-    notes: Optical red/IR sensor module; this project uses educational estimates only.
-  - part: Breadboard and jumper wires
-    qty: '1'
-    estimated_cost: Varies
-    notes: Short, firm connections reduce I2C and power problems.
-  - part: USB data cable
-    qty: '1'
-    estimated_cost: Varies
-    notes: Needed for upload and Serial Monitor.
-  - part: Cleaning wipes for shared demos
-    qty: '1'
-    estimated_cost: Varies
-    notes: Clean the finger-contact area between users.
+  - item: Analog Devices / Maxim MAXREFDES117#
+    note: Identified reference board containing MAX30102, MAX1921 regulator and MAX14595 host level translator.
+      Not a bare MAX30102 IC or unidentified clone.
+  - item: Short jumper wires and USB data cable
+    note: Connect labelled pads; use the board documentation, not the logical diagram as a physical pin-order
+      drawing.
+  - item: Clean nonconductive white card
+    note: Optional reflected-light target; no medical probe or body connection.
   wiring:
-    illustration_alt: ESP32 DevKit connected to a MAX30102 breakout with SDA on GPIO21, SCL on GPIO22, 3.3 V power,
-      and common ground.
-    summary: The MAX30102 uses I2C. SDA is GPIO21, SCL is GPIO22, VCC is 3.3 V, and GND is common ground.
+    full_size_link: true
+    illustration_alt: 'Logical MAXREFDES117# to classic ESP32 I2C wiring: VIN 3V3, GND, SDA GPIO21 and SCL
+      GPIO22; INT unconnected.'
+    summary: Use the genuine MAXREFDES117# host-side VIN/GND/SDA/SCL pads. This example powers VIN from ESP32
+      3V3, so the host bus is in the 3.3 V domain; INT is unused. It does not cover an unidentified MAX30102
+      carrier.
     steps:
-    - Unplug USB before placing or moving jumper wires.
-    - Connect MAX30102 VCC to ESP32 3V3.
-    - Connect MAX30102 GND to ESP32 GND.
-    - Connect MAX30102 SDA to GPIO21.
-    - Connect MAX30102 SCL to GPIO22.
-    - Plug in USB, upload the sketch, and open Serial Monitor at 115200 baud.
+    - Disconnect USB and confirm the board identity and pad labels against the manufacturer documentation.
+    - Connect MAXREFDES117# VIN to ESP32 3V3 and GND to GND. Do not connect 3.3 V directly to the bare sensor's
+      1.8 V VDD.
+    - Connect host-side SDA to GPIO21 and SCL to GPIO22. Use the reference board's host-level interface, not
+      internal 1.8 V sensor nets. Leave INT unconnected.
+    - 'Inspect idle host bus levels and pull-ups for a substituted board before connecting it: ESP32 GPIO is
+      not 5 V tolerant. This wiring is not an endorsement of generic clone modules.'
+    - Install SparkFun MAX3010x Pulse and Proximity Sensor Library version 1.1.2 in Arduino IDE, select the
+      classic ESP32 board/core 3.3.2 and upload the complete sketch below.
+    - Open Serial Monitor at 115200 baud. Hold a card above the window and log raw counts. No body contact
+      or health interpretation is required.
   gpio_map:
-  - signal: MAX30102 SDA
+  - signal: MAXREFDES117# VIN
+    esp32_pin: 3V3
+    direction: Power
+    notes: Reference-board input only; its regulator supplies the sensor core.
+  - signal: MAXREFDES117# GND
+    esp32_pin: GND
+    direction: Ground
+    notes: Common reference.
+  - signal: Host SDA
     esp32_pin: GPIO21
-    direction: I2C data
-    notes: Default ESP32 I2C SDA in this sketch.
-  - signal: MAX30102 SCL
+    direction: Bidirectional I2C
+    notes: 3.3 V host-level bus; sensor address 0x57.
+  - signal: Host SCL
     esp32_pin: GPIO22
     direction: I2C clock
-    notes: Default ESP32 I2C SCL in this sketch.
-  circuit_explanation: The MAX30102 breakout handles the optical sensor front end and communicates with the ESP32
-    over I2C.
-  engineering_explanation: The finger threshold is a practical validity gate for this educational setup. Estimated
-    BPM and SpO2 are heuristic classroom outputs and are not calibrated clinical measurements.
+    notes: 100 kHz in this sketch.
+  - signal: INT
+    esp32_pin: Not connected
+    direction: Unused
+    notes: FIFO is polled; no interrupt wire.
+  circuit_explanation: The selected reference board separates the sensor's 1.8 V core supply from its LED supply
+    and translates the I2C interface to the host side. Powering a generic pad labelled VCC does not prove it
+    includes those circuits. Check the actual board before substitution.
+  engineering_explanation: Each value is a dimensionless sensor ADC count, not percent oxygen saturation, BPM,
+    lux or a calibrated blood measurement. LED current, target distance, ambient light and configuration affect
+    the counts. A single IR/red ratio is not a saturation algorithm, and clipping a guessed answer to 70–100
+    cannot validate it. No such calculation remains. The 411 μs setting selects 18-bit sensor data (nominal
+    digital range 0–262143); full-scale counts indicate clipping, not a valid physiological result.
   libraries:
-  - name: SparkFun MAX3010x library
-    note: Provides MAX30105/MAX30102 sensor access and heartRate helper.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM review baseline; Wire on GPIO21/22. No claim that this is the latest core.
+  - name: SparkFun MAX3010x Pulse and Proximity Sensor Library 1.1.2
+    note: Install this exact version. MAX30105 is its driver class name; MAX30102 uses red/IR mode 2, without
+      a green channel. No heartRate or SpO₂ helper is included.
   code:
     filename: esp32-pulse-oximeter-logger.ino
-    content: "// ESP32 MAX30102 educational pulse-wave estimate logger\n// Not a medical device. Not for diagnosis,\
-      \ treatment, or emergency use.\n#include <Wire.h>\n#include \"MAX30105.h\"\n#include \"heartRate.h\"\n\nMAX30105\
-      \ sensor;\n\nconst long FINGER_IR_THRESHOLD = 50000;\nconst byte RATE_SIZE = 4;\nbyte rates[RATE_SIZE];\n\
-      byte rateSpot = 0;\nlong lastBeat = 0;\nfloat estimatedBpm = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  Wire.begin(21, 22);\n\n  if (!sensor.begin(Wire, I2C_SPEED_STANDARD)) {\n    Serial.println(\"MAX30102\
-      \ not found. Check SDA GPIO21, SCL GPIO22, 3.3 V, and GND.\");\n    while (true) delay(10);\n  }\n\n  sensor.setup();\n\
-      \  sensor.setPulseAmplitudeRed(0x1F);\n  sensor.setPulseAmplitudeIR(0x1F);\n  Serial.println(\"Educational\
-      \ MAX30102 logger ready - estimated values only, not medical data.\");\n}\n\nvoid loop() {\n  long irValue\
-      \ = sensor.getIR();\n  long redValue = sensor.getRed();\n\n  if (irValue < FINGER_IR_THRESHOLD) {\n    estimatedBpm\
-      \ = 0;\n    Serial.println(\"No finger detected - estimated BPM/SpO2 suppressed (educational only).\");\n\
-      \    delay(500);\n    return;\n  }\n\n  if (checkForBeat(irValue)) {\n    long now = millis();\n    long delta\
-      \ = now - lastBeat;\n    lastBeat = now;\n\n    float bpm = 60.0 / (delta / 1000.0);\n    if (bpm > 40 &&\
-      \ bpm < 180) {\n      rates[rateSpot++] = (byte)bpm;\n      rateSpot %= RATE_SIZE;\n      int total = 0;\n\
-      \      int count = 0;\n      for (byte i = 0; i < RATE_SIZE; i++) {\n        if (rates[i] > 0) {\n       \
-      \   total += rates[i];\n          count++;\n        }\n      }\n      if (count > 0) estimatedBpm = (float)total\
-      \ / count;\n    }\n  }\n\n  float ratio = redValue > 0 ? (float)irValue / (float)redValue : 0.0;\n  float\
-      \ estimatedSpo2 = constrain(104.0 - 17.0 * ratio, 70.0, 100.0);\n\n  Serial.printf(\"Estimated BPM: ~%.0f\
-      \ - educational only | Estimated SpO2: ~%.0f%% - educational only | IR: %ld Red: %ld\\n\",\n             \
-      \   estimatedBpm, estimatedSpo2, irValue, redValue);\n  delay(100);\n}\n"
-  code_explanation: The sketch initializes I2C on GPIO21/GPIO22, suppresses estimates below the IR finger threshold,
-    averages plausible beat intervals, and prints every value as estimated educational data.
-  expected_output: With no finger, Serial Monitor reports that estimates are suppressed. With a steady finger, it
-    prints lines such as Estimated BPM and Estimated SpO2 along with raw IR and red counts; these are learning values
-    only.
+    content: "// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2.\n// MAXREFDES117# (MAX30102); SparkFun MAX3010x\
+      \ library 1.1.2.\n// Raw optical counts only: no BPM, oxygen saturation or finger-validity test.\n#include\
+      \ <Wire.h>\n#include \"MAX30105.h\"\n\nMAX30105 sensor; // This library class also supports MAX30102\
+      \ red/IR mode.\nbool ready = false;\nuint32_t lastDataMs = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n\
+      \  if (!Wire.begin(21, 22)) {\n    Serial.println(\"# ERROR: I2C initialization failed; no samples emitted.\"\
+      );\n    return;\n  }\n  Wire.setTimeOut(50);\n  if (!sensor.begin(Wire, I2C_SPEED_STANDARD)) {\n    Serial.println(\"\
+      # ERROR: sensor ID not found at 0x57; check power/wiring, then reset.\");\n    return;\n  }\n  // LED\
+      \ amplitude, FIFO averaging, red+IR, samples/s, pulse width us, ADC range nA.\n  sensor.setup(0x1F, 1,\
+      \ 2, 50, 411, 4096);\n  lastDataMs = millis();\n  ready = true;\n  Serial.println(\"host_ms,red_counts,ir_counts\"\
+      );\n}\n\nvoid loop() {\n  if (!ready) { delay(10); return; }\n  sensor.check();\n  while (sensor.available())\
+      \ {\n    // Both channels come from the same queued FIFO record.\n    uint32_t red = sensor.getFIFORed();\n\
+      \    uint32_t ir = sensor.getFIFOIR();\n    sensor.nextSample();\n    uint32_t hostMs = millis();\n \
+      \   lastDataMs = hostMs;\n    Serial.printf(\"%lu,%lu,%lu\\n\", (unsigned long)hostMs,\n            \
+      \      (unsigned long)red, (unsigned long)ir);\n  }\n  if ((uint32_t)(millis() - lastDataMs) >= 2000)\
+      \ {\n    ready = false;\n    Serial.println(\"# ERROR: no fresh FIFO records for 2 s; logging stopped.\
+      \ Inspect, then reset.\");\n  }\n}\n"
+  code_explanation: The sketch configures red+IR at 50 sensor records/s with no FIFO averaging, 411 μs integration
+    and ADC range setting 4096 nA. It drains paired FIFO records without an intentional sampling delay. host_ms
+    is the ESP32 receipt timestamp, not an exact optical acquisition timestamp. Failure to identify the device
+    emits an error and no rows. Two seconds without new FIFO records stops logging until reset. The driver
+    does not supply a complete per-record integrity/overflow validity result; this is not lossless acquisition
+    or a verified fault detector. Long host pauses can lose records in its small software buffer. A repeated
+    number or zero is not a finger-validity result.
+  expected_output: 'Serial Monitor first shows host_ms,red_counts,ir_counts, then decimal CSV rows from received
+    samples. Values depend on the actual target and setup; no numeric readings or trace are supplied as test
+    evidence. Ambient/background readings are retained. There is no BPM, SpO₂, percent sign or forced plausible
+    measurement. Lines beginning # ERROR are diagnostics, not CSV samples.'
   common_mistakes:
-  - text: Treating estimated values as medical readings.
-  - text: Powering a 3.3 V-only breakout from 5 V.
-  - text: Swapping SDA and SCL.
-  - text: Showing old readings after the finger is removed.
+  - text: Using getRed() and getIR() as proof of a calibrated oxygen reading.
+  - text: Substituting an unknown 5 V or 1.8 V bus carrier without checking its schematic.
+  - text: Treating a response at 0x57 as proof of the exact module identity.
+  - text: Blocking the polling loop and assuming all samples were retained.
   troubleshooting:
-  - problem: MAX30102 not found
-    fix: Check 3.3 V, GND, SDA GPIO21, SCL GPIO22, and library installation.
-  - problem: No finger detected all the time
-    fix: Check finger placement and record idle IR values before changing the threshold.
-  - problem: Estimated BPM jumps around
-    fix: Hold still, block bright ambient light, and remember the value is not clinical.
+  - problem: Device not found
+    fix: Power off; check VIN/GND, host SDA/SCL orientation, 3.3 V logic and library version. The shared part
+      ID also cannot distinguish MAX30102 from MAX30105; verify markings/documentation.
+  - problem: No fresh FIFO records
+    fix: Logging deliberately stops after the timeout. Inspect wiring and power with USB off, then reset; do
+      not fill the CSV with fabricated zero samples.
+  - problem: Counts sit near a rail or change unexpectedly
+    fix: Check target distance, ambient light and selected LED settings. Do not infer SpO₂ or adjust a formula
+      to make numbers look plausible.
+  - problem: CSV has time gaps
+    fix: Close other serial programs and avoid adding blocking work. Host timestamps expose receipt gaps, but
+      do not certify continuity or sensor sampling precision.
   testing_checklist:
-  - Confirm I2C detection.
-  - Confirm no-finger suppression.
-  - Confirm labels say Estimated.
-  - Clean shared sensor surfaces.
+  - Confirm the exact board/pad identity before applying power.
+  - Verify host bus voltage before substituting any board.
+  - Check that output contains paired raw counts and no medical estimates.
+  - Disconnect the sensor with power off, then confirm startup reports failure rather than sample rows.
+  - These are checks to perform; no hardware test is recorded.
   engineer_tips:
-  - Keep I2C wires short.
-  - Use raw IR/red data for debugging.
-  - Never publish health claims from this sketch.
+  - Keep raw records and configuration together.
+  - Use a card target for an electronics lesson.
+  - Do not call raw-data collection calibration or physiological validation.
   upgrade_ideas:
-  - Save raw red/IR samples to CSV.
-  - Add an OLED that repeats the educational-only warning.
-  - Graph raw values in a local dashboard without medical claims.
+  - Plot CSV offline while preserving host timestamps.
+  - Review buffering/overflow handling separately before doing timing-sensitive signal analysis.
   real_world_applications:
-  - Optical sensor classroom demo
-  - Signal-validity lesson
-  - Bioinstrumentation ethics discussion
+  - Reflectance-sensing lesson
+  - I2C FIFO acquisition practice
   related_guides:
   - title: I2C Communication
     href: /guides/i2c-communication.html
-    description: Review SDA/SCL wiring before connecting the MAX30102.
-  - title: What is ESP32?
-    href: /guides/what-is-esp32.html
-    description: Review ESP32 pins, power, and safe low-voltage wiring.
+    description: Review bus pull-ups, address detection and wiring diagnostics.
   related_projects:
-  - title: Build an Educational ECG Waveform Viewer
+  - title: AD8232 Bench Signal Viewer — No Electrodes
     href: /projects/esp32-ecg-monitor.html
-    description: Compare another education-only health-signal project with strict safety limits.
-  - title: Build an Indoor Air Quality Monitor
-    href: /projects/esp32-air-quality-monitor.html
-    description: Practice sensor logging with non-medical environmental readings.
+    description: Compare a non-body-connected analog acquisition exercise.
   faqs:
-  - question: Is this a medical pulse oximeter?
-    answer: No. It is only an educational optical sensor logger.
-  - question: Can I use the estimated SpO2 value for health decisions?
-    answer: No. Do not use it for diagnosis, treatment, emergency use, or reassurance.
+  - question: Does this measure blood oxygen or pulse rate?
+    answer: No. It logs raw red/IR sensor counts only. No saturation or beat algorithm is implemented.
+  - question: Can I use any MAX30102 module?
+    answer: No. This supported circuit uses MAXREFDES117#. Other carriers require their own documented power
+      and signal-level review.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Compare actual output with the CSV format and troubleshooting above. Documentation review does
+      not establish successful compilation, hardware operation or measurement accuracy.
     skills:
-    - I2C sensor wiring
-    - Finger-presence validation
-    - Estimated-value labeling
-    - Safety-bounded troubleshooting
+    - Identify host versus sensor rails
+    - Drain paired FIFO records
+    - Label raw counts honestly
+  references:
+  - href: https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf
+    title: Analog Devices MAX30102 datasheet, Rev.1 (10/18)
+  - href: https://www.analog.com/en/resources/reference-designs/maxrefdes117.html
+    title: Analog Devices MAXREFDES117 reference design and parts
+  - href: https://www.digikey.com/en/articles/maxrefdes117-heart-rate-and-pulse-oximetry-monitor
+    title: Maxim-authored MAXREFDES117 quick-start connection tables (DigiKey mirror)
+  - href: https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library/blob/v1.1.2/src/MAX30105.cpp
+    title: 'SparkFun library v1.1.2: configuration and FIFO API'
+  - href: https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library/blob/v1.1.2/library.properties
+    title: SparkFun library v1.1.2 package metadata
+  bom:
+  - part: Classic ESP32-WROOM DevKit
+    qty: '1'
+    estimated_cost: Varies
+    notes: USB-powered; exposed GPIO21/GPIO22; Arduino-ESP32 3.3.2 review baseline.
+  - part: Analog Devices / Maxim MAXREFDES117#
+    qty: '1'
+    estimated_cost: Varies
+    notes: Identified reference board containing MAX30102, MAX1921 regulator and MAX14595 host level translator.
+      Not a bare MAX30102 IC or unidentified clone.
+  - part: Short jumper wires and USB data cable
+    qty: '1'
+    estimated_cost: Varies
+    notes: Connect labelled pads; use the board documentation, not the logical diagram as a physical pin-order
+      drawing.
+  - part: Clean nonconductive white card
+    qty: '1'
+    estimated_cost: Varies
+    notes: Optional reflected-light target; no medical probe or body connection.
+  safety_badge: Raw counts — not a health test
