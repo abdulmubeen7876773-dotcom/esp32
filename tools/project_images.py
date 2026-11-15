@@ -31,7 +31,7 @@ PROJECT_IMAGE_BY_SLUG = {
     "esp32-rfid-access-control-system": "/assets/images/generated/esp32-rfid-access-control-system.webp",
     "esp32-rfid-inventory-tracker": "/assets/images/generated/esp32-rfid-inventory-tracker.webp",
     "esp32-rgb-led-pattern-controller": "/assets/images/generated/esp32-rgb-led-pattern-controller.webp",
-    "esp32-robot-arm-controller": "/assets/images/generated/esp32-robot-arm-controller.webp",
+    "esp32-robot-arm-controller": "/assets/visuals/projects/heroes/esp32-robot-arm-controller-bench-overview.svg",
     "esp32-security-camera-system": "/assets/images/generated/esp32-security-camera-system.webp",
     "esp32-smart-door-lock": "/assets/images/generated/esp32-smart-door-lock.webp",
     "esp32-smart-energy-meter": "/assets/images/generated/esp32-smart-energy-meter.webp",
@@ -47,7 +47,7 @@ PROJECT_IMAGE_BY_SLUG = {
     "esp32-vibration-monitor": "/assets/images/generated/esp32-vibration-monitor.webp",
     "esp32-voice-controlled-relay": "/assets/images/generated/esp32-voice-controlled-relay.webp",
     "esp32-water-leak-detector": "/assets/images/generated/esp32-water-leak-detector.webp",
-    "esp32-wifi-robot-controller": "/assets/images/generated/esp32-wifi-robot-controller.webp",
+    "esp32-wifi-robot-controller": "/assets/visuals/projects/heroes/esp32-wifi-robot-controller-bench-overview.svg",
 }
 
 

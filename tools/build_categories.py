@@ -506,8 +506,8 @@ CATEGORY_DEEP_DETAILS = {
         ],
         "choose": [
             ("Line follower", "/projects/esp32-line-following-robot.html", "Choose this for autonomous behaviour from floor sensors and motor outputs."),
-            ("Wi-Fi robot", "/projects/esp32-wifi-robot-controller.html", "Choose this when the lesson is manual remote driving and network latency."),
-            ("Robot arm", "/projects/esp32-robot-arm-controller.html", "Choose this for servo angles, power separation, and repeatable motion limits."),
+            ("Wi-Fi robot", "/projects/esp32-wifi-robot-controller.html", "Choose this for documented H-bridge wiring and short, supervised Wi-Fi command bursts."),
+            ("Robot arm", "/projects/esp32-robot-arm-controller.html", "Choose this for unloaded three-axis pulse commands, separate power and explicit enable; no homing or measured travel."),
             ("Distance sensing", "/projects/esp32-distance-monitoring-system.html", "Choose this for obstacle data before moving a robot toward objects."),
         ],
         "reality": [

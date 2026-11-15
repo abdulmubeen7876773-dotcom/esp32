@@ -1,22 +1,23 @@
 format: golden
 slug: esp32-wifi-robot-controller
-title: ESP32 WiFi Robot Controller
+title: 'ESP32 Wi-Fi Robot Controller: Bounded Bench Bursts'
 category: Robotics
-image_alt: ESP32 WiFi robot controller with motor driver, small robot chassis, and browser control
-image: /assets/images/generated/esp32-wifi-robot-controller.webp
-featured_image: /assets/images/generated/esp32-wifi-robot-controller.webp
-hero_image: /assets/images/generated/esp32-wifi-robot-controller.webp
+image_alt: Logical overview of the selected TB6612FNG motor bench; not a hardware photo or measured result
+image: /assets/visuals/projects/heroes/esp32-wifi-robot-controller-bench-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-wifi-robot-controller-bench-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-wifi-robot-controller-bench-overview.svg
 placeholder_image: /assets/visuals/projects/placeholders/esp32-wifi-robot-controller-placeholder.svg
-og_image: /assets/images/og/esp32-wifi-robot-controller.webp
-description: Build a browser-controlled ESP32 robot that drives motors from Wi-Fi commands served by the board itself.
-meta_description: Build a browser-controlled ESP32 robot that drives motors from Wi-Fi commands served by the board
-  itself.
+og_image: /assets/visuals/projects/heroes/esp32-wifi-robot-controller-bench-overview.svg
+description: Control a documented TB6612FNG two-motor bench from a local ESP32 page, with reset-time standby and
+  short bursts instead of latched movement.
+meta_description: Control a documented TB6612FNG two-motor bench from a local ESP32 page, with reset-time standby
+  and short bursts instead of latched movement.
 source_base: esp32-wifi-robot-controller
-sensor: web control commands
-output: dual motor driver
+sensor: Local browser POST commands
+output: TB6612FNG direction and standby control
 featured: true
 date_published: '2026-06-14'
-date_modified: '2026-06-29'
+date_modified: '2026-11-15'
 keywords:
 - ESP32
 - ESP32 WiFi Robot Controller
@@ -24,119 +25,191 @@ keywords:
 - dual motor driver
 - Arduino tutorial
 hardware:
-  sensor_pin: Wi-Fi
-  output_pin: GPIO16-GPIO19
-  sensor_name: web control commands
-  output_name: dual motor driver
+  sensor_pin: Wi-Fi AP
+  output_pin: GPIO16/17/18/19/25
+  sensor_name: Local browser POST commands
+  output_name: TB6612FNG direction and standby control
   wiring:
-  - component: web control commands
-    pin: Wi-Fi
-  - component: dual motor driver
-    pin: GPIO16-GPIO19
+  - component: AIN1/AIN2/BIN1/BIN2
+    pin: GPIO16/17/18/19
+  - component: STBY with 10kΩ pull-down
+    pin: GPIO25
 project:
   icon: ESP
-  mission_title: Build Your WiFi Robot Controller
+  mission_title: Command Short Two-Motor Bursts
   difficulty: Intermediate
   age: Ages 12+
-  estimated_time: 90-150 min
-  budget: Under $35
-  what_you_build: A working Wi-Fi robot controller with an ESP32, a real input, a controlled output, Serial Monitor
-    diagnostics, and a wiring map you can expand into a more advanced version.
+  estimated_time: Assembly time varies
+  budget: Parts cost varies
+  what_you_build: A local access-point control page for two small brushed gearmotors through a specified dual H-bridge.
+    Forward, left and right request one 250 ms command burst; there is no continuous drive, reverse command or automatic
+    repeat. Start with wheels lifted and chassis secured. This is a control lesson, not an unattended or autonomous-safe
+    robot. The overview is a logical illustration, not a hardware photo or test result. Use the specified parts
+    and wiring map below; physical connector orientation must be checked separately.
   components:
-  - item: ESP32 DevKit board
-    note: Main controller
-    icon: PART
+  - item: Classic ESP32-WROOM DevKit
+    note: Arduino-ESP32 3.3.2 review baseline; GPIO16/17 must be free, so this map excludes WROVER/PSRAM variants.
     link: /components/esp32-devkit.html
-  - item: Web Control Commands
-    note: Primary input for the project
-    icon: PART
-  - item: Dual Motor Driver
-    note: Physical output controlled by ESP32
-    icon: PART
-  - item: Breadboard and jumper wires
-    note: Prototype wiring
-    icon: PART
-  - item: USB data cable
-    note: Programming and testing
-    icon: PART
+  - item: 'Pololu TB6612FNG dual motor carrier #713'
+    note: Use its documented pins, logic supply, motor supply and standby behavior; not an assumed L298N substitute.
+  - item: 'Two Pololu #992 100:1 Micro Metal Gearmotors LP 6 V'
+    note: Matched low-power reference motors; secure a suitable small chassis with wheels lifted.
+  - item: Separately switched, regulated 6 V / 2 A current-limited bench supply
+    note: Motor supply only. Check current/transient behavior; no power from ESP32 GPIO, 3V3 or USB.
+  - item: 10kΩ pull-down, 470 µF/16 V electrolytic and two 100 nF ceramics
+    note: STBY pull-down, VMOT bulk decoupling and one ceramic across each motor. Check capacitor polarity.
+  - item: Suitable motor-current connections and USB data cable
+    note: Motor supply/returns bypass breadboard signal rails; USB powers the DevKit only.
   bom:
-  - part: ESP32 DevKit
+  - part: Classic ESP32-WROOM DevKit
     qty: '1'
-    estimated_cost: $6-$10
-    notes: USB board
-  - part: Web Control Commands
+    estimated_cost: Varies
+    notes: Arduino-ESP32 3.3.2 review baseline; GPIO16/17 must be free, so this map excludes WROVER/PSRAM variants.
+  - part: 'Pololu TB6612FNG dual motor carrier #713'
     qty: '1'
-    estimated_cost: $2-$10
-    notes: Project input
-  - part: Dual Motor Driver
+    estimated_cost: Varies
+    notes: Use its documented pins, logic supply, motor supply and standby behavior; not an assumed L298N substitute.
+  - part: 'Pololu #992 100:1 Micro Metal Gearmotor LP 6 V'
+    qty: '2'
+    estimated_cost: Varies
+    notes: Matched low-power reference motors; secure a suitable small chassis with wheels lifted.
+  - part: Separately switched, regulated 6 V / 2 A current-limited bench supply
     qty: '1'
-    estimated_cost: $3-$12
-    notes: Use low-voltage test hardware
-  - part: Breadboard and wires
+    estimated_cost: Varies
+    notes: Motor supply only. Check current/transient behavior; no power from ESP32 GPIO, 3V3 or USB.
+  - part: 10kΩ pull-down, 470 µF/16 V electrolytic and two 100 nF ceramics
     qty: 1 set
-    estimated_cost: $3-$5
-    notes: Prototype wiring
+    estimated_cost: Varies
+    notes: STBY pull-down, VMOT bulk decoupling and one ceramic across each motor. Check capacitor polarity.
+  - part: Suitable motor-current connections and USB data cable
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Motor supply/returns bypass breadboard signal rails; USB powers the DevKit only.
   wiring:
-    illustration_alt: ESP32 WiFi Robot Controller wiring diagram
-    summary: Wire the web control commands first, verify readings, then connect the dual motor driver.
+    full_size_link: true
+    illustration_alt: 'Logical classic-WROOM to Pololu TB6612FNG map: GPIO16/17/18/19 direction, GPIO25 standby
+      with pull-down, 3.3 V logic and separate 6 V motor power. Not physical pin order.'
+    summary: 'Carrier #713 VCC, PWMA and PWMB connect to 3V3; GPIO25 drives STBY with 10kΩ to GND. Direction pins
+      are GPIO16→AIN1, 17→AIN2, 18→BIN1, 19→BIN2. VMOT takes separate switched 6 V; AO1/AO2 and BO1/BO2 feed the
+      two selected motors. All grounds share a reference; positive rails do not join.'
     steps:
-    - Unplug USB before placing modules on the breadboard.
-    - Connect the web control commands power pins to the correct 3.3 V or 5 V rail according to its module label.
-    - Connect the web control commands signal line to Wi-Fi.
-    - Connect the dual motor driver control input to GPIO16-GPIO19 and share ground with the ESP32.
-    - Power the ESP32 from USB and test the input reading before enabling the output.
+    - Disconnect USB and motor power. Identify the exact carrier and motors from documentation, not the hero illustration.
+      Secure the chassis with wheels lifted.
+    - Wire VCC, PWMA and PWMB to ESP32 3V3, all grounds together, direction pins as listed, and STBY to GPIO25 with
+      a 10kΩ pull-down at the carrier. Do not hard-wire STBY HIGH.
+    - Connect motor A to AO1/AO2 and motor B to BO1/BO2. Fit a 100 nF ceramic across each motor terminal pair. Motor
+      mounting determines the physical forward direction.
+    - Wire switched 6 V positive to VMOT and return directly to carrier GND. Fit 470 µF/16 V bulk capacitance nearby,
+      positive to VMOT. Keep motor currents out of signal rails.
+    - With motor power OFF, upload and open Serial at 115200. Set your own 8–63-character AP password, join ESP32-Robot
+      and use the printed local address. No router or internet is required.
+    - Keep the independent power switch accessible. Apply motor power for supervised lifted-wheel bursts only. If
+      direction is wrong, power everything off before swapping that motor’s output leads.
+    - Turn motor power off before removing USB; disconnect both sources before changing connections. Do not unplug
+      a motor from an energized driver.
   gpio_map:
-  - signal: web control commands
-    esp32_pin: Wi-Fi
-    direction: Input
-    notes: Read before controlling output
-  - signal: dual motor driver
-    esp32_pin: GPIO16-GPIO19
+  - signal: AIN1 / AIN2
+    esp32_pin: GPIO16 / GPIO17
     direction: Output
-    notes: Drive through a module or driver
-  - signal: Status LED
-    esp32_pin: GPIO2
+    notes: Left direction; classic WROOM only with these pins free.
+  - signal: BIN1 / BIN2
+    esp32_pin: GPIO18 / GPIO19
     direction: Output
-    notes: Optional debug indicator
-  - signal: Serial Monitor
-    esp32_pin: USB
-    direction: Debug
-    notes: 115200 baud
+    notes: Right direction; no reverse command implemented.
+  - signal: STBY
+    esp32_pin: GPIO25
+    direction: Output
+    notes: 10kΩ to GND at carrier; LOW → high-impedance standby.
+  - signal: VCC / PWMA / PWMB
+    esp32_pin: 3V3
+    direction: Logic power / enable
+    notes: PWM inputs HIGH; no speed-control PWM in this sketch.
+  - signal: VMOT
+    esp32_pin: External switched 6 V +
+    direction: Motor power
+    notes: Never connect to DevKit positive rails.
+  - signal: AO1/AO2 / BO1/BO2
+    esp32_pin: Motor A / motor B
+    direction: Driver outputs
+    notes: No motor lead connects to a GPIO.
+  - signal: All grounds
+    esp32_pin: Common GND
+    direction: Reference / return
+    notes: High-current loop returns directly to carrier/supply.
   code:
     filename: wifi-robot-controller.ino
-    content: "#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* ssid = \"ESP32-Robot\";\nconst char* password\
-      \ = \"robot1234\";\nWebServer server(80);\n\nconst int L1 = 16, L2 = 17, R1 = 18, R2 = 19;\n\nvoid drive(bool\
-      \ lf, bool lb, bool rf, bool rb) {\n  digitalWrite(L1, lf); digitalWrite(L2, lb);\n  digitalWrite(R1, rf);\
-      \ digitalWrite(R2, rb);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(L1, OUTPUT); pinMode(L2,\
-      \ OUTPUT); pinMode(R1, OUTPUT); pinMode(R2, OUTPUT);\n  WiFi.softAP(ssid, password);\n  server.on(\"/\", [](){\
-      \ server.send(200, \"text/html\", \"<a href=/f>Forward</a> <a href=/l>Left</a> <a href=/r>Right</a> <a href=/s>Stop</a>\"\
-      ); });\n  server.on(\"/f\", [](){ drive(1,0,1,0); server.send(200, \"text/plain\", \"forward\"); });\n  server.on(\"\
-      /l\", [](){ drive(0,0,1,0); server.send(200, \"text/plain\", \"left\"); });\n  server.on(\"/r\", [](){ drive(1,0,0,0);\
-      \ server.send(200, \"text/plain\", \"right\"); });\n  server.on(\"/s\", [](){ drive(0,0,0,0); server.send(200,\
-      \ \"text/plain\", \"stop\"); });\n  server.begin();\n  Serial.println(WiFi.softAPIP());\n}\n\nvoid loop()\
-      \ {\n  server.handleClient();\n}\n"
-  expected_output: Serial Monitor should show a changing reading. When the web control commands reaches the test
-    condition, the status LED and dual motor driver should switch state. If the reading changes but the output does
-    not, debug the output wiring separately.
+    content: "// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline.\n// Pololu TB6612FNG #713, two\
+      \ Pololu #992 motors, wheels lifted.\n// Software standby is NOT power isolation or an emergency stop.\n#include\
+      \ <Arduino.h>\n#include <WiFi.h>\n#include <WebServer.h>\n\nconstexpr uint8_t L1 = 16, L2 = 17, R1 = 18, R2\
+      \ = 19, STBY = 25;\nconstexpr uint32_t BURST_MS = 250;\nconst char* AP_PASSWORD = \"CHANGE_ME_1234\"; // Set\
+      \ your own 8-63 character password.\nWebServer server(80);\nbool httpReady = false, moving = false;\nuint32_t\
+      \ burstStarted = 0;\nchar lastCommand = 'S';\n\nvoid standby() {\n  digitalWrite(STBY, LOW); // High-impedance\
+      \ outputs: wheels may coast.\n  digitalWrite(L1, LOW); digitalWrite(L2, LOW);\n  digitalWrite(R1, LOW); digitalWrite(R2,\
+      \ LOW);\n  moving = false;\n}\nvoid sendHome() {\n  server.sendHeader(\"Location\", \"/\");\n  server.sendHeader(\"\
+      Cache-Control\", \"no-store\");\n  server.send(303, \"text/plain\", \"Return to control page\\n\");\n}\nvoid\
+      \ showPage() {\n  String page = \"<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width,initial-scale=1'>\"\
+      ;\n  page += \"<title>ESP32 bench robot</title><style>body{font:1.1rem system-ui;max-width:38rem;margin:2rem\
+      \ auto;padding:1rem}button{font:inherit;margin:.5rem;padding:.7rem}</style></head><body>\";\n  page += \"\
+      <h1>Wheels-lifted robot demonstration</h1><p>One accepted command requests a 250 ms burst. No continuous drive\
+      \ or automatic repeats.</p>\";\n  page += String(\"<p>Last accepted command: \") + lastCommand + \". This\
+      \ is not motor feedback.</p>\";\n  page += \"<form method='post' action='/move'><button name='dir' value='F'>Forward\
+      \ burst</button><button name='dir' value='L'>Left burst</button><button name='dir' value='R'>Right burst</button></form>\"\
+      ;\n  page += \"<form method='post' action='/s'><button>Request standby</button></form>\";\n  page += \"<p>HTTP\
+      \ is not serviced during a burst; a network stop waits until that burst ends. Standby permits coasting. Keep\
+      \ the independent motor-power switch reachable.</p></body></html>\";\n  server.sendHeader(\"Cache-Control\"\
+      , \"no-store\");\n  server.send(200, \"text/html; charset=utf-8\", page);\n}\nvoid moveRequest() {\n  if (server.args()\
+      \ != 1 || !server.hasArg(\"dir\")) {\n    server.send(400, \"text/plain\", \"Exactly one dir=F, L or R required\\\
+      n\"); return;\n  }\n  String dir = server.arg(\"dir\");\n  if (dir != \"F\" && dir != \"L\" && dir != \"R\"\
+      ) {\n    server.send(400, \"text/plain\", \"Unknown direction\\n\"); return;\n  }\n  if (WiFi.softAPgetStationNum()\
+      \ == 0) {\n    standby(); server.send(409, \"text/plain\", \"No connected station\\n\"); return;\n  }\n  //\
+      \ Complete the potentially blocking response BEFORE enabling the bridge.\n  sendHome();\n  standby();\n  lastCommand\
+      \ = dir.charAt(0);\n  digitalWrite(L1, lastCommand == 'L' ? LOW : HIGH);\n  digitalWrite(R1, lastCommand ==\
+      \ 'R' ? LOW : HIGH);\n  // L2/R2 remain LOW. Both LOW on the idle side means coast, not reverse.\n  burstStarted\
+      \ = millis();\n  moving = true;\n  digitalWrite(STBY, HIGH);\n}\nvoid setup() {\n  // External 10k pulldown\
+      \ on STBY defines standby before/during reset.\n  digitalWrite(STBY, LOW); pinMode(STBY, OUTPUT);\n  const\
+      \ uint8_t directionPins[] = {L1, L2, R1, R2};\n  for (uint8_t pin : directionPins) {\n    digitalWrite(pin,\
+      \ LOW); pinMode(pin, OUTPUT);\n  }\n  standby();\n  Serial.begin(115200);\n  server.on(\"/\", HTTP_GET, showPage);\n\
+      \  server.on(\"/move\", HTTP_POST, moveRequest);\n  server.on(\"/s\", HTTP_POST, []() {\n    if (server.args()\
+      \ != 0) { server.send(400, \"text/plain\", \"No arguments expected\\n\"); return; }\n    standby(); lastCommand\
+      \ = 'S'; sendHome();\n  });\n  server.onNotFound([]() { server.send(404, \"text/plain\", \"No such route\\\
+      n\"); });\n  if (!WiFi.mode(WIFI_AP) || !WiFi.softAP(\"ESP32-Robot\", AP_PASSWORD, 6, false, 1)) {\n    Serial.println(\"\
+      AP failed; driver remains in standby\"); return;\n  }\n  server.begin(); httpReady = true;\n  Serial.print(\"\
+      Join ESP32-Robot; open http://\"); Serial.println(WiFi.softAPIP());\n  Serial.println(\"Motor power off until\
+      \ wiring and lifted-wheel checks are complete\");\n}\nvoid loop() {\n  if (moving) {\n    if (uint32_t(millis()\
+      \ - burstStarted) >= BURST_MS || WiFi.softAPgetStationNum() == 0) {\n      standby();\n    }\n    // Do not\
+      \ enter synchronous HTTP parsing/sending while motors are commanded.\n    delay(1);\n    return;\n  }\n  if\
+      \ (httpReady) server.handleClient();\n  delay(1);\n}\n"
+  expected_output: With only USB powered, the AP should appear and Serial at 115200 should print its local http://
+    address. The page reports the last accepted command, not measured wheel speed or position. On the correctly
+    identified lifted-wheel setup, a burst should briefly drive both motors or coast one side for turning, then
+    return to high-impedance standby. There is no supplied hardware result or measured stopping distance.
   common_mistakes:
-  - text: Testing input and output for the first time together.
-  - text: Using a GPIO pin that does not match the code constant.
-  - text: Expecting an ESP32 GPIO to power a motor, pump, or lock directly.
-  - text: Forgetting the shared ground between modules.
+  - text: Leaving enable/standby floating or assuming all driver boards share a pinout.
+  - text: Feeding motor current through USB, GPIO or breadboard signal rails.
+  - text: Treating 250 ms as a safety-certified maximum or standby as physical stopped motion.
+  - text: Calling a web response proof of a motor movement.
   troubleshooting:
-  - problem: web control commands never changes
-    fix: Check power, ground, signal pin, and whether the sensor is analog or digital.
-  - problem: dual motor driver does not switch
-    fix: Test the output module with a simple blink-style sketch before using the full project.
-  - problem: ESP32 resets under load
-    fix: Use a separate supply for motors, pumps, or locks and keep only control signals connected to ESP32.
-  - problem: Behavior is reversed
-    fix: Your module may be active LOW; invert the output logic after confirming with Serial Monitor.
+  - problem: AP or control page unavailable
+    fix: Keep motor power off. Check classic ESP32 board selection, data cable and password length; use the Serial-printed
+      local address and remain connected despite no-internet warnings.
+  - problem: No motor movement
+    fix: With all power off check VCC versus VMOT, common ground, PWMA/PWMB HIGH, STBY pull-down and GPIO25 connection.
+      Do not bypass standby by tying it HIGH.
+  - problem: A side runs backward
+    fix: Power down both sources and swap only that motor’s two output leads. Do not rewire energized outputs or
+      assume chassis orientation matches the sketch.
+  - problem: Motor continues to coast after standby
+    fix: That is not a commanded brake. Remove motor power using the independent switch and keep wheels clear; no
+      stopping-distance or braking performance is supplied.
+  - problem: Motor stalls, driver heats or ESP32 resets
+    fix: Stop external motor power. Check mechanical binding, actual motor identity/current, supply transient response,
+      direct return wiring and capacitor polarity. Do not repeatedly stall it or increase supply limits to force
+      motion.
+  - problem: A network stop appears delayed
+    fix: HTTP is deliberately not serviced during a motion burst. New requests are handled after its elapsed-time
+      loop returns to standby. This page provides no immediate network emergency stop.
   upgrade_ideas:
-  - Add OLED status feedback.
-  - Add Wi-Fi dashboard or mobile alerts.
-  - Store event history in flash or a cloud service.
-  - Add calibration settings instead of hard-coded thresholds.
+  - Study encoders and obstacle sensing in a separately engineered design; none are present here.
   related_guides:
   - title: ESP32 Robotics Learning Path
     href: /learning.html#robotics-basics
@@ -158,46 +231,55 @@ project:
     href: /projects/esp32-home-climate-automation.html
     description: Turn measurements into automatic control decisions.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Compare wiring and actual observations with these intended checks. A successful web request or build
+      does not establish motor operation or electrical/mechanical safety.
     skills:
-    - Wire and test web control commands
-    - Control dual motor driver from ESP32
-    - Debug hardware with Serial Monitor
-    - Improve the project safely
-  story: 'ESP32 WiFi Robot Controller serves a simple browser control page, receives forward/back/left/right commands
-    over Wi-Fi, and translates those commands into GPIO16-GPIO19 motor-driver signals.
-
-
-    The important lesson is not only the finished Wi-Fi robot controller. You learn to test web commands before the
-    robot moves, keep the motor supply separate from USB, and debug command handling before blaming the chassis.'
-  eli12: Think of the ESP32 as the brain. The web control commands is how it notices the world. The dual motor driver
-    is how it answers back. The code is the rule book that tells the brain what to do when the numbers change.
-  parent_safety: This tutorial is designed for low-voltage learning on USB or a regulated low-voltage supply. Unplug
-    the ESP32 before changing wires. Keep motors, pumps, door hardware, and relay loads separate from the USB programming
-    circuit. Do not use mains voltage on a breadboard.
+    - Trace separate power rails
+    - Use defined standby
+    - Distinguish commands from feedback
+  story: A web command is information, not a motor power source. The ESP32 sets direction inputs and a standby line;
+    a separate supply delivers motor current through the carrier. Short bursts replace the former indefinitely latched
+    movement.
+  eli12: The browser asks for a short movement. The driver supplies the current. When the software returns to standby
+    the wheels can coast, so a Stop label does not mean the robot has physically stopped.
+  parent_safety: Secure the chassis with wheels clear of the bench, restrain loose wires and keep fingers away from
+    gears. Keep an independent switch in the motor supply within reach. Software standby leaves VMOT energized and
+    permits coasting; it is not a brake, emergency stop or isolation. Disconnect motor power before USB shutdown
+    or any wiring change. No floor-running, collision avoidance or unattended operation is validated.
   learning_objectives:
-  - Wire and test the web control commands before connecting the rest of the circuit.
-  - Map each signal to a named ESP32 GPIO and keep the code constants readable.
-  - Control dual motor driver using a clear threshold or command instead of hidden magic numbers.
-  - Use Serial Monitor as an engineering tool, not only as a success message.
-  - Identify power, wiring, and timing faults using a repeatable test checklist.
-  circuit_explanation: The circuit is split into an input side and an output side. The web control commands tells
-    the ESP32 what is happening. The dual motor driver receives a controlled signal from the ESP32, usually through
-    a driver, relay, or module that can handle more current than a GPIO pin.
-  engineering_explanation: A reliable Wi-Fi robot controller is built in layers. First prove the input, then prove
-    the output, then join them with simple state logic. This prevents a common beginner problem where the robot,
-    lock, or automation fails and every wire looks suspicious at the same time.
-  code_explanation: The example uses named pins, reads the input, converts the reading into a true or false decision,
-    and then updates the output and status LED. Replace the threshold with values measured from your own web control
-    commands because modules vary.
+  - Separate logic from motor power.
+  - Trace direction, PWM-enable and standby states.
+  - Explain bounded commands, network loss and coasting limitations.
+  circuit_explanation: 'Classic ESP32-WROOM supplies 3.3 V logic to Pololu TB6612FNG #713 VCC. Motor power goes
+    only to carrier VMOT; all negative rails share a reference without routing motor return current through the
+    DevKit or solderless breadboard. STBY is active HIGH and has an external 10kΩ pull-down to GND, supplementing
+    the selected driver’s internal pull-down. PWMA/PWMB are deliberately tied HIGH for direction-only full-drive
+    bursts.'
+  engineering_explanation: 'The reference pair is Pololu #992 LP 6 V gearmotors, not arbitrary toy motors. The supplier
+    labels 0.36 A stall current per motor at 6 V as an extrapolation, not a permitted sustained stall. Two such
+    figures sum to 0.72 A; a regulated, current-limited 6 V / 2 A bench source is a planning allowance, not measured
+    startup performance or universal protection. Carrier continuous rating is 1 A per channel; do not design around
+    its brief peak rating or substitute a high-current motor. Its H-bridge provides regenerative current paths and
+    its carrier includes decoupling; retain those parts, add a 100 nF ceramic across each motor and a selected 470
+    µF/16 V bulk capacitor at VMOT. These do not replace adequate supply wiring or an overcurrent design. Do not
+    place a single ordinary flyback diode across a bidirectional motor output. Input thresholds depend on VCC: use
+    3.3 V logic supply, not 5 V VCC with assumed ESP32 compatibility. AP password is network admission, not HTTP
+    user authentication. This plain-HTTP bench has no TLS, CSRF protection, obstacle sensing, encoder feedback or
+    certified stop system. Do not expose it through a router.'
+  code_explanation: Only POST /move with exactly dir=F, L or R can initiate motion. The handler validates input
+    and completes its potentially blocking HTTP response before asserting STBY. During a burst the loop does not
+    service synchronous HTTP; it checks elapsed time and station presence, then returns the carrier to standby.
+    Requests queued during motion, including /s, wait until the current burst ends. Closing a browser tab does not
+    necessarily disconnect its Wi-Fi station; the independent 250 ms command duration still expires. Timing remains
+    best-effort MCU software, not a hard real-time safety guarantee. A reset is electrically biased to standby by
+    the external pull-down, but no motor-power isolation or fault tolerance is implied.
   testing_checklist:
-  - ESP32 appears on the correct port and accepts a basic blink upload.
-  - Ground is shared between every module that exchanges signals with the ESP32.
-  - Each GPIO in the code matches the wire connected on the breadboard.
-  - Serial Monitor prints startup text at 115200 baud.
-  - The web control commands value changes when you create a real test condition.
-  - The dual motor driver changes only when the expected condition is reached.
-  - The circuit still behaves correctly after power is removed and restored.
+  - 'Planned checks only: no compilation or hardware operation has been performed.'
+  - Verify selected hardware, polarity and reset-time STBY with motor power off.
+  - Check GET/invalid commands cannot start motion; use the exact POST form.
+  - Observe a supervised lifted-wheel burst, automatic standby and a station disconnect without assuming measured
+    timing.
+  - Use an appropriate instrument for actual pulse/current/timing verification; software status is not feedback.
   build_photos:
   - title: Breadboard overview
     note: Show the ESP32, module placement, and power rails clearly.
@@ -213,20 +295,41 @@ project:
   - text: Troubleshooting worksheet
     note: Record symptoms, Serial output, voltage checks, and fixes.
   real_world_applications:
-  - Classroom Wi-Fi robot controller trainer
-  - STEM lab demonstration
-  - Home automation prototype
-  - Engineering debugging practice
-  - IoT portfolio project
+  - Supervised H-bridge logic lesson
+  - Local-network command and reset-state demonstration
   faqs:
-  - question: Why does my web control commands reading look wrong?
-    answer: Confirm the phone or computer is on the robot's Wi-Fi page, then test each command in Serial Monitor
-      before enabling motor movement.
-  - question: Why does dual motor driver not respond?
-    answer: Check shared ground, the motor supply, and GPIO16-GPIO19 wiring. The ESP32 commands the driver but does
-      not power the motors directly.
-  - question: Why does the robot reset when it starts moving?
-    answer: Motor startup current can pull down weak supplies. Use a separate motor supply with common ground and
-      test with the wheels lifted before floor runs.
+  - question: Will closing the page stop Wi-Fi immediately?
+    answer: Not necessarily. A station can remain associated after its tab closes. Every command is limited to one
+      software burst, but only the independent power switch removes motor power.
+  - question: Can I substitute L298N or larger motors?
+    answer: Not using this circuit unchanged. Recheck that driver’s inputs, supply paths, enable states, current
+      and protection; no universal module compatibility is claimed.
+  safety_badge: Supervised wheels-lifted bench
+  libraries:
+  - name: Arduino-ESP32 3.3.2
+    note: Classic WROOM review baseline, not a latest-release label. Built-in WiFi and WebServer; no external motor
+      library.
+  safety_standards:
+  - Supervised low-voltage bench only; chassis secured with wheels lifted.
+  - A reachable independent motor-power switch is required; software standby permits coasting.
+  - No obstacle sensing, encoder feedback, travel limits or fault-rated stop is implemented.
+  references:
+  - title: Arduino-ESP32 3.3.2 GPIO API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.h
+  - title: Classic ESP32 datasheet (board pin availability still requires checking)
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: 'Pololu TB6612FNG carrier #713 integration'
+    href: https://www.pololu.com/product/713
+  - title: Toshiba TB6612FNG datasheet, 9 May 2008
+    href: https://www.pololu.com/file/0J86/TB6612FNG.pdf
+  - title: 'Pololu #992 LP 6 V motor specifications and stall caveat'
+    href: https://www.pololu.com/product/992
+  - title: WebServer API and implementation at core 3.3.2
+    href: https://github.com/espressif/arduino-esp32/tree/3.3.2/libraries/WebServer/src
+  - title: Wi-Fi AP API at core 3.3.2
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/WiFi/src/WiFiAP.h
+  - title: 'Pololu motor-noise guidance: motor capacitors and bulk decoupling'
+    href: https://www.pololu.com/docs/0J15/9
 quality_status: golden
 status: complete
+meta_title: 'ESP32 Wi-Fi Robot Controller: Bounded Bench Bursts'

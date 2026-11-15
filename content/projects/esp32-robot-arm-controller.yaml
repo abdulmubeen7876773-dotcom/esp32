@@ -1,299 +1,441 @@
 slug: esp32-robot-arm-controller
-title: ESP32 Educational Servo Arm Controller (3-DOF)
+title: ESP32 Three-Servo Arm-Control Bench Demo
 category: Robotics
-image_alt: ESP32 educational servo arm controller with small robotic arm and servo wiring
-og_image: /assets/images/og/esp32-robot-arm-controller.webp
-hero_image: /assets/images/generated/esp32-robot-arm-controller.webp
-featured_image: /assets/images/generated/esp32-robot-arm-controller.webp
-image: /assets/images/generated/esp32-robot-arm-controller.webp
-description: Control a small 3-servo SG90 educational arm with joystick inputs, safe angle constraints, incremental motion,
-  and separate servo power.
-meta_description: Build a small joystick-controlled 3-DOF servo arm on ESP32 with safe angle limits, incremental motion, and
-  separate servo power.
+image_alt: Logical overview of the selected unloaded three-FS90 bench; not a hardware photo or measured result
+og_image: /assets/visuals/projects/heroes/esp32-robot-arm-controller-bench-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-robot-arm-controller-bench-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-robot-arm-controller-bench-overview.svg
+image: /assets/visuals/projects/heroes/esp32-robot-arm-controller-bench-overview.svg
+description: Map three joystick axes to narrow FS90 pulse commands with manual enable, separate power and no automatic
+  sweep. A bench lesson, not a homed robot arm.
+meta_description: Map three joystick axes to narrow FS90 pulse commands with manual enable, separate power and no
+  automatic sweep. A bench lesson, not a homed robot arm.
 source_base: esp32-robot-arm-controller-legacy-import
-sensor: Base servo signal
-output: Servo power
+sensor: Three passive joystick potentiometer axes
+output: Three documented FS90 positional servo signals
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-11-15'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
 import_source: batch-php
 hardware:
-  sensor_pin: GPIO13
-  output_pin: External 5-6 V / GND
-  sensor_name: Base servo signal
-  output_name: Servo power
+  sensor_pin: GPIO34/GPIO35/GPIO36
+  output_pin: GPIO13/GPIO16/GPIO17
+  sensor_name: Three passive joystick potentiometer axes
+  output_name: Three documented FS90 positional servo signals
   wiring:
-  - component: Base servo signal
-    pin: GPIO13
-  - component: Shoulder servo signal
-    pin: GPIO16
-  - component: Elbow servo signal
-    pin: GPIO17
-  - component: Joystick base axis
-    pin: GPIO34
-  - component: Joystick shoulder axis
-    pin: GPIO35
-  - component: Joystick elbow axis
-    pin: GPIO36
-  - component: Servo power
-    pin: External 5-6 V / GND
+  - component: Three servo signals with 10kΩ pull-downs
+    pin: GPIO13/GPIO16/GPIO17
+  - component: Three joystick wipers via 1kΩ
+    pin: GPIO34/GPIO35/GPIO36
+  - component: Momentary software-enable button to GND
+    pin: GPIO27
 levels:
   beginner:
     level: beginner
-    overview_html: <p>A small 3-DOF joystick-controlled servo arm with base, shoulder, and elbow joints. Servos can pinch
-      and draw surge current. Use a separate regulated 5-6 V servo supply, common ground, and a bulk capacitor.</p>
+    overview_html: <p>Three joystick axes increment three positional-servo pulse commands on a restrained, unloaded
+      bench. The historical robot-arm URL remains, but no load-bearing arm assembly or mechanical travel calibration
+      is supplied. There are no limit switches, homing sensors, encoders or verified joint positions. Keep horns
+      and loads removed for this supported exercise.</p>
     components:
-    - ESP32 DevKit board
-    - Three SG90-class micro servos
-    - Separate regulated 5-6 V servo supply
-    - 470 uF or larger electrolytic capacitor
-    - Two analog joystick modules
-    - SSD1306 OLED display
+    - Classic ESP32-WROOM DevKit
+    - 'Three FEETECH FS90 positional servos, Pololu #2818 reference'
+    - Two passive SparkFun COM-09032 thumb joysticks
+    - Separate switched, regulated 5 V / 3 A current-capable supply
+    - Bare momentary enable button
+    - 'Three each: 10kΩ, 1kΩ, 100kΩ resistors and 100 nF ceramics; 470 µF ≥10 V bulk capacitor'
+    - Suitable power distribution, short signal connections and USB data cable
     wiring:
-    - - Base servo signal
-      - GPIO13
-      - Safe output pin for servo signal.
-    - - Shoulder servo signal
-      - GPIO16
-      - Avoids boot strap pins.
-    - - Elbow servo signal
-      - GPIO17
-      - Avoids boot strap pins.
-    - - Joystick base axis
-      - GPIO34
-      - Input-only ADC pin.
-    - - Joystick shoulder axis
-      - GPIO35
-      - Input-only ADC pin.
-    - - Joystick elbow axis
-      - GPIO36
-      - Input-only ADC pin.
-    - - Servo power
-      - External 5-6 V / GND
-      - Common ground with ESP32.
+    - - Base / shoulder / elbow signal
+      - GPIO13 / GPIO16 / GPIO17
+      - 10kΩ to GND on each; pulse commands, not measured joint angles.
+    - - Joystick 1 X / Y; joystick 2 X
+      - GPIO34 / GPIO35 / GPIO36
+      - 'Per axis: wiper→1kΩ→ADC; 100kΩ and100nF from ADC to GND.'
+    - - Passive pot end terminals
+      - 3V3 / GND
+      - Use only ESP32 3V3; no external 5 V joystick signal.
+    - - Enable button
+      - GPIO27 to GND
+      - Bare momentary button; INPUT_PULLUP; release required before arming.
+    - - Servo positive
+      - External switched 5 V +
+      - Not the USB/DevKit positive rail.
+    - - Servo returns / ESP32 reference
+      - External supply minus + GND
+      - Current returns go directly to the servo supply.
+    - - Unused axis / click switches
+      - Not connected
+      - Identify physical terminals separately; no universal color/pin-order claim.
     key_concepts:
-    - The ESP32 sends servo control pulses while joystick axes are read on ADC1. Servos draw power from a separate supply.
-    - Every angle update passes through explicit constrain functions. Movement is incremental to reduce sudden jumps.
-    applications: &id003
-    - Servo control lesson
-    - Joystick mapping demo
-    - Mechanical constraint exercise
+    - Servo power uses a separately switched, regulated 5 V rail; USB powers the ESP32 and 3.3 V passive joystick
+      circuits only. Join grounds, never positive rails. The selected FS90 supplier supports 3.3 V control signals;
+      another servo needs its own threshold review or a documented buffer. Fit 10kΩ from each servo signal to GND.
+      For each used joystick axis connect its wiper through 1kΩ to the ADC node, with 100kΩ and 100 nF from that
+      node to GND. Potentiometer ends connect only to ESP32 3V3/GND; identify ends/wipers electrically before soldering.
+    - 'Use the documented FS90 positional variant supplied as Pololu #2818, with the FS90-C V1.0 manufacturer sheet.
+      That specification describes 900–2100 µs, not a universal 500–2500 µs travel range. This sketch deliberately
+      commands only 1400–1600 µs at 50 Hz and never converts commands into calibrated degrees. A 1500 µs command
+      is not homing, and even narrow pulses do not establish mechanical clearance. The sheet gives 700/800 mA stall
+      figures at 4.8/6 V; a separate 5 V / 3 A current-capable source for three units is a planning budget, not
+      a measured peak guarantee or permission to stall. Check actual supply transients, wiring and the exact units.
+      Retain 470 µF bulk decoupling (at least 10 V rated) at the distribution rail; it does not replace an adequate
+      supply. Hobby servos contain their own drive electronics: do not add a flyback diode across the servo signal
+      or assume bare-motor wiring. Classic ESP32 at 11 dB has a documented approximate 0.15–3.1 V ADC measurement
+      range, different from its 3.3 V supply domain. ADC endpoint clipping deliberately causes a software fault
+      here. GPIO34/35/36 lack internal pull resistors; external node pull-downs reduce floating on an open wiper
+      path. They cannot detect every short, ground break or plausible intermediate fault. With 100kΩ/100 nF the
+      nominal open-node RC is 10 ms, not an independently validated stop time.'
+    applications:
+    - Three-axis ADC-to-pulse mapping lesson
+    - Manual-enable and reset-state demonstration
     troubleshooting:
-    - - Servo jitter
-      - Check separate supply, common ground, and bulk capacitor.
-    - - Arm moves unexpectedly
-      - Increase dead zone and recalibrate joystick center.
-    - - One joint binds
-      - Tighten that joint's min/max constraints before testing again.
-    improvements: &id002
-    - Add save-position button.
-    - Add gripper only after power budget is checked.
-    - Add OLED angle display.
-    code: "// ESP32 educational 3-DOF servo arm controller\n// Uses separate 5-6 V servo supply, common ground, and constrained\
-      \ incremental motion.\n#include <ESP32Servo.h>\n\nconst int SERVO_BASE_PIN = 13;\nconst int SERVO_SHOULDER_PIN = 16;\n\
-      const int SERVO_ELBOW_PIN = 17;\nconst int JOY_BASE_PIN = 34;\nconst int JOY_SHOULDER_PIN = 35;\nconst int JOY_ELBOW_PIN\
-      \ = 36;\n\nServo baseServo;\nServo shoulderServo;\nServo elbowServo;\n\nint baseAngle = 90;\nint shoulderAngle = 90;\n\
-      int elbowAngle = 90;\nint baseCenter = 2048;\nint shoulderCenter = 2048;\nint elbowCenter = 2048;\n\nconst int BASE_MIN\
-      \ = 20;\nconst int BASE_MAX = 160;\nconst int SHOULDER_MIN = 35;\nconst int SHOULDER_MAX = 145;\nconst int ELBOW_MIN\
-      \ = 25;\nconst int ELBOW_MAX = 155;\nconst int DEAD_ZONE = 220;\n\nint constrainBase(int a) { return constrain(a, BASE_MIN,\
-      \ BASE_MAX); }\nint constrainShoulder(int a) { return constrain(a, SHOULDER_MIN, SHOULDER_MAX); }\nint constrainElbow(int\
-      \ a) { return constrain(a, ELBOW_MIN, ELBOW_MAX); }\n\nvoid writeServos() {\n  baseAngle = constrainBase(baseAngle);\n\
-      \  shoulderAngle = constrainShoulder(shoulderAngle);\n  elbowAngle = constrainElbow(elbowAngle);\n  baseServo.write(baseAngle);\n\
-      \  shoulderServo.write(shoulderAngle);\n  elbowServo.write(elbowAngle);\n}\n\nint axisStep(int raw, int center) {\n\
-      \  if (raw < 20 || raw > 4075) return 0; // hold last safe position if disconnected or stuck\n  int delta = raw - center;\n\
-      \  if (abs(delta) < DEAD_ZONE) return 0;\n  return delta > 0 ? 1 : -1;\n}\n\nint readAverage(int pin) {\n  long sum\
-      \ = 0;\n  for (int i = 0; i < 16; i++) sum += analogRead(pin);\n  return sum / 16;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  analogReadResolution(12);\n  baseServo.attach(SERVO_BASE_PIN, 500, 2500);\n  shoulderServo.attach(SERVO_SHOULDER_PIN,\
-      \ 500, 2500);\n  elbowServo.attach(SERVO_ELBOW_PIN, 500, 2500);\n\n  baseCenter = readAverage(JOY_BASE_PIN);\n  shoulderCenter\
-      \ = readAverage(JOY_SHOULDER_PIN);\n  elbowCenter = readAverage(JOY_ELBOW_PIN);\n\n  for (int a = 60; a <= 90; a++)\
-      \ {\n    baseAngle = constrainBase(a);\n    shoulderAngle = constrainShoulder(a);\n    elbowAngle = constrainElbow(a);\n\
-      \    writeServos();\n    delay(20);\n  }\n  Serial.println(\"Servo arm ready. Keep fingers clear of pinch points.\"\
-      );\n}\n\nvoid loop() {\n  baseAngle = constrainBase(baseAngle + axisStep(analogRead(JOY_BASE_PIN), baseCenter));\n \
-      \ shoulderAngle = constrainShoulder(shoulderAngle + axisStep(analogRead(JOY_SHOULDER_PIN), shoulderCenter));\n  elbowAngle\
-      \ = constrainElbow(elbowAngle + axisStep(analogRead(JOY_ELBOW_PIN), elbowCenter));\n  writeServos();\n  Serial.printf(\"\
-      Base %d Shoulder %d Elbow %d\\n\", baseAngle, shoulderAngle, elbowAngle);\n  delay(20);\n}\n"
-    code_filename: esp32-robot-arm-controller-beginner.ino
+    - - A is rejected
+      - Release enable once after reset/disable, then center all three axes, hold enable and send A. Check power-off
+        pot end/wiper identification and ADC node networks if a center is implausible; do not widen windows to conceal
+        miswiring.
+    - - An unplugged joystick is not reliably detected
+      - The 100kΩ is at the ADC node, not the disconnected end of the cable. It helps pull an open wiper path LOW,
+        but some faults remain plausible. Power off and inspect; do not claim the range check is a safety-rated
+        continuity monitor.
+    - - Immediate movement after A
+      - 'That is possible: no shaft position is measured and 1500 µs is not homing. Remove power if unexpected;
+        keep horns/loads removed. There is no startup motion ramp from a known physical position.'
+    - - Servo buzzes, binds or supply resets ESP32
+      - Switch servo power off immediately. Check exact unit, connector identity, supply transient capability, common
+        ground and restrained mechanics. Do not increase endpoints, hold a stall or rely on a capacitor alone.
+    - - Servo keeps torque after pulses disable
+      - No universal torque-release behavior is assumed. Use the independent supply switch; a loaded arm could fall
+        when released, which is why it is not part of this bench example.
+    - - One direction feels reversed or response is coarse
+      - Pot orientation changes sign, and servo deadband/mechanics affect movement. With power off verify the axis
+        mapping. Commands are µs, not calibrated angles; do not infer position or smooth motion from Serial text.
+    improvements:
+    - Study feedback and limit switches in a separately designed mechanism; none are wired here.
+    code: "// Classic ESP32-WROOM; Arduino-ESP32 3.3.2; built-in LEDC only.\n// Three documented FEETECH FS90 positional\
+      \ units, no horns/load.\n// No homing, shaft feedback, limit switches or patient/safety function.\n#include\
+      \ <Arduino.h>\n\nconstexpr uint8_t SERVO_PINS[3] = {13, 16, 17};\nconstexpr uint8_t AXIS_PINS[3] = {34, 35,\
+      \ 36};\nconstexpr uint8_t ENABLE_PIN = 27, BITS = 16;\nconstexpr int MIN_US = 1400, CENTER_US = 1500, MAX_US\
+      \ = 1600;\nconstexpr uint32_t LEASE_MS = 10000, UPDATE_MS = 20;\nint pulseUs[3] = {CENTER_US, CENTER_US, CENTER_US};\n\
+      int center[3] = {2048, 2048, 2048};\nbool attached[3] = {false, false, false}, armed = false, needsRelease\
+      \ = true;\nuint32_t armedAt = 0, lastUpdate = 0;\n\nuint32_t ticks(int us) {\n  return (uint32_t(us) * (1UL\
+      \ << BITS) + 10000) / 20000;\n}\nvoid disableOutputs() {\n  armed = false; needsRelease = true;\n  bool ok\
+      \ = true;\n  for (int i = 0; i < 3; ++i) {\n    if (attached[i]) {\n      if (!ledcWrite(SERVO_PINS[i], 0))\
+      \ ok = false;\n      if (!ledcDetach(SERVO_PINS[i])) ok = false;\n      attached[i] = false;\n    }\n    digitalWrite(SERVO_PINS[i],\
+      \ LOW); pinMode(SERVO_PINS[i], OUTPUT);\n  }\n  if (!ok) Serial.println(\"LEDC stop error: remove external\
+      \ servo power\");\n  Serial.println(\"Pulses disabled; external power and possible torque remain\");\n}\n\
+      void armAtCenter() {\n  if (needsRelease) { Serial.println(\"Release enable before arming again\"); return;\
+      \ }\n  if (armed) { Serial.println(\"Release enable before a new arm attempt\"); return; }\n  if (digitalRead(ENABLE_PIN)\
+      \ != LOW) {\n    Serial.println(\"Hold enable, center all axes, then send A\"); return;\n  }\n  for (int i\
+      \ = 0; i < 3; ++i) {\n    long sum = 0;\n    for (int n = 0; n < 16; ++n) sum += analogRead(AXIS_PINS[i]);\n\
+      \    int value = int(sum / 16);\n    if (value < 1200 || value > 3000) {\n      Serial.println(\"Axis not\
+      \ in plausible center window; remains disabled\"); return;\n    }\n    center[i] = value; // Manual centered\
+      \ reference, not a continuity test.\n  }\n  if (digitalRead(ENABLE_PIN) != LOW) return;\n  for (int i = 0;\
+      \ i < 3; ++i) {\n    pulseUs[i] = CENTER_US;\n    attached[i] = ledcAttach(SERVO_PINS[i], 50, BITS);\n   \
+      \ if (!attached[i] || !ledcWrite(SERVO_PINS[i], ticks(CENTER_US))) {\n      disableOutputs(); Serial.println(\"\
+      Attach/write failed; inspect with power off\"); return;\n    }\n  }\n  armedAt = millis(); lastUpdate = armedAt;\
+      \ armed = true; needsRelease = true;\n  Serial.println(\"1500 us commanded: movement may be immediate; no\
+      \ home position measured\");\n}\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(ENABLE_PIN, INPUT_PULLUP);\
+      \ // Bare momentary button to GND; software gate only.\n  analogReadResolution(12);\n  for (int i = 0; i <\
+      \ 3; ++i) {\n    pinMode(AXIS_PINS[i], INPUT);\n    analogSetPinAttenuation(AXIS_PINS[i], ADC_11db);\n   \
+      \ digitalWrite(SERVO_PINS[i], LOW); pinMode(SERVO_PINS[i], OUTPUT);\n  }\n  Serial.println(\"Disabled. External\
+      \ power off for wiring/upload. No automatic sweep.\");\n  Serial.println(\"Center axes, hold enable and send\
+      \ A; X disables. Lease is 10 seconds.\");\n}\nvoid loop() {\n  if (!armed && digitalRead(ENABLE_PIN) == HIGH)\
+      \ needsRelease = false;\n  if (armed && (digitalRead(ENABLE_PIN) != LOW || uint32_t(millis() - armedAt) >=\
+      \ LEASE_MS)) {\n    disableOutputs();\n  }\n  if (Serial.available()) {\n    char cmd = Serial.read();\n \
+      \   if (cmd == 'X' || cmd == 'x') disableOutputs();\n    else if (cmd == 'A' || cmd == 'a') armAtCenter();\n\
+      \    // Newlines and unrelated characters do not move servos or extend the lease.\n  }\n  if (!armed || uint32_t(millis()\
+      \ - lastUpdate) < UPDATE_MS) return;\n  lastUpdate = millis();\n  int raw[3];\n  for (int i = 0; i < 3; ++i)\
+      \ {\n    raw[i] = analogRead(AXIS_PINS[i]);\n    if (raw[i] <= 100 || raw[i] >= 3900) {\n      disableOutputs();\
+      \ Serial.println(\"Axis range fault; inspect disconnected input/rails\"); return;\n    }\n  }\n  for (int\
+      \ i = 0; i < 3; ++i) {\n    int delta = raw[i] - center[i];\n    if (delta > 250) pulseUs[i] += 2;\n    else\
+      \ if (delta < -250) pulseUs[i] -= 2;\n    pulseUs[i] = constrain(pulseUs[i], MIN_US, MAX_US);\n    if (!ledcWrite(SERVO_PINS[i],\
+      \ ticks(pulseUs[i]))) {\n      disableOutputs(); Serial.println(\"Pulse write failed; remove external power\"\
+      ); return;\n    }\n  }\n  // These are commands only; no shaft-angle or motion feedback exists.\n}\n"
+    code_filename: esp32-robot-arm-controller.ino
 related_slugs:
 - esp32-wifi-robot-controller
 - esp32-line-following-robot
 format: golden
-meta_title: ESP32 Joystick-Controlled Educational Servo Arm Tutorial
+meta_title: ESP32 Three-Servo Arm-Control Bench Demo
 project:
   icon: ARM
-  mission_title: Build a 3-DOF Educational Servo Arm
+  mission_title: Map Three Joystick Axes to Bounded Servo Pulses
   difficulty: Intermediate
   age: Ages 13+
   recommended_age: Ages 13+
-  estimated_time: 90-120 min
-  budget: Under 40 USD
+  estimated_time: Assembly time varies
+  budget: Parts cost varies
   adult_supervision: Adult supervision recommended for servo power wiring and first motion tests.
   classroom_use: Use it to discuss control loops and real robot safety standards without claiming certification.
-  parent_prompt: Ask why angle limits and separate servo power protect both electronics and fingers.
-  screen_free_activity: Map each joint's safe angle range on paper before editing code limits.
+  parent_prompt: Why are pulse commands different from a measured joint position or a mechanical stop?
+  screen_free_activity: Trace separate power rails and mark where shaft feedback and independent protection are
+    absent.
   skills_practiced:
-  - Servo PWM
+  - Servo pulse timing
   - Joystick ADC
-  - Angle constraints
+  - Bounded commands
   - Separate power domains
-  learning_outcomes: &id001
-  - Control three SG90-class servos.
-  - Use ADC1 joystick pins.
-  - Constrain every servo write path.
-  - Explain pinch hazards and external servo supply.
+  learning_outcomes:
+  - Command three documented FS90 units without a startup sweep.
+  - Bias ADC inputs while acknowledging undetected fault modes.
+  - Use explicit enable and a nonrenewable command lease.
+  - Distinguish pulse disable from power removal and homing.
   mini_experiments:
-  - Change incremental step size.
-  - Test different dead-zone widths.
-  - Record and replay a fixed sequence in a future extension.
-  next_challenge: Add a save-position button for a three-step playback sequence.
-  what_you_build: A small 3-DOF joystick-controlled servo arm with base, shoulder, and elbow joints.
-  story: Control three joints of a small educational arm with joystick inputs and SG90-class servos. This build
-    covers three degrees of freedom, separate servo power and limited motion; it is not an industrial robot.
-  eli12: Each joystick tells the ESP32 which way to move one joint. The ESP32 moves each servo a tiny step and keeps it inside
-    safe angles.
-  parent_safety: Servos can pinch and draw surge current. Use a separate regulated 5-6 V servo supply, common ground, and
-    a bulk capacitor. Unplug USB and external power before rewiring.
-  learning_objectives: *id001
+  - With external servo power off, inspect reset, enable and fault messages.
+  - On the restrained unloaded bench, compare small pulse commands without inferring angles.
+  next_challenge: Study measured position feedback and mechanical limits as a separate engineering design; do not
+    attach a load to this bench.
+  what_you_build: Three joystick axes increment three positional-servo pulse commands on a restrained, unloaded
+    bench. The historical robot-arm URL remains, but no load-bearing arm assembly or mechanical travel calibration
+    is supplied. There are no limit switches, homing sensors, encoders or verified joint positions. Keep horns and
+    loads removed for this supported exercise. The overview is a logical illustration, not a hardware photo or test
+    result. Use the specified parts and wiring map below; physical connector orientation must be checked separately.
+  story: A joystick can request a change without telling the ESP32 where a joint actually is. This lesson keeps
+    the three-axis control idea while separating commanded pulse width from measured travel and deliberate enable
+    from automatic startup motion.
+  eli12: A pulse requests a servo position; it does not measure one. The program starts with no pulses. After a
+    deliberate enable it requests 1500 µs, which can move the shaft immediately from an unknown starting position.
+  parent_safety: Use three identified FEETECH FS90 positional units, not FS90R continuous-rotation or unknown SG90-labelled
+    units. Restrain the cases, remove horns/load and keep the separate servo-power switch reachable. A released
+    software-enable button, X or timeout only stops pulses; power remains and torque response is not guaranteed.
+    A loaded arm could fall when pulses/power stop. This page does not supply a safe loaded-arm mechanism or independent
+    emergency stop.
+  learning_objectives:
+  - Command three documented FS90 units without a startup sweep.
+  - Bias ADC inputs while acknowledging undetected fault modes.
+  - Use explicit enable and a nonrenewable command lease.
+  - Distinguish pulse disable from power removal and homing.
   components:
-  - item: ESP32 DevKit board
-    note: Main 3.3 V logic controller.
+  - item: Classic ESP32-WROOM DevKit
+    note: GPIO16/17 must be free (not a WROVER/PSRAM map); GPIO36 may be labelled VP. Core 3.3.2 review baseline.
     link: /components/esp32-devkit.html
-  - item: Three SG90-class micro servos
-    note: Base, shoulder, and elbow.
-  - item: Separate regulated 5-6 V servo supply
-    note: Do not power servos from ESP32 regulator.
-  - item: 470 uF or larger electrolytic capacitor
-    note: Across servo supply near servos.
-  - item: Two analog joystick modules
-    note: Use three axes for base/shoulder/elbow.
-  - item: SSD1306 OLED display
-    note: Optional I2C display on GPIO21/GPIO22.
-    link: /components/ssd1306-oled.html
+  - item: 'Three FEETECH FS90 positional servos, Pololu #2818 reference'
+    note: Use the supplier-documented 3.3 V signal-compatible variant. No horns or mechanical load; FS90R is excluded.
+  - item: Two passive SparkFun COM-09032 thumb joysticks
+    note: Two approximately 10kΩ pots each; use X/Y from one and X from the second. Use a verified passive breakout;
+      no 5 V/comparator or I2C substitute.
+  - item: Separate switched, regulated 5 V / 3 A current-capable supply
+    note: Servo positive only; verify actual startup/stall response. USB/DevKit rails do not power servos.
+  - item: Bare momentary enable button
+    note: GPIO27 to GND with INPUT_PULLUP; software gate, not an independent stop.
+  - item: 'Three each: 10kΩ, 1kΩ, 100kΩ resistors and 100 nF ceramics; 470 µF ≥10 V bulk capacitor'
+    note: 10k signal pull-down per servo; 1k series, 100k pull-down and 100 nF per used ADC node; bulk cap on external
+      rail.
+  - item: Suitable power distribution, short signal connections and USB data cable
+    note: Identify connector functions from documentation/continuity, not colors or this logical map.
   bom:
-  - part: ESP32 DevKit board
-    qty: '1'
+  - part: Classic ESP32-WROOM DevKit
+    qty: 1 set
     estimated_cost: Varies
-    notes: Main 3.3 V logic controller.
-  - part: Three SG90-class micro servos
-    qty: '1'
+    notes: GPIO16/17 must be free (not a WROVER/PSRAM map); GPIO36 may be labelled VP. Core 3.3.2 review baseline.
+  - part: 'Three FEETECH FS90 positional servos, Pololu #2818 reference'
+    qty: '3'
     estimated_cost: Varies
-    notes: Base, shoulder, and elbow.
-  - part: Separate regulated 5-6 V servo supply
-    qty: '1'
+    notes: Use the supplier-documented 3.3 V signal-compatible variant. No horns or mechanical load; FS90R is excluded.
+  - part: Two passive SparkFun COM-09032 thumb joysticks
+    qty: '2'
     estimated_cost: Varies
-    notes: Do not power servos from ESP32 regulator.
-  - part: 470 uF or larger electrolytic capacitor
-    qty: '1'
+    notes: Two approximately 10kΩ pots each; use X/Y from one and X from the second. Use a verified passive breakout;
+      no 5 V/comparator or I2C substitute.
+  - part: Separate switched, regulated 5 V / 3 A current-capable supply
+    qty: 1 set
     estimated_cost: Varies
-    notes: Across servo supply near servos.
-  - part: Two analog joystick modules
-    qty: '1'
+    notes: Servo positive only; verify actual startup/stall response. USB/DevKit rails do not power servos.
+  - part: Bare momentary enable button
+    qty: 1 set
     estimated_cost: Varies
-    notes: Use three axes for base/shoulder/elbow.
-  - part: SSD1306 OLED display
-    qty: '1'
+    notes: GPIO27 to GND with INPUT_PULLUP; software gate, not an independent stop.
+  - part: 'Three each: 10kΩ, 1kΩ, 100kΩ resistors and 100 nF ceramics; 470 µF ≥10 V bulk capacitor'
+    qty: 1 set
     estimated_cost: Varies
-    notes: Optional I2C display on GPIO21/GPIO22.
+    notes: 10k signal pull-down per servo; 1k series, 100k pull-down and 100 nF per used ADC node; bulk cap on external
+      rail.
+  - part: Suitable power distribution, short signal connections and USB data cable
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Identify connector functions from documentation/continuity, not colors or this logical map.
   wiring:
-    illustration_alt: ESP32 Educational Servo Arm Controller (3-DOF) wiring diagram
-    summary: Servo signals use GPIO13, GPIO16, and GPIO17 to avoid boot-sensitive pins. Joystick axes use ADC1 GPIO34/GPIO35/GPIO36.
-      Servo power is separate with common ground.
+    full_size_link: true
+    illustration_alt: 'Logical unloaded FS90 bench: signals13/16/17 with pull-downs, joystick ADC34/35/36 with series/filter/pull-down
+      networks, enable27 to GND, external5V and common ground. No mechanical pin layout or homing.'
+    summary: 'Base/shoulder/elbow signal labels mean logical channels: GPIO13/16/17 respectively, each with 10kΩ
+      to GND. Three used passive joystick wipers feed GPIO34/35/36 through separate 1kΩ resistors; each ADC node
+      has 100kΩ and 100 nF to GND. Enable button joins GPIO27 to GND. Servos use external switched 5 V and common
+      ground; no external positive reaches ESP32 USB/3V3.'
     steps:
-    - Unplug USB and servo supply before wiring.
-    - Connect servo signal wires to GPIO13, GPIO16, and GPIO17.
-    - Connect servo red/brown power leads to the separate 5-6 V supply, not the ESP32 regulator.
-    - Connect servo supply ground to ESP32 GND.
-    - Place a 470 uF or larger capacitor across the servo supply rail.
-    - Connect joystick axes to GPIO34, GPIO35, and GPIO36 with joystick VCC at 3.3 V.
+    - Disconnect both supplies and remove all horns/loads. Identify exact FS90 connectors and passive joystick pot
+      ends/wipers from documentation plus an unpowered continuity/resistance check. This is not a physical connector-order
+      drawing.
+    - Connect servo signals13/16/17 and their 10kΩ pull-downs. Route the servo positive leads to the separate 5
+      V distribution rail, and their returns directly to the supply minus. Join that minus to ESP32 GND for signal
+      reference.
+    - Place the selected 470 µF ≥10 V capacitor across the external rail near distribution, with correct polarity.
+      Do not route servo current through a solderless breadboard/DevKit or join the external positive to USB.
+    - Wire joystick pot ends to ESP32 3V3/GND. One joystick X→1k→GPIO34; Y→1k→GPIO35. Second joystick X→1k→GPIO36.
+      At EACH ADC node fit 100kΩ and 100 nF to GND. Leave unused wiper and joystick click switches unconnected;
+      verify the actual breakout netlist.
+    - Connect a bare momentary button from GPIO27 to GND. The sketch uses INPUT_PULLUP; the button affects software
+      only.
+    - With external servo power off, upload/reset and check disabled startup. Release the button once. Apply servo
+      power only with the bench clear, center axes, hold enable and send A at 115200 baud. Be prepared for immediate
+      movement toward the commanded center region.
+    - Use only small unloaded changes. Release enable or send X before switching external power off. Power down
+      both sources before rewiring; do not extend pulse ranges or attach an arm load to force travel.
   gpio_map:
-  - signal: Base servo signal
-    esp32_pin: GPIO13
-    direction: PWM output
-    notes: Safe output pin for servo signal.
-  - signal: Shoulder servo signal
-    esp32_pin: GPIO16
-    direction: PWM output
-    notes: Avoids boot strap pins.
-  - signal: Elbow servo signal
-    esp32_pin: GPIO17
-    direction: PWM output
-    notes: Avoids boot strap pins.
-  - signal: Joystick base axis
-    esp32_pin: GPIO34
+  - signal: Base / shoulder / elbow signal
+    esp32_pin: GPIO13 / GPIO16 / GPIO17
+    direction: 50 Hz output
+    notes: 10kΩ to GND on each; pulse commands, not measured joint angles.
+  - signal: Joystick 1 X / Y; joystick 2 X
+    esp32_pin: GPIO34 / GPIO35 / GPIO36
     direction: ADC1 input
-    notes: Input-only ADC pin.
-  - signal: Joystick shoulder axis
-    esp32_pin: GPIO35
-    direction: ADC1 input
-    notes: Input-only ADC pin.
-  - signal: Joystick elbow axis
-    esp32_pin: GPIO36
-    direction: ADC1 input
-    notes: Input-only ADC pin.
-  - signal: Servo power
-    esp32_pin: External 5-6 V / GND
+    notes: 'Per axis: wiper→1kΩ→ADC; 100kΩ and100nF from ADC to GND.'
+  - signal: Passive pot end terminals
+    esp32_pin: 3V3 / GND
+    direction: Logic-domain supply
+    notes: Use only ESP32 3V3; no external 5 V joystick signal.
+  - signal: Enable button
+    esp32_pin: GPIO27 to GND
+    direction: Digital input
+    notes: Bare momentary button; INPUT_PULLUP; release required before arming.
+  - signal: Servo positive
+    esp32_pin: External switched 5 V +
     direction: Power
-    notes: Common ground with ESP32.
-  circuit_explanation: The ESP32 sends servo control pulses while joystick axes are read on ADC1. Servos draw power from a
-    separate supply.
-  engineering_explanation: Every angle update passes through explicit constrain functions. Movement is incremental to reduce
-    sudden jumps.
+    notes: Not the USB/DevKit positive rail.
+  - signal: Servo returns / ESP32 reference
+    esp32_pin: External supply minus + GND
+    direction: Ground
+    notes: Current returns go directly to the servo supply.
+  - signal: Unused axis / click switches
+    esp32_pin: Not connected
+    direction: Unused
+    notes: Identify physical terminals separately; no universal color/pin-order claim.
+  circuit_explanation: Servo power uses a separately switched, regulated 5 V rail; USB powers the ESP32 and 3.3
+    V passive joystick circuits only. Join grounds, never positive rails. The selected FS90 supplier supports 3.3
+    V control signals; another servo needs its own threshold review or a documented buffer. Fit 10kΩ from each servo
+    signal to GND. For each used joystick axis connect its wiper through 1kΩ to the ADC node, with 100kΩ and 100
+    nF from that node to GND. Potentiometer ends connect only to ESP32 3V3/GND; identify ends/wipers electrically
+    before soldering.
+  engineering_explanation: 'Use the documented FS90 positional variant supplied as Pololu #2818, with the FS90-C
+    V1.0 manufacturer sheet. That specification describes 900–2100 µs, not a universal 500–2500 µs travel range.
+    This sketch deliberately commands only 1400–1600 µs at 50 Hz and never converts commands into calibrated degrees.
+    A 1500 µs command is not homing, and even narrow pulses do not establish mechanical clearance. The sheet gives
+    700/800 mA stall figures at 4.8/6 V; a separate 5 V / 3 A current-capable source for three units is a planning
+    budget, not a measured peak guarantee or permission to stall. Check actual supply transients, wiring and the
+    exact units. Retain 470 µF bulk decoupling (at least 10 V rated) at the distribution rail; it does not replace
+    an adequate supply. Hobby servos contain their own drive electronics: do not add a flyback diode across the
+    servo signal or assume bare-motor wiring. Classic ESP32 at 11 dB has a documented approximate 0.15–3.1 V ADC
+    measurement range, different from its 3.3 V supply domain. ADC endpoint clipping deliberately causes a software
+    fault here. GPIO34/35/36 lack internal pull resistors; external node pull-downs reduce floating on an open wiper
+    path. They cannot detect every short, ground break or plausible intermediate fault. With 100kΩ/100 nF the nominal
+    open-node RC is 10 ms, not an independently validated stop time.'
   libraries:
-  - name: ESP32Servo
-    note: Install ESP32Servo; standard Servo library is not the right ESP32 choice.
+  - name: Arduino-ESP32 3.3.2 built-in LEDC and ADC
+    note: Classic WROOM review baseline, not latest. No external servo library. Pin-based 3.x APIs with checked
+      attach/write status.
   code:
     filename: esp32-robot-arm-controller.ino
-    content: "// ESP32 educational 3-DOF servo arm controller\n// Uses separate 5-6 V servo supply, common ground, and constrained\
-      \ incremental motion.\n#include <ESP32Servo.h>\n\nconst int SERVO_BASE_PIN = 13;\nconst int SERVO_SHOULDER_PIN = 16;\n\
-      const int SERVO_ELBOW_PIN = 17;\nconst int JOY_BASE_PIN = 34;\nconst int JOY_SHOULDER_PIN = 35;\nconst int JOY_ELBOW_PIN\
-      \ = 36;\n\nServo baseServo;\nServo shoulderServo;\nServo elbowServo;\n\nint baseAngle = 90;\nint shoulderAngle = 90;\n\
-      int elbowAngle = 90;\nint baseCenter = 2048;\nint shoulderCenter = 2048;\nint elbowCenter = 2048;\n\nconst int BASE_MIN\
-      \ = 20;\nconst int BASE_MAX = 160;\nconst int SHOULDER_MIN = 35;\nconst int SHOULDER_MAX = 145;\nconst int ELBOW_MIN\
-      \ = 25;\nconst int ELBOW_MAX = 155;\nconst int DEAD_ZONE = 220;\n\nint constrainBase(int a) { return constrain(a, BASE_MIN,\
-      \ BASE_MAX); }\nint constrainShoulder(int a) { return constrain(a, SHOULDER_MIN, SHOULDER_MAX); }\nint constrainElbow(int\
-      \ a) { return constrain(a, ELBOW_MIN, ELBOW_MAX); }\n\nvoid writeServos() {\n  baseAngle = constrainBase(baseAngle);\n\
-      \  shoulderAngle = constrainShoulder(shoulderAngle);\n  elbowAngle = constrainElbow(elbowAngle);\n  baseServo.write(baseAngle);\n\
-      \  shoulderServo.write(shoulderAngle);\n  elbowServo.write(elbowAngle);\n}\n\nint axisStep(int raw, int center) {\n\
-      \  if (raw < 20 || raw > 4075) return 0; // hold last safe position if disconnected or stuck\n  int delta = raw - center;\n\
-      \  if (abs(delta) < DEAD_ZONE) return 0;\n  return delta > 0 ? 1 : -1;\n}\n\nint readAverage(int pin) {\n  long sum\
-      \ = 0;\n  for (int i = 0; i < 16; i++) sum += analogRead(pin);\n  return sum / 16;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  analogReadResolution(12);\n  baseServo.attach(SERVO_BASE_PIN, 500, 2500);\n  shoulderServo.attach(SERVO_SHOULDER_PIN,\
-      \ 500, 2500);\n  elbowServo.attach(SERVO_ELBOW_PIN, 500, 2500);\n\n  baseCenter = readAverage(JOY_BASE_PIN);\n  shoulderCenter\
-      \ = readAverage(JOY_SHOULDER_PIN);\n  elbowCenter = readAverage(JOY_ELBOW_PIN);\n\n  for (int a = 60; a <= 90; a++)\
-      \ {\n    baseAngle = constrainBase(a);\n    shoulderAngle = constrainShoulder(a);\n    elbowAngle = constrainElbow(a);\n\
-      \    writeServos();\n    delay(20);\n  }\n  Serial.println(\"Servo arm ready. Keep fingers clear of pinch points.\"\
-      );\n}\n\nvoid loop() {\n  baseAngle = constrainBase(baseAngle + axisStep(analogRead(JOY_BASE_PIN), baseCenter));\n \
-      \ shoulderAngle = constrainShoulder(shoulderAngle + axisStep(analogRead(JOY_SHOULDER_PIN), shoulderCenter));\n  elbowAngle\
-      \ = constrainElbow(elbowAngle + axisStep(analogRead(JOY_ELBOW_PIN), elbowCenter));\n  writeServos();\n  Serial.printf(\"\
-      Base %d Shoulder %d Elbow %d\\n\", baseAngle, shoulderAngle, elbowAngle);\n  delay(20);\n}\n"
-  code_explanation: The code calibrates joystick centers, checks implausible ADC extremes, constrains each joint, and writes
-    incremental servo angles.
-  expected_output: Moving each joystick axis changes one joint smoothly inside its limits. Reset returns the arm gradually
-    toward home.
+    content: "// Classic ESP32-WROOM; Arduino-ESP32 3.3.2; built-in LEDC only.\n// Three documented FEETECH FS90\
+      \ positional units, no horns/load.\n// No homing, shaft feedback, limit switches or patient/safety function.\n\
+      #include <Arduino.h>\n\nconstexpr uint8_t SERVO_PINS[3] = {13, 16, 17};\nconstexpr uint8_t AXIS_PINS[3] =\
+      \ {34, 35, 36};\nconstexpr uint8_t ENABLE_PIN = 27, BITS = 16;\nconstexpr int MIN_US = 1400, CENTER_US = 1500,\
+      \ MAX_US = 1600;\nconstexpr uint32_t LEASE_MS = 10000, UPDATE_MS = 20;\nint pulseUs[3] = {CENTER_US, CENTER_US,\
+      \ CENTER_US};\nint center[3] = {2048, 2048, 2048};\nbool attached[3] = {false, false, false}, armed = false,\
+      \ needsRelease = true;\nuint32_t armedAt = 0, lastUpdate = 0;\n\nuint32_t ticks(int us) {\n  return (uint32_t(us)\
+      \ * (1UL << BITS) + 10000) / 20000;\n}\nvoid disableOutputs() {\n  armed = false; needsRelease = true;\n \
+      \ bool ok = true;\n  for (int i = 0; i < 3; ++i) {\n    if (attached[i]) {\n      if (!ledcWrite(SERVO_PINS[i],\
+      \ 0)) ok = false;\n      if (!ledcDetach(SERVO_PINS[i])) ok = false;\n      attached[i] = false;\n    }\n\
+      \    digitalWrite(SERVO_PINS[i], LOW); pinMode(SERVO_PINS[i], OUTPUT);\n  }\n  if (!ok) Serial.println(\"\
+      LEDC stop error: remove external servo power\");\n  Serial.println(\"Pulses disabled; external power and possible\
+      \ torque remain\");\n}\nvoid armAtCenter() {\n  if (needsRelease) { Serial.println(\"Release enable before\
+      \ arming again\"); return; }\n  if (armed) { Serial.println(\"Release enable before a new arm attempt\");\
+      \ return; }\n  if (digitalRead(ENABLE_PIN) != LOW) {\n    Serial.println(\"Hold enable, center all axes, then\
+      \ send A\"); return;\n  }\n  for (int i = 0; i < 3; ++i) {\n    long sum = 0;\n    for (int n = 0; n < 16;\
+      \ ++n) sum += analogRead(AXIS_PINS[i]);\n    int value = int(sum / 16);\n    if (value < 1200 || value > 3000)\
+      \ {\n      Serial.println(\"Axis not in plausible center window; remains disabled\"); return;\n    }\n   \
+      \ center[i] = value; // Manual centered reference, not a continuity test.\n  }\n  if (digitalRead(ENABLE_PIN)\
+      \ != LOW) return;\n  for (int i = 0; i < 3; ++i) {\n    pulseUs[i] = CENTER_US;\n    attached[i] = ledcAttach(SERVO_PINS[i],\
+      \ 50, BITS);\n    if (!attached[i] || !ledcWrite(SERVO_PINS[i], ticks(CENTER_US))) {\n      disableOutputs();\
+      \ Serial.println(\"Attach/write failed; inspect with power off\"); return;\n    }\n  }\n  armedAt = millis();\
+      \ lastUpdate = armedAt; armed = true; needsRelease = true;\n  Serial.println(\"1500 us commanded: movement\
+      \ may be immediate; no home position measured\");\n}\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(ENABLE_PIN,\
+      \ INPUT_PULLUP); // Bare momentary button to GND; software gate only.\n  analogReadResolution(12);\n  for\
+      \ (int i = 0; i < 3; ++i) {\n    pinMode(AXIS_PINS[i], INPUT);\n    analogSetPinAttenuation(AXIS_PINS[i],\
+      \ ADC_11db);\n    digitalWrite(SERVO_PINS[i], LOW); pinMode(SERVO_PINS[i], OUTPUT);\n  }\n  Serial.println(\"\
+      Disabled. External power off for wiring/upload. No automatic sweep.\");\n  Serial.println(\"Center axes, hold\
+      \ enable and send A; X disables. Lease is 10 seconds.\");\n}\nvoid loop() {\n  if (!armed && digitalRead(ENABLE_PIN)\
+      \ == HIGH) needsRelease = false;\n  if (armed && (digitalRead(ENABLE_PIN) != LOW || uint32_t(millis() - armedAt)\
+      \ >= LEASE_MS)) {\n    disableOutputs();\n  }\n  if (Serial.available()) {\n    char cmd = Serial.read();\n\
+      \    if (cmd == 'X' || cmd == 'x') disableOutputs();\n    else if (cmd == 'A' || cmd == 'a') armAtCenter();\n\
+      \    // Newlines and unrelated characters do not move servos or extend the lease.\n  }\n  if (!armed || uint32_t(millis()\
+      \ - lastUpdate) < UPDATE_MS) return;\n  lastUpdate = millis();\n  int raw[3];\n  for (int i = 0; i < 3; ++i)\
+      \ {\n    raw[i] = analogRead(AXIS_PINS[i]);\n    if (raw[i] <= 100 || raw[i] >= 3900) {\n      disableOutputs();\
+      \ Serial.println(\"Axis range fault; inspect disconnected input/rails\"); return;\n    }\n  }\n  for (int\
+      \ i = 0; i < 3; ++i) {\n    int delta = raw[i] - center[i];\n    if (delta > 250) pulseUs[i] += 2;\n    else\
+      \ if (delta < -250) pulseUs[i] -= 2;\n    pulseUs[i] = constrain(pulseUs[i], MIN_US, MAX_US);\n    if (!ledcWrite(SERVO_PINS[i],\
+      \ ticks(pulseUs[i]))) {\n      disableOutputs(); Serial.println(\"Pulse write failed; remove external power\"\
+      ); return;\n    }\n  }\n  // These are commands only; no shaft-angle or motion feedback exists.\n}\n"
+  code_explanation: 'The sketch uses only core 3.3.2 LEDC: pin-based ledcAttach/ledcWrite/ledcDetach at 50 Hz and
+    16 bits; no external ESP32Servo library is required. Reset does not attach PWM. First release the enable button;
+    center the axes, hold the button and send A in Serial Monitor. The program averages each centered input, rejects
+    values outside 1200–3000, then requests 1500 µs on all three outputs. It checks attach/write return values.
+    Every target 20 ms it rejects raw endpoints (≤100 or ≥3900), applies a ±250-count dead zone and increments commands
+    by 2 µs within 1400–1600. These arbitrary conservative software windows need actual bench checking; they are
+    not continuity or travel calibration. Release, X, an input-range fault, a driver error or a 10-second nonrenewable
+    lease disables all outputs. Releasing the button is required before another arm attempt. Loop/Serial timing
+    is best effort, not a safety function. Sending A while armed does not renew the lease. A disconnected axis can
+    still produce a plausible value: no universal disconnection detection is claimed.'
+  expected_output: Serial at 115200 should report disabled after reset, with no automatic sweep. With the exact
+    unloaded setup, deliberate A while holding enable should request 1500 µs; joystick deflection should change
+    only its paired pulse command inside 1400–1600 µs. Release/X/expiry should remove pulses and drive signals LOW;
+    this does not prove shaft stop, torque release or a home position. No measured pulse, position, current or successful
+    hardware run is supplied.
   common_mistakes:
-  - text: Powering servos from ESP32 5 V/3.3 V pins.
-  - text: Using boot-sensitive pins for servo outputs.
-  - text: Writing unconstrained angles.
-  - text: Calling this an industrial robot or certified emergency stop system.
+  - text: Applying 5–6 V indiscriminately to generic SG90-class parts.
+  - text: Assuming ADC range checks detect every disconnected wire.
+  - text: Calling 1500 µs a home position or narrow software limits mechanical end stops.
+  - text: Powering servos from GPIO/USB or assuming pulse disable physically isolates power.
   troubleshooting:
-  - problem: Servo jitter
-    fix: Check separate supply, common ground, and bulk capacitor.
-  - problem: Arm moves unexpectedly
-    fix: Increase dead zone and recalibrate joystick center.
-  - problem: One joint binds
-    fix: Tighten that joint's min/max constraints before testing again.
+  - problem: A is rejected
+    fix: Release enable once after reset/disable, then center all three axes, hold enable and send A. Check power-off
+      pot end/wiper identification and ADC node networks if a center is implausible; do not widen windows to conceal
+      miswiring.
+  - problem: An unplugged joystick is not reliably detected
+    fix: The 100kΩ is at the ADC node, not the disconnected end of the cable. It helps pull an open wiper path LOW,
+      but some faults remain plausible. Power off and inspect; do not claim the range check is a safety-rated continuity
+      monitor.
+  - problem: Immediate movement after A
+    fix: 'That is possible: no shaft position is measured and 1500 µs is not homing. Remove power if unexpected;
+      keep horns/loads removed. There is no startup motion ramp from a known physical position.'
+  - problem: Servo buzzes, binds or supply resets ESP32
+    fix: Switch servo power off immediately. Check exact unit, connector identity, supply transient capability,
+      common ground and restrained mechanics. Do not increase endpoints, hold a stall or rely on a capacitor alone.
+  - problem: Servo keeps torque after pulses disable
+    fix: No universal torque-release behavior is assumed. Use the independent supply switch; a loaded arm could
+      fall when released, which is why it is not part of this bench example.
+  - problem: One direction feels reversed or response is coarse
+    fix: Pot orientation changes sign, and servo deadband/mechanics affect movement. With power off verify the axis
+      mapping. Commands are µs, not calibrated angles; do not infer position or smooth motion from Serial text.
   testing_checklist:
-  - Test each servo alone.
-  - Verify no joint binds at min/max limits.
-  - Keep fingers clear during first powered motion.
+  - Planned bench checks only; no firmware compilation or hardware operation has been performed.
+  - Verify model, connector, external supply and unpowered resistor networks.
+  - Check no PWM is attached on reset and that enable held during reset does not automatically arm.
+  - Check deliberate A, release, X, input-range fault and 10-second expiry with appropriate instruments before any
+    mechanism is considered.
+  - Treat a future loaded-arm design, mechanical limits, homing and independent protection as separate engineering
+    work.
   engineer_tips:
-  - Start with horns disconnected.
-  - Label each servo cable.
-  - Use conservative angle ranges first.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  - Keep commands and measured positions separately labelled.
+  - Do not leave a gravity-loaded mechanism supported only by hobby-servo torque.
+  - Record the exact servo revision before considering any wider travel.
+  upgrade_ideas:
+  - Study feedback and limit switches in a separately designed mechanism; none are wired here.
+  real_world_applications:
+  - Three-axis ADC-to-pulse mapping lesson
+  - Manual-enable and reset-state demonstration
   related_guides:
   - title: ESP32 Robotics Learning Path
     href: /learning.html#robotics-basics
@@ -310,20 +452,43 @@ project:
     description: Compare wired joystick control with web-controlled robot motion.
   - title: ESP32 CNC Controller
     href: /projects/esp32-cnc-controller.html
-    description: Review another bounded motion-control project with safety limits.
+    description: Explore the separate CNC tutorial and review its own hardware and control assumptions.
   faqs:
-  - question: How many DOF?
-    answer: 'This implementation uses three servos: base, shoulder, and elbow.'
-  - question: Why separate servo power?
-    answer: Servo surge current can reset or damage the ESP32 supply path.
-  - question: Is this an emergency stop?
-    answer: No. It has cautious startup and limits, not certified safety hardware.
+  - question: Does reset return the arm home?
+    answer: No. Reset disables pulse output. No home sensor or shaft position is available. Deliberate enable commands
+      1500 µs and can cause immediate movement.
+  - question: Are the existing SG90 page and this circuit interchangeable?
+    answer: No. This example deliberately selects documented FS90 units accepting 3.3 V signals. Other servos need
+      independent supply, threshold, pulse and mechanical review.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: A limited command window is not verified mechanical travel. Check the intended disabled/armed states
+      and actual signals separately; build/browser checks do not validate electrical or mechanical safety.
     skills:
-    - Servo PWM
-    - Joystick ADC
-    - Angle constraints
+    - Separate servo power
+    - Bound pulse commands
+    - Explain missing position feedback
+  safety_badge: Unloaded bench — no homing
+  safety_standards:
+  - Unloaded, restrained servo bench only; no load-bearing arm or home/travel validation.
+  - Separate positive rails and common signal ground; reachable independent servo-power switch.
+  - Button/X/timeout stop pulses only; no independent emergency stop or guaranteed torque/motion behavior.
+  references:
+  - title: Arduino-ESP32 3.3.2 GPIO API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.h
+  - title: Classic ESP32 datasheet (board pin availability still requires checking)
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: FEETECH FS90 supplier specifications and 3.3 V signal compatibility
+    href: https://www.pololu.com/product/2818
+  - title: FEETECH FS90-C V1.0 manufacturer specification
+    href: https://www.pololu.com/file/0J1435/FS90-specs.pdf
+  - title: SparkFun COM-09032 passive thumb joystick
+    href: https://www.sparkfun.com/thumb-joystick.html
+  - title: Arduino-ESP32 3.3.2 ADC API and chip-specific measurement ranges
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst
+  - title: Arduino-ESP32 3.3.2 LEDC API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-ledc.h
+  - title: Servo pulse commands versus physical travel and neutral
+    href: https://www.pololu.com/blog/17/servo-control-interface-in-detail
 keywords:
 - ESP32
 - ESP32 Educational Servo Arm Controller (3-DOF)
