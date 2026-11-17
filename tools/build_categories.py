@@ -63,8 +63,8 @@ SIDEBAR_KEYS = {
 
 CATEGORY_SEO_DETAILS = {
     "AI Projects": {
-        "covers": "ESP32 AI projects on this site focus on camera-first edge experiments: the ESP32-CAM captures an image, the sketch or library processes that frame locally, then the project turns the result into a visible decision such as a QR payload, color match, camera stream, or face-detection demo. These are bounded computer-vision lessons, not desktop-class AI systems or certified recognition tools.",
-        "start": "Begin by understanding what the ESP32-CAM can and cannot do, then verify camera capture before adding QR decoding, color/object detection, or face-detection demos. If a result looks wrong, test lighting, focus, frame size, and power before changing the model or code.",
+        "covers": "ESP32 AI projects on this site focus on camera-first edge experiments: the ESP32-CAM captures an image, the sketch or library processes that frame locally, then the project turns the result into a visible decision such as a QR payload, color match or camera stream. The face-detection page explains prerequisites and missing implementation. These are bounded computer-vision lessons, not desktop-class AI systems or certified recognition tools.",
+        "start": "Begin by understanding what the ESP32-CAM can and cannot do, then verify camera capture before adding QR decoding or color/object processing. Check framework support before planning face detection. If a result looks wrong, test lighting, focus, frame size, and power before changing the model or code.",
         "skills": ["ESP32-CAM setup", "image capture", "local frame processing", "camera privacy", "memory and frame-size tradeoffs", "safe AI claim boundaries"],
         "watch": ["Treat recognition results as demonstrations, not safety decisions.", "Keep camera projects privacy-aware and avoid recording people without permission.", "Verify lighting, focus, power stability, and Wi-Fi reliability before judging model behavior."],
         "guides": [("Install Arduino IDE", "/guides/installing-arduino-ide-esp32.html"), ("ESP32 basics", "/guides/what-is-esp32.html")],
@@ -76,14 +76,14 @@ CATEGORY_SEO_DETAILS = {
             ("Capture a frame", "/projects/esp32-camera-capture-server.html", "Use the camera capture server to confirm the OV2640, Wi-Fi, and browser endpoint work."),
             ("Decode data", "/projects/esp32-cam-qr-scanner.html", "Move from raw image capture to a QR scanner that extracts a payload from a frame."),
             ("Detect a target", "/projects/esp32-ai-object-detector.html", "Try the color object detector to learn threshold-based local vision on ESP32-CAM hardware."),
-            ("Compare face detection", "/projects/esp32-cam-face-detection.html", "Study face detection as a demonstration of finding face-like regions, not identity-grade face recognition."),
+            ("Compare face detection", "/projects/esp32-cam-face-detection.html", "Check the reviewed framework limits and camera prerequisites; no face detector is implemented on this page."),
         ],
         "choose": [
             ("Beginner camera setup", "/projects/esp32-camera-capture-server.html", "Choose this first if you need to prove the camera, power supply, and Wi-Fi endpoint."),
             ("Networking and browser viewing", "/projects/esp32-camera-capture-server.html", "Use the capture server to understand how an ESP32-CAM serves images over Wi-Fi."),
             ("QR or data decoding", "/projects/esp32-cam-qr-scanner.html", "Use the QR scanner when the goal is decoding visual data rather than classifying objects."),
             ("Computer-vision experiment", "/projects/esp32-ai-object-detector.html", "Use the color detector for local thresholding and object/color decision logic."),
-            ("Privacy-aware face demo", "/projects/esp32-cam-face-detection.html", "Use the face-detection page only as an educational demo, not an access-control or identity system."),
+            ("Privacy-aware face demo", "/projects/esp32-cam-face-detection.html", "Use the face-detection URL for capability limits and a Serial camera check, not a working detector."),
         ],
         "reality": [
             "ESP32-CAM boards have limited RAM and processing headroom compared with a phone, laptop, or cloud model.",
@@ -281,12 +281,12 @@ CATEGORY_DEEP_DETAILS = {
             ("Understand the module", "/components/esp32-cam.html", "Review the AI-Thinker pin map, camera ribbon, SD/flash constraints, and power needs."),
             ("Set up the IDE", "/guides/installing-arduino-ide-esp32.html", "Install ESP32 board support before choosing the ESP32-CAM board profile."),
             ("Serve a frame", "/projects/esp32-camera-capture-server.html", "Confirm capture, Wi-Fi, and browser viewing before adding detection logic."),
-            ("Try vision tasks", "/projects/esp32-cam-qr-scanner.html", "Move into QR scanning, face detection, or color/object demos only after capture is stable."),
+            ("Try vision tasks", "/projects/esp32-cam-qr-scanner.html", "Move into QR decoding or color demos after capture checks; face detection requires a separate supported implementation."),
         ],
         "choose": [
             ("First camera test", "/projects/esp32-camera-capture-server.html", "Best first project because it isolates power, board profile, ribbon, and Wi-Fi endpoint issues."),
             ("QR workflow", "/projects/esp32-cam-qr-scanner.html", "Choose this when the input is a printed visual code, not a general object."),
-            ("Privacy demo", "/projects/esp32-cam-face-detection.html", "Use this as a face-region demonstration, not identity recognition."),
+            ("Privacy demo", "/projects/esp32-cam-face-detection.html", "Use this for camera prerequisites and the missing-detector boundary in core 3.3.2."),
             ("Security camera model", "/projects/esp32-security-camera-system.html", "Use this for local-network camera viewing with explicit non-certified security limits."),
         ],
         "reality": [

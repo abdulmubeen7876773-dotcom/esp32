@@ -1,255 +1,313 @@
 slug: esp32-cam-face-detection
-title: Build an ESP32-CAM Face Detection Privacy Demo
+title: 'ESP32-CAM Face Detection Limits: Core 3.3.2 Camera Check'
 category: ESP32-CAM
-image_alt: ESP32-CAM face detection privacy demo with camera module and local monitor
-og_image: /assets/images/og/esp32-cam-face-detection.webp
-hero_image: /assets/images/generated/esp32-cam-face-detection.webp
-featured_image: /assets/images/generated/esp32-cam-face-detection.webp
-image: /assets/images/generated/esp32-cam-face-detection.webp
-description: Build a local ESP32-CAM face detection demo with the Arduino CameraWebServer example, AI-Thinker OV2640
-  setup, stable 5 V power, and clear detection-not-recognition limits.
-meta_description: Build a local ESP32-CAM face detection demo that distinguishes detection from recognition, with
-  privacy, lighting, memory, and power limits.
+image_alt: Camera check, not face detection logical overview; not a photograph, physical wiring layout or recorded
+  result
+og_image: /assets/visuals/projects/heroes/esp32-cam-face-detection-scope-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-cam-face-detection-scope-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-cam-face-detection-scope-overview.svg
+image: /assets/visuals/projects/heroes/esp32-cam-face-detection-scope-overview.svg
+description: Understand why the reviewed CameraWebServer does not implement face detection, then check an AI-Thinker
+  OV2640 camera with a complete Serial-only example.
+meta_description: Understand why the reviewed CameraWebServer does not implement face detection, then check an AI-Thinker
+  OV2640 camera with a complete Serial-only example.
 source_base: esp32-cam-face-detection-legacy-import
-sensor: OV2640 camera bus
-output: Local CameraWebServer face detection page
+sensor: OV2640 camera
+output: Frame metadata, no face detection
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-23'
+date_modified: '2026-11-17'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: AI-Thinker fixed camera pins
-  output_pin: Local web page
-  sensor_name: OV2640 camera bus
-  output_name: Local CameraWebServer face detection page
+  sensor_pin: AI-Thinker fixed OV2640 map
+  output_pin: Serial
+  sensor_name: OV2640
+  output_name: Frame metadata, no face detection
   wiring:
-  - component: OV2640 camera bus
-    pin: AI-Thinker fixed camera pins
-  - component: FTDI UART
+  - component: 3.3 V UART TX / RX
     pin: GPIO3 / GPIO1
-  - component: IO0 upload strap
-    pin: GPIO0
+  - component: External board supply
+    pin: 5V / common GND
+  - component: IO0
+    pin: GND during upload reset only
 levels:
   beginner:
     level: beginner
-    overview_html: <p>A local-network ESP32-CAM face detection demo based on the Arduino ESP32 CameraWebServer example
-      and the AI-Thinker pin map. Get consent before pointing a camera at people. Do not expose the stream publicly
-      and do not use this for identity, security, medical, or emotion claims.</p>
+    overview_html: <p>A camera prerequisite and privacy lesson, not an operational face detector. The complete sketch
+      initializes the identified AI-Thinker/OV2640 and reports JPEG dimensions/byte counts over Serial. No image
+      is transmitted or stored. CameraWebServer 3.3.2 app_httpd.cpp has capture/stream/control handlers but no face-detector
+      implementation; adding only startCameraServer() or lowering resolution does not create one. The historical
+      URL is retained so readers see this limitation rather than a broken starter.</p>
     components:
-    - ESP32-CAM AI-Thinker board with OV2640
-    - FTDI USB-to-serial adapter
-    - Stable 5 V supply
-    - IO0 upload jumper
+    - Documented AI-Thinker classic ESP32-CAM with OV2640
+    - USB–UART adapter with verified 3.3 V TTL signals
+    - Regulated 5 V / 2 A current-capable external supply and short leads
+    - USB data cable, removable IO0 jumper and accessible RST button
     wiring:
-    - - OV2640 camera bus
-      - AI-Thinker fixed camera pins
-      - Matches the Arduino ESP32 CameraWebServer AI-Thinker profile.
-    - - FTDI UART
-      - GPIO3 / GPIO1
-      - Upload and Serial Monitor.
-    - - IO0 upload strap
-      - GPIO0
-      - Ground only while flashing.
+    - - Programmer TX / RX
+      - U0R GPIO3 / U0T GPIO1
+      - Cross TX→RX; 3.3 V TTL only. Not RS-232 or 5 V UART.
+    - - External regulated supply
+      - 5V / GND
+      - Board regulator input, not chip/GPIO voltage. Adapter positive outputs NC.
+    - - Upload strap / camera clock
+      - GPIO0 → GND for reset into upload only
+      - Remove strap with power off and reset to run.
+    - - OV2640 D0…D7
+      - 5, 18, 19, 21, 36, 39, 34, 35
+      - Onboard ribbon/internal wiring; do not externally rewire.
+    - - OV2640 XCLK/PCLK/VSYNC/HREF
+      - 0 / 22 / 25 / 23
+      - AI-Thinker only, not WROVER-KIT or S3 map.
+    - - OV2640 SCCB SDA/SCL
+      - 26 / 27
+      - Modern pin_sccb_sda/pin_sccb_scl API names.
+    - - Camera PWDN / RESET
+      - 32 / -1
+      - Board RST resets the ESP32; camera reset=-1 is not the upload reset button.
     key_concepts:
-    - The ESP32-CAM board already connects OV2640 signals to fixed ESP32 pins. The external wiring is for programming,
-      power, and boot mode.
-    - Face detection uses memory and CPU. Lower frame sizes are more stable. Lighting, angle, distance, and background
-      can cause missed or false detections.
-    applications: &id003
-    - Camera privacy lesson
-    - Local face-like region demo
-    - ESP32-CAM stability lab
+    - 'The manufacturer V1.0 board specification lists a 5 V supply and external PSRAM; the ESP32 and UART remain
+      in the 3.3 V signal domain. This does not establish the regulator or pinout of an unmarked clone. JPEG QVGA
+      (320×240), one buffer, can use the driver''s low-resolution DRAM path when PSRAM is unavailable. Grayscale
+      QR capture explicitly requires PSRAM here. More buffers/resolution are not free upgrades: upstream recommends
+      multiple frame buffers only with JPEG. No frame rate or memory availability is guaranteed.'
+    applications: &id002
+    - Camera prerequisite and evidence-literacy lesson
+    - Local camera privacy planning
     troubleshooting:
-    - - Brownout reset
-      - Use a stronger 5 V supply and shorter wires.
-    - - Camera init failed
-      - Check board profile and ribbon cable.
-    - - No faces detected
-      - Lower frame size, improve lighting, and check that face detection is enabled in CameraWebServer.
-    improvements: &id002
-    - Add a privacy shutter.
-    - Add a local-only status LED.
-    - Move to ESP32-S3 for heavier vision work.
-    code: "// ESP32-CAM local face-detection starter\n// Based on Arduino ESP32 CameraWebServer example. Keep access\
-      \ on a trusted local network.\n#include \"esp_camera.h\"\n#include <WiFi.h>\n\n#define PWDN_GPIO_NUM 32\n\
-      #define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM 27\n#define\
-      \ Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define Y5_GPIO_NUM\
-      \ 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM 25\n#define\
-      \ HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nconst char *WIFI_SSID = \"YOUR_SSID\";\nconst char *WIFI_PASS\
-      \ = \"YOUR_PASSWORD\";\nvoid startCameraServer(); // provided by the Arduino ESP32 CameraWebServer example\
-      \ app_httpd.cpp\n\nvoid setup() {\n  Serial.begin(115200);\n  camera_config_t config;\n  config.ledc_channel\
-      \ = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM; config.pin_d1 = Y3_GPIO_NUM;\
-      \ config.pin_d2 = Y4_GPIO_NUM; config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM; config.pin_d5\
-      \ = Y7_GPIO_NUM; config.pin_d6 = Y8_GPIO_NUM; config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\
-      \ config.pin_pclk = PCLK_GPIO_NUM; config.pin_vsync = VSYNC_GPIO_NUM; config.pin_href = HREF_GPIO_NUM;\n \
-      \ config.pin_sscb_sda = SIOD_GPIO_NUM; config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\
-      \ config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n\
-      \  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = 1;\n  if (esp_camera_init(&config)\
-      \ != ESP_OK) {\n    Serial.println(\"Camera init failed\");\n    while (true) delay(1000);\n  }\n  WiFi.begin(WIFI_SSID,\
-      \ WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  startCameraServer();\n  Serial.print(\"\
-      Open local camera page: http://\");\n  Serial.println(WiFi.localIP());\n}\n\nvoid loop() {\n  delay(1000);\n\
-      }\n"
-    code_filename: esp32-cam-face-detection-beginner.ino
+    - - Upload waits for connection
+      - Power off and verify crossed 3.3 V UART, common ground and port. Fit IO0→GND, power up and press RST before
+        retrying upload. Do not infer UART voltage from a supply jumper.
+    - - Bootloader messages repeat after upload
+      - Power off, remove the IO0 jumper and restart with RST. GPIO0 must be available for camera XCLK in run mode.
+    - - Brownout or camera init error
+      - Record the printed error code. Disconnect power before checking board identity, camera orientation/ribbon
+        latch, supply/regulator and short return leads. A higher current label alone does not diagnose the fault;
+        do not disable brownout protection.
+    - - Unexpected sensor or missing PSRAM
+      - Use only the identified OV2640/AI-Thinker arrangement. Check board profile and PSRAM setting. The QR example
+        stops without PSRAM; the QVGA JPEG checks use explicit one-buffer DRAM fallback. Do not substitute another
+        camera map blindly.
+    improvements: &id001
+    - Select a separately documented detector/model/target and verify its version and privacy limits before adding
+      inference. No classic-to-S3 pin-map substitution is implied.
+    code: "// AI-Thinker classic ESP32-CAM + OV2640 only; Arduino-ESP32 3.3.2.\n// The board takes regulated 5 V\
+      \ at 5V; UART signals must be 3.3 V.\n#include <Arduino.h>\n#include \"esp_camera.h\"\n\nbool initCamera(bool\
+      \ grayscale) {\n  if (grayscale && !psramFound()) {\n    Serial.println(\"Grayscale example requires enabled\
+      \ PSRAM; stopped\");\n    return false;\n  }\n  camera_config_t c = {};\n  c.ledc_channel = LEDC_CHANNEL_0;\n\
+      \  c.ledc_timer = LEDC_TIMER_0;\n  c.pin_d0 = 5; c.pin_d1 = 18; c.pin_d2 = 19; c.pin_d3 = 21;\n  c.pin_d4\
+      \ = 36; c.pin_d5 = 39; c.pin_d6 = 34; c.pin_d7 = 35;\n  c.pin_xclk = 0; c.pin_pclk = 22; c.pin_vsync = 25;\
+      \ c.pin_href = 23;\n  c.pin_sccb_sda = 26; c.pin_sccb_scl = 27;\n  c.pin_pwdn = 32; c.pin_reset = -1;\n  c.xclk_freq_hz\
+      \ = 20000000;\n  c.pixel_format = grayscale ? PIXFORMAT_GRAYSCALE : PIXFORMAT_JPEG;\n  c.frame_size = FRAMESIZE_QVGA;\
+      \ // 320 x 240; not a promised frame rate.\n  c.jpeg_quality = 12; // Used only for JPEG.\n  c.fb_count =\
+      \ 1;\n  c.grab_mode = CAMERA_GRAB_WHEN_EMPTY;\n  c.fb_location = psramFound() ? CAMERA_FB_IN_PSRAM : CAMERA_FB_IN_DRAM;\n\
+      \  esp_err_t err = esp_camera_init(&c);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x;\
+      \ stopped\\n\", unsigned(err));\n    return false;\n  }\n  sensor_t *sensor = esp_camera_sensor_get();\n \
+      \ if (!sensor || sensor->id.PID != OV2640_PID) {\n    Serial.println(\"This example requires OV2640; stopped\"\
+      );\n    esp_camera_deinit();\n    return false;\n  }\n  Serial.printf(\"Camera initialized; PSRAM %s\\n\"\
+      , psramFound() ? \"found\" : \"not found\");\n  return true;\n}\n\nbool ready = false;\nuint32_t lastFrame\
+      \ = 0;\nvoid setup() {\n  Serial.begin(115200);\n  Serial.println(\"Camera prerequisite check only: no face\
+      \ detector or recognizer\");\n  ready = initCamera(false); // QVGA JPEG, one buffer; DRAM fallback if no PSRAM.\n\
+      }\nvoid loop() {\n  if (!ready) { delay(100); return; }\n  if (uint32_t(millis() - lastFrame) < 2000) { delay(1);\
+      \ return; }\n  lastFrame = millis();\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb) { Serial.println(\"\
+      Frame unavailable; retrying later\"); return; }\n  if (fb->format == PIXFORMAT_JPEG && fb->len > 0) {\n  \
+      \  Serial.printf(\"JPEG frame: %u x %u, %u bytes; NOT a detection result\\n\",\n                  unsigned(fb->width),\
+      \ unsigned(fb->height), unsigned(fb->len));\n  } else Serial.println(\"Unexpected frame format; inspect camera\
+      \ configuration\");\n  esp_camera_fb_return(fb);\n  // No Wi-Fi, HTTP server, image display, face boxes, identity\
+      \ or stored frames.\n}\n"
+    code_filename: esp32-cam-face-detection.ino
 related_slugs:
 - esp32-motion-security-alert
 - esp32-camera-capture-server
-meta_title: ESP32-CAM Face Detection Privacy Demo
+meta_title: 'ESP32-CAM Face Detection Limits: Core 3.3.2 Camera Check'
 format: golden
 project:
   icon: FACE
-  mission_title: Build a Local Face Detection Demo
+  mission_title: Check the Camera Without Claiming Face Detection
   difficulty: Advanced
   age: Ages 14+
   recommended_age: Ages 14+
-  estimated_time: 90-120 min
-  budget: Under 25 USD
-  adult_supervision: Adult supervision required for camera privacy, local-network setup, and power troubleshooting.
-  classroom_use: Use printed faces or consented volunteers only; discuss detection versus recognition.
-  parent_prompt: Ask what the camera detects and what it cannot know about a person.
-  screen_free_activity: List privacy rules before powering the camera.
-  skills_practiced:
-  - ESP32-CAM pin map
-  - Local Wi-Fi camera
-  - Face detection limits
-  - Privacy consent
-  learning_outcomes: &id001
-  - Wire and power an AI-Thinker ESP32-CAM for local testing.
-  - Use the official CameraWebServer face-detection example boundary.
-  - Explain detection versus recognition.
-  - Identify brownout, lighting, and memory limits.
-  mini_experiments:
-  - Compare detection in bright and dim light.
-  - Lower frame size and observe stability.
-  - Test a printed face-like image with consented classroom rules.
-  next_challenge: Add authentication or keep the camera on an isolated local network before any longer demo.
-  what_you_build: A local-network AI-Thinker ESP32-CAM demo based on the Arduino ESP32 CameraWebServer example.
-    The OV2640 stream stays on the local network, the example server performs face detection, and the page must
-    not be described as face recognition because it does not identify people or enroll identities.
-  story: ""
-  eli12: The camera looks for a pattern shaped like a face. It can say a face-like area is present, but it does
-    not know who the person is. The ESP32 reads a signal, checks it against a simple rule, and prints or changes
-    an output so you can see what happened.
-  parent_safety: Get consent before pointing a camera at people. Do not expose the stream publicly and do not use
-    this for identity, security, medical, or emotion claims. Unplug USB and external power before rewiring. Stop
-    if hardware becomes hot, uncomfortable, unstable, or unclear.
-  learning_objectives: *id001
+  estimated_time: Setup time varies
+  budget: Parts cost varies
+  adult_supervision: Supervision for supply identification and camera privacy.
+  what_you_build: A camera prerequisite and privacy lesson, not an operational face detector. The complete sketch
+    initializes the identified AI-Thinker/OV2640 and reports JPEG dimensions/byte counts over Serial. No image is
+    transmitted or stored. CameraWebServer 3.3.2 app_httpd.cpp has capture/stream/control handlers but no face-detector
+    implementation; adding only startCameraServer() or lowering resolution does not create one. The historical URL
+    is retained so readers see this limitation rather than a broken starter.
+  eli12: A camera captures pixels. A detector would need a separate algorithm to propose face-like regions, and
+    a recognizer would need another identity-matching system. This sketch only checks camera frames and prints metadata;
+    it does neither.
+  parent_safety: Keep the camera pointed at a non-sensitive test target. Get permission before viewing people or
+    private spaces. This is a low-voltage bench setup, not surveillance or an access-control system. Unplug all
+    power before changing connections or the ribbon; supply and UART voltage are different domains.
+  learning_objectives: &id003
+  - Separate camera acquisition from detection and recognition.
+  - Recognize a missing implementation rather than treating a declaration as a server.
+  - Check exact framework capabilities before choosing a detector/model.
   components:
-  - item: ESP32-CAM AI-Thinker board with OV2640
-    note: ESP32-family camera board; use the fixed AI-Thinker camera pin map and stable 5 V power.
+  - item: Documented AI-Thinker classic ESP32-CAM with OV2640
+    note: Original AI-Thinker pin map, not ESP32-S3, ESP-EYE or an unidentified clone. Check board markings, schematic
+      and camera label. No microSD card or flash LED used.
     link: /components/esp32-cam.html
-  - item: FTDI USB-to-serial adapter
-    note: 3.3 V logic for programming.
-  - item: Stable 5 V supply
-    note: Camera and Wi-Fi need current headroom.
-  - item: IO0 upload jumper
-    note: Used only while flashing.
+  - item: USB–UART adapter with verified 3.3 V TTL signals
+    note: Check actual TX high level and VCCIO circuit before connection. A 3.3/5 V output jumper does not universally
+      select UART logic. Use TX, RX and GND only; adapter power outputs remain disconnected.
+  - item: Regulated 5 V / 2 A current-capable external supply and short leads
+    note: A planning allowance, not measured demand. Connect only to the documented board 5V input and GND; onboard
+      regulation supplies the chip. Verify actual module input/regulator. Never put 5 V on 3V3 or UART/GPIO.
+  - item: USB data cable, removable IO0 jumper and accessible RST button
+    note: Disconnect power before changing wiring or the camera ribbon; avoid driving an unpowered board through
+      UART.
   bom:
-  - part: ESP32-CAM AI-Thinker board with OV2640
+  - part: Documented AI-Thinker classic ESP32-CAM with OV2640
     qty: '1'
     estimated_cost: Varies
-    notes: ESP32-family camera board; use the fixed AI-Thinker camera pin map and stable 5 V power.
-  - part: FTDI USB-to-serial adapter
+    notes: Original AI-Thinker pin map, not ESP32-S3, ESP-EYE or an unidentified clone. Check board markings, schematic
+      and camera label. No microSD card or flash LED used.
+  - part: USB–UART adapter with verified 3.3 V TTL signals
     qty: '1'
     estimated_cost: Varies
-    notes: 3.3 V logic for programming.
-  - part: Stable 5 V supply
+    notes: Check actual TX high level and VCCIO circuit before connection. A 3.3/5 V output jumper does not universally
+      select UART logic. Use TX, RX and GND only; adapter power outputs remain disconnected.
+  - part: Regulated 5 V / 2 A current-capable external supply and short leads
     qty: '1'
     estimated_cost: Varies
-    notes: Camera and Wi-Fi need current headroom.
-  - part: IO0 upload jumper
+    notes: A planning allowance, not measured demand. Connect only to the documented board 5V input and GND; onboard
+      regulation supplies the chip. Verify actual module input/regulator. Never put 5 V on 3V3 or UART/GPIO.
+  - part: USB data cable, removable IO0 jumper and accessible RST button
     qty: '1'
     estimated_cost: Varies
-    notes: Used only while flashing.
+    notes: Disconnect power before changing wiring or the camera ribbon; avoid driving an unpowered board through
+      UART.
   wiring:
-    illustration_alt: Build an ESP32-CAM Face Detection Privacy Demo wiring diagram
-    summary: FTDI programming uses GPIO3/GPIO1. IO0 is grounded only for upload. OV2640 camera wiring is fixed on
-      AI-Thinker ESP32-CAM.
+    full_size_link: true
+    illustration_alt: 'Logical AI-Thinker ESP32-CAM programming and power map: separate 5 V board supply, verified
+      3.3 V UART crossed TX/RX, common ground, IO0 strap for upload reset only. Not physical header order.'
+    summary: The OV2640 bus is already on the board. External wiring is only separate 5 V board power, common ground
+      and 3.3 V UART. Adapter power outputs stay disconnected. Follow the manual IO0/RST sequence below.
     steps:
-    - Unplug power before changing programming wires.
-    - Connect FTDI TX to U0R/GPIO3 and FTDI RX to U0T/GPIO1.
-    - Connect FTDI GND and ESP32-CAM GND together.
-    - Power the board from stable 5 V.
-    - Connect IO0 to GND only during upload, then remove it and reset.
-    - Use the local IP on a trusted network only.
+    - Unplug USB and switch external power off before wiring. Identify the exact AI-Thinker/OV2640 board and the
+      adapter signal voltage; stop if either is unknown.
+    - Connect adapter TX (3.3 V TTL) → U0R/GPIO3, adapter RX ← U0T/GPIO1, and GND ↔ GND. Leave adapter 5V, 3V3,
+      DTR and RTS unconnected; this procedure uses manual reset.
+    - Connect external regulated 5 V positive only to the documented 5V input, and negative to board GND/common
+      adapter ground. Never join two supply positive outputs. Check the actual board regulator and connector labels.
+    - Select Espressif board package 3.3.2 and AI Thinker ESP32-CAM in Arduino IDE. Verify the PSRAM setting/profile.
+      Use the board-compatible partition menu; this sketch does not implement OTA. Open the adapter port.
+    - With all power off fit IO0→GND. Power the board and adapter, press/release the onboard RST button to sample
+      GPIO0 LOW, then upload. Manual GPIO0 wiring alone does not reset the chip.
+    - After upload, power off both sources, remove IO0→GND, restore power and press/release RST for normal boot.
+      GPIO0 now supplies camera XCLK; leaving it grounded prevents operation. Open Serial at 115200.
+    - Keep UART and board powered together while connected; disconnect both before altering signals/ribbon. Do not
+      use GPIO16/17 (PSRAM), SD pins or GPIO4 flash LED for this example.
   gpio_map:
-  - signal: OV2640 camera bus
-    esp32_pin: AI-Thinker fixed camera pins
-    direction: I/O
-    notes: Matches the Arduino ESP32 CameraWebServer AI-Thinker profile.
-  - signal: FTDI UART
-    esp32_pin: GPIO3 / GPIO1
-    direction: I/O
-    notes: Upload and Serial Monitor.
-  - signal: IO0 upload strap
-    esp32_pin: GPIO0
-    direction: Boot strap
-    notes: Ground only while flashing.
+  - signal: Programmer TX / RX
+    esp32_pin: U0R GPIO3 / U0T GPIO1
+    direction: UART input / output
+    notes: Cross TX→RX; 3.3 V TTL only. Not RS-232 or 5 V UART.
+  - signal: External regulated supply
+    esp32_pin: 5V / GND
+    direction: Board power
+    notes: Board regulator input, not chip/GPIO voltage. Adapter positive outputs NC.
+  - signal: Upload strap / camera clock
+    esp32_pin: GPIO0 → GND for reset into upload only
+    direction: Boot strap, then XCLK output
+    notes: Remove strap with power off and reset to run.
+  - signal: OV2640 D0…D7
+    esp32_pin: 5, 18, 19, 21, 36, 39, 34, 35
+    direction: Camera data input
+    notes: Onboard ribbon/internal wiring; do not externally rewire.
+  - signal: OV2640 XCLK/PCLK/VSYNC/HREF
+    esp32_pin: 0 / 22 / 25 / 23
+    direction: Clock output / timing inputs
+    notes: AI-Thinker only, not WROVER-KIT or S3 map.
+  - signal: OV2640 SCCB SDA/SCL
+    esp32_pin: 26 / 27
+    direction: Configuration bus
+    notes: Modern pin_sccb_sda/pin_sccb_scl API names.
+  - signal: Camera PWDN / RESET
+    esp32_pin: 32 / -1
+    direction: Power-down / no dedicated sensor reset
+    notes: Board RST resets the ESP32; camera reset=-1 is not the upload reset button.
   circuit_explanation: The ESP32-CAM board already connects OV2640 signals to fixed ESP32 pins. The external wiring
     is for programming, power, and boot mode.
-  engineering_explanation: Face detection processing happens in the local ESP32-CAM CameraWebServer example files,
-    not in a cloud API. It uses memory and CPU, so lower frame sizes are more stable. Lighting, angle, distance,
-    and background can cause missed or false detections.
+  engineering_explanation: 'The manufacturer V1.0 board specification lists a 5 V supply and external PSRAM; the
+    ESP32 and UART remain in the 3.3 V signal domain. This does not establish the regulator or pinout of an unmarked
+    clone. JPEG QVGA (320×240), one buffer, can use the driver''s low-resolution DRAM path when PSRAM is unavailable.
+    Grayscale QR capture explicitly requires PSRAM here. More buffers/resolution are not free upgrades: upstream
+    recommends multiple frame buffers only with JPEG. No frame rate or memory availability is guaranteed.'
   libraries:
-  - name: Arduino ESP32 core CameraWebServer example
-    note: Use the bundled CameraWebServer app_httpd.cpp with face detection enabled.
+  - text: Espressif Arduino-ESP32 board package 3.3.2
+    note: Install the exact review baseline; esp_camera is bundled. Use AI Thinker ESP32-CAM and its PSRAM setting.
   code:
     filename: esp32-cam-face-detection.ino
-    content: "// ESP32-CAM local face-detection starter\n// Based on Arduino ESP32 CameraWebServer example. Keep\
-      \ access on a trusted local network.\n#include \"esp_camera.h\"\n#include <WiFi.h>\n\n#define PWDN_GPIO_NUM\
-      \ 32\n#define RESET_GPIO_NUM -1\n#define XCLK_GPIO_NUM 0\n#define SIOD_GPIO_NUM 26\n#define SIOC_GPIO_NUM\
-      \ 27\n#define Y9_GPIO_NUM 35\n#define Y8_GPIO_NUM 34\n#define Y7_GPIO_NUM 39\n#define Y6_GPIO_NUM 36\n#define\
-      \ Y5_GPIO_NUM 21\n#define Y4_GPIO_NUM 19\n#define Y3_GPIO_NUM 18\n#define Y2_GPIO_NUM 5\n#define VSYNC_GPIO_NUM\
-      \ 25\n#define HREF_GPIO_NUM 23\n#define PCLK_GPIO_NUM 22\n\nconst char *WIFI_SSID = \"YOUR_SSID\";\nconst\
-      \ char *WIFI_PASS = \"YOUR_PASSWORD\";\nvoid startCameraServer(); // provided by the Arduino ESP32 CameraWebServer\
-      \ example app_httpd.cpp\n\nvoid setup() {\n  Serial.begin(115200);\n  camera_config_t config;\n  config.ledc_channel\
-      \ = LEDC_CHANNEL_0;\n  config.ledc_timer = LEDC_TIMER_0;\n  config.pin_d0 = Y2_GPIO_NUM; config.pin_d1 = Y3_GPIO_NUM;\
-      \ config.pin_d2 = Y4_GPIO_NUM; config.pin_d3 = Y5_GPIO_NUM;\n  config.pin_d4 = Y6_GPIO_NUM; config.pin_d5\
-      \ = Y7_GPIO_NUM; config.pin_d6 = Y8_GPIO_NUM; config.pin_d7 = Y9_GPIO_NUM;\n  config.pin_xclk = XCLK_GPIO_NUM;\
-      \ config.pin_pclk = PCLK_GPIO_NUM; config.pin_vsync = VSYNC_GPIO_NUM; config.pin_href = HREF_GPIO_NUM;\n \
-      \ config.pin_sscb_sda = SIOD_GPIO_NUM; config.pin_sscb_scl = SIOC_GPIO_NUM;\n  config.pin_pwdn = PWDN_GPIO_NUM;\
-      \ config.pin_reset = RESET_GPIO_NUM;\n  config.xclk_freq_hz = 20000000;\n  config.pixel_format = PIXFORMAT_JPEG;\n\
-      \  config.frame_size = FRAMESIZE_QVGA;\n  config.jpeg_quality = 12;\n  config.fb_count = 1;\n  if (esp_camera_init(&config)\
-      \ != ESP_OK) {\n    Serial.println(\"Camera init failed\");\n    while (true) delay(1000);\n  }\n  WiFi.begin(WIFI_SSID,\
-      \ WIFI_PASS);\n  while (WiFi.status() != WL_CONNECTED) delay(300);\n  startCameraServer();\n  Serial.print(\"\
-      Open local camera page: http://\");\n  Serial.println(WiFi.localIP());\n}\n\nvoid loop() {\n  delay(1000);\n\
-      }\n"
-  code_explanation: The sketch initializes the AI-Thinker OV2640 camera pin map, connects to Wi-Fi, starts the local
-    CameraWebServer example, and prints the board IP address. Face detection support lives in the example server
-    files; this starter sketch does not implement identity recognition.
-  expected_output: Serial Monitor prints a local IP address. Open it on the same network and enable/test detection
-    in the CameraWebServer page only with consented or printed face-like targets.
+    content: "// AI-Thinker classic ESP32-CAM + OV2640 only; Arduino-ESP32 3.3.2.\n// The board takes regulated\
+      \ 5 V at 5V; UART signals must be 3.3 V.\n#include <Arduino.h>\n#include \"esp_camera.h\"\n\nbool initCamera(bool\
+      \ grayscale) {\n  if (grayscale && !psramFound()) {\n    Serial.println(\"Grayscale example requires enabled\
+      \ PSRAM; stopped\");\n    return false;\n  }\n  camera_config_t c = {};\n  c.ledc_channel = LEDC_CHANNEL_0;\n\
+      \  c.ledc_timer = LEDC_TIMER_0;\n  c.pin_d0 = 5; c.pin_d1 = 18; c.pin_d2 = 19; c.pin_d3 = 21;\n  c.pin_d4\
+      \ = 36; c.pin_d5 = 39; c.pin_d6 = 34; c.pin_d7 = 35;\n  c.pin_xclk = 0; c.pin_pclk = 22; c.pin_vsync = 25;\
+      \ c.pin_href = 23;\n  c.pin_sccb_sda = 26; c.pin_sccb_scl = 27;\n  c.pin_pwdn = 32; c.pin_reset = -1;\n  c.xclk_freq_hz\
+      \ = 20000000;\n  c.pixel_format = grayscale ? PIXFORMAT_GRAYSCALE : PIXFORMAT_JPEG;\n  c.frame_size = FRAMESIZE_QVGA;\
+      \ // 320 x 240; not a promised frame rate.\n  c.jpeg_quality = 12; // Used only for JPEG.\n  c.fb_count =\
+      \ 1;\n  c.grab_mode = CAMERA_GRAB_WHEN_EMPTY;\n  c.fb_location = psramFound() ? CAMERA_FB_IN_PSRAM : CAMERA_FB_IN_DRAM;\n\
+      \  esp_err_t err = esp_camera_init(&c);\n  if (err != ESP_OK) {\n    Serial.printf(\"Camera init failed: 0x%x;\
+      \ stopped\\n\", unsigned(err));\n    return false;\n  }\n  sensor_t *sensor = esp_camera_sensor_get();\n \
+      \ if (!sensor || sensor->id.PID != OV2640_PID) {\n    Serial.println(\"This example requires OV2640; stopped\"\
+      );\n    esp_camera_deinit();\n    return false;\n  }\n  Serial.printf(\"Camera initialized; PSRAM %s\\n\"\
+      , psramFound() ? \"found\" : \"not found\");\n  return true;\n}\n\nbool ready = false;\nuint32_t lastFrame\
+      \ = 0;\nvoid setup() {\n  Serial.begin(115200);\n  Serial.println(\"Camera prerequisite check only: no face\
+      \ detector or recognizer\");\n  ready = initCamera(false); // QVGA JPEG, one buffer; DRAM fallback if no PSRAM.\n\
+      }\nvoid loop() {\n  if (!ready) { delay(100); return; }\n  if (uint32_t(millis() - lastFrame) < 2000) { delay(1);\
+      \ return; }\n  lastFrame = millis();\n  camera_fb_t *fb = esp_camera_fb_get();\n  if (!fb) { Serial.println(\"\
+      Frame unavailable; retrying later\"); return; }\n  if (fb->format == PIXFORMAT_JPEG && fb->len > 0) {\n  \
+      \  Serial.printf(\"JPEG frame: %u x %u, %u bytes; NOT a detection result\\n\",\n                  unsigned(fb->width),\
+      \ unsigned(fb->height), unsigned(fb->len));\n  } else Serial.println(\"Unexpected frame format; inspect camera\
+      \ configuration\");\n  esp_camera_fb_return(fb);\n  // No Wi-Fi, HTTP server, image display, face boxes, identity\
+      \ or stored frames.\n}\n"
+  code_explanation: The camera check has complete fixed pins, zero-initialized configuration, one QVGA JPEG buffer
+    and explicit DRAM fallback. Initialization or wrong sensor leaves acquisition disabled. A failed frame is retried
+    later; each acquired buffer is returned. The sketch prints only metadata. It performs no Wi-Fi association,
+    streaming, face inference, enrolment or identity recognition. Capturing a frame does not establish its scene
+    quality, and counting bytes does not establish any detection result.
+  expected_output: Serial at 115200 should show initialization or an explicit error, then JPEG dimensions and byte
+    counts at a target two-second interval. Sizes vary with scene and driver. The line explicitly says NOT a detection
+    result. There should be no face boxes, identity names, browser IP or stream from this standalone check. No observed
+    output is supplied.
   common_mistakes:
   - text: Calling detection recognition.
   - text: Publishing the stream on the public internet.
   - text: Leaving IO0 grounded after upload.
   - text: Using weak 5 V power.
   troubleshooting:
-  - problem: Brownout reset
-    fix: Use a stronger 5 V supply and shorter wires.
-  - problem: Camera init failed
-    fix: Check the AI-Thinker ESP32-CAM board profile, stable 5 V power, common ground with the FTDI adapter, and
-      the OV2640 ribbon cable.
-  - problem: No faces detected
-    fix: Lower frame size, improve lighting, and check that face detection is enabled in CameraWebServer.
-  - problem: Browser cannot open the stream
-    fix: Confirm the computer or phone is on the same local Wi-Fi network as the ESP32-CAM and use the IP printed
-      in Serial Monitor.
-  - problem: Project is described as face recognition
-    fix: Rename the claim in your notes. This build detects face-like regions only; it does not recognize identities.
+  - problem: Upload waits for connection
+    fix: Power off and verify crossed 3.3 V UART, common ground and port. Fit IO0→GND, power up and press RST before
+      retrying upload. Do not infer UART voltage from a supply jumper.
+  - problem: Bootloader messages repeat after upload
+    fix: Power off, remove the IO0 jumper and restart with RST. GPIO0 must be available for camera XCLK in run mode.
+  - problem: Brownout or camera init error
+    fix: Record the printed error code. Disconnect power before checking board identity, camera orientation/ribbon
+      latch, supply/regulator and short return leads. A higher current label alone does not diagnose the fault;
+      do not disable brownout protection.
+  - problem: Unexpected sensor or missing PSRAM
+    fix: Use only the identified OV2640/AI-Thinker arrangement. Check board profile and PSRAM setting. The QR example
+      stops without PSRAM; the QVGA JPEG checks use explicit one-buffer DRAM fallback. Do not substitute another
+      camera map blindly.
   testing_checklist:
-  - Boot with the IO0 jumper removed.
-  - Confirm the local IP appears.
-  - Open the page only on the local network.
-  - Test lighting and frame-size changes.
+  - 'Documentation/API review only: no compilation or camera hardware operation recorded for this sketch.'
+  - Check exact board/sensor, UART signal level, regulator input and supply wiring with power off.
+  - Record upload, boot, initialization and actual output separately. Upload completion alone is not camera-function
+    evidence.
   engineer_tips:
   - Keep the camera private by default.
   - Use QVGA for stability.
   - Treat detections as hints, not identity facts.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  upgrade_ideas: *id001
+  real_world_applications: *id002
   related_guides:
   - title: What is ESP32?
     href: /guides/what-is-esp32.html
@@ -260,26 +318,70 @@ project:
   related_projects:
   - title: ESP32-CAM Local Network Camera Demo
     href: /projects/esp32-security-camera-system.html
-    description: Start with a privacy-bounded local snapshot page before enabling face detection.
+    description: Compare the separate local-network snapshot demonstration and its privacy limits.
   - title: ESP32-CAM Color Object Detector Demo
     href: /projects/esp32-ai-object-detector.html
-    description: Compare face detection with a simpler local color-thresholding camera project.
+    description: Compare a separately implemented color-thresholding task with the missing face-detector prerequisite.
   - title: ESP32 Camera Capture Server
     href: /projects/esp32-camera-capture-server.html
-    description: Start with capture before enabling detection.
-  - title: ESP32-CAM QR Scanner
+    description: Add a local JPEG endpoint using the complete bounded-connection example.
+  - title: ESP32-CAM QR Serial decoder
     href: /projects/esp32-cam-qr-scanner.html
-    description: Compare face-like detection with QR code scanning.
+    description: Use the explicitly configured Quirc pipeline after camera acquisition is established.
   faqs:
-  - question: Does this recognize people?
-    answer: No. It only detects face-like regions.
-  - question: Can I use it for a door lock?
-    answer: No. It is not biometric security.
-  - question: Can I expose the stream online?
-    answer: No. Keep the demo local and consent-based.
+  - question: Where is the face-detection switch in the reviewed server?
+    answer: The 3.3.2 app_httpd.cpp reviewed here does not implement a face detector. Old tutorials and other versions/targets
+      differ. A camera frame or stream is not a detection result.
+  - question: Does detection mean recognition?
+    answer: No. A detector proposes face-like regions; recognition attempts an identity match and needs separate
+      models, data and evaluation. Neither is implemented here.
+  - question: Why keep a face-detection URL for a camera check?
+    answer: It preserves the public link while clearly explaining the former unsupported promise and the missing
+      detector prerequisite. No fake result or unsupported older framework is presented as a working alternative.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Compare actual observations with the intended output; no hardware result is supplied. A captured frame
+      is not proof of decoding, face detection or recognition.
     skills:
-    - ESP32-CAM pin map
-    - Local Wi-Fi camera
-    - Face detection limits
+    - Separate board power from UART logic
+    - Follow manual upload/reset
+    - Distinguish camera capture from an application result
+  tutorial_flow: true
+  assumptions: 'Review baseline: Arduino-ESP32 3.3.2, its bundled esp_camera driver and classic AI-Thinker board
+    profile. This is not a latest-release claim and does not establish compatibility with an ESP32-S3 camera board.
+    Each camera_config_t is zero-initialized, has the complete AI-Thinker map and explicit frame-buffer settings.
+    No separately installed camera library should override the bundled driver.'
+  configuration: 'Review baseline: Arduino-ESP32 3.3.2, its bundled esp_camera driver and classic AI-Thinker board
+    profile. This is not a latest-release claim and does not establish compatibility with an ESP32-S3 camera board.
+    Each camera_config_t is zero-initialized, has the complete AI-Thinker map and explicit frame-buffer settings.
+    No separately installed camera library should override the bundled driver.
+
+
+    Copy this complete standalone Serial camera check; it needs no missing startCameraServer() function or external
+    tabs. For actual streaming as a separate exercise, open the COMPLETE 3.3.2 File → Examples → ESP32 → Camera
+    → CameraWebServer project, retain all tabs/files (including app_httpd.cpp, camera_index.h, board_config.h and
+    camera_pins.h), and select only CAMERA_MODEL_AI_THINKER in board_config.h (disable the default ESP_EYE). Set
+    your own Wi-Fi credentials and follow that version’s partition instructions (at least 3 MB app). That official
+    project streams/captures images; it does not supply face detection in this reviewed server. It also has a blocking
+    Wi-Fi wait and no user authentication/TLS, so use the bounded snapshot tutorial first if connection diagnostics
+    are needed. A separately versioned detector/model and supported target are required before claiming a detection
+    demo; none is selected or fabricated here.'
+  references:
+  - title: Ai-Thinker ESP32-CAM V1.0 manufacturer specification (mirrored PDF)
+    href: https://d229kd5ey79jzj.cloudfront.net/1205/ESP32-CAM%20Product%20Specification.pdf
+  - title: Arduino-ESP32 3.3.2 AI-Thinker camera pin map
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/ESP32/examples/Camera/CameraWebServer/camera_pins.h
+  - title: Arduino-ESP32 3.3.2 complete CameraWebServer example
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/ESP32/examples/Camera/CameraWebServer
+  - title: Espressif camera driver v2.1.3 memory and frame-buffer guidance
+    href: https://github.com/espressif/esp32-camera/blob/v2.1.3/README.md
+  - title: Espressif classic ESP32 manual boot-mode selection
+    href: https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html
+  - title: 'ESP32 datasheet: GPIO and supply limits'
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  - title: 'Arduino-ESP32 3.3.2 server implementation: capture/stream, no detector'
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/ESP32/examples/Camera/CameraWebServer/app_httpd.cpp
+  - title: Arduino-ESP32 3.3.2 camera model selector
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/ESP32/examples/Camera/CameraWebServer/board_config.h
+  skills_practiced: *id003
+  learning_outcomes: *id003
+  safety_badge: Local camera bench — unverified hardware
