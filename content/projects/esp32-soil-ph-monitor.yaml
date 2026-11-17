@@ -1,186 +1,215 @@
 slug: esp32-soil-ph-monitor
-title: Build an Educational Soil pH Monitor
+title: 'ESP32 Soil-Water pH: Two-Buffer Measurement Lesson'
 category: Agriculture
-image_alt: ESP32 educational soil pH monitor with probe module and plant test setup
-og_image: /assets/images/og/esp32-soil-ph-monitor.webp
-hero_image: /assets/images/generated/esp32-soil-ph-monitor.webp
-featured_image: /assets/images/generated/esp32-soil-ph-monitor.webp
-image: /assets/images/generated/esp32-soil-ph-monitor.webp
-description: Use a pH probe interface board on ESP32 ADC1 GPIO34 to estimate soil-water slurry pH after mandatory
-  two-point calibration.
-meta_title: ESP32 Educational Soil pH Monitor
-meta_description: Build an educational ESP32 soil pH monitor with a conditioning board, GPIO34 ADC1 input, pH 4/pH
-  7 calibration, and no fertilizer advice.
+image_alt: Two-buffer pH lesson logical overview; not a physical layout, photograph or recorded measurement
+og_image: /assets/visuals/projects/heroes/esp32-soil-ph-monitor-measurement-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-soil-ph-monitor-measurement-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-soil-ph-monitor-measurement-overview.svg
+image: /assets/visuals/projects/heroes/esp32-soil-ph-monitor-measurement-overview.svg
+description: Use a defined SEN0161-V2 interface on classic ESP32 ADC1; record both buffer points, reject invalid
+  readings and limit pH estimates to the recorded interval.
+meta_title: 'ESP32 Soil-Water pH: Two-Buffer Measurement Lesson'
+meta_description: Use a defined SEN0161-V2 interface on classic ESP32 ADC1; record both buffer points, reject invalid
+  readings and limit pH estimates to the recorded interval.
 source_base: esp32-soil-ph-monitor-golden-batch-6
-sensor: pH interface AOUT
-output: Serial Monitor
+sensor: SEN0161-V2 analog interface
+output: Serial pH estimate within recorded interval
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-07-10'
+date_modified: '2026-11-17'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
 import_source: golden-batch-6
 format: golden
 hardware:
-  sensor_pin: GPIO34
-  output_pin: Serial Monitor
-  sensor_name: pH interface AOUT
-  output_name: Estimated calibrated pH
+  sensor_pin: GPIO34 through 15k/10k divider
+  output_pin: Serial
+  sensor_name: SEN0161-V2 analog interface
+  output_name: Serial pH estimate within recorded interval
   wiring:
-  - component: pH interface AOUT
+  - component: Divided AOUT
     pin: GPIO34
-  - component: pH interface GND
-    pin: GND
-  - component: pH interface VCC
-    pin: Per module datasheet; AOUT max 3.3V
+  - component: Supply / ground
+    pin: External regulated 5 V / common GND
 project:
   icon: PH
-  mission_title: Build an Educational Soil pH Monitor
+  mission_title: 'ESP32 Soil-Water pH: Two-Buffer Measurement Lesson'
   difficulty: Advanced
   age: Ages 13+
   recommended_age: Ages 13+
-  estimated_time: 75-90 min
-  budget: Under 45 USD
+  estimated_time: Setup time varies
+  budget: Parts cost varies
   adult_supervision: Recommended for handling calibration liquids and caring for the probe.
-  classroom_use: Run as a calibration and measurement-limits lab; do not make crop-treatment decisions from the
-    result.
-  parent_prompt: Ask why calibration has to happen before the ESP32 prints a pH estimate.
-  screen_free_activity: Make a table for pH 7 buffer ADC, pH 4 buffer ADC, slurry ADC, and estimated pH.
-  skills_practiced:
-  - ADC1 analog reading
-  - Two-point calibration
-  - Sensor interface limits
-  - Measurement uncertainty
-  learning_outcomes:
-  - Use a pH conditioning board output on ADC1 GPIO34.
-  - Require pH 7 and pH 4 calibration before readings.
-  - Prepare a soil-water slurry instead of pushing a probe into dry soil.
-  - Explain drift, stabilization, storage, and cleaning limits.
-  mini_experiments:
-  - Record stable pH 7 ADC values.
-  - Record stable pH 4 ADC values.
-  - Compare two soil slurries after the readings settle.
-  next_challenge: Store calibration values in nonvolatile memory after validating the manual constants.
-  what_you_build: An educational soil pH estimator that reads a conditioned pH interface output on GPIO34 after
-    mandatory two-point calibration.
-  story: Soil pH sounds like one number, but the measurement depends on calibration, probe care, temperature, slurry
-    preparation, and patience. This Golden project teaches the engineering workflow without pretending to be a lab
-    instrument or agricultural decision system.
-  eli12: A pH probe makes a tiny chemical voltage that needs a special interface board before the ESP32 can read
-    it. You first teach the code what pH 7 and pH 4 look like, then it estimates a soil-water slurry reading from
-    the ADC number.
-  parent_safety: Use low-voltage 3.3 V ESP32 wiring and unplug USB before rewiring. Do not connect a bare pH probe
-    directly to GPIO34. Keep calibration liquids away from eyes and mouths, rinse the probe gently, and do not use
-    readings to decide fertilizer or crop treatment.
+  skills_practiced: &id001
+  - Separate raw codes from estimated mV
+  - Record both endpoints
+  - Recognize invalid/out-of-range results
+  learning_outcomes: *id001
+  what_you_build: A Serial-only pH interpolation lesson for the DFRobot Gravity SEN0161-V2 board and its liquid
+    probe. Raw ADC counts, ADC-pin millivolt estimates and calculated pH are separate. It does not report pH before
+    valid two-buffer records, extrapolate beyond them, compensate temperature or claim laboratory accuracy. The
+    overview is a logical illustration, not a photograph or recorded result.
+  eli12: A probe needs an interface before an ADC can read it. Two known buffers set an approximate line, valid
+    only within the recorded interval and matching conditions.
+  parent_safety: Power off before rewiring. Keep electronics, BNC and connectors dry. Identify the module and connector
+    labels, not wire colors. No mains, pump, relay or medical/agricultural decision is part of this lesson.
   components:
-  - item: ESP32 DevKit board
-    note: Uses ADC1 GPIO34 for the conditioned analog signal.
+  - item: Classic ESP32-WROOM DevKit
+    note: USB-powered; 3.3 V logic, USB power and GPIO34 ADC1; module has separate 5 V supply.
     link: /components/esp32-devkit.html
-  - item: pH probe with conditioning/interface board
-    note: Do not connect a bare pH probe directly to the ESP32 ADC.
-  - item: pH 7 and pH 4 calibration buffers
-    note: Required for two-point calibration before soil readings.
-  - item: Distilled water and clean cup
-    note: Used for rinsing and making a soil-water slurry.
-  - item: Soil sample
-    note: Measured as a settled slurry for educational estimates.
+  - item: DFRobot Gravity SEN0161-V2 board and supplied liquid pH probe
+    note: Follow documented board labels. Other versions need their own interface review.
+  - item: 15 kΩ and 10 kΩ resistors, both 1%, and 100 nF capacitor
+    note: One divider and node capacitor, not arbitrary resistor values.
+    link: /components/through-hole-resistors.html
+  - item: Regulated 5.0 V module supply (±5%), breadboard, leads and USB data cable
+    note: Separate module supply positive from USB/controller positive; common ground. Power both off before rewiring.
+  - item: Fresh pH 4/pH 7 buffers, thermometer and probe-care supplies
+    note: Use certificate values at actual temperature; separate aliquots; never return used buffer.
   bom:
-  - part: ESP32 DevKit board
-    qty: '1'
+  - part: Classic ESP32-WROOM DevKit
+    qty: 1 set
     estimated_cost: Varies
-    notes: Uses ADC1 GPIO34 for the conditioned analog signal.
-  - part: pH probe with conditioning/interface board
-    qty: '1'
+    notes: USB-powered; 3.3 V logic, USB power and GPIO34 ADC1; module has separate 5 V supply.
+  - part: DFRobot Gravity SEN0161-V2 board and supplied liquid pH probe
+    qty: 1 set
     estimated_cost: Varies
-    notes: Do not connect a bare pH probe directly to the ESP32 ADC.
-  - part: pH 7 and pH 4 calibration buffers
-    qty: '1'
+    notes: Follow documented board labels. Other versions need their own interface review.
+  - part: 15 kΩ and 10 kΩ resistors, both 1%, and 100 nF capacitor
+    qty: 1 set
     estimated_cost: Varies
-    notes: Required for two-point calibration before soil readings.
-  - part: Distilled water and clean cup
-    qty: '1'
+    notes: One divider and node capacitor, not arbitrary resistor values.
+  - part: Regulated 5.0 V module supply (±5%), breadboard, leads and USB data cable
+    qty: 1 set
     estimated_cost: Varies
-    notes: Used for rinsing and making a soil-water slurry.
-  - part: Soil sample
-    qty: '1'
+    notes: Separate module supply positive from USB/controller positive; common ground. Power both off before rewiring.
+  - part: Fresh pH 4/pH 7 buffers, thermometer and probe-care supplies
+    qty: 1 set
     estimated_cost: Varies
-    notes: Measured as a settled slurry for educational estimates.
+    notes: Use certificate values at actual temperature; separate aliquots; never return used buffer.
   wiring:
-    illustration_alt: ESP32 DevKit GPIO34 connected to the analog output of a pH conditioning board, with 3.3 V-compatible
-      output and common ground.
-    summary: The pH probe connects to its interface board. Only the conditioned AOUT signal goes to ESP32 ADC1 GPIO34,
-      and the interface output must stay within 0-3.3 V.
+    full_size_link: true
+    illustration_alt: 'Logical DFRobot Gravity SEN0161-V2 board and supplied liquid pH probe circuit: separate regulated
+      5 V, common ground, 15k/10k divider and 100 nF at GPIO34; not physical pin order or tested hardware.'
+    summary: Power the identified module from a separate regulated 5.0 V supply, ±5%, not from a GPIO. Its documented
+      supply range is 3.3–5.5 V and output envelope is 0–3.0 V. USB powers the ESP32; never join the two positive
+      supply outputs. Module AOUT feeds 15 kΩ (1%) then GPIO34; 10 kΩ (1%) and 100 nF connect this node to GND.
+      Grounds are common. This divider scales the signal, not the module supply. Power both sides together while
+      connected; power off USB and module supply before rewiring. Never connect a bare electrode or unknown output
+      directly to GPIO34.
     steps:
-    - Unplug USB before wiring the pH interface board.
-    - Connect the pH probe to the conditioning/interface board, not directly to the ESP32.
-    - Connect interface GND to ESP32 GND.
-    - Power the interface only as its datasheet allows, and confirm AOUT cannot exceed 3.3 V at the ESP32 pin.
-    - Connect interface AOUT to GPIO34.
-    - Calibrate with pH 7 and pH 4 buffers before measuring a soil-water slurry.
+    - Switch USB and module supply off. Identify exact module, rail and connector labels.
+    - Module +/VCC → external regulated 5.0 V (±5%); module −/GND → common ESP32/external-supply GND. Never join
+      positive rails. Connect the liquid probe only to BNC; keep BNC and interface dry.
+    - Module A/AOUT → 15 kΩ → GPIO34 node; 10 kΩ and 100 nF separately node → GND. Never bypass the divider.
+    - Check logical diagram before powering. Serial 115200; first leave the record-enable flag false and inspect
+      raw counts/pin-mV diagnostics.
+    - Record both stable endpoints and conditions with this same chain before enabling calculation. Invalid/outside-interval
+      signals deliberately give no calculated result.
   gpio_map:
-  - signal: pH interface AOUT
-    esp32_pin: GPIO34
+  - signal: Module + / VCC
+    esp32_pin: No GPIO; external regulated 5.0 V (±5%)
+    direction: Supply
+    notes: Identified module 3.3–5.5 V supply; distinct from signal rating.
+  - signal: Module − / GND
+    esp32_pin: GND
+    direction: Common return
+    notes: Divider bottom/capacitor share ground.
+  - signal: Module A / AOUT
+    esp32_pin: 15 kΩ → GPIO34; 10 kΩ and 100 nF node → GND
     direction: ADC1 input
-    notes: Conditioned analog output only; must be 0-3.3 V.
-  circuit_explanation: The glass pH probe is high impedance and must feed a conditioning board. The ESP32 reads
-    only the board's conditioned voltage on ADC1 GPIO34.
-  engineering_explanation: Two-point calibration sets the line between pH 7 and pH 4 buffer ADC values. Readings
-    drift with probe condition, temperature, contamination, slurry preparation, and stabilization time, so the output
-    is an estimated educational value.
+    notes: Divided 0–3.0 V documented envelope; GPIO34 has no internal pull resistor.
+  circuit_explanation: Power the identified module from a separate regulated 5.0 V supply, ±5%, not from a GPIO.
+    Its documented supply range is 3.3–5.5 V and output envelope is 0–3.0 V. USB powers the ESP32; never join the
+    two positive supply outputs. Module AOUT feeds 15 kΩ (1%) then GPIO34; 10 kΩ (1%) and 100 nF connect this node
+    to GND. Grounds are common. This divider scales the signal, not the module supply. Power both sides together
+    while connected; power off USB and module supply before rewiring. Never connect a bare electrode or unknown
+    output directly to GPIO34.
+  engineering_explanation: 'Raw counts are uncalibrated 12-bit codes, not volts or a physical quantity. analogReadMilliVolts
+    uses the core ADC calibration path to estimate voltage at the divided pin; it is not independent system calibration
+    or a voltmeter accuracy guarantee. Raw and mV use separate conversions. Classic ESP32 at 11 dB has a documented
+    measurement range of about 150–3100 mV, distinct from 3.3 V logic. The sketch accepts only 250–2200 mV and rejects
+    rail samples or more than 20 mV span within 32 samples. These are conservative lesson screening choices, not
+    manufacturer sensor specifications. Slow drift and plausible wiring faults can pass.
+
+
+    Vpin=Vout×Rb/(Rt+Rb). For Rt=15 kΩ and Rb=10 kΩ, ratio=0.4 nominal; with 1% resistors the largest ratio is 10.1/(14.85+10.1)=0.40481.
+    Documented 3.0 V output gives at most 1.2145 V. A 5.0 V supply at +5% gives 5.25 V; even output-to-supply pass-through
+    gives only 2.1253 V at the ADC. At the module maximum 5.5 V, the bound is 2.2265 V, below the classic 11 dB
+    range ceiling around 3.1 V; the sketch rejects above 2.2 V. This bounded calculation is not protection from
+    arbitrary supplies, miswiring or transients. The divider also pulls a disconnected signal wire low, but does
+    not prove electrode health. Nominal module voltage is 2.5×pin voltage; resistor-ratio uncertainty alone is about
+    ±1.2%, before ADC, loading and sensor errors. Endpoint records are ADC-pin values from this complete chain;
+    changing any part invalidates them.'
   libraries:
-  - name: Arduino ESP32 core
-    note: No external library is required for the basic ADC sketch.
+  - text: Arduino-ESP32 3.3.2 built-in ADC APIs
+    note: No DFRobot library or EEPROM dependency. Explicit recorded-point calculation, not library defaults.
   code:
     filename: esp32-soil-ph-monitor.ino
-    content: "// ESP32 educational soil pH monitor\n// Uses a pH interface board on ADC1 GPIO34. Calibrate before\
-      \ reading soil slurry samples.\nconst int PH_PIN = 34;\n\nconst bool CALIBRATION_RECORDED = false; // Set\
-      \ true only after recording your own pH 7 and pH 4 ADC values.\nconst float PH7_ADC = 2048.0;            //\
-      \ Replace with stabilized ADC average in pH 7 buffer.\nconst float PH4_ADC = 1530.0;            // Replace\
-      \ with stabilized ADC average in pH 4 buffer.\n\nfloat averageAdc() {\n  long sum = 0;\n  for (int i = 0;\
-      \ i < 30; i++) {\n    sum += analogRead(PH_PIN);\n    delay(20);\n  }\n  return sum / 30.0;\n}\n\nfloat estimatedPh(float\
-      \ raw) {\n  float slope = (7.0 - 4.0) / (PH7_ADC - PH4_ADC);\n  return 7.0 + slope * (raw - PH7_ADC);\n}\n\
-      \nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(PH_PIN,\
-      \ ADC_11db);\n  Serial.println(\"Educational soil pH monitor - calibrated estimates only.\");\n}\n\nvoid loop()\
-      \ {\n  if (!CALIBRATION_RECORDED) {\n    Serial.println(\"Calibration required: record stable pH 7 and pH\
-      \ 4 buffer ADC values, update constants, then set CALIBRATION_RECORDED true.\");\n    delay(2000);\n    return;\n\
-      \  }\n\n  float raw = averageAdc();\n  float voltage = raw * 3.3 / 4095.0;\n  float ph = estimatedPh(raw);\n\
-      \n  Serial.printf(\"Estimated calibrated pH: %.2f | ADC: %.0f | Interface voltage: %.2f V\\n\", ph, raw, voltage);\n\
-      \  delay(5000);\n}\n"
-  code_explanation: The sketch refuses to calculate pH until the user records real pH 7 and pH 4 ADC averages, updates
-    the constants, and sets CALIBRATION_RECORDED true.
-  expected_output: Before calibration, Serial Monitor repeatedly prints the calibration-required message. After
-    valid constants are entered, it prints Estimated calibrated pH, ADC average, and interface voltage for the slurry
-    sample.
+    content: "#include <Arduino.h>\n#include <math.h>\n// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review\
+      \ baseline.\nconstexpr uint8_t SENSOR_PIN = 34; // ADC1 input only; no internal pull resistor.\n// AOUT --\
+      \ 15k (1%) -- GPIO34 -- 10k (1%) -- GND; 100 nF GPIO34 to GND.\n// Raw and mV are separate conversions, averaged\
+      \ over the same short window.\nfloat rawMean = 0, pinMv = 0;\nbool readWindow() {\n  uint32_t rawSum = 0,\
+      \ mvSum = 0, minMv = 100000, maxMv = 0;\n  bool rails = false;\n  for (int i = 0; i < 32; ++i) {\n    uint16_t\
+      \ raw = analogRead(SENSOR_PIN);\n    uint32_t mv = analogReadMilliVolts(SENSOR_PIN);\n    rawSum += raw; mvSum\
+      \ += mv;\n    if (raw <= 16 || raw >= 4079) rails = true;\n    if (mv < minMv) minMv = mv;\n    if (mv > maxMv)\
+      \ maxMv = mv;\n    delay(5);\n  }\n  rawMean = rawSum / 32.0f; pinMv = mvSum / 32.0f;\n  // Lesson screening,\
+      \ not electrical protection or sensor-health proof.\n  return !rails && minMv >= 250 && maxMv <= 2200 && maxMv\
+      \ - minMv <= 20;\n}\n\n// No measured endpoint data is supplied. Record YOUR ADC-pin mV with this chain.\n\
+      constexpr bool CALIBRATION_RECORDED = false;\nconstexpr float PH7_PIN_MV = 0.0f, PH4_PIN_MV = 0.0f;\n// Use\
+      \ buffer certificate values at the actual common measurement temperature.\nconstexpr float PH7_VALUE = 7.00f,\
+      \ PH4_VALUE = 4.00f;\nbool validCalibration() {\n  return CALIBRATION_RECORDED && isfinite(PH7_PIN_MV) &&\
+      \ isfinite(PH4_PIN_MV) &&\n    PH7_PIN_MV >= 250 && PH4_PIN_MV <= 2200 && PH4_PIN_MV - PH7_PIN_MV >= 100 &&\n\
+      \    isfinite(PH7_VALUE) && isfinite(PH4_VALUE) &&\n    PH7_VALUE >= 6.5f && PH7_VALUE <= 7.5f && PH4_VALUE\
+      \ >= 3.5f && PH4_VALUE <= 4.5f;\n}\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  analogSetPinAttenuation(SENSOR_PIN, ADC_11db);\n  Serial.println(\"SEN0161-V2 limited-interval pH lesson;\
+      \ no accuracy verification\");\n}\nvoid loop() {\n  bool valid = readWindow();\n  Serial.printf(\"raw_counts=%.1f\
+      \ ADC_pin_mV_est=%.1f\\n\", rawMean, pinMv);\n  if (!valid) Serial.println(\"INVALID_SIGNAL: rail, range or\
+      \ short-window noise; no pH\");\n  else if (!validCalibration()) Serial.println(\"CALIBRATION_REQUIRED: record\
+      \ both stable buffer mV; no pH\");\n  else if (pinMv < PH7_PIN_MV || pinMv > PH4_PIN_MV)\n    Serial.println(\"\
+      OUTSIDE_BUFFER_INTERVAL: no extrapolated pH\");\n  else {\n    float ph = PH7_VALUE + (pinMv - PH7_PIN_MV)\
+      \ *\n      (PH4_VALUE - PH7_VALUE) / (PH4_PIN_MV - PH7_PIN_MV);\n    if (!isfinite(ph)) Serial.println(\"\
+      INVALID_CALCULATION: no pH\");\n    else Serial.printf(\"pH_interpolated_est=%.2f; no temperature compensation\\\
+      n\", ph);\n  }\n  delay(5000); // Reporting cadence, not a claim that the electrode stabilized.\n}\n"
+  code_explanation: 'Acquisition diagnostics remain available before calibration. CALIBRATION_RECORDED defaults
+    false and both pin-mV endpoints zero. Finite/range/separation checks precede division; interpolation is limited
+    to the two buffers. Screening cannot establish sensor health: disconnected probes or stuck signals may look
+    plausible.'
+  expected_output: Serial prints raw_counts/ADC_pin_mV_est then CALIBRATION_REQUIRED with unset constants. After
+    valid records an in-interval signal may print pH_interpolated_est; invalid/noisy/outside-buffer signals print
+    rejection, not pH. These are prospective message types, not recorded measurements or proof of calibration.
   common_mistakes:
-  - text: Connecting a bare pH probe directly to GPIO34.
-  - text: Skipping pH 7 and pH 4 calibration.
-  - text: Letting the interface output exceed 3.3 V at the ESP32 ADC pin.
-  - text: Treating the estimate as lab-grade or agricultural advice.
+  - text: Treating driver mV or endpoint fitting as independent accuracy verification.
+  - text: Changing module, divider or board without new records.
+  - text: Clamping failed signals into plausible results.
+  - text: Immersing electronics or altering powered wiring.
   troubleshooting:
-  - problem: Code only prints calibration required
-    fix: Record stabilized pH 7 and pH 4 ADC values, update constants, and set CALIBRATION_RECORDED true.
-  - problem: Readings drift
-    fix: Rinse the probe, wait for stabilization, check probe storage, and repeat calibration if needed.
-  - problem: ADC values are stuck or saturated
-    fix: Confirm AOUT is wired to GPIO34, grounds are common, and the interface output stays within 0-3.3 V.
+  - problem: No calculated result
+    fix: Read the named state; record both stable endpoints with the same circuit. Zero defaults deliberately fail;
+      enabling the flag alone is insufficient.
+  - problem: INVALID_SIGNAL
+    fix: Power off; check module, common ground, divider and GPIO34. Rail/zero, outside 250–2200 mV or >20 mV within-window
+      span is rejected. Do not force a result.
+  - problem: OUTSIDE interval
+    fix: Do not clamp or extrapolate. Recheck conditions and references; pH beyond the two-buffer interval requires
+      a separately justified range.
+  - problem: Plausible but stuck reading
+    fix: A disconnected electrode, floating module input or stuck signal may look plausible. Use controlled references
+      and independent instruments; software cannot prove connection/health.
   testing_checklist:
-  - Verify interface output range.
-  - Record pH 7 buffer ADC.
-  - Record pH 4 buffer ADC.
-  - Measure only a soil-water slurry after stabilization.
+  - Documentation/API and numerical review only; no compilation or hardware/calibration result supplied.
+  - Identify actual module and verify rail/interface with suitable instruments before trusting output.
+  - Record reference conditions and unedited diagnostics separately from expected messages.
+  - Check rejected readings give no calculated pH.
   engineer_tips:
-  - Use ADC1, not ADC2, when Wi-Fi may be added later.
-  - Let readings stabilize.
-  - Store and clean the probe according to its datasheet.
+  - Keep the full measurement chain unchanged.
+  - Separate ADC calibration, endpoint fitting and independent accuracy checks.
   upgrade_ideas:
-  - Add an OLED that shows the calibration-required state.
-  - Store calibration constants in NVS.
-  - Add a temperature sensor and document compensation limits.
+  - Assess uncertainty with a separate check/reference and recorded evidence; none is supplied here.
   real_world_applications:
-  - Soil science classroom lab
-  - Calibration workflow lesson
-  - Sensor uncertainty demonstration
+  - Classroom measurement-limits lab
+  - Repeatable sensor-reference worksheet
   related_guides:
   - title: Reading Analog Sensors
     href: /guides/reading-analog-sensors.html
@@ -196,14 +225,54 @@ project:
     href: /projects/esp32-smart-irrigation-system.html
     description: Use calibrated sensor thinking before automating garden systems.
   faqs:
-  - question: Can I connect the pH probe directly to the ESP32?
-    answer: No. Use a proper high-impedance pH interface board.
-  - question: Can this tell me what fertilizer to add?
-    answer: No. It is an educational estimate, not lab-grade advice or crop-treatment guidance.
+  - question: Does this establish sensor accuracy?
+    answer: No. ADC calibration and two recorded endpoints do not independently validate accuracy, drift or sample
+      preparation.
+  - question: Does rejection detect every disconnected sensor?
+    answer: No. It rejects obvious rail/range/noise problems, but a plausible voltage can still be faulty.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
-    skills:
-    - ADC1 analog measurement
-    - Two-point calibration
-    - Voltage-limit verification
-    - Probe care and drift troubleshooting
+    summary: Compare observations with expected messages and preserve rejection states. No successful hardware operation
+      or calibration is supplied.
+    skills: *id001
+  tutorial_flow: true
+  assumptions: Classic ESP32-WROOM-32/32E DevKit with free GPIO34 (ADC1 input only), Arduino-ESP32 3.3.2 review
+    baseline, Arduino IDE 2.x and built-in ADC functions only. Not a latest-release claim or a pin map for S3/C3/C5.
+    No external sensor library is needed for this explicit recorded-point calculation.
+  safety_badge: Low-voltage measurement lesson — unverified hardware
+  configuration: 'With CALIBRATION_RECORDED=false, rinse and condition the probe according to its instructions,
+    then place in fresh pH 7 buffer. Keep BNC/board dry. Observe repeated ADC_pin_mV_est windows and slow drift;
+    record stable means, times and temperature. Repeat in a fresh pH 4 aliquot after rinsing. Enter YOUR pin-mV
+    means in PH7_PIN_MV/PH4_PIN_MV and certified buffer pH at the common temperature in PH7_VALUE/PH4_VALUE; only
+    then enable the flag. Do not copy nominal manufacturer voltages or worksheet numbers. The identified V2 has
+    higher output in acid buffer; equal/reversed/very close points are rejected. A small short-window span does
+    not prove equilibrium.
+
+
+    pH = pH7 + (Vpin−V7)×(pH4−pH7)/(V4−V7). Coefficients come from your records, not a universal sensor formula.
+    One point adjusts zero but cannot determine slope. Only interpolate within the two recorded endpoints. No temperature
+    compensation is implemented: keep sample/buffers at the same recorded temperature and consult certificates;
+    changed conditions require new records. Two-point fitting is not independent full-range accuracy verification.
+    A separate check solution/reference instrument and uncertainty analysis would be needed.
+
+
+    This is a liquid probe, not a dry-soil spear. Use a documented laboratory soil-water extract/slurry method,
+    recording soil/water ratio, water type, mixing/settling time and temperature. No universal recipe or direct
+    comparison of differing sample preparations is implied. Protect the glass bulb from solids and follow probe
+    care/storage guidance. No fertilizer or crop-treatment advice.'
+  performance_tips: []
+  references:
+  - title: Arduino-ESP32 3.3.2 ADC documentation (pinned source)
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst
+  - title: Arduino-ESP32 3.3.2 ADC API declarations
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.h
+  - title: Arduino-ESP32 3.3.2 calibrated millivolt implementation
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.c
+  - title: DFRobot SEN0161-V2 specifications and two-point guidance
+    href: https://wiki.dfrobot.com/sen0161-v2/
+  - title: Manufacturer buffer/probe workflow
+    href: https://wiki.dfrobot.com/sen0161-v2/docs/20941
+  learning_objectives: *id001
+keywords:
+- ESP32 ADC1
+- SEN0161-V2
+- two-buffer pH interpolation

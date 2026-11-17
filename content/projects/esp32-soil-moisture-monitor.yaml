@@ -1,532 +1,277 @@
 slug: esp32-soil-moisture-monitor
-title: ESP32 Soil Moisture Monitor
+title: 'ESP32 Soil Moisture: Relative Sensor Index'
 category: Sensor Projects
-image_alt: ESP32 soil moisture monitor with capacitive soil sensor in a plant pot
-og_image: /assets/images/og/esp32-soil-moisture-monitor.webp
-hero_image: /assets/images/generated/esp32-soil-moisture-monitor.webp
-featured_image: /assets/images/generated/esp32-soil-moisture-monitor.webp
-image: /assets/images/generated/esp32-soil-moisture-monitor.webp
-description: A soil moisture monitor that reads capacitive sensor data, alerts you when plants need water, and can
-  automatically trigger a pump relay — with cloud logging at the advanced level.
-meta_description: A plant monitor that reads a capacitive soil sensor, converts raw ADC values into a moisture percentage,
-  and uses LEDs or a buzzer to show when watering is
+image_alt: Relative soil-sensor index logical overview; not a physical layout, photograph or recorded measurement
+og_image: /assets/visuals/projects/heroes/esp32-soil-moisture-monitor-measurement-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-soil-moisture-monitor-measurement-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-soil-moisture-monitor-measurement-overview.svg
+image: /assets/visuals/projects/heroes/esp32-soil-moisture-monitor-measurement-overview.svg
+description: Read a defined SEN0193 sensor on classic ESP32, record your own references and display a relative 0–100
+  index without claiming water-content percentage.
+meta_description: Read a defined SEN0193 sensor on classic ESP32, record your own references and display a relative
+  0–100 index without claiming water-content percentage.
 source_base: esp32-soil-moisture-monitor-legacy-import
-sensor: Sensor AOUT
-output: Green LED (+ 220 Ω)
+sensor: SEN0193 capacitive sensor
+output: Serial relative index and three LEDs
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-26'
+date_modified: '2026-11-17'
 quality_status: golden_tutorial
 status: published
 import_tier: 2
 import_source: batch-php
 hardware:
-  sensor_pin: GPIO 34
-  output_pin: GPIO 25
-  sensor_name: Sensor AOUT
-  output_name: Green LED (+ 220 Ω)
+  sensor_pin: GPIO34 through 15k/10k divider
+  output_pin: GPIO25/26/27, Serial
+  sensor_name: SEN0193 capacitive sensor
+  output_name: Serial relative index and three LEDs
   wiring:
-  - component: Sensor AOUT
-    pin: GPIO 34
-  - component: Sensor VCC
-    pin: 3.3 V
-  - component: Sensor GND
-    pin: GND
-  - component: Green LED (+ 220 Ω)
-    pin: GPIO 25
-  - component: Yellow LED (+ 220 Ω)
-    pin: GPIO 26
-  - component: Red LED (+ 220 Ω)
-    pin: GPIO 27
-  - component: Buzzer +
-    pin: GPIO 32
+  - component: Divided AOUT
+    pin: GPIO34
+  - component: Supply / ground
+    pin: External regulated 5 V / common GND
 levels:
   beginner:
     level: beginner
-    overview_html: '<p>This project teaches you to read an <strong>analogue sensor</strong> using the ESP32''s ADC
-      (Analogue-to-Digital Converter) and map raw 12-bit readings to a human-readable percentage. A capacitive soil
-      moisture sensor measures the dielectric constant of the soil around it — wet soil has a higher dielectric
-      constant than dry soil, which changes the sensor output voltage. Unlike resistive sensors, capacitive sensors
-      do not corrode and last for years outdoors.</p>
-
-
-      <p>The ESP32 reads the sensor on GPIO 34 (an input-only ADC pin). You will learn: analogue reading with analogRead(),
-      mapping raw ADC counts to a 0–100% scale using the map() function, calibrating the sensor for your specific
-      soil type, and driving a tri-colour status indicator. When moisture drops below a threshold, a red LED lights
-      and a buzzer alerts you to water the plant.</p>
-
-
-      <p>This project scales from a single potted plant to a multi-zone garden controller at the advanced level.
-      It is also the foundation for the esp32-smart-irrigation-system project, which automates watering completely.</p>'
+    overview_html: <p>Read a defined SEN0193 sensor on classic ESP32, record your own references and display a relative
+      0–100 index without claiming water-content percentage.</p>
     components:
-    - 1× ESP32 DevKit V1
-    - 1× Capacitive Soil Moisture Sensor v1.2 — NOT the resistive (fork) type — those corrode
-    - 1× LED (green) + 220 Ω resistor — Moist indicator
-    - 1× LED (yellow) + 220 Ω resistor — Dry warning
-    - 1× LED (red) + 220 Ω resistor — Critical dry alert
-    - 1× Active Buzzer (5 V) — Optional alert sound
-    - 1× Breadboard + jumper wires
-    wiring:
-    - - Sensor AOUT
-      - GPIO 34
-      - ADC1 channel — input only, do not drive HIGH
-    - - Sensor VCC
-      - 3.3 V
-      - Some sensors accept 3.3–5 V; check your module
-    - - Sensor GND
-      - GND
-      - ''
-    - - Green LED (+ 220 Ω)
-      - GPIO 25
-      - Moist (> 60%)
-    - - Yellow LED (+ 220 Ω)
-      - GPIO 26
-      - Moderate (30–60%)
-    - - Red LED (+ 220 Ω)
-      - GPIO 27
-      - Dry (< 30%)
-    - - Buzzer +
-      - GPIO 32
-      - Only sounds when critically dry
-    how:
-    - 'Capacitive Sensing Principle: The sensor forms a capacitor with the surrounding soil. Wet soil has a higher
-      dielectric constant (~80) than dry soil (~3), increasing capacitance and lowering the oscillator frequency,
-      which the sensor''s onboard circuit converts to a lower output voltage. Lower voltage = more moisture.'
-    - 'ADC Averaging: The ESP32 ADC has inherent noise of ±50 counts. Averaging 10 readings reduces random noise
-      to ±5 counts, which translates to a ±0.2% stability in the moisture reading. Always average multiple ADC samples
-      for analogue sensor projects.'
-    - 'map() and constrain(): map(raw, AIR_VALUE, WATER_VALUE, 0, 100) linearly interpolates the raw ADC count to
-      a 0–100 percentage. constrain(pct, 0, 100) clips readings that fall outside the calibration range — this happens
-      if you push the sensor deeper than the calibration depth or if soil compacts differently.'
-    - 'Three-Zone Status: Three thresholds (≥60%, 30–60%, <30%) map to green/yellow/red status zones. All LEDs are
-      turned off before the if/else chain — this avoids the need to explicitly track which LED was last on. The
-      pattern (clear all, then set one) is cleaner than toggling individual pins.'
-    apps:
-    - Indoor potted plant moisture alert system
-    - Seedling tray moisture monitoring in a greenhouse
-    - Soil science experiments and logging
-    - Foundation soil saturation monitoring (for basement flood prevention)
-    troubleshooting:
-    - - Moisture percentage is always 0% or 100%
-      - The sensor is not calibrated for your soil. Open Serial Monitor and record the actual ADC values in dry
-        air and in water, then update AIR_VALUE and WATER_VALUE accordingly. Values vary significantly between sensor
-        batches and soil types.
-    - - Readings fluctuate ±10% with the sensor stationary
-      - ESP32 ADC accuracy is affected by Wi-Fi radio activity (especially on GPIO 34 which shares ADC1). If you
-        add Wi-Fi in later steps, use ADC1_CHANNEL directly and call adc1_get_raw() rather than analogRead(). For
-        this beginner level, move to a more stable input like GPIO 36 if issues persist.
-    upgrades: &id001
-    - Add multiple sensors on GPIO 35, 36 for multi-plant monitoring with individual alerts
-    - Record daily readings to detect drying trends before plants become stressed
-    code: "/*\n * ESP32 Soil Moisture Monitor — Beginner\n * Reads capacitive soil sensor, maps to percentage, lights\
-      \ LEDs.\n *\n * CALIBRATION REQUIRED:\n *   1) Place sensor in dry air → note AIR_VALUE (should be ~2800–3200)\n\
-      \ *   2) Submerge sensor tip in water → note WATER_VALUE (should be ~1200–1500)\n *   Update the defines below\
-      \ with your sensor's actual values.\n */\n#define SENSOR_PIN  34\n#define LED_GREEN   25   // Moist\n#define\
-      \ LED_YELLOW  26   // Moderate\n#define LED_RED     27   // Dry\n#define BUZZER      32\n\n// ── CALIBRATE\
-      \ THESE for your sensor ─────────────────────────────\n#define AIR_VALUE   2800  // ADC reading in dry air\
-      \ (0% moisture)\n#define WATER_VALUE 1200  // ADC reading fully in water (100% moisture)\n// ────────────────────────────────────────────────────────────────\n\
-      \nint readMoisturePercent() {\n  // Average 10 readings to reduce ADC noise on ESP32\n  long sum = 0;\n  for\
-      \ (int i = 0; i < 10; i++) { sum += analogRead(SENSOR_PIN); delay(5); }\n  int raw = sum / 10;\n  int pct\
-      \ = map(raw, AIR_VALUE, WATER_VALUE, 0, 100);\n  return constrain(pct, 0, 100);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  analogReadResolution(12);   // 12-bit ADC: 0–4095\n  pinMode(LED_GREEN,  OUTPUT);\n  pinMode(LED_YELLOW,\
-      \ OUTPUT);\n  pinMode(LED_RED,    OUTPUT);\n  pinMode(BUZZER,     OUTPUT);\n  Serial.println(\"Soil Moisture\
-      \ Monitor started.\");\n  Serial.printf(\"Calibration: AIR=%d, WATER=%dn\", AIR_VALUE, WATER_VALUE);\n}\n\n\
-      void loop() {\n  int pct = readMoisturePercent();\n  Serial.printf(\"Moisture: %d%%n\", pct);\n\n  // Turn\
-      \ all LEDs off first\n  digitalWrite(LED_GREEN,  LOW);\n  digitalWrite(LED_YELLOW, LOW);\n  digitalWrite(LED_RED,\
-      \    LOW);\n  digitalWrite(BUZZER,     LOW);\n\n  if (pct >= 60) {\n    digitalWrite(LED_GREEN, HIGH);\n \
-      \   Serial.println(\"Status: Moist — plant is happy\");\n  } else if (pct >= 30) {\n    digitalWrite(LED_YELLOW,\
-      \ HIGH);\n    Serial.println(\"Status: Moderate — consider watering soon\");\n  } else {\n    digitalWrite(LED_RED,\
-      \ HIGH);\n    // Pulse buzzer 3 times for critical alert\n    for (int i = 0; i < 3; i++) {\n      digitalWrite(BUZZER,\
-      \ HIGH); delay(200);\n      digitalWrite(BUZZER, LOW);  delay(200);\n    }\n    Serial.println(\"Status: DRY\
-      \ — water the plant now!\");\n  }\n\n  delay(10000);   // Read every 10 seconds\n}"
-    code_filename: esp32-soil-moisture-beginner.ino
+    - Classic ESP32-WROOM DevKit
+    - DFRobot Gravity SEN0193 capacitive soil sensor
+    - 15 kΩ and 10 kΩ resistors, both 1%, and 100 nF capacitor
+    - Regulated 5.0 V module supply (±5%), breadboard, leads and USB data cable
+    - Three low-current LEDs and three separate 330 ohm resistors
+    code: "#include <Arduino.h>\n#include <math.h>\n// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline.\n\
+      constexpr uint8_t SENSOR_PIN = 34; // ADC1 input only; no internal pull resistor.\n// AOUT -- 15k (1%) --\
+      \ GPIO34 -- 10k (1%) -- GND; 100 nF GPIO34 to GND.\n// Raw and mV are separate conversions, averaged over\
+      \ the same short window.\nfloat rawMean = 0, pinMv = 0;\nbool readWindow() {\n  uint32_t rawSum = 0, mvSum\
+      \ = 0, minMv = 100000, maxMv = 0;\n  bool rails = false;\n  for (int i = 0; i < 32; ++i) {\n    uint16_t raw\
+      \ = analogRead(SENSOR_PIN);\n    uint32_t mv = analogReadMilliVolts(SENSOR_PIN);\n    rawSum += raw; mvSum\
+      \ += mv;\n    if (raw <= 16 || raw >= 4079) rails = true;\n    if (mv < minMv) minMv = mv;\n    if (mv > maxMv)\
+      \ maxMv = mv;\n    delay(5);\n  }\n  rawMean = rawSum / 32.0f; pinMv = mvSum / 32.0f;\n  // Lesson screening,\
+      \ not electrical protection or sensor-health proof.\n  return !rails && minMv >= 250 && maxMv <= 2200 && maxMv\
+      \ - minMv <= 20;\n}\n\nconstexpr uint8_t LED_GREEN = 25, LED_YELLOW = 26, LED_RED = 27;\nconstexpr bool REFERENCES_RECORDED\
+      \ = false;\nconstexpr float AIR_PIN_MV = 0.0f, WATER_PIN_MV = 0.0f;\nvoid indicatorsOff() {\n  digitalWrite(LED_GREEN,\
+      \ LOW); digitalWrite(LED_YELLOW, LOW); digitalWrite(LED_RED, LOW);\n}\nbool validReferences() {\n  return\
+      \ REFERENCES_RECORDED && isfinite(AIR_PIN_MV) && isfinite(WATER_PIN_MV) &&\n    WATER_PIN_MV >= 250 && AIR_PIN_MV\
+      \ <= 2200 && AIR_PIN_MV - WATER_PIN_MV >= 100;\n}\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  analogSetPinAttenuation(SENSOR_PIN, ADC_11db);\n  digitalWrite(LED_GREEN, LOW); digitalWrite(LED_YELLOW,\
+      \ LOW); digitalWrite(LED_RED, LOW);\n  pinMode(LED_GREEN, OUTPUT); pinMode(LED_YELLOW, OUTPUT); pinMode(LED_RED,\
+      \ OUTPUT);\n  indicatorsOff();\n  Serial.println(\"SEN0193 relative index; NOT water-content percent or watering\
+      \ advice\");\n}\nvoid loop() {\n  indicatorsOff();\n  bool valid = readWindow();\n  Serial.printf(\"raw_counts=%.1f\
+      \ ADC_pin_mV_est=%.1f\\n\", rawMean, pinMv);\n  if (!valid) Serial.println(\"INVALID_SIGNAL: rail, range or\
+      \ short-window noise; index withheld\");\n  else if (!validReferences()) Serial.println(\"REFERENCE_REQUIRED:\
+      \ record air/water pin mV; index withheld\");\n  else if (pinMv < WATER_PIN_MV || pinMv > AIR_PIN_MV)\n  \
+      \  Serial.println(\"OUTSIDE_REFERENCE_INTERVAL: index withheld, not clamped\");\n  else {\n    float index\
+      \ = 100.0f * (AIR_PIN_MV - pinMv) / (AIR_PIN_MV - WATER_PIN_MV);\n    if (!isfinite(index)) Serial.println(\"\
+      INVALID_CALCULATION: index withheld\");\n    else {\n      Serial.printf(\"relative_index=%.1f / 100; NOT\
+      \ percent water\\n\", index);\n      // Arbitrary display bands, not plant-specific watering thresholds.\n\
+      \      if (index >= 67) digitalWrite(LED_GREEN, HIGH);\n      else if (index >= 33) digitalWrite(LED_YELLOW,\
+      \ HIGH);\n      else digitalWrite(LED_RED, HIGH);\n    }\n  }\n  delay(5000);\n}\n"
+    code_filename: esp32-soil-moisture-monitor.ino
   intermediate:
     level: intermediate
-    overview_html: '<p>At the intermediate level you expand to <strong>four soil sensors</strong> connected via
-      a CD4051 analogue multiplexer, giving you one moisture reading per plant on a single ESP32 ADC pin. An SSD1306
-      OLED shows all four readings simultaneously. A water pump relay automatically triggers for 5 seconds when
-      any sensor drops below the dry threshold, then logs the watering event with a timestamp.</p>
-
-
-      <p>You will learn: analogue multiplexer wiring (S0, S1, S2 channel select), millis()-based scheduling for
-      pump duty cycles, and circular buffer event logging in RAM. The 4-zone auto-watering concept is directly applicable
-      to a real indoor herb garden or seedling tray.</p>'
-    components:
-    - 4× Capacitive Soil Moisture Sensor v1.2 — One per plant
-    - 1× CD4051 8-Channel Analogue Multiplexer — Routes 4 sensors to one ADC pin
-    - 1× ESP32 DevKit V1
-    - 1× 0.96" OLED (SSD1306, I2C)
-    - 1× 5 V Relay Module — For submersible pump
-    - 1× 5 V Submersible Mini Pump — ~200 mL/min rate works well for pots
-    - 1× Silicone tubing (4 mm ID) — To route water to pots
-    wiring:
-    - - CD4051 COM (pin 3)
-      - GPIO 34
-      - Multiplexer output → ESP32 ADC
-    - - CD4051 S0 (pin 11)
-      - GPIO 25
-      - Channel select bit 0
-    - - CD4051 S1 (pin 10)
-      - GPIO 26
-      - Channel select bit 1
-    - - CD4051 S2 (pin 9)
-      - GPIO 27
-      - Channel select bit 2
-    - - Sensor 0 AOUT
-      - CD4051 Y0 (pin 13)
-      - ''
-    - - Sensor 1 AOUT
-      - CD4051 Y1 (pin 14)
-      - ''
-    - - Sensor 2 AOUT
-      - CD4051 Y2 (pin 15)
-      - ''
-    - - Sensor 3 AOUT
-      - CD4051 Y3 (pin 12)
-      - ''
-    - - Pump Relay IN
-      - GPIO 32
-      - ''
-    - - OLED SDA / SCL
-      - GPIO 21 / 22
-      - ''
-    how:
-    - 'CD4051 Multiplexer: The CD4051 is an 8-channel analogue switch IC. Setting the S0, S1, S2 pins selects one
-      of 8 input channels to connect to the common output (COM) pin. With S0=0,S1=0,S2=0 you get channel 0; S0=1,S1=0,S2=0
-      gives channel 1, and so on. This lets four sensors share one ADC pin.'
-    - 'Settling Time: After switching channels, the multiplexer internal resistance (typical 100 Ω) and the ADC
-      input capacitance form an RC circuit that takes ~10 µs to settle. A 10 ms delay before reading is more than
-      sufficient and avoids cross-channel contamination in the ADC sample.'
-    - 'Pump Safety: The pump only runs for PUMP_MS milliseconds per check cycle. This prevents over-watering if
-      a sensor fails high (reads 0%). In a production system, add a flow sensor or water level sensor to cut the
-      pump if the reservoir is empty.'
-    apps: []
-    troubleshooting:
-    - - All zones read identical values
-      - 'The CD4051 S pins may not be changing correctly. Verify S0/S1/S2 wiring and confirm the bit-shift logic:
-        (ch>>0)&1 gives the LSB of ch. Add Serial.printf("ch=%d S=%d%d%d\n",ch,(ch>>2)&1,(ch>>1)&1,(ch>>0)&1) before
-        each read to verify.'
-    - - Pump runs continuously and never stops
-      - All sensors are reading below DRY_PCT. Either the sensors are dry, or there is a calibration or wiring issue.
-        Disconnect the pump and test sensors individually at the beginner level to verify each one reads correctly
-        before wiring the multiplexer.
-    upgrades:
-    - Add a water level sensor in the reservoir to prevent the pump running dry
-    - Log watering events with timestamps to SPIFFS for a weekly watering report
-    code: "/*\n * ESP32 Soil Moisture Monitor — Intermediate (4-zone)\n * CD4051 mux + 4 sensors + OLED + auto-pump\
-      \ relay\n * Libraries: Adafruit_SSD1306, Adafruit_GFX\n */\n#include <Wire.h>\n#include <Adafruit_GFX.h>\n\
-      #include <Adafruit_SSD1306.h>\n\n#define MUX_SIG  34   // ADC reads multiplexer output\n#define MUX_S0   25\n\
-      #define MUX_S1   26\n#define MUX_S2   27\n#define PUMP_PIN 32\n#define DRY_PCT  30   // Trigger watering below\
-      \ this\n#define PUMP_MS  5000 // Pump ON duration\n#define ZONES    4\n\n#define AIR_VALUE   2800\n#define\
-      \ WATER_VALUE 1200\n\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nint readChannel(int ch) {\n  digitalWrite(MUX_S0,\
-      \ (ch>>0)&1);\n  digitalWrite(MUX_S1, (ch>>1)&1);\n  digitalWrite(MUX_S2, (ch>>2)&1);\n  delay(10); // Settle\
-      \ time\n  long sum=0; for(int i=0;i<10;i++){sum+=analogRead(MUX_SIG);delay(3);}\n  int raw=sum/10;\n  return\
-      \ constrain(map(raw,AIR_VALUE,WATER_VALUE,0,100),0,100);\n}\n\nvoid updateOLED(int* pct) {\n  oled.clearDisplay();\
-      \ oled.setTextSize(1); oled.setTextColor(SSD1306_WHITE);\n  for(int i=0;i<ZONES;i++){\n    oled.setCursor(0,\
-      \ i*14);\n    oled.printf(\"Z%d: %3d%%  %s\", i+1, pct[i],\n      pct[i]>=60?\"OK\":(pct[i]>=30?\"LOW\":\"\
-      DRY\"));\n  }\n  oled.display();\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
-      \  pinMode(MUX_S0,OUTPUT); pinMode(MUX_S1,OUTPUT); pinMode(MUX_S2,OUTPUT);\n  pinMode(PUMP_PIN,OUTPUT); digitalWrite(PUMP_PIN,LOW);\n\
-      \  Wire.begin(); oled.begin(SSD1306_SWITCHCAPVCC,0x3C);\n}\n\nvoid loop(){\n  int pct[ZONES];\n  bool anyDry=false;\n\
-      \  for(int z=0;z<ZONES;z++){\n    pct[z]=readChannel(z);\n    Serial.printf(\"Zone %d: %d%%n\",z+1,pct[z]);\n\
-      \    if(pct[z]<DRY_PCT) anyDry=true;\n  }\n  updateOLED(pct);\n\n  if(anyDry){\n    Serial.println(\"Dry zone\
-      \ detected — running pump\");\n    digitalWrite(PUMP_PIN,HIGH); delay(PUMP_MS); digitalWrite(PUMP_PIN,LOW);\n\
-      \    Serial.println(\"Pump cycle complete\");\n  }\n\n  delay(60000); // Check every 60 seconds\n}"
-    code_filename: esp32-soil-moisture-intermediate.ino
+    overview_html: <p>Independent validation requires separately recorded reference evidence; no additional working
+      sketch is supplied.</p>
+    code: ''
   advanced:
     level: advanced
-    overview_html: '<p>The advanced level adds <strong>ThingSpeak cloud logging</strong> and a <strong>smartphone
-      push notification</strong> via Pushover when any zone drops critically dry. All four zone readings are uploaded
-      to a ThingSpeak channel every 15 minutes, building a historical dataset you can graph and analyse online.
-      MQTT publishing is also included so your local Node-RED or Home Assistant receives real-time readings without
-      cloud dependency.</p>
-
-
-      <p>You will learn: HTTP POST to ThingSpeak REST API, JSON payload construction, Pushover API integration for
-      mobile notifications, and conditional MQTT publishing with retained flags for persistent state display in
-      Home Assistant.</p>'
-    components:
-    - 4× Capacitive Soil Moisture Sensor v1.2
-    - 1× CD4051 Analogue Multiplexer
-    - 1× ESP32 DevKit V1
-    - 1× 5 V Relay + Mini Pump
-    - 1× ThingSpeak Account (free) — thingspeak.com — 4 fields, free tier
-    - 1× Pushover Account (free trial) — pushover.net — $5 one-time after 30 days
-    wiring:
-    - - Same as intermediate level
-      - See intermediate wiring
-      - No additional hardware required
-    how:
-    - 'ThingSpeak REST API: ThingSpeak accepts HTTP GET or POST requests to https://api.thingspeak.com/update with
-      your write API key and up to 8 field values. Each successful update returns an integer (the update number).
-      The free tier allows one update per 15 seconds, so zone readings are batched into one API call rather than
-      sent individually.'
-    - 'Pushover Notifications: Pushover delivers push notifications to iOS and Android via their REST API. An HTTP
-      POST with your app token, user key, title, and message delivers a notification to your phone within seconds.
-      The lastNotifiedZone guard prevents repeat notifications every 15 minutes for the same dry zone.'
-    - 'MQTT Retained State: Publishing with retain=true caches the last reading on the broker. When Home Assistant
-      reconnects after a restart, it immediately receives the current soil moisture for each zone without waiting
-      for the next 15-minute reading cycle.'
-    apps: []
-    troubleshooting:
-    - - ThingSpeak updates fail (HTTP 0 or -1)
-      - Verify the API key. ThingSpeak requires HTTPS — confirm HTTPClient can reach the internet (test with a simple
-        http.GET("https://httpbin.org/get")). Free tier throttles to 1 update per 15 seconds; faster calls are silently
-        dropped.
-    - - Pushover notifications not arriving
-      - Check token and user key at pushover.net. Ensure the app is installed and notifications are enabled on your
-        phone. The HTTP POST body must be URL-encoded — special characters in the message (& % +) must be encoded.
-    upgrades:
-    - Replace ThingSpeak with a local InfluxDB instance for unlimited storage and privacy
-    - Add a water flow meter (YF-S201 hall sensor) to measure exact mL delivered per pump cycle
-    - Build a Grafana dashboard showing moisture trends vs watering events over 30 days
-    code: "/*\n * ESP32 Soil Moisture Monitor — Advanced\n * ThingSpeak logging + Pushover notifications + MQTT\n\
-      \ * Libraries: Adafruit_SSD1306, PubSubClient, HTTPClient (built-in)\n */\n#include <WiFi.h>\n#include <HTTPClient.h>\n\
-      #include <PubSubClient.h>\n\nconst char* SSID     = \"YOUR_WIFI_SSID\";\nconst char* PASSWORD = \"YOUR_WIFI_PASSWORD\"\
-      ;\nconst char* BROKER   = \"192.168.1.100\";\n\n// ThingSpeak\nconst char* TS_API_KEY = \"YOUR_THINGSPEAK_WRITE_KEY\"\
-      ;\nconst char* TS_URL     = \"https://api.thingspeak.com/update\";\n\n// Pushover (push notifications to phone)\n\
-      const char* PO_TOKEN   = \"YOUR_PUSHOVER_APP_TOKEN\";\nconst char* PO_USER    = \"YOUR_PUSHOVER_USER_KEY\"\
-      ;\nconst char* PO_URL     = \"https://api.pushover.net/1/messages.json\";\n\n#define MUX_SIG  34\n#define\
-      \ MUX_S0   25\n#define MUX_S1   26\n#define MUX_S2   27\n#define PUMP_PIN 32\n#define ZONES    4\n#define\
-      \ DRY_PCT  25     // Critical threshold for push notification\n#define AIR_VALUE   2800\n#define WATER_VALUE\
-      \ 1200\n\nWiFiClient net;\nPubSubClient mqtt(net);\nint lastNotifiedZone = -1;\n\nint readChannel(int ch){\n\
-      \  digitalWrite(MUX_S0,(ch>>0)&1);\n  digitalWrite(MUX_S1,(ch>>1)&1);\n  digitalWrite(MUX_S2,(ch>>2)&1);\n\
-      \  delay(10);\n  long s=0; for(int i=0;i<10;i++){s+=analogRead(MUX_SIG);delay(3);}\n  return constrain(map((int)(s/10),AIR_VALUE,WATER_VALUE,0,100),0,100);\n\
-      }\n\nvoid uploadThingSpeak(int* pct){\n  HTTPClient http;\n  String url=String(TS_URL)+\"?api_key=\"+TS_API_KEY;\n\
-      \  for(int i=0;i<ZONES;i++) url+=\"&field\"+String(i+1)+\"=\"+String(pct[i]);\n  http.begin(url); http.GET();\
-      \ http.end();\n  Serial.println(\"ThingSpeak updated\");\n}\n\nvoid sendPushover(int zone, int pct){\n  HTTPClient\
-      \ http;\n  http.begin(PO_URL);\n  http.addHeader(\"Content-Type\",\"application/x-www-form-urlencoded\");\n\
-      \  String body=\"token=\"+String(PO_TOKEN)+\"&user=\"+String(PO_USER)\n    +\"&title=Plant+Alert&message=Zone+\"\
-      +String(zone+1)+\"+is+at+\"+String(pct)+\"%25+moisture+-+water+now!\";\n  http.POST(body); http.end();\n \
-      \ Serial.printf(\"Pushover alert sent for zone %dn\",zone+1);\n}\n\nvoid publishMQTT(int* pct){\n  if(!mqtt.connected())\
-      \ return;\n  for(int i=0;i<ZONES;i++){\n    String topic=\"esp32engine/soil/zone\"+String(i+1);\n    mqtt.publish(topic.c_str(),String(pct[i]).c_str(),true);\n\
-      \  }\n}\n\nvoid setup(){\n  Serial.begin(115200);\n  analogReadResolution(12);\n  pinMode(MUX_S0,OUTPUT);pinMode(MUX_S1,OUTPUT);pinMode(MUX_S2,OUTPUT);\n\
-      \  pinMode(PUMP_PIN,OUTPUT);digitalWrite(PUMP_PIN,LOW);\n  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED)\
-      \ delay(400);\n  mqtt.setServer(BROKER,1883);\n  mqtt.connect(\"soil-monitor\");\n}\n\nvoid loop(){\n  if(!mqtt.connected())\
-      \ mqtt.connect(\"soil-monitor\");\n  mqtt.loop();\n\n  int pct[ZONES];\n  for(int z=0;z<ZONES;z++) pct[z]=readChannel(z);\n\
-      \n  publishMQTT(pct);\n\n  for(int z=0;z<ZONES;z++){\n    if(pct[z]<DRY_PCT && lastNotifiedZone!=z){\n   \
-      \   sendPushover(z,pct[z]);\n      lastNotifiedZone=z;\n      // Auto-water\n      digitalWrite(PUMP_PIN,HIGH);\
-      \ delay(5000); digitalWrite(PUMP_PIN,LOW);\n    }\n    if(pct[z]>=40) lastNotifiedZone=-1; // Reset after\
-      \ plant is watered\n  }\n\n  uploadThingSpeak(pct);\n  delay(900000); // 15 minute upload interval (ThingSpeak\
-      \ free: 15s min)\n}"
-    code_filename: esp32-soil-moisture-advanced.ino
+    overview_html: <p>Automatic control/cloud logging are deferred extensions, not implemented or validated here.</p>
+    code: ''
 related_slugs:
 - esp32-smart-irrigation-system
 - esp32-iot-weather-station
 format: golden
 keywords:
-- ESP32
-- ESP32 Soil Moisture Monitor
-- Sensor AOUT
-- Green LED (+ 220 Ω)
-- Arduino tutorial
-- Sensor Projects
-meta_title: ESP32 Soil Moisture Monitor Tutorial with ESP32
+- ESP32 ADC1
+- SEN0193
+- relative moisture index
+meta_title: 'ESP32 Soil Moisture: Relative Sensor Index'
 project:
   icon: SOIL
-  mission_title: Build a Soil Moisture Monitor
+  mission_title: 'ESP32 Soil Moisture: Relative Sensor Index'
   difficulty: Beginner
   age: Ages 12+
-  estimated_time: 60-90 min
-  budget: Under 25 USD
-  what_you_build: A plant monitor that reads a capacitive soil sensor, converts raw ADC values into a moisture percentage,
-    and uses LEDs or a buzzer to show when watering is needed.
-  story: 'ESP32 Soil Moisture Monitor solves a real beginner problem: turning an ESP32 reading into a useful physical
-    or networked result. Build this if you want to understand analog sensors, calibration, and threshold logic before
-    moving to automatic irrigation.
-
-
-    The tutorial focuses on the engineering path: prove the input, understand the circuit, write readable code,
-    then test the output under real conditions.'
-  eli12: The ESP32 is a plant caretaker with a moisture meter. The sensor gives a changing number, the code decides
-    whether that number means wet or dry, and the LEDs explain the decision.
-  parent_safety: This is a low-voltage learning project when powered from USB or a regulated bench supply. Unplug
-    power before rewiring. Keep water, motors, relays, lamps, and high-current loads physically away from the ESP32
-    unless a proper driver, enclosure, and adult supervision are used.
-  learning_objectives:
-  - Read an analog soil moisture sensor with an ESP32 ADC pin.
-  - Calibrate dry and wet readings for your own sensor and soil.
-  - Convert raw ADC values into a useful percentage.
-  - Use LEDs or a buzzer as clear status outputs.
-  - Recognize why capacitive sensors are better than resistive probes for long-term plant projects.
+  estimated_time: Setup time varies
+  budget: Parts cost varies
+  what_you_build: A Serial relative-index display for an identified DFRobot SEN0193 sensor, plus green/yellow/red
+    LEDs. The index locates a reading between your air/water references; it is not percent water, relative humidity,
+    watering advice or an automatic pump controller. The buzzer and incomplete cloud/pump alternatives are not supported
+    here. The overview is a logical illustration, not a photograph or recorded result.
+  eli12: Two reference readings make a ruler for comparison, not a universal measure of how much water a plant needs.
+  parent_safety: Power off before rewiring. Keep electronics, BNC and connectors dry. Identify the module and connector
+    labels, not wire colors. No mains, pump, relay or medical/agricultural decision is part of this lesson.
+  learning_objectives: &id001
+  - Separate raw codes from estimated mV
+  - Record both endpoints
+  - Recognize invalid/out-of-range results
   components:
-  - item: 1× ESP32 DevKit V1
-    note: Required for this build
-    icon: PART
+  - item: Classic ESP32-WROOM DevKit
+    note: USB-powered; 3.3 V logic, USB power and GPIO34 ADC1; module has separate 5 V supply.
     link: /components/esp32-devkit.html
-  - item: 1× Capacitive Soil Moisture Sensor v1.2
-    note: NOT the resistive (fork) type — those corrode
-    icon: PART
-  - item: 1× LED (green) + 220 Ω resistor
-    note: Moist indicator
-    icon: PART
-  - item: 1× LED (yellow) + 220 Ω resistor
-    note: Dry warning
-    icon: PART
-  - item: 1× LED (red) + 220 Ω resistor
-    note: Critical dry alert
-    icon: PART
-  - item: 1× Active Buzzer (5 V)
-    note: Optional alert sound
-    icon: PART
-  - item: 1× Breadboard + jumper wires
-    note: Required for this build
-    icon: PART
-  - item: USB data cable
-    note: Programming and bench power
-    icon: PART
+  - item: DFRobot Gravity SEN0193 capacitive soil sensor
+    note: Follow documented board labels. Other versions need their own interface review.
+  - item: 15 kΩ and 10 kΩ resistors, both 1%, and 100 nF capacitor
+    note: One divider and node capacitor, not arbitrary resistor values.
+    link: /components/through-hole-resistors.html
+  - item: Regulated 5.0 V module supply (±5%), breadboard, leads and USB data cable
+    note: Separate module supply positive from USB/controller positive; common ground. Power both off before rewiring.
+  - item: Three low-current LEDs and three separate 330 ohm resistors
+    note: One resistor per LED; no buzzer/pump.
+    link: /components/discrete-leds.html
   bom:
-  - part: 1× ESP32 DevKit V1
-    qty: '1'
+  - part: Classic ESP32-WROOM DevKit
+    qty: 1 set
     estimated_cost: Varies
-    notes: Required for this build
-  - part: 1× Capacitive Soil Moisture Sensor v1.2
-    qty: '1'
+    notes: USB-powered; 3.3 V logic, USB power and GPIO34 ADC1; module has separate 5 V supply.
+  - part: DFRobot Gravity SEN0193 capacitive soil sensor
+    qty: 1 set
     estimated_cost: Varies
-    notes: NOT the resistive (fork) type — those corrode
-  - part: 1× LED (green) + 220 Ω resistor
-    qty: '1'
+    notes: Follow documented board labels. Other versions need their own interface review.
+  - part: 15 kΩ and 10 kΩ resistors, both 1%, and 100 nF capacitor
+    qty: 1 set
     estimated_cost: Varies
-    notes: Moist indicator
-  - part: 1× LED (yellow) + 220 Ω resistor
-    qty: '1'
+    notes: One divider and node capacitor, not arbitrary resistor values.
+  - part: Regulated 5.0 V module supply (±5%), breadboard, leads and USB data cable
+    qty: 1 set
     estimated_cost: Varies
-    notes: Dry warning
-  - part: 1× LED (red) + 220 Ω resistor
-    qty: '1'
+    notes: Separate module supply positive from USB/controller positive; common ground. Power both off before rewiring.
+  - part: Three low-current LEDs and three separate 330 ohm resistors
+    qty: 1 set
     estimated_cost: Varies
-    notes: Critical dry alert
-  - part: 1× Active Buzzer (5 V)
-    qty: '1'
-    estimated_cost: Varies
-    notes: Optional alert sound
+    notes: One resistor per LED; no buzzer/pump.
   wiring:
-    illustration_alt: ESP32 Soil Moisture Monitor wiring diagram
-    summary: Wire the capacitive probe to GPIO34 first, print raw ADC values, and calibrate dry/wet readings before
-      trusting the LED or buzzer thresholds.
+    full_size_link: true
+    illustration_alt: 'Logical DFRobot Gravity SEN0193 capacitive soil sensor circuit: separate regulated 5 V, common
+      ground, 15k/10k divider and 100 nF at GPIO34; not physical pin order or tested hardware.'
+    summary: Power the identified module from a separate regulated 5.0 V supply, ±5%, not from a GPIO. Its documented
+      supply range is 3.3–5.5 V and output envelope is 0–3.0 V. USB powers the ESP32; never join the two positive
+      supply outputs. Module AOUT feeds 15 kΩ (1%) then GPIO34; 10 kΩ (1%) and 100 nF connect this node to GND.
+      Grounds are common. This divider scales the signal, not the module supply. Power both sides together while
+      connected; power off USB and module supply before rewiring. Never connect a bare electrode or unknown output
+      directly to GPIO34.
     steps:
-    - Unplug USB before changing wires.
-    - Connect Sensor AOUT to GPIO 34 (ADC1 channel — input only, do not drive HIGH).
-    - Connect Sensor VCC to 3.3 V (Some sensors accept 3.3–5 V; check your module).
-    - Connect Sensor GND to GND.
-    - Connect Green LED (+ 220 Ω) to GPIO 25 (Moist (> 60%)).
-    - Connect Yellow LED (+ 220 Ω) to GPIO 26 (Moderate (30–60%)).
-    - Connect Red LED (+ 220 Ω) to GPIO 27 (Dry (< 30%)).
-    - Connect Buzzer + to GPIO 32 (Only sounds when critically dry).
-    - Reconnect USB, upload the sketch, and open Serial Monitor at 115200 baud unless the code says otherwise.
+    - Switch USB and module supply off. Identify exact module, rail and connector labels.
+    - Module +/VCC → external regulated 5.0 V (±5%); module −/GND → common ESP32/external-supply GND. Never join
+      positive rails. Keep sensor electronics and connector above the marked immersion limit.
+    - Module A/AOUT → 15 kΩ → GPIO34 node; 10 kΩ and 100 nF separately node → GND. Never bypass the divider.
+    - GPIO25/26/27 each → its own 330 ohm resistor → green/yellow/red LED anode; all cathodes → GND. GPIO32 unused;
+      no buzzer.
+    - Check logical diagram before powering. Serial 115200; first leave the record-enable flag false and inspect
+      raw counts/pin-mV diagnostics.
+    - Record both stable endpoints and conditions with this same chain before enabling calculation. Invalid/outside-interval
+      signals deliberately give no calculated result.
   gpio_map:
-  - signal: Sensor AOUT
-    esp32_pin: GPIO 34
-    direction: Input
-    notes: ADC1 channel — input only, do not drive HIGH
-  - signal: Sensor VCC
-    esp32_pin: 3.3 V
-    direction: Power
-    notes: Some sensors accept 3.3–5 V; check your module
-  - signal: Sensor GND
+  - signal: Module + / VCC
+    esp32_pin: No GPIO; external regulated 5.0 V (±5%)
+    direction: Supply
+    notes: Identified module 3.3–5.5 V supply; distinct from signal rating.
+  - signal: Module − / GND
     esp32_pin: GND
-    direction: Ground
-    notes: Match this wire to the code constant.
-  - signal: Green LED (+ 220 Ω)
-    esp32_pin: GPIO 25
-    direction: Output
-    notes: Moist (> 60%)
-  - signal: Yellow LED (+ 220 Ω)
-    esp32_pin: GPIO 26
-    direction: Output
-    notes: Moderate (30–60%)
-  - signal: Red LED (+ 220 Ω)
-    esp32_pin: GPIO 27
-    direction: Output
-    notes: Dry (< 30%)
-  - signal: Buzzer +
-    esp32_pin: GPIO 32
-    direction: Output
-    notes: Only sounds when critically dry
-  circuit_explanation: The capacitive probe produces an analog voltage that changes with the moisture around the
-    sensor. GPIO34 is an ADC input, so it can read voltage but cannot drive an output. LEDs use separate GPIO pins
-    through resistors so the ESP32 only supplies safe indicator current. The buzzer is optional and should be tested
-    after the moisture reading works.
-  engineering_explanation: Soil moisture sensors are not absolute instruments. Soil type, sensor depth, salt content,
-    and temperature all change the raw ADC reading. A reliable monitor is calibrated in your own dry and wet conditions,
-    averages several samples, and uses thresholds that are tested with real soil instead of copied from another
-    build.
+    direction: Common return
+    notes: Divider bottom/capacitor share ground.
+  - signal: Module A / AOUT
+    esp32_pin: 15 kΩ → GPIO34; 10 kΩ and 100 nF node → GND
+    direction: ADC1 input
+    notes: Divided 0–3.0 V documented envelope; GPIO34 has no internal pull resistor.
+  - signal: Green / yellow / red LEDs
+    esp32_pin: GPIO25 / GPIO26 / GPIO27
+    direction: Outputs
+    notes: Each through separate 330 ohm to anode; cathodes GND. OFF if invalid/unreferenced.
+  circuit_explanation: Power the identified module from a separate regulated 5.0 V supply, ±5%, not from a GPIO.
+    Its documented supply range is 3.3–5.5 V and output envelope is 0–3.0 V. USB powers the ESP32; never join the
+    two positive supply outputs. Module AOUT feeds 15 kΩ (1%) then GPIO34; 10 kΩ (1%) and 100 nF connect this node
+    to GND. Grounds are common. This divider scales the signal, not the module supply. Power both sides together
+    while connected; power off USB and module supply before rewiring. Never connect a bare electrode or unknown
+    output directly to GPIO34.
+  engineering_explanation: 'Raw counts are uncalibrated 12-bit codes, not volts or a physical quantity. analogReadMilliVolts
+    uses the core ADC calibration path to estimate voltage at the divided pin; it is not independent system calibration
+    or a voltmeter accuracy guarantee. Raw and mV use separate conversions. Classic ESP32 at 11 dB has a documented
+    measurement range of about 150–3100 mV, distinct from 3.3 V logic. The sketch accepts only 250–2200 mV and rejects
+    rail samples or more than 20 mV span within 32 samples. These are conservative lesson screening choices, not
+    manufacturer sensor specifications. Slow drift and plausible wiring faults can pass.
+
+
+    Vpin=Vout×Rb/(Rt+Rb). For Rt=15 kΩ and Rb=10 kΩ, ratio=0.4 nominal; with 1% resistors the largest ratio is 10.1/(14.85+10.1)=0.40481.
+    Documented 3.0 V output gives at most 1.2145 V. A 5.0 V supply at +5% gives 5.25 V; even output-to-supply pass-through
+    gives only 2.1253 V at the ADC. At the module maximum 5.5 V, the bound is 2.2265 V, below the classic 11 dB
+    range ceiling around 3.1 V; the sketch rejects above 2.2 V. This bounded calculation is not protection from
+    arbitrary supplies, miswiring or transients. The divider also pulls a disconnected signal wire low, but does
+    not prove electrode health. Nominal module voltage is 2.5×pin voltage; resistor-ratio uncertainty alone is about
+    ±1.2%, before ADC, loading and sensor errors. Endpoint records are ADC-pin values from this complete chain;
+    changing any part invalidates them.'
   libraries:
-  - name: Arduino ESP32 core
-    note: Install ESP32 board support in Arduino IDE.
+  - text: Arduino-ESP32 3.3.2 built-in ADC APIs
+    note: No DFRobot library or EEPROM dependency. Explicit recorded-point calculation, not library defaults.
   code:
     filename: esp32-soil-moisture-monitor.ino
-    content: "/*\n * ESP32 Soil Moisture Monitor — Beginner\n * Reads capacitive soil sensor, maps to percentage,\
-      \ lights LEDs.\n *\n * CALIBRATION REQUIRED:\n *   1) Place sensor in dry air → note AIR_VALUE (should be\
-      \ ~2800–3200)\n *   2) Submerge sensor tip in water → note WATER_VALUE (should be ~1200–1500)\n *   Update\
-      \ the defines below with your sensor's actual values.\n */\n#define SENSOR_PIN  34\n#define LED_GREEN   25\
-      \   // Moist\n#define LED_YELLOW  26   // Moderate\n#define LED_RED     27   // Dry\n#define BUZZER      32\n\
-      \n// ── CALIBRATE THESE for your sensor ─────────────────────────────\n#define AIR_VALUE   2800  // ADC reading\
-      \ in dry air (0% moisture)\n#define WATER_VALUE 1200  // ADC reading fully in water (100% moisture)\n// ────────────────────────────────────────────────────────────────\n\
-      \nint readMoisturePercent() {\n  // Average 10 readings to reduce ADC noise on ESP32\n  long sum = 0;\n  for\
-      \ (int i = 0; i < 10; i++) { sum += analogRead(SENSOR_PIN); delay(5); }\n  int raw = sum / 10;\n  int pct\
-      \ = map(raw, AIR_VALUE, WATER_VALUE, 0, 100);\n  return constrain(pct, 0, 100);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  analogReadResolution(12);   // 12-bit ADC: 0–4095\n  pinMode(LED_GREEN,  OUTPUT);\n  pinMode(LED_YELLOW,\
-      \ OUTPUT);\n  pinMode(LED_RED,    OUTPUT);\n  pinMode(BUZZER,     OUTPUT);\n  Serial.println(\"Soil Moisture\
-      \ Monitor started.\");\n  Serial.printf(\"Calibration: AIR=%d, WATER=%dn\", AIR_VALUE, WATER_VALUE);\n}\n\n\
-      void loop() {\n  int pct = readMoisturePercent();\n  Serial.printf(\"Moisture: %d%%n\", pct);\n\n  // Turn\
-      \ all LEDs off first\n  digitalWrite(LED_GREEN,  LOW);\n  digitalWrite(LED_YELLOW, LOW);\n  digitalWrite(LED_RED,\
-      \    LOW);\n  digitalWrite(BUZZER,     LOW);\n\n  if (pct >= 60) {\n    digitalWrite(LED_GREEN, HIGH);\n \
-      \   Serial.println(\"Status: Moist — plant is happy\");\n  } else if (pct >= 30) {\n    digitalWrite(LED_YELLOW,\
-      \ HIGH);\n    Serial.println(\"Status: Moderate — consider watering soon\");\n  } else {\n    digitalWrite(LED_RED,\
-      \ HIGH);\n    // Pulse buzzer 3 times for critical alert\n    for (int i = 0; i < 3; i++) {\n      digitalWrite(BUZZER,\
-      \ HIGH); delay(200);\n      digitalWrite(BUZZER, LOW);  delay(200);\n    }\n    Serial.println(\"Status: DRY\
-      \ — water the plant now!\");\n  }\n\n  delay(10000);   // Read every 10 seconds\n}"
-  code_explanation: The sketch averages 10 ADC readings from GPIO34, maps the raw value between AIR_VALUE and WATER_VALUE,
-    constrains the result to 0-100 percent, and then lights green, yellow, or red LEDs. The buzzer only pulses in
-    the dry branch.
-  expected_output: 'Serial Monitor prints the calibration values and repeated "Moisture: NN%" lines. Green indicates moist soil, yellow indicates moderate moisture, and red plus buzzer means the calibrated reading is dry.'
+    content: "#include <Arduino.h>\n#include <math.h>\n// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review\
+      \ baseline.\nconstexpr uint8_t SENSOR_PIN = 34; // ADC1 input only; no internal pull resistor.\n// AOUT --\
+      \ 15k (1%) -- GPIO34 -- 10k (1%) -- GND; 100 nF GPIO34 to GND.\n// Raw and mV are separate conversions, averaged\
+      \ over the same short window.\nfloat rawMean = 0, pinMv = 0;\nbool readWindow() {\n  uint32_t rawSum = 0,\
+      \ mvSum = 0, minMv = 100000, maxMv = 0;\n  bool rails = false;\n  for (int i = 0; i < 32; ++i) {\n    uint16_t\
+      \ raw = analogRead(SENSOR_PIN);\n    uint32_t mv = analogReadMilliVolts(SENSOR_PIN);\n    rawSum += raw; mvSum\
+      \ += mv;\n    if (raw <= 16 || raw >= 4079) rails = true;\n    if (mv < minMv) minMv = mv;\n    if (mv > maxMv)\
+      \ maxMv = mv;\n    delay(5);\n  }\n  rawMean = rawSum / 32.0f; pinMv = mvSum / 32.0f;\n  // Lesson screening,\
+      \ not electrical protection or sensor-health proof.\n  return !rails && minMv >= 250 && maxMv <= 2200 && maxMv\
+      \ - minMv <= 20;\n}\n\nconstexpr uint8_t LED_GREEN = 25, LED_YELLOW = 26, LED_RED = 27;\nconstexpr bool REFERENCES_RECORDED\
+      \ = false;\nconstexpr float AIR_PIN_MV = 0.0f, WATER_PIN_MV = 0.0f;\nvoid indicatorsOff() {\n  digitalWrite(LED_GREEN,\
+      \ LOW); digitalWrite(LED_YELLOW, LOW); digitalWrite(LED_RED, LOW);\n}\nbool validReferences() {\n  return\
+      \ REFERENCES_RECORDED && isfinite(AIR_PIN_MV) && isfinite(WATER_PIN_MV) &&\n    WATER_PIN_MV >= 250 && AIR_PIN_MV\
+      \ <= 2200 && AIR_PIN_MV - WATER_PIN_MV >= 100;\n}\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n\
+      \  analogSetPinAttenuation(SENSOR_PIN, ADC_11db);\n  digitalWrite(LED_GREEN, LOW); digitalWrite(LED_YELLOW,\
+      \ LOW); digitalWrite(LED_RED, LOW);\n  pinMode(LED_GREEN, OUTPUT); pinMode(LED_YELLOW, OUTPUT); pinMode(LED_RED,\
+      \ OUTPUT);\n  indicatorsOff();\n  Serial.println(\"SEN0193 relative index; NOT water-content percent or watering\
+      \ advice\");\n}\nvoid loop() {\n  indicatorsOff();\n  bool valid = readWindow();\n  Serial.printf(\"raw_counts=%.1f\
+      \ ADC_pin_mV_est=%.1f\\n\", rawMean, pinMv);\n  if (!valid) Serial.println(\"INVALID_SIGNAL: rail, range or\
+      \ short-window noise; index withheld\");\n  else if (!validReferences()) Serial.println(\"REFERENCE_REQUIRED:\
+      \ record air/water pin mV; index withheld\");\n  else if (pinMv < WATER_PIN_MV || pinMv > AIR_PIN_MV)\n  \
+      \  Serial.println(\"OUTSIDE_REFERENCE_INTERVAL: index withheld, not clamped\");\n  else {\n    float index\
+      \ = 100.0f * (AIR_PIN_MV - pinMv) / (AIR_PIN_MV - WATER_PIN_MV);\n    if (!isfinite(index)) Serial.println(\"\
+      INVALID_CALCULATION: index withheld\");\n    else {\n      Serial.printf(\"relative_index=%.1f / 100; NOT\
+      \ percent water\\n\", index);\n      // Arbitrary display bands, not plant-specific watering thresholds.\n\
+      \      if (index >= 67) digitalWrite(LED_GREEN, HIGH);\n      else if (index >= 33) digitalWrite(LED_YELLOW,\
+      \ HIGH);\n      else digitalWrite(LED_RED, HIGH);\n    }\n  }\n  delay(5000);\n}\n"
+  code_explanation: 'All LEDs start OFF. REFERENCES_RECORDED defaults false and both endpoints zero. Finite/range/separation
+    checks precede division; outside-interval readings are withheld, not clamped. Bands at 33/67 are arbitrary display
+    practice, not watering thresholds. Screening cannot establish sensor health: disconnected probes or stuck signals
+    may look plausible.'
+  expected_output: Serial prints raw_counts/ADC_pin_mV_est with REFERENCE_REQUIRED and LEDs OFF until references
+    are entered. In-interval signals print relative_index / 100 and light one band; invalid/outside-reference signals
+    withhold the index and turn LEDs OFF. These are prospective message types, not recorded measurements or proof
+    of calibration.
   common_mistakes:
-  - text: Using a resistive fork-style sensor for a long-term outdoor build; those probes corrode quickly.
-  - text: Copying calibration values without measuring your own dry and wet readings.
-  - text: Driving an LED without a current-limiting resistor.
-  - text: Assuming 0 percent and 100 percent readings will be identical across soil types.
-  - text: Reading the sensor while Wi-Fi is active and then wondering why ADC values are noisier.
+  - text: Treating driver mV or endpoint fitting as independent accuracy verification.
+  - text: Changing module, divider or board without new records.
+  - text: Clamping failed signals into plausible results.
+  - text: Immersing electronics or altering powered wiring.
   troubleshooting:
-  - problem: Moisture is always 0 percent or 100 percent
-    fix: Print the raw ADC value first. Update AIR_VALUE and WATER_VALUE with readings from your own dry air and
-      wet test.
-  - problem: Readings jump while the sensor is not moving
-    fix: Average multiple samples, keep wires short, and keep the sensor lead away from motors, pumps, and Wi-Fi
-      antennas.
-  - problem: LED status looks backwards
-    fix: Check whether your calibration has AIR_VALUE greater than WATER_VALUE. Many capacitive modules output lower
-      voltage when wetter.
-  - problem: Buzzer sounds too often
-    fix: Raise the dry threshold or require several dry readings in a row before sounding the buzzer.
+  - problem: No calculated result
+    fix: Read the named state; record both stable endpoints with the same circuit. Zero defaults deliberately fail;
+      enabling the flag alone is insufficient.
+  - problem: INVALID_SIGNAL
+    fix: Power off; check module, common ground, divider and GPIO34. Rail/zero, outside 250–2200 mV or >20 mV within-window
+      span is rejected. Do not force a result.
+  - problem: OUTSIDE interval
+    fix: Do not clamp to 0/100. Recheck sensor, depth, supply and references. A relative index is not water-content
+      calibration.
+  - problem: Plausible but stuck reading
+    fix: A disconnected electrode, floating module input or stuck signal may look plausible. Use controlled references
+      and independent instruments; software cannot prove connection/health.
   testing_checklist:
-  - Upload a simple Blink sketch first to confirm the board and USB cable work.
-  - Wire only the sensor first and print raw GPIO34 readings.
-  - Record dry-air and wet-test readings, then update AIR_VALUE and WATER_VALUE.
-  - Add LEDs with 220 ohm resistors only after the percentage makes sense.
-  - Add the buzzer last and confirm it sounds only for dry readings.
-  - Power-cycle the project and confirm it starts in a safe state.
+  - Documentation/API and numerical review only; no compilation or hardware/calibration result supplied.
+  - Identify actual module and verify rail/interface with suitable instruments before trusting output.
+  - Record reference conditions and unedited diagnostics separately from expected messages.
+  - Check rejected readings withhold the index and turn all three LEDs OFF.
   engineer_tips:
-  - Use GPIO34, GPIO35, GPIO36, or GPIO39 for analog-only sensor inputs.
-  - Record raw ADC values before writing percentage logic.
-  - Keep the sensor electronics above the soil; only the probe area should enter the soil.
-  - If you add a pump later, power it from a separate supply and share ground only where the driver requires it.
-  - Label dry, damp, and wet readings in a notebook before choosing thresholds.
-  performance_tips:
-  - Average 10-20 readings to reduce ADC noise.
-  - Read every few seconds or minutes; soil changes slowly.
-  - Power the sensor only while reading if you need lower corrosion and lower battery use.
-  - Use deep sleep for battery plant monitors.
-  upgrade_ideas: *id001
+  - Keep the full measurement chain unchanged.
+  - Separate ADC calibration, endpoint fitting and independent accuracy checks.
+  performance_tips: []
+  upgrade_ideas:
+  - Assess uncertainty with a separate check/reference and recorded evidence; none is supplied here.
   real_world_applications:
-  - Indoor plant monitoring
-  - Greenhouse seedling trays
-  - School experiments about soil and water retention
-  - Starter project for smart irrigation
-  downloads:
-  - text: ESP32 Soil Moisture Monitor Arduino sketch
-    note: Use the code section as the source sketch.
-  - text: Bench test checklist
-    note: Follow the testing checklist before permanent installation.
+  - Classroom measurement-limits lab
+  - Repeatable sensor-reference worksheet
   related_guides:
   - title: Mission 01 - Blink LED
     href: /guides/blink-led-esp32.html
@@ -548,32 +293,45 @@ project:
     href: /projects/esp32-water-leak-detector.html
     description: Learn another water-related sensor project with different safety and placement concerns.
   faqs:
-  - question: Why should I avoid resistive probes for long-term soil monitoring?
-    answer: Resistive fork probes corrode quickly in wet soil. This project uses a capacitive soil moisture sensor
-      because it is better suited to repeated learning tests.
-  - question: How do I calibrate dry and wet values?
-    answer: Print the raw GPIO34 reading in dry air and in wet soil, then set thresholds between your measured values.
-      Do not copy another plant's calibration numbers.
-  - question: Can one threshold work for every soil type?
-    answer: No. Soil mix, pot size, sensor depth, and watering pattern change the reading, so calibrate for the plant
-      and placement you are actually using.
+  - question: Does this establish sensor accuracy?
+    answer: No. ADC calibration and two recorded endpoints do not independently validate accuracy, drift or sample
+      preparation.
+  - question: Does rejection detect every disconnected sensor?
+    answer: No. It rejects obvious rail/range/noise problems, but a plausible voltage can still be faulty.
   references:
-  - title: ESP32 ADC Calibration
-    href: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc_calibration.html
-  - title: Arduino ESP32 Core Documentation
-    href: https://docs.espressif.com/projects/arduino-esp32/en/latest/
+  - title: Arduino-ESP32 3.3.2 ADC documentation (pinned source)
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst
+  - title: Arduino-ESP32 3.3.2 ADC API declarations
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.h
+  - title: Arduino-ESP32 3.3.2 calibrated millivolt implementation
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.c
+  - title: DFRobot SEN0193 specifications
+    href: https://wiki.dfrobot.com/sen0193
+  - title: Manufacturer air/water boundary and immersion instructions
+    href: https://wiki.dfrobot.com/sen0193/docs/18037
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
-    skills:
-    - Read and verify project input hardware
-    - Map signals to safe ESP32 GPIO pins
-    - Debug with Serial Monitor
-    - Apply safety and performance checks
-    - Plan the next learning step
-  build_photos:
-  - title: Breadboard overview
-    note: Show ESP32, module, output device, and power rails.
-  - title: Close-up wiring
-    note: Show signal pins clearly enough for learners to compare.
-  - title: Working output
-    note: Show Serial Monitor, LEDs, display, or dashboard after the condition changes.
+    summary: Compare observations with expected messages and preserve rejection states. No successful hardware operation
+      or calibration is supplied.
+    skills: *id001
+  tutorial_flow: true
+  assumptions: Classic ESP32-WROOM-32/32E DevKit with free GPIO34 (ADC1 input only), Arduino-ESP32 3.3.2 review
+    baseline, Arduino IDE 2.x and built-in ADC functions only. Not a latest-release claim or a pin map for S3/C3/C5.
+    No external sensor library is needed for this explicit recorded-point calculation.
+  safety_badge: Low-voltage measurement lesson — unverified hardware
+  configuration: 'With REFERENCES_RECORDED=false, record repeated stable ADC_pin_mV_est windows in air as AIR_PIN_MV.
+    Briefly place only the sensing portion in water, no further than the manufacturer''s marked limit; electronics/connector
+    stay dry. Record WATER_PIN_MV using the same board, supply, divider and attenuation. Do not copy Arduino Uno
+    counts. Air voltage must exceed water voltage by at least 100 mV before enabling the flag. The separation and
+    20 mV short-window noise limits are lesson screening choices, not manufacturer accuracy specifications.
+
+
+    relative_index = 100×(Vair−Vpin)/(Vair−Vwater). This dimensionless 0–100 scale is NOT volumetric/gravimetric
+    water percentage, %RH or a plant-water requirement. Outside-reference readings are withheld, not clipped. Soil
+    composition, insertion depth, packing, salinity and temperature can change response. Record those conditions.
+    Air/water endpoint adjustment alone does not validate a soil-water-content model.
+
+
+    LEDs show arbitrary lower/middle/upper bands (<33, 33–<67, ≥67); they are not watering thresholds. No buzzer,
+    relay, pump or cloud logger is implemented. Such extensions need separate complete circuits and validation.'
+  skills_practiced: *id001
+  learning_outcomes: *id001
