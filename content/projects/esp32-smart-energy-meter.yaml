@@ -1,247 +1,247 @@
 slug: esp32-smart-energy-meter
-title: ESP32 Low-Voltage Energy Meter Demo
+title: ESP32 Two-Channel Raw ADC Demonstration
 category: Energy Monitoring
-image_alt: ESP32 low-voltage energy meter demo with current sensor and display dashboard
-og_image: /assets/images/og/esp32-smart-energy-meter.webp
-hero_image: /assets/images/generated/esp32-smart-energy-meter.webp
-featured_image: /assets/images/generated/esp32-smart-energy-meter.webp
-image: /assets/images/generated/esp32-smart-energy-meter.webp
-description: Build a low-voltage ESP32 energy-measurement demonstration using analog inputs and relative power calculations.
+image_alt: Logical two-channel resistor-divider overview; not a photograph, physical pin layout or recorded
+  result
+og_image: /assets/visuals/projects/heroes/esp32-smart-energy-meter-raw-adc-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-smart-energy-meter-raw-adc-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-smart-energy-meter-raw-adc-overview.svg
+image: /assets/visuals/projects/heroes/esp32-smart-energy-meter-raw-adc-overview.svg
+description: Read two defined resistor-divider inputs on classic ESP32 ADC1. Log raw counts in Serial Monitor;
+  no voltage/current sensor, power or energy measurement is implemented.
 source_base: esp32-smart-energy-meter-with-cloud-logging
-sensor: current sensor
-output: relay cutoff
+sensor: Two fixed resistor-divider inputs
+output: Serial raw ADC counts
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-26'
+date_modified: '2026-11-17'
 hardware:
-  sensor_pin: GPIO36
-  output_pin: GPIO21/GPIO22
-  sensor_name: Voltage and current analog sensors
-  output_name: Optional SSD1306 OLED display
+  sensor_pin: GPIO36 and GPIO34 (ADC1)
+  output_pin: USB Serial
+  sensor_name: Two defined resistor-divider nodes
+  output_name: Raw ADC counts
   wiring:
-  - component: Voltage sensor signal
+  - component: Channel A divider node
     pin: GPIO36
-  - component: Current sensor signal
+  - component: Channel B divider node
     pin: GPIO34
-  - component: OLED SDA
-    pin: GPIO21
-  - component: OLED SCL
-    pin: GPIO22
-  - component: VCC
-    pin: Module-rated low-voltage supply
-  - component: GND
-    pin: GND
-meta_description: Build a low-voltage ESP32 energy-measurement demonstration using ADC readings and relative power calculations. Not billing grade or for direct mains.
-meta_title: ESP32 Low-Voltage Energy Meter Demo
+  - component: Divider supply / return
+    pin: Board 3V3 / GND
+meta_description: Read two defined resistor-divider inputs on classic ESP32 ADC1. Log raw counts in Serial
+  Monitor; no voltage/current sensor, power or energy measurement is implemented.
+meta_title: ESP32 Two-Channel Raw ADC Demonstration
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
-      \ for Current Sense: ESP32 watches Voltage Sensor signal and activates Current Sensor control when conditions cross\
-      \ your threshold.</p>\n      <ul class=\"overview-list\">\n        <li>Voltage Sensor signal connects to GPIO36 (ADC\
-      \ input)</li><li>Threshold is set to 1605 in firmware (adjust after calibration)</li><li>Current Sensor control is driven\
-      \ on GPIO39 when the condition is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n \
-      \     </section>"
+    overview_html: <p>Read two defined resistor-divider inputs on classic ESP32 ADC1. Log raw counts in Serial
+      Monitor; no voltage/current sensor, power or energy measurement is implemented.</p>
     components:
-    - ESP32 Dev Board
-    - Low-voltage voltage sensor module
-    - Low-voltage current sensor module
-    - Optional SSD1306 OLED display
-    - Low-voltage test supply
-    wiring:
-    - - Voltage sensor signal
-      - GPIO36
-      - ADC1 input
-    - - Current sensor signal
-      - GPIO34
-      - ADC1 input
-    - - OLED SDA
-      - GPIO21
-      - Optional I2C display
-    - - OLED SCL
-      - GPIO22
-      - Optional I2C display
-    - - GND
-      - GND
-      - Common ground
-    how: []
-    apps:
-    - Current Sense monitoring with Voltage Sensor signal
-    troubleshooting: []
-    upgrades:
-    - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Smart Energy Meter - low-voltage ADC demo\n// Reads voltage sensor on GPIO36 and current sensor on GPIO34.\n\
-      // This sketch is for isolated low-voltage learning circuits, not direct mains measurement.\n\nconst int VOLTAGE_PIN\
-      \ = 36;  // ADC1 input\nconst int CURRENT_PIN = 34;  // ADC1 input\nconst int SAMPLE_DELAY_MS = 500;\n\nvoid setup()\
-      \ {\n  Serial.begin(115200);\n  pinMode(VOLTAGE_PIN, INPUT);\n  pinMode(CURRENT_PIN, INPUT);\n  Serial.println(\"ESP32\
-      \ Smart Energy Meter low-voltage demo\");\n}\n\nvoid loop() {\n  int voltageRaw = analogRead(VOLTAGE_PIN);\n  int currentRaw\
-      \ = analogRead(CURRENT_PIN);\n  float relativePower = (voltageRaw / 4095.0) * (currentRaw / 4095.0);\n\n  Serial.print(\"\
-      voltageRaw=\");\n  Serial.print(voltageRaw);\n  Serial.print(\" currentRaw=\");\n  Serial.print(currentRaw);\n  Serial.print(\"\
-      \ relativePower=\");\n  Serial.println(relativePower, 4);\n  delay(SAMPLE_DELAY_MS);\n}\n"
-    code_filename: ''
-  intermediate:
-    level: intermediate
-    overview_html: <p>The intermediate version adds calibrated scaling constants only after students measure known low-voltage references. Until then, the page keeps readings labeled as raw ADC and relative power so it does not imply billing-grade accuracy.</p>
-    code: ''
-  advanced:
-    level: advanced
-    overview_html: <p>An advanced version can log low-voltage readings to MQTT or a dashboard, but it should remain isolated from mains wiring and clearly separate educational estimates from certified energy metering.</p>
-    code: ''
+    - Classic ESP32-WROOM-32/32E DevKit with exposed GPIO36 and GPIO34
+    - Three 10 kΩ and one 20 kΩ resistors, all 1%
+    - Two 100 nF ceramic capacitors, breadboard and short jumper leads
+    - USB data cable and computer with Arduino IDE 2.x
+    code: "#include <Arduino.h>\n// Classic ESP32-WROOM-32/32E DevKit; Arduino-ESP32 3.3.2 review baseline.\n\
+      // A: 3V3 -- 10k -- GPIO36 node -- 10k -- GND.\n// B: 3V3 -- 20k -- GPIO34 node -- 10k -- GND.\n// All\
+      \ resistors 1%; each ADC node also has 100 nF to GND.\nconstexpr uint8_t CHANNEL_A = 36, CHANNEL_B =\
+      \ 34;\nstruct Reading { float counts; bool nearRail; };\nReading readCounts(uint8_t pin) {\n  uint32_t\
+      \ sum = 0;\n  bool rail = false;\n  for (int i = 0; i < 32; ++i) {\n    uint16_t raw = analogRead(pin);\n\
+      \    sum += raw;\n    if (raw <= 16 || raw >= 4079) rail = true;\n    delay(2);\n  }\n  return {sum /\
+      \ 32.0f, rail};\n}\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(CHANNEL_A,\
+      \ ADC_11db);\n  analogSetPinAttenuation(CHANNEL_B, ADC_11db);\n  Serial.println(\"Two sequential raw\
+      \ ADC channels; NOT an energy meter\");\n}\nvoid loop() {\n  Reading a = readCounts(CHANNEL_A);\n  Reading\
+      \ b = readCounts(CHANNEL_B);\n  Serial.printf(\"A_GPIO36_raw_counts=%.1f B_GPIO34_raw_counts=%.1f\\n\"\
+      ,\n                a.counts, b.counts);\n  if (a.nearRail || b.nearRail)\n    Serial.println(\"CHECK_WIRING:\
+      \ near-rail sample; no derived result\");\n  delay(500); // Pause after acquisition; not an exact 500\
+      \ ms sampling period.\n}\n"
+    code_filename: esp32-smart-energy-meter.ino
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
 import_source: esp32-smart-energy-meter-with-cloud-logging-project-001.html
 format: golden
 project:
-  icon: PROJ
-  mission_title: Build a Low-Voltage Energy Meter
-  difficulty: Intermediate
+  icon: ADC
+  mission_title: ESP32 Two-Channel Raw ADC Demonstration
+  difficulty: Beginner
   age: Ages 13+
-  estimated_time: 90-120 min
-  budget: Under 30 USD
-  what_you_build: A bench-safe energy meter demo that reads voltage on GPIO36 and current on GPIO34, then prints a relative
-    power estimate.
-  story: Energy monitoring must be documented carefully because unsafe shortcuts are dangerous. This upgrade removes the staged-source
-    mistake that treated GPIO39 as an output and keeps the build on ADC1 input pins. The component list, wiring table, GPIO
-    map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build so a learner can verify
-    each step instead of guessing.
-  eli12: The ESP32 reads one number for voltage and one number for current. Multiplying the scaled readings gives a simple
-    power estimate for a safe classroom circuit. Prove the local wiring and code first, then add displays, logging, or Wi-Fi
-    after the simple version behaves exactly as expected.
-  parent_safety: Do not connect this project directly to AC mains. Use only isolated low-voltage sensor modules or a supervised
-    lab source. Unplug USB and any external supply before rewiring, keep the build low-voltage on the bench, and stop immediately
-    if a module becomes hot or behaves unexpectedly.
+  estimated_time: Setup time varies
+  budget: Parts cost varies
+  tutorial_flow: true
+  assumptions: Classic ESP32-WROOM-32/32E DevKit with free GPIO36 and GPIO34, Arduino IDE 2.x, Arduino-ESP32
+    3.3.2 review baseline. Built-in ADC functions only; not a latest-release claim. A meter/continuity check
+    and basic resistor identification are prerequisites.
+  what_you_build: Read two defined resistor-divider inputs on classic ESP32 ADC1. Log raw counts in Serial
+    Monitor; no voltage/current sensor, power or energy measurement is implemented. The historical energy-meter
+    URL is retained, but this is an acquisition prerequisite, not a metering implementation.
+  eli12: An ADC turns a pin voltage into a number. Two resistor networks make two different inputs so you can
+    compare channels without guessing sensor behavior.
+  parent_safety: Low-voltage educational arrangement, not verified hardware or a safety certification. USB
+    board power only; never connect mains, an appliance, battery pack, motor or unknown sensor output. Unplug
+    before rewiring.
   learning_objectives:
-  - Wire the exact GPIO pins used by the sketch.
-  - Run the starter code and compare output with the wiring table.
-  - Explain the main sensor or input signal in plain language.
-  - Troubleshoot one wiring mistake using Serial Monitor evidence.
+  - Identify two ADC1 input-only pins
+  - Keep raw counts distinct from physical quantities
+  - Compare two resistor-divider inputs
+  - Recognize the limits of sequential sampling
   components:
-  - item: ESP32 DevKit board
-    note: Reads ADC1 pins GPIO36 and GPIO34.
+  - item: Classic ESP32-WROOM-32/32E DevKit with exposed GPIO36 and GPIO34
+    note: USB-powered board; identify GPIO numbers rather than connector positions. Not an S3/C3/C5 pin map.
     link: /components/esp32-devkit.html
-  - item: Low-voltage voltage sensor module
-    note: Analog output to GPIO36 within ESP32-safe range.
-  - item: Low-voltage current sensor module
-    note: Analog output to GPIO34 within ESP32-safe range.
-  - item: SSD1306 OLED display
-    note: Optional local display on GPIO21/GPIO22.
-    link: /components/ssd1306-oled.html
+  - item: Three 10 kΩ and one 20 kΩ resistors, all 1%
+    note: Channel A top/bottom 10k/10k; channel B top/bottom 20k/10k.
+    link: /components/through-hole-resistors.html
+  - item: Two 100 nF ceramic capacitors, breadboard and short jumper leads
+    note: One capacitor from each ADC node to GND. Check breadboard rail breaks.
+  - item: USB data cable and computer with Arduino IDE 2.x
+    note: No external supply, voltage/current module, OLED or relay is connected.
   bom:
-  - part: ESP32 DevKit board
-    qty: '1'
+  - part: Classic ESP32-WROOM-32/32E DevKit with exposed GPIO36 and GPIO34
+    qty: 1 set
     estimated_cost: Varies
-    notes: Reads ADC1 pins GPIO36 and GPIO34.
-  - part: Low-voltage voltage sensor module
-    qty: '1'
+    notes: USB-powered board; identify GPIO numbers rather than connector positions. Not an S3/C3/C5 pin map.
+  - part: Three 10 kΩ and one 20 kΩ resistors, all 1%
+    qty: 1 set
     estimated_cost: Varies
-    notes: Analog output to GPIO36 within ESP32-safe range.
-  - part: Low-voltage current sensor module
-    qty: '1'
+    notes: Channel A top/bottom 10k/10k; channel B top/bottom 20k/10k.
+  - part: Two 100 nF ceramic capacitors, breadboard and short jumper leads
+    qty: 1 set
     estimated_cost: Varies
-    notes: Analog output to GPIO34 within ESP32-safe range.
-  - part: SSD1306 OLED display
-    qty: '1'
+    notes: One capacitor from each ADC node to GND. Check breadboard rail breaks.
+  - part: USB data cable and computer with Arduino IDE 2.x
+    qty: 1 set
     estimated_cost: Varies
-    notes: Optional local display on GPIO21/GPIO22.
+    notes: No external supply, voltage/current module, OLED or relay is connected.
   wiring:
-    illustration_alt: ESP32 Smart Energy Meter wiring diagram
-    summary: A bench-safe energy meter demo that reads voltage on GPIO36 and current on GPIO34, then prints a relative power
-      estimate.
+    full_size_link: true
+    illustration_alt: 'Logical two-divider circuit: 3V3 through 10k/10k to GPIO36, 20k/10k to GPIO34, with
+      one 100 nF node capacitor each; not physical pin order or tested hardware'
+    summary: 'Two passive dividers use only the USB-powered board 3V3 rail: 10k/10k feeds GPIO36; 20k/10k feeds
+      GPIO34. Each node has 100 nF to common GND. No external signal source, sensor, load, relay or display
+      is part of the circuit.'
     steps:
-    - Unplug USB and the low-voltage test source before rewiring.
-    - Connect the voltage sensor analog output to GPIO36.
-    - Connect the current sensor analog output to GPIO34.
-    - Connect sensor grounds to ESP32 GND and keep outputs within ESP32-safe input range.
-    - 'Optional: connect OLED SDA to GPIO21 and SCL to GPIO22.'
-    - Reconnect power and verify raw ADC readings before calculating or displaying power.
+    - Disconnect USB before wiring; do not connect external sources or loads. Identify board 3V3, GND, GPIO36
+      and GPIO34 from its pin labels.
+    - 'A: board 3V3 → 10 kΩ → node A → 10 kΩ → GND; node A → GPIO36.'
+    - 'B: board 3V3 → 20 kΩ → node B → 10 kΩ → GND; node B → GPIO34.'
+    - Connect one 100 nF capacitor separately from each ADC node to GND. Use common board ground; keep the
+      two nodes distinct.
+    - Check resistance/continuity while unpowered. Verify the board 3V3 rail is within 3.0–3.45 V before relying
+      on the stated voltage bounds; never use VIN/5V as the divider rail.
+    - Reconnect USB, upload for the matching classic ESP32 board, then open Serial Monitor at 115200. Do not
+      alter powered wiring.
   gpio_map:
-  - signal: Voltage sensor signal
+  - signal: Channel A node
     esp32_pin: GPIO36
-    direction: Input
-    notes: ADC1 input-only analog pin.
-  - signal: Current sensor signal
+    direction: ADC1 input only
+    notes: 10k top and 10k bottom; 100 nF node to GND.
+  - signal: Channel B node
     esp32_pin: GPIO34
-    direction: Input
-    notes: ADC1 input-only analog pin.
-  - signal: OLED SDA
-    esp32_pin: GPIO21
-    direction: I/O
-    notes: Optional I2C data.
-  - signal: OLED SCL
-    esp32_pin: GPIO22
-    direction: Output
-    notes: Optional I2C clock.
-  circuit_explanation: GPIO36 and GPIO34 sample analog sensor outputs. The optional OLED is an I2C display, not a relay cutoff.
-  engineering_explanation: The sketch reports raw ADC values and relative power until exact sensor modules are calibrated.
-    It avoids invented voltage scaling, current limits, and ADC2 Wi-Fi conflicts.
+    direction: ADC1 input only
+    notes: 20k top and 10k bottom; 100 nF node to GND.
+  - signal: Divider rail / return
+    esp32_pin: 3V3 / GND
+    direction: Board supply / common return
+    notes: Not GPIO output power or VIN/5V. No external rail.
+  circuit_explanation: 'Two passive dividers use only the USB-powered board 3V3 rail: 10k/10k feeds GPIO36;
+    20k/10k feeds GPIO34. Each node has 100 nF to common GND. No external signal source, sensor, load, relay
+    or display is part of the circuit.'
+  engineering_explanation: 'Vnode=Vrail×Rbottom/(Rtop+Rbottom). Nominal 3.3 V gives 1.65 V at A and 1.10 V
+    at B: calculated circuit values, not observed readings. For a verified 3.0–3.45 V rail and 1% resistors,
+    A is bounded about 1.485–1.7423 V; B about 0.9867–1.1654 V, ignoring loading. These are inside the documented
+    classic ESP32 11 dB measurement range of approximately 150–3100 mV. Supply voltage, 3.3 V GPIO logic and
+    usable ADC range are different concepts; 5 V is not an acceptable GPIO signal. GPIO34/36 are ADC1 input-only
+    with no internal pull resistors. This sketch reports uncalibrated 12-bit counts (0–4095), not pin voltage.
+    Do not use counts×3.3/4095 as a calibrated voltage conversion. ADC nonlinearity, rail tolerance, loading
+    and wiring affect observations. No exact count ratio or accuracy is promised. Averages are sequential,
+    not simultaneous waveforms; multiplying these counts does not measure power. Real power requires a defined
+    voltage/current transfer function, offset handling and time-aligned acquisition appropriate to the waveform.
+    Energy additionally requires integration over elapsed time. None is implemented here.'
   libraries:
-  - name: Arduino ESP32 core
-    note: Install ESP32 board support in Arduino IDE.
+  - text: Arduino-ESP32 3.3.2 built-in ADC API
+    note: Arduino.h only; no sensor, display or metering library.
+  configuration: Select the matching classic ESP32 board and port. Set Serial Monitor to 115200. No credentials,
+    calibration coefficients or sensor defaults are required. Keep Wi-Fi disabled in this example; ADC1 selection
+    does not make it an energy meter.
   code:
     filename: esp32-smart-energy-meter.ino
-    content: "// ESP32 Smart Energy Meter - low-voltage ADC demo\n// Reads voltage sensor on GPIO36 and current sensor on\
-      \ GPIO34.\n// This sketch is for isolated low-voltage learning circuits, not direct mains measurement.\n\nconst int\
-      \ VOLTAGE_PIN = 36;  // ADC1 input\nconst int CURRENT_PIN = 34;  // ADC1 input\nconst int SAMPLE_DELAY_MS = 500;\n\n\
-      void setup() {\n  Serial.begin(115200);\n  pinMode(VOLTAGE_PIN, INPUT);\n  pinMode(CURRENT_PIN, INPUT);\n  Serial.println(\"\
-      ESP32 Smart Energy Meter low-voltage demo\");\n}\n\nvoid loop() {\n  int voltageRaw = analogRead(VOLTAGE_PIN);\n  int\
-      \ currentRaw = analogRead(CURRENT_PIN);\n  float relativePower = (voltageRaw / 4095.0) * (currentRaw / 4095.0);\n\n\
-      \  Serial.print(\"voltageRaw=\");\n  Serial.print(voltageRaw);\n  Serial.print(\" currentRaw=\");\n  Serial.print(currentRaw);\n\
-      \  Serial.print(\" relativePower=\");\n  Serial.println(relativePower, 4);\n  delay(SAMPLE_DELAY_MS);\n}\n"
-  code_explanation: The sketch reads voltageRaw from GPIO36 and currentRaw from GPIO34, then multiplies scaled ratios for
-    relativePower. No GPIO is used as a relay cutoff output.
-  expected_output: Serial Monitor prints voltageRaw, currentRaw, and relativePower every 500 ms. The values are for calibration
-    practice, not billing or direct mains measurement.
+    content: "#include <Arduino.h>\n// Classic ESP32-WROOM-32/32E DevKit; Arduino-ESP32 3.3.2 review baseline.\n\
+      // A: 3V3 -- 10k -- GPIO36 node -- 10k -- GND.\n// B: 3V3 -- 20k -- GPIO34 node -- 10k -- GND.\n// All\
+      \ resistors 1%; each ADC node also has 100 nF to GND.\nconstexpr uint8_t CHANNEL_A = 36, CHANNEL_B =\
+      \ 34;\nstruct Reading { float counts; bool nearRail; };\nReading readCounts(uint8_t pin) {\n  uint32_t\
+      \ sum = 0;\n  bool rail = false;\n  for (int i = 0; i < 32; ++i) {\n    uint16_t raw = analogRead(pin);\n\
+      \    sum += raw;\n    if (raw <= 16 || raw >= 4079) rail = true;\n    delay(2);\n  }\n  return {sum /\
+      \ 32.0f, rail};\n}\nvoid setup() {\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(CHANNEL_A,\
+      \ ADC_11db);\n  analogSetPinAttenuation(CHANNEL_B, ADC_11db);\n  Serial.println(\"Two sequential raw\
+      \ ADC channels; NOT an energy meter\");\n}\nvoid loop() {\n  Reading a = readCounts(CHANNEL_A);\n  Reading\
+      \ b = readCounts(CHANNEL_B);\n  Serial.printf(\"A_GPIO36_raw_counts=%.1f B_GPIO34_raw_counts=%.1f\\n\"\
+      ,\n                a.counts, b.counts);\n  if (a.nearRail || b.nearRail)\n    Serial.println(\"CHECK_WIRING:\
+      \ near-rail sample; no derived result\");\n  delay(500); // Pause after acquisition; not an exact 500\
+      \ ms sampling period.\n}\n"
+  code_explanation: Each channel averages 32 raw samples, then prints counts. A and B are acquired at different
+    times. A near-rail sample produces CHECK_WIRING, but a plausible count cannot prove correct wiring or connection.
+    The delay is a reporting pause after acquisition, not a precise sample period.
+  expected_output: Serial prints two labelled raw-count averages and may print CHECK_WIRING. With the stated
+    network A should generally read higher than B; no recorded counts, voltage measurement, watts or watt-hours
+    are supplied. If not, stop and inspect the unpowered circuit. This is expected behavior, not hardware test
+    evidence.
   common_mistakes:
-  - text: Connecting AC mains directly to an ESP32 or breadboard.
-  - text: Using GPIO39 or another input-only pin as an output.
-  - text: Assuming raw ADC counts are calibrated volts or amps.
+  - text: Using board VIN/5V instead of 3V3.
+  - text: Joining the two ADC nodes or swapping top/bottom resistors.
+  - text: Calling counts a measured current, voltage, power or energy.
   troubleshooting:
-  - problem: Readings stay at 0
-    fix: Check sensor power, ground, and analog outputs on GPIO36/GPIO34.
-  - problem: Readings stay near 4095
-    fix: Disconnect and confirm the sensor output is within ESP32-safe range.
-  - problem: OLED does not show data
-    fix: First confirm Serial Monitor readings, then check SDA on GPIO21 and SCL on GPIO22.
+  - problem: Zero or near-rail readings
+    fix: Disconnect USB. Check divider orientation, common GND, GPIO labels and rail continuity. Never fix
+      saturation by forcing a plausible software value.
+  - problem: A is not generally higher than B
+    fix: Check the 20k top resistor belongs to channel B, both 10k bottom resistors reach GND and nodes are
+      not joined. Actual counts are not calibration data.
+  - problem: Plausible but unchanged reading
+    fix: Fixed dividers intentionally give near-steady inputs. A disconnected/floating pin can also look plausible;
+      use unpowered continuity checks and appropriate instruments, not a count alone.
   testing_checklist:
-  - Upload the sketch with only the documented circuit attached.
-  - Open Serial Monitor and confirm the expected messages.
-  - Move or trigger the input and watch the output change.
-  - Power-cycle the project and confirm it starts safely.
+  - Documentation/API and divider arithmetic reviewed only; compilation and hardware operation unperformed.
+  - Verify actual rail, resistor values and connections independently before interpreting readings.
+  - Compare Copy text with the full sketch; record actual observations separately from this expected-output
+    description.
   engineer_tips:
-  - Change one variable at a time.
-  - Keep wires short and labeled while testing.
-  - Record any calibrated threshold before installing the project.
+  - Keep channel labels and resistor values on your wiring notes.
+  - Change wiring only while USB is unplugged.
   upgrade_ideas:
-  - Add calibrated scaling constants after measuring known references.
-  - Display voltage, current, and relative power on the OLED.
-  - Publish readings to MQTT only after local calibration is repeatable.
+  - 'Deferred: OLED output requires a separate complete display initialization/rendering sketch; no OLED is
+    wired or driven here.'
+  - A future metering project needs exact documented transducers, signal conditioning, sampling design and
+    independent reference checks; arbitrary modules are not drop-in additions.
   real_world_applications:
-  - Classroom lab build
-  - Bench prototype
-  - Local ESP32 learning project
+  - ADC channel identification practice
+  - Resistor-divider and acquisition-limits lesson
   related_guides:
-  - title: What is ESP32?
-    href: /guides/what-is-esp32.html
-    description: Review ESP32 pins, power, Wi-Fi, and the beginner wiring rules used by this build.
-  - title: Mission 01 - Blink LED
-    href: /guides/blink-led-esp32.html
-    description: Confirm uploads and simple GPIO behavior before adding sensors, storage, or displays.
-  related_projects:
-  - title: ESP32 MQTT Sensor Dashboard
-    href: /projects/esp32-mqtt-sensor-dashboard.html
-    description: Send calibrated values to a dashboard after local testing.
+  - title: Reading Analog Sensors
+    href: /guides/reading-analog-sensors.html
+    description: Continue with raw counts, pin-voltage estimates and ADC limitations.
+  - title: ADC / Analog Inputs
+    href: /guides/analog-inputs-reading-real-world.html
+    description: Review input limits and the classic ESP32 ADC assumptions.
+  related_projects: []
   faqs:
-  - question: Can this measure house mains directly?
-    answer: No. Do not connect mains to the ESP32 or a breadboard.
-  - question: Why use GPIO36 and GPIO34?
-    answer: They are ADC1 input-only pins, appropriate for analog readings and Wi-Fi compatibility.
-  - question: Why print relative power?
-    answer: Exact voltage and current scaling depends on the sensor modules, so the starter code avoids inventing calibration
-      values.
+  - question: Does this measure energy?
+    answer: No. The historical URL is unchanged; the implementation only logs two raw ADC channels.
+  - question: Can I connect a voltage/current module?
+    answer: Not using these instructions. Its exact output range, reference, transfer function and protection
+      must first be defined separately.
+  - question: Where is the OLED output?
+    answer: It is deferred, not implemented. This sketch uses Serial Monitor only.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Compare only the stated raw-channel behavior. No successful compilation, physical build, calibration
+      or metering result is supplied.
     skills:
-    - Read the GPIO map
-    - Verify code against hardware
-    - Troubleshoot with Serial Monitor
+    - Two-channel ADC acquisition
+    - Divider limits
+    - Honest measurement labels
+  references:
+  - title: Arduino-ESP32 3.3.2 ADC API and per-chip measurement ranges
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst
+  - title: Arduino-ESP32 3.3.2 ADC declarations
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-adc.h
+  - title: Espressif ESP32 series datasheet — pin and electrical restrictions
+    href: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  safety_badge: Low-voltage ADC lesson — unverified hardware

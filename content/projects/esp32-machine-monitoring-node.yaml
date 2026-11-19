@@ -1,233 +1,297 @@
 slug: esp32-machine-monitoring-node
-title: ESP32 Machine Monitoring Node
+title: ESP32 Threshold-to-Relay Bench Lesson
 category: Industrial Automation
-image_alt: ESP32 machine monitoring node with vibration sensor and dashboard-style diagnostics
-og_image: /assets/images/og/esp32-machine-monitoring-node.webp
-hero_image: /assets/images/generated/esp32-machine-monitoring-node.webp
-featured_image: /assets/images/generated/esp32-machine-monitoring-node.webp
-image: /assets/images/generated/esp32-machine-monitoring-node.webp
-description: Monitor machines with vibration or current sensors on ESP32 - bench alerts first, then local web status and mobile
-  notifications.
+image_alt: Logical potentiometer-to-relay lesson; not a machine, physical pin layout, photograph or tested
+  build
+og_image: /assets/visuals/projects/heroes/esp32-machine-monitoring-node-threshold-overview.svg
+hero_image: /assets/visuals/projects/heroes/esp32-machine-monitoring-node-threshold-overview.svg
+featured_image: /assets/visuals/projects/heroes/esp32-machine-monitoring-node-threshold-overview.svg
+image: /assets/visuals/projects/heroes/esp32-machine-monitoring-node-threshold-overview.svg
+description: Practice ADC hysteresis and a timed manual enable with a potentiometer, specified STEMMA relay
+  and separate low-voltage LED load. No machine monitoring or current measurement.
 source_base: esp32-machine-monitoring-node-with-mobile-alerts
-sensor: current sensor
-output: status relay
+sensor: Potentiometer signal simulator
+output: STEMMA 4409 relay LED load
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-08-26'
+date_modified: '2026-11-18'
 hardware:
-  sensor_pin: GPIO35
+  sensor_pin: GPIO35 through 15k/10k divider
   output_pin: GPIO19
-  sensor_name: Current Sensor signal
-  output_name: Relay Output control
+  sensor_name: 10k linear potentiometer simulator
+  output_name: Active-HIGH STEMMA 4409 Signal
   wiring:
-  - component: Current Sensor signal
+  - component: Input node
     pin: GPIO35
-  - component: Relay Output control
-    pin: GPIO19
-  - component: VCC
-    pin: 3.3V/5V
-  - component: GND
-    pin: GND
-meta_description: Build a bench-safe ESP32 machine monitoring node with current-sensor input on GPIO35, relay module control on GPIO19,
-  ADC threshold calibration, and safety limits.
-meta_title: ESP32 Machine Monitoring Node for Plant Floor with Cloud Sync
+  - component: Relay Signal
+    pin: GPIO19; external 10k pull-down
+  - component: Controller / relay supply
+    pin: USB / separate regulated 5 V; common GND
+meta_description: Practice ADC hysteresis and a timed manual enable with a potentiometer, specified STEMMA
+  relay and separate low-voltage LED load. No machine monitoring or current measurement.
+meta_title: ESP32 Threshold-to-Relay Bench Lesson
 levels:
   beginner:
     level: beginner
-    overview_html: "<section class=\"content-section\" id=\"overview\">\n      <h2>Project Overview</h2>\n      <p>Designed\
-      \ for Conveyor Belt: ESP32 watches Current Sensor signal and activates Relay Output control when conditions cross your\
-      \ threshold.</p>\n      <ul class=\"overview-list\">\n        <li>Current Sensor signal connects to GPIO35 (ADC input)</li><li>Threshold\
-      \ is set to 1606 in firmware (adjust after calibration)</li><li>Relay Output control is driven on GPIO19 when the condition\
-      \ is met</li><li>The main loop samples every 300 ms while powered</li>\n      </ul>\n      </section>"
+    overview_html: <p>Practice ADC hysteresis and a timed manual enable with a potentiometer, specified STEMMA
+      relay and separate low-voltage LED load. No machine monitoring or current measurement.</p>
     components:
-    - ESP32 Dev Board
-    - Current Sensor
-    - Relay Output
-    - 5V Power Supply
-    wiring:
-    - - Current Sensor signal
-      - GPIO35
-      - ''
-    - - Relay Output control
-      - GPIO19
-      - ''
-    - - VCC
-      - 3.3V/5V
-      - ''
-    - - GND
-      - GND
-      - ''
-    how: []
-    apps:
-    - Conveyor Belt monitoring with Current Sensor signal
-    troubleshooting: []
-    upgrades:
-    - Publish readings to an MQTT broker or Home Assistant
-    code: "// ESP32 Machine Monitoring Node for Plant Floor with Cloud Sync\nconst int SENSOR_PIN = 35;\nconst int OUTPUT_PIN\
-      \ = 19;\nconst int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: machine monitoring node\
-      \ for plant floor with cloud sync\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop()\
-      \ {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Current Sensor signal: \");\n  Serial.println(reading);\n\
-      \  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n\
-      }"
-    code_filename: ''
-  intermediate:
-    level: intermediate
-    overview_html: <p>After the local ADC threshold works, add averaging and hysteresis so the relay output does not chatter around one noisy reading. Keep the relay side low-voltage unless qualified supervision handles the load wiring.</p>
-    code: ''
-  advanced:
-    level: advanced
-    overview_html: <p>An advanced version can publish calibrated machine-state readings to MQTT or a local dashboard. Document the sensor baseline, threshold, and false-trigger behavior before using alerts for maintenance decisions.</p>
-    code: ''
+    - Classic ESP32-WROOM-32/32E DevKit
+    - 10 kΩ linear potentiometer
+    - 15 kΩ and 10 kΩ divider resistors, both 1%; 100 nF capacitor
+    - Adafruit STEMMA Non-Latching Mini Relay 4409 and JST-PH 3-pin cable
+    - External regulated 5 V relay supply rated at least 100 mA
+    - Separate 3 V battery, red LED and 330 ohm resistor
+    - Breadboard, jumper leads and USB data cable
+    code: "#include <Arduino.h>\n// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline.\n// 10k\
+      \ linear potentiometer outer terminals: board 3V3 and GND.\n// Wiper -- 15k (1%) -- GPIO35 node; 10k\
+      \ (1%) and 100 nF node to GND.\n// GPIO19 -> STEMMA 4409 Signal; 10k Signal to common GND.\nconstexpr\
+      \ uint8_t INPUT_PIN = 35, RELAY_PIN = 19;\nconstexpr uint32_t ENABLE_MS = 10000;\nconstexpr float ON_MV\
+      \ = 900, OFF_MV = 650;\nbool enabled = false, relayOn = false;\nuint32_t enabledAt = 0;\nvoid off() {\
+      \ relayOn = false; digitalWrite(RELAY_PIN, LOW); }\nvoid setup() {\n  digitalWrite(RELAY_PIN, LOW);\n\
+      \  pinMode(RELAY_PIN, OUTPUT);\n  off();\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(INPUT_PIN,\
+      \ ADC_11db);\n  Serial.println(\"Potentiometer/LED bench lesson only; no machine or current measurement\"\
+      );\n  Serial.println(\"E enables for 10 seconds; X disables. Use Serial Monitor at 115200.\");\n}\nvoid\
+      \ loop() {\n  while (Serial.available()) {\n    char c = Serial.read();\n    if (c == 'x' || c == 'X')\
+      \ { enabled = false; off(); }\n    if (c == 'e' || c == 'E') { enabled = true; enabledAt = millis();\
+      \ }\n  }\n  uint32_t sum = 0, rawSum = 0, lo = 100000, hi = 0;\n  bool rail = false;\n  for (int i =\
+      \ 0; i < 16; ++i) {\n    uint16_t raw = analogRead(INPUT_PIN);\n    uint32_t mv = analogReadMilliVolts(INPUT_PIN);\n\
+      \    rawSum += raw; sum += mv;\n    if (raw <= 16 || raw >= 4079) rail = true;\n    if (mv < lo) lo =\
+      \ mv;\n    if (mv > hi) hi = mv;\n    delay(2);\n  }\n  float pinMv = sum / 16.0f;\n  bool valid = !rail\
+      \ && lo >= 250 && hi <= 1500 && hi - lo <= 30;\n  if (!valid || (enabled && uint32_t(millis() - enabledAt)\
+      \ >= ENABLE_MS)) {\n    enabled = false; off();\n  }\n  if (!enabled) off();\n  else {\n    if (!relayOn\
+      \ && pinMv >= ON_MV) relayOn = true;\n    else if (relayOn && pinMv <= OFF_MV) relayOn = false;\n   \
+      \ digitalWrite(RELAY_PIN, relayOn ? HIGH : LOW);\n  }\n  Serial.printf(\"raw_counts=%.1f ADC_pin_mV_est=%.1f\
+      \ input=%s enabled=%s command=%s\\n\",\n    rawSum / 16.0f, pinMv, valid ? \"screened\" : \"INVALID\"\
+      ,\n    enabled ? \"yes\" : \"no\", relayOn ? \"ON\" : \"OFF\");\n  delay(100); // Acquisition + reporting\
+      \ delay: not an exact sampling period.\n}\n"
+    code_filename: esp32-machine-monitoring-node.ino
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 1
 import_source: esp32-machine-monitoring-node-with-mobile-alerts-project-002.html
 format: golden
 project:
-  icon: PROJ
-  mission_title: Build a Machine Monitoring Node
+  icon: ADC
+  mission_title: ESP32 Threshold-to-Relay Bench Lesson
   difficulty: Intermediate
   age: Ages 13+
-  estimated_time: 90-120 min
-  budget: Under 25 USD
-  what_you_build: A bench-safe monitor that reads an analog current-sensor signal on ADC1 GPIO35 and drives a low-voltage
-    relay module input from GPIO19.
-  story: Industrial monitoring starts by measuring one signal and proving one output. GPIO35 is input-only and belongs to
-    ADC1, while GPIO19 controls the relay module input; the ESP32 pin never powers the relay coil or machine load. The component
-    list, wiring table, GPIO map, code constants, expected output, troubleshooting, and FAQ now describe the same bench build
-    so a learner can verify each step instead of guessing.
-  eli12: The sensor makes a number that changes when current changes. If the number is higher than the threshold, GPIO19 tells
-    the relay module input to switch. Prove the local wiring and code first, then add displays, logging, or Wi-Fi after the
-    simple version behaves exactly as expected.
-  parent_safety: Use only low-voltage demo loads unless a qualified adult handles the relay side; never place mains or machine
-    wiring on a breadboard. Unplug USB and any external supply before rewiring, keep the build low-voltage on the bench, and
-    stop immediately if a module becomes hot or behaves unexpectedly.
-  learning_objectives:
-  - Wire the exact GPIO pins used by the sketch.
-  - Run the starter code and compare output with the wiring table.
-  - Explain the main sensor or input signal in plain language.
-  - Troubleshoot one wiring mistake using Serial Monitor evidence.
+  estimated_time: Setup time varies
+  budget: Parts cost varies
+  tutorial_flow: true
+  safety_badge: Low-voltage LED demonstration — unverified hardware
+  what_you_build: A potentiometer simulates a changing signal. The ESP32 screens its divided ADC input and
+    applies two thresholds to an explicitly supported relay controlling only a separate battery/LED circuit.
+    The historical machine-monitoring URL is retained; no current sensor, real machine, cloud sync, protective
+    trip or maintenance diagnosis is implemented.
+  eli12: Two thresholds prevent a small change from repeatedly toggling the relay. An enable command allows
+    a short demonstration; it is not a physical emergency stop.
+  assumptions: Classic ESP32-WROOM-32/32E DevKit, Arduino IDE 2.x and Arduino-ESP32 3.3.2 review baseline;
+    built-in ADC/GPIO only, no external library. Free GPIO35 (ADC1 input only, no internal pulls) and GPIO19.
+    Not a pin map for S3/C3/C5. Identify the actual board 3V3 rail and verify 3.0–3.45 V before relying on
+    the bounds below.
+  parent_safety: Only the documented 3 V battery/LED contact circuit is supported. No mains, motors, real machines
+    or unattended operation. Remove all three power sources before rewiring. Software commands/timeouts and
+    normally-open contacts are not independent safety protection; welded contacts or hardware failure can leave
+    a load on.
   components:
-  - item: ESP32 DevKit board
-    note: Reads ADC1 GPIO35 and controls GPIO19.
+  - item: Classic ESP32-WROOM-32/32E DevKit
+    note: USB power; exposed GPIO35 and GPIO19; 3.3 V logic.
     link: /components/esp32-devkit.html
-  - item: Analog current sensor module
-    note: Provides the monitored analog signal within ESP32-safe limits.
-  - item: Relay module
-    note: Low-voltage demo output controlled from GPIO19; isolate real loads properly.
+  - item: 10 kΩ linear potentiometer
+    note: Outer terminals to board 3V3/GND; identify wiper with continuity/resistance while unpowered.
+  - item: 15 kΩ and 10 kΩ divider resistors, both 1%; 100 nF capacitor
+    note: One divider at GPIO35; additional 10 kΩ Signal pull-down at relay.
+    link: /components/through-hole-resistors.html
+  - item: Adafruit STEMMA Non-Latching Mini Relay 4409 and JST-PH 3-pin cable
+    note: Active HIGH. Other relay boards, including latching/active-LOW modules, are not substitutes.
     link: /components/relay-module.html
-  - item: Jumper wires
-    note: Keep signal wiring short and inspectable.
+  - item: External regulated 5 V relay supply rated at least 100 mA
+    note: Manufacturer coil draw about 50 mA; GPIO supplies signal only. Common ground, separate positive rails.
+  - item: Separate 3 V battery, red LED and 330 ohm resistor
+    note: Only supported contact-side load; no motor, machine, heater or mains.
+    link: /components/discrete-leds.html
+  - item: Breadboard, jumper leads and USB data cable
+    note: Keep contact-side battery circuit separate from control ground.
   bom:
-  - part: ESP32 DevKit board
-    qty: '1'
+  - part: Classic ESP32-WROOM-32/32E DevKit
+    qty: 1 set
     estimated_cost: Varies
-    notes: Reads ADC1 GPIO35 and controls GPIO19.
-  - part: Analog current sensor module
-    qty: '1'
+    notes: USB power; exposed GPIO35 and GPIO19; 3.3 V logic.
+  - part: 10 kΩ linear potentiometer
+    qty: 1 set
     estimated_cost: Varies
-    notes: Provides the monitored analog signal within ESP32-safe limits.
-  - part: Relay module
-    qty: '1'
+    notes: Outer terminals to board 3V3/GND; identify wiper with continuity/resistance while unpowered.
+  - part: 15 kΩ and 10 kΩ divider resistors, both 1%; 100 nF capacitor
+    qty: 1 set
     estimated_cost: Varies
-    notes: Low-voltage demo output controlled from GPIO19; isolate real loads properly.
-  - part: Jumper wires
-    qty: '1'
+    notes: One divider at GPIO35; additional 10 kΩ Signal pull-down at relay.
+  - part: Adafruit STEMMA Non-Latching Mini Relay 4409 and JST-PH 3-pin cable
+    qty: 1 set
     estimated_cost: Varies
-    notes: Keep signal wiring short and inspectable.
+    notes: Active HIGH. Other relay boards, including latching/active-LOW modules, are not substitutes.
+  - part: External regulated 5 V relay supply rated at least 100 mA
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Manufacturer coil draw about 50 mA; GPIO supplies signal only. Common ground, separate positive
+      rails.
+  - part: Separate 3 V battery, red LED and 330 ohm resistor
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Only supported contact-side load; no motor, machine, heater or mains.
+  - part: Breadboard, jumper leads and USB data cable
+    qty: 1 set
+    estimated_cost: Varies
+    notes: Keep contact-side battery circuit separate from control ground.
   wiring:
-    illustration_alt: ESP32 Machine Monitoring Node wiring diagram
-    summary: A bench-safe monitor that reads an analog current-sensor signal on ADC1 GPIO35 and drives a low-voltage relay
-      module input from GPIO19.
+    summary: USB powers the ESP32. Board 3V3 supplies only the potentiometer; its divided wiper reaches GPIO35.
+      A separate 5 V supply powers the identified relay with common control ground. GPIO19 commands Signal
+      with a pull-down. Relay COM/NO switches a separate 3 V battery/LED circuit.
+    full_size_link: true
+    illustration_alt: Logical GPIO35 potentiometer divider, GPIO19 active-HIGH STEMMA 4409 and separate 3 V
+      LED contact circuit; not physical pin order or tested hardware.
     steps:
-    - Unplug USB and any relay supply before rewiring.
-    - Connect the current sensor signal output to GPIO35.
-    - Connect the sensor VCC and GND according to the module label and ESP32-safe output requirements.
-    - Connect relay module IN to GPIO19.
-    - Connect relay module GND to ESP32 GND and provide the relay module supply required by the module.
-    - Reconnect power and test with Serial Monitor before attaching any real load.
+    - Disconnect USB, relay supply and LED battery before wiring. Verify actual connector and contact labels;
+      the diagram is logical, not physical pin order.
+    - Pot outer terminals → board 3V3/GND. Wiper → 15k → GPIO35 node; 10k and 100 nF separately node → GND.
+      Never use VIN/5V for the pot.
+    - STEMMA red Vin → separate regulated +5 V; black GND → supply negative and ESP32 GND. Never join external
+      +5 V with USB/DevKit positive rails.
+    - STEMMA white Signal → GPIO19; additional 10k Signal → common GND. Confirm model 4409, not a generic relay
+      input.
+    - Separate 3 V battery positive → COM; NO → 330 ohm → red LED anode; LED cathode → battery negative. NC
+      unused. Do not join this battery return to controller ground.
+    - Check circuit while unpowered, then power controller/relay together. Upload; open Serial Monitor at 115200.
+      Command starts OFF. Turn pot slowly; send E to enable for 10 seconds or X to disable.
   gpio_map:
-  - signal: Current sensor signal
-    esp32_pin: GPIO35
-    direction: Input
-    notes: ADC1 input-only pin; analogRead only.
-  - signal: Relay module IN
-    esp32_pin: GPIO19
-    direction: Output
-    notes: Logic control signal.
-  - signal: GND
-    esp32_pin: GND
-    direction: Ground
-    notes: Common reference.
-  circuit_explanation: GPIO35 reads the current-sensor signal. GPIO19 changes state when the reading exceeds THRESHOLD.
-  engineering_explanation: The sketch threshold is 1813 ADC counts from the imported source and must be calibrated. ADC1 is
-    used so later Wi-Fi logging avoids ADC2 conflicts.
+  - signal: Pot outer terminals
+    esp32_pin: Board 3V3 / GND
+    direction: Passive supply
+    notes: 10k linear pot, not VIN/5V. Verify wiper, do not assume connector position.
+  - signal: Divided pot wiper
+    esp32_pin: 15k → GPIO35; 10k and 100 nF node → GND
+    direction: ADC1 input only
+    notes: 1% divider resistors; no internal pull on GPIO35.
+  - signal: STEMMA 4409 Signal (white)
+    esp32_pin: GPIO19; 10k → GND
+    direction: Active-HIGH command
+    notes: HIGH commands COM–NO; LOW commands coil OFF. Not generic relay polarity.
+  - signal: STEMMA Vin / GND (red / black)
+    esp32_pin: External +5 V / common GND
+    direction: Control supply
+    notes: GPIO never powers the coil; do not join positive rails.
+  - signal: Relay COM / NO / NC
+    esp32_pin: No GPIO connection
+    direction: Battery LED contacts
+    notes: 3 V + to COM; NO to resistor/LED; cathode to battery −. NC unused.
   libraries:
-  - name: Arduino ESP32 core
-    note: Install ESP32 board support in Arduino IDE.
+  - text: Arduino-ESP32 3.3.2 built-in ADC/GPIO
+    note: Arduino.h only; no current-sensor, MQTT, OLED or relay library.
+  configuration: Use Serial Monitor at 115200; E enables or renews a 10-second window, X disables; newline
+    characters are ignored. Start with the LED circuit connected, not a real load. Valid input is screened
+    to 250–1500 mV with no rail samples and at most 30 mV span in a 16-sample window. These are lesson choices,
+    not certified sensor-fault detection. The lowest pot position deliberately rejects and disables. Re-enable
+    with E after a rejected window or timeout.
   code:
     filename: esp32-machine-monitoring-node.ino
-    content: "// ESP32 Machine Monitoring Node for Plant Floor with Cloud Sync\nconst int SENSOR_PIN = 35;\nconst int OUTPUT_PIN\
-      \ = 19;\nconst int THRESHOLD = 1813;\nconst int SAMPLE_DELAY_MS = 300;\n\nvoid setup() {\n  Serial.begin(115200);\n\
-      \  pinMode(OUTPUT_PIN, OUTPUT);\n  pinMode(SENSOR_PIN, INPUT);\n  Serial.println(\"Starting: machine monitoring node\
-      \ for plant floor with cloud sync\");\n  Serial.print(\"Threshold: \");\n  Serial.println(THRESHOLD);\n}\n\nvoid loop()\
-      \ {\n  int reading = analogRead(SENSOR_PIN);\n  Serial.print(\"Current Sensor signal: \");\n  Serial.println(reading);\n\
-      \  bool active = reading < THRESHOLD;\n  digitalWrite(OUTPUT_PIN, active ? HIGH : LOW);\n  delay(SAMPLE_DELAY_MS);\n\
-      }"
-  code_explanation: SENSOR_PIN is GPIO35 and OUTPUT_PIN is GPIO19. loop() reads analog current, compares it with THRESHOLD,
-    switches the relay signal, and prints the reading.
-  expected_output: Serial Monitor prints current-sensor ADC readings about every 300 ms. Readings above 1813 turn GPIO19 on;
-    readings at or below 1813 turn it off.
+    content: "#include <Arduino.h>\n// Classic ESP32-WROOM DevKit; Arduino-ESP32 3.3.2 review baseline.\n//\
+      \ 10k linear potentiometer outer terminals: board 3V3 and GND.\n// Wiper -- 15k (1%) -- GPIO35 node;\
+      \ 10k (1%) and 100 nF node to GND.\n// GPIO19 -> STEMMA 4409 Signal; 10k Signal to common GND.\nconstexpr\
+      \ uint8_t INPUT_PIN = 35, RELAY_PIN = 19;\nconstexpr uint32_t ENABLE_MS = 10000;\nconstexpr float ON_MV\
+      \ = 900, OFF_MV = 650;\nbool enabled = false, relayOn = false;\nuint32_t enabledAt = 0;\nvoid off() {\
+      \ relayOn = false; digitalWrite(RELAY_PIN, LOW); }\nvoid setup() {\n  digitalWrite(RELAY_PIN, LOW);\n\
+      \  pinMode(RELAY_PIN, OUTPUT);\n  off();\n  Serial.begin(115200);\n  analogReadResolution(12);\n  analogSetPinAttenuation(INPUT_PIN,\
+      \ ADC_11db);\n  Serial.println(\"Potentiometer/LED bench lesson only; no machine or current measurement\"\
+      );\n  Serial.println(\"E enables for 10 seconds; X disables. Use Serial Monitor at 115200.\");\n}\nvoid\
+      \ loop() {\n  while (Serial.available()) {\n    char c = Serial.read();\n    if (c == 'x' || c == 'X')\
+      \ { enabled = false; off(); }\n    if (c == 'e' || c == 'E') { enabled = true; enabledAt = millis();\
+      \ }\n  }\n  uint32_t sum = 0, rawSum = 0, lo = 100000, hi = 0;\n  bool rail = false;\n  for (int i =\
+      \ 0; i < 16; ++i) {\n    uint16_t raw = analogRead(INPUT_PIN);\n    uint32_t mv = analogReadMilliVolts(INPUT_PIN);\n\
+      \    rawSum += raw; sum += mv;\n    if (raw <= 16 || raw >= 4079) rail = true;\n    if (mv < lo) lo =\
+      \ mv;\n    if (mv > hi) hi = mv;\n    delay(2);\n  }\n  float pinMv = sum / 16.0f;\n  bool valid = !rail\
+      \ && lo >= 250 && hi <= 1500 && hi - lo <= 30;\n  if (!valid || (enabled && uint32_t(millis() - enabledAt)\
+      \ >= ENABLE_MS)) {\n    enabled = false; off();\n  }\n  if (!enabled) off();\n  else {\n    if (!relayOn\
+      \ && pinMv >= ON_MV) relayOn = true;\n    else if (relayOn && pinMv <= OFF_MV) relayOn = false;\n   \
+      \ digitalWrite(RELAY_PIN, relayOn ? HIGH : LOW);\n  }\n  Serial.printf(\"raw_counts=%.1f ADC_pin_mV_est=%.1f\
+      \ input=%s enabled=%s command=%s\\n\",\n    rawSum / 16.0f, pinMv, valid ? \"screened\" : \"INVALID\"\
+      ,\n    enabled ? \"yes\" : \"no\", relayOn ? \"ON\" : \"OFF\");\n  delay(100); // Acquisition + reporting\
+      \ delay: not an exact sampling period.\n}\n"
+  code_explanation: Raw counts and calibrated ADC-pin mV estimates come from separate conversions, not a simultaneous
+    measurement. Startup is disabled/OFF. While enabled, input >=900 mV commands HIGH/ON; <=650 mV commands
+    LOW/OFF; between those boundaries retains the prior state. X, invalid screening or elapsed 10 seconds commands
+    OFF and clears enable. E can allow ON at the next valid sample when input is already high; there is no
+    mechanical interlock. The finite sampling loop and report delay mean commands/timeouts are not instantaneous.
+  circuit_explanation: For model 4409 only, 3.3 V GPIO19 is an accepted HIGH signal; the relay board contains
+    its own driver. External 5 V powers the coil; Signal has an external 10k pull-down during high-impedance
+    reset. The LED battery is on COM/NO, so it is normally open with the coil off; this does not guarantee
+    fail-safe behavior. This lesson is not permission to substitute unidentified 5 V-pulled or active-LOW modules.
+  engineering_explanation: Vpin = Vwiper × Rbottom/(Rtop+Rbottom). Nominal 15k/10k ratio is 0.4; the 1% maximum
+    ratio is 10.1/(14.85+10.1)=0.40481. With a verified board rail no higher than 3.45 V, maximum pin voltage
+    is approximately 1.3966 V. Pot resistance/loading changes the wiper response, so angle is not a calibrated
+    voltage scale. Classic ESP32 11 dB usable measurement range is about 150–3100 mV, separate from 3.3 V logic
+    and supply ratings. The lesson rejects below 250 mV instead of estimating accurately near zero. A divider
+    calculation is not transient protection, ADC accuracy or physical electrical validation. A disconnected
+    wiper is pulled down, but an in-range stuck signal can pass. Hysteresis thresholds are arbitrary demonstration
+    values, not current, machine-health or protective-trip settings.
+  expected_output: 'Prospective behavior, not observed hardware results: Serial reports raw counts, estimated
+    ADC-pin mV, input screen, enable and command. Without E, command remains OFF. With E and a valid input
+    >=900 mV it becomes ON; <=650 mV becomes OFF; the interval keeps state. Invalid input, X or timeout commands
+    OFF. Actual contact/LED operation has not been tested; do not equate a printed ON with verified contacts.'
   common_mistakes:
-  - text: Trying to use GPIO35 as an output.
-  - text: Assuming 1813 is calibrated for every sensor.
-  - text: Connecting unsafe relay loads to a breadboard.
+  - text: Connecting a real machine or unidentified relay/current module.
+  - text: Using the pot wiper directly at a 5 V rail or joining USB/external positives.
+  - text: Treating E/X or timeout as an independent emergency stop.
   troubleshooting:
-  - problem: Relay chatters
-    fix: Calibrate with real readings and add hysteresis before using the output.
-  - problem: Reading is always 0 or 4095
-    fix: Check sensor power, signal range, and GPIO35 wiring.
-  - problem: Relay never switches
-    fix: Confirm relay IN is on GPIO19 and the module has its required supply.
+  - problem: Command stays OFF
+    fix: Read input/enable states. E is required; reject states or a low pot position disable the window. Do
+      not bypass screening.
+  - problem: Command and LED disagree
+    fix: Remove all power; identify 4409 and COM/NO labels, LED polarity, battery and resistor. A printed command
+      is not contact feedback.
+  - problem: Repeated invalid/noisy input
+    fix: Power off; verify pot wiper, ground, divider and capacitor. Record diagnostics; do not treat a software
+      range test as proof of electrical safety.
   testing_checklist:
-  - Upload the sketch with only the documented circuit attached.
-  - Open Serial Monitor and confirm the expected messages.
-  - Move or trigger the input and watch the output change.
-  - Power-cycle the project and confirm it starts safely.
+  - Documentation/API and numerical review only; no compilation or hardware results supplied.
+  - Use only the specified LED circuit; record actual signal, commanded state and observed LED separately.
+  - Check disabled startup, upper/lower thresholds, deadband, X, low-input rejection and timeout.
   engineer_tips:
-  - Change one variable at a time.
-  - Keep wires short and labeled while testing.
-  - Record any calibrated threshold before installing the project.
+  - Keep module supply separate from signal levels.
+  - Record expected behavior separately from observed results.
   upgrade_ideas:
-  - Add hysteresis and averaging.
-  - Publish calibrated readings to MQTT.
-  - Add an OLED status screen.
+  - A real current-sensor interface requires a separately documented transfer function, voltage limits, wiring
+    and calibration.
+  - Cloud, OLED and protective functions are not implemented here.
   real_world_applications:
-  - Classroom lab build
-  - Bench prototype
-  - Local ESP32 learning project
+  - Classroom state-machine and hysteresis lesson
   related_guides:
-  - title: What is ESP32?
-    href: /guides/what-is-esp32.html
-    description: Review ESP32 pins, power, Wi-Fi, and the beginner wiring rules used by this build.
-  - title: Mission 01 - Blink LED
-    href: /guides/blink-led-esp32.html
-    description: Confirm uploads and simple GPIO behavior before adding sensors, storage, or displays.
+  - title: Reading Analog Sensors
+    href: /guides/reading-analog-sensors.html
+    description: Separate raw counts, calibrated ADC mV and physical measurements.
   related_projects:
-  - title: ESP32 MQTT Sensor Dashboard
-    href: /projects/esp32-mqtt-sensor-dashboard.html
-    description: Send verified sensor readings to a dashboard after local testing.
+  - title: ESP32 Sound-Triggered Relay Demo
+    href: /projects/esp32-voice-controlled-relay.html
+    description: Another explicitly supported low-voltage LED relay demonstration.
   faqs:
-  - question: Why use GPIO35?
-    answer: GPIO35 is ADC1 input-only, which is appropriate for analog monitoring.
-  - question: Can this switch mains equipment?
-    answer: Only with proper relay ratings, enclosure, strain relief, fusing, and qualified supervision.
-  - question: Is 1813 universal?
-    answer: No. It is a starter threshold that must be calibrated.
+  - question: Does this measure current or protect a machine?
+    answer: No. The potentiometer is a signal simulator and the load is a battery LED. No current measurement,
+      machinery wiring or independent protective function is implemented.
+  - question: Does LOW prove the contact is open?
+    answer: No. It is a software command; contact state needs independent observation and faults are not excluded.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Compare prospective states with separately recorded observations. No successful hardware operation
+      or safety validation is supplied.
     skills:
-    - Read the GPIO map
-    - Verify code against hardware
-    - Troubleshoot with Serial Monitor
+    - ADC screening
+    - Hysteresis
+    - Bounded manual enable
+    - Supply versus signal voltage
+  references:
+  - title: Adafruit STEMMA 4409 pinouts and active-HIGH contacts
+    href: https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/pinouts
+  - title: Adafruit STEMMA 4409 usage
+    href: https://learn.adafruit.com/adafruit-stemma-non-latching-mini-relay/usage
+  - title: Arduino-ESP32 3.3.2 ADC
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/docs/en/api/adc.rst
+  - title: Arduino-ESP32 3.3.2 GPIO API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/cores/esp32/esp32-hal-gpio.h
