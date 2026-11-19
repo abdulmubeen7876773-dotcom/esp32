@@ -1,19 +1,21 @@
 slug: esp32-lightning-detector
-title: "ESP32 Lightning Detector: AS3935 Sensor Demo"
+title: 'ESP32 Lightning Detector: AS3935 Sensor Demo'
 category: Environmental
-image_alt: ESP32 lightning detector demo with AS3935 sensor module and alert display
+image_alt: Illustrative AS3935 sensor lesson, not a photograph or recorded working build
 og_image: /assets/images/og/esp32-lightning-detector.webp
 hero_image: /assets/images/generated/esp32-lightning-detector.webp
 featured_image: /assets/images/generated/esp32-lightning-detector.webp
 image: /assets/images/generated/esp32-lightning-detector.webp
-description: Build an ESP32 AS3935 lightning sensor demo that classifies noise, disturber, and lightning-like events while explaining tuning and storm-safety limits.
-meta_description: Build an ESP32 AS3935 lightning sensor demo with SPI wiring, interrupt handling, OLED output, noise/disturber classification, and official-alert safety limits.
+description: An indoor SPI sensor lesson using the SparkFun SEN-15441 v2.0, Serial diagnostics and an optional OLED.
+  No storm-warning or verified-distance claim.
+meta_description: Connect a SparkFun SEN-15441 AS3935 board to classic ESP32 over SPI. Log noise and lightning-like
+  events, handle distance codes, and add an optional SSD1306.
 source_base: esp32-lightning-detector-legacy-import
 sensor: AS3935 CS
 output: OLED SDA/SCL
 featured: false
 date_published: '2026-06-14'
-date_modified: '2026-06-27'
+date_modified: '2026-11-19'
 quality_status: golden_tutorial
 status: needs_polish
 import_tier: 4
@@ -24,94 +26,139 @@ hardware:
   sensor_name: AS3935 CS
   output_name: OLED SDA/SCL
   wiring:
-  - component: AS3935 CS
+  - component: Sensor 3V3 / GND
+    pin: 3V3 / GND
+  - component: Sensor CS
     pin: GPIO5
-  - component: AS3935 SCK
-    pin: GPIO18
-  - component: AS3935 MOSI
-    pin: GPIO23
-  - component: AS3935 MISO
-    pin: GPIO19
-  - component: AS3935 IRQ
-    pin: GPIO4
-  - component: Event LED
+  - component: Sensor SCK / MOSI
+    pin: GPIO18 / GPIO23
+  - component: Sensor MISO / IRQ
+    pin: GPIO19 / GPIO4
+  - component: Red LED
     pin: GPIO26
-  - component: OLED SDA/SCL
-    pin: GPIO21/GPIO22
+  - component: Optional OLED
+    pin: 3V3 / GND / GPIO21 / GPIO22
 levels:
   beginner:
     level: beginner
-    overview_html: <p>An AS3935 educational sensor demo that logs event types and displays lightning-like distance codes.
-      Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not go outside to test during
-      lightning.</p>
+    overview_html: <p>An AS3935 educational sensor demo that logs event types and displays lightning-like distance
+      codes. Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not go
+      outside to test during lightning.</p>
     components:
-    - ESP32 DevKit board
-    - AS3935 lightning sensor module
-    - SSD1306 OLED display
-    - Red LED and 220 ohm resistor
-    - Breadboard and jumper wires
+    - Classic ESP32-WROOM-32/32E DevKit
+    - SparkFun Lightning Detector SEN-15441, hardware v2.0
+    - Red LED, one 220–330 Ω series resistor and jumper wires
+    - USB data cable
+    - Optional 3.3 V-compatible 128×64 I2C SSD1306 module
     wiring:
-    - - AS3935 CS
+    - - Sensor 3V3 / GND
+      - 3V3 / GND
+      - Selected SEN-15441 v2.0 header; never 5 V in this exercise.
+    - - Sensor CS
       - GPIO5
-      - Keep stable during boot.
-    - - AS3935 SCK
-      - GPIO18
-      - VSPI clock.
-    - - AS3935 MOSI
-      - GPIO23
-      - ESP32 to sensor.
-    - - AS3935 MISO
-      - GPIO19
-      - Sensor to ESP32.
-    - - AS3935 IRQ
-      - GPIO4
-      - Interrupt event line.
-    - - Event LED
+      - Idle HIGH; classic boot strap, no external conflicting pull.
+    - - Sensor SCK / MOSI
+      - GPIO18 / GPIO23
+      - SPI bus at 2 MHz; library configures SPI mode 1.
+    - - Sensor MISO / IRQ
+      - GPIO19 / GPIO4
+      - IRQ active HIGH; code polls it, then waits 2 ms.
+    - - Red LED
       - GPIO26
-      - Series resistor required.
-    - - OLED SDA/SCL
-      - GPIO21/GPIO22
-      - Optional display.
+      - 220–330 Ω in series with anode; cathode to GND.
+    - - Optional OLED
+      - 3V3 / GND / GPIO21 / GPIO22
+      - USE_OLED=1 only; SDA21, SCL22, 3.3 V bus, no inferred pin order.
     key_concepts:
-    - The AS3935 reports event types through registers after raising IRQ. SPI reads classify noise, disturber, or lightning-like
-      events.
-    - Noise means the local electrical environment is too noisy, disturber means interference looked storm-like but was rejected,
-      and lightning-like means the chip accepted the pattern.
-    - Distance codes are estimates from the sensor algorithm, not exact strike distances. Indoor electronics can cause false positives.
-    applications: &id003
+    - The USB-powered ESP32 provides 3.3 V power and signal levels for the selected breakout. SPI carries register
+      operations; IRQ is a separate active-HIGH event notification. A LOW IRQ simply means no unread interrupt,
+      not evidence that no lightning exists. The optional display is another device on an independent I2C bus. The
+      logical map is not a physical pinout photograph.
+    - USE_OLED=0 excludes display dependencies and starts a Serial/LED-only lesson. With USE_OLED=1, the code separately
+      checks I2C startup, address ACK and framebuffer initialization. Any display failure leaves Serial operation
+      available; no drawing occurs unless initialization succeeded. A setup/read-back or oscillator-status failure
+      disables event processing until the reader corrects the wiring and resets. A successful setup does not continuously
+      detect every disconnection. Event names come from the pinned header; describeDistance maps special/undefined
+      codes without inventing kilometres.
+    applications: &id002
     - Weather-sensor education
     - Interrupt classification lesson
     - False-positive analysis demo
     troubleshooting:
-    - - AS3935 not found
-      - Check SPI wiring, chip select GPIO5, and 3.3 V power.
-    - - Frequent disturbers
-      - Move away from USB chargers, switching supplies, laptop power bricks, LED lamps, and long jumper wires; tune one setting at a time.
-    - - No events
-      - Confirm IRQ wiring and module library configuration with a register read example.
-    improvements: &id002
+    - - Compile error for event names
+      - Install SparkFun AS3935 1.4.9 and copy the whole revised sketch; it uses NOISE_TO_HIGH, DISTURBER_DETECT
+        and LIGHTNING from that header, not undefined example macros.
+    - - Setup/read-back failed
+      - Unplug USB, check exact board identity, SPI configuration, 3V3/GND and CS/SCK/MOSI/MISO labels. Reset after
+        corrections. beginSPI() alone is not a presence check.
+    - - Waiting for IRQ, no events
+      - Check GPIO4/IRQ and use the manufacturer register examples indoors. No event is expected on demand. Do not
+        create hazardous sparks, approach lightning or treat silence as sensor validation.
+    - - Frequent noise or disturbers
+      - Move the antenna away from the ESP32, USB supplies, LED lamps and switching electronics; shorten wiring.
+        Keep disturbers visible and change one documented threshold at a time. Do not assume every accepted event
+        is lightning.
+    - - Distance says out of range or no valid distance
+      - Keep the status label. Code 63 is not 63 km and code 1 is an overhead status, not a precise 1 km measurement.
+        Do not substitute a plausible value.
+    - - Optional OLED remains blank
+      - First get Serial-only operation with USE_OLED=0. With USE_OLED=1, confirm controller/dimensions, 3.3 V power
+        and bus pull-ups, SDA21/SCL22, address and pinned libraries. An ACK or begin success does not prove visible
+        pixels.
+    - - Board does not boot with sensor attached
+      - Disconnect power and inspect the GPIO5 CS connection and reset pulls. Do not substitute an unknown breakout
+        or move connections on a powered board.
+    improvements: &id001
     - Add local timestamp logging.
     - Add a display page for event counts.
     - Compare indoor noise floor settings.
-    code: "// ESP32 AS3935 educational lightning sensor demo\n// Not a life-safety warning system. Follow official weather\
-      \ alerts.\n#include <SPI.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <SparkFun_AS3935.h>\n\nconst\
-      \ int AS3935_CS = 5;\nconst int AS3935_IRQ = 4;\nconst int LED_PIN = 26;\n\nSparkFun_AS3935 lightning(AS3935_CS);\n\
-      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nvolatile bool eventFlag = false;\n\nvoid IRAM_ATTR onAs3935Event() {\n\
-      \  eventFlag = true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  SPI.begin(18, 19, 23, AS3935_CS);\n\
-      \  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(LED_PIN, OUTPUT);\n  pinMode(AS3935_IRQ,\
-      \ INPUT);\n\n  if (!lightning.beginSPI(AS3935_CS, 2000000)) {\n    Serial.println(\"AS3935 not found. Check SPI wiring\
-      \ and 3.3 V power.\");\n    while (true) delay(10);\n  }\n\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.maskDisturber(false);\n\
-      \  lightning.setNoiseLevel(2);\n  lightning.spikeRejection(2);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),\
-      \ onAs3935Event, RISING);\n\n  Serial.println(\"AS3935 demo ready. Do not test outdoors during storms.\");\n}\n\nvoid\
-      \ loop() {\n  if (!eventFlag) return;\n  eventFlag = false;\n  delay(5);\n\n  int type = lightning.readInterruptReg();\n\
-      \  if (type == NOISE_INT) {\n    Serial.println(\"Noise event. Move the sensor away from electronics or raise noise\
-      \ level.\");\n  } else if (type == DISTURBER_INT) {\n    Serial.println(\"Disturber event. Electrical interference,\
-      \ not confirmed lightning.\");\n  } else if (type == LIGHTNING_INT) {\n    int distanceKm = lightning.distanceToStorm();\n\
-      \    Serial.print(\"Lightning-like event. AS3935 distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
-      \ km. Not a verified strike distance.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
-      \ LOW);\n\n    oled.clearDisplay();\n    oled.setTextSize(1);\n    oled.setCursor(0, 0);\n    oled.println(\"Lightning-like\
-      \ event\");\n    oled.print(\"Distance code: \");\n    oled.print(distanceKm);\n    oled.println(\" km\");\n    oled.println(\"\
-      Use official alerts\");\n    oled.display();\n  }\n}\n"
+    code: "#include <Arduino.h>\n#include <SPI.h>\n#include <SparkFun_AS3935.h>\n// Classic ESP32-WROOM DevKit;\
+      \ Arduino-ESP32 3.3.2 review baseline.\n// SparkFun SEN-15441 v2.0 in SPI mode; SparkFun AS3935 library 1.4.9.\n\
+      // Indoor educational demo only. Not a storm warning or verified distance.\n#define USE_OLED 0 // Set to 1\
+      \ only with the optional SSD1306 circuit/libraries.\n#if USE_OLED\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\nconstexpr uint8_t OLED_ADDRESS = 0x3C; // Check the documented\
+      \ module/address.\nbool oledReady = false;\n#endif\nconstexpr uint8_t AS3935_CS = 5, AS3935_IRQ = 4, LED_PIN\
+      \ = 26;\nSparkFun_AS3935 lightning; // Default constructor is for SPI, not an I2C address.\nbool sensorReady\
+      \ = false, ledOn = false;\nuint32_t ledAt = 0, lastIdle = 0;\n\nvoid displayStatus(const char* text) {\n#if\
+      \ USE_OLED\n  if (!oledReady) return;\n  oled.clearDisplay();\n  oled.setTextSize(1);\n  oled.setTextColor(SSD1306_WHITE);\n\
+      \  oled.setCursor(0, 0);\n  oled.println(text);\n  oled.println(\"Educational only\");\n  oled.println(\"\
+      Use official alerts\");\n  oled.display();\n#endif\n}\n\nvoid startOptionalDisplay() {\n#if USE_OLED\n  if\
+      \ (!Wire.begin(21, 22)) {\n    Serial.println(\"OLED I2C setup failed; continuing Serial-only.\");\n    return;\n\
+      \  }\n  Wire.beginTransmission(OLED_ADDRESS);\n  if (Wire.endTransmission() != 0) {\n    Serial.println(\"\
+      No OLED address ACK; continuing Serial-only.\");\n    return;\n  }\n  // An ACK is not controller identification;\
+      \ begin() is not visible-pixel proof.\n  oledReady = oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true,\
+      \ false);\n  if (!oledReady) Serial.println(\"OLED buffer/init failed; continuing Serial-only.\");\n#endif\n\
+      }\n\nbool startSensor() {\n  if (!SPI.begin(18, 19, 23, AS3935_CS)) return false;\n  // In library 1.4.9 beginSPI()\
+      \ configures the bus; it does NOT detect a chip.\n  if (!lightning.beginSPI(AS3935_CS, 2000000, SPI)) return\
+      \ false;\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.setNoiseLevel(2);\n  lightning.watchdogThreshold(2);\n\
+      \  lightning.spikeRejection(2);\n  lightning.maskDisturber(false);\n  lightning.lightningThreshold(1);\n \
+      \ if (lightning.readIndoorOutdoor() != INDOOR ||\n      lightning.readNoiseLevel() != 2 || lightning.readWatchdogThreshold()\
+      \ != 2 ||\n      lightning.readSpikeRejection() != 2 || lightning.readMaskDisturber() != 0 ||\n      lightning.readLightningThreshold()\
+      \ != 1) return false;\n  // Internal RC-oscillator status only; no antenna tuning or distance validation.\n\
+      \  return lightning.calibrateOsc();\n}\n\nvoid describeDistance(uint8_t code, char* text, size_t capacity)\
+      \ {\n  switch (code) {\n    case 1: snprintf(text, capacity, \"Chip reports overhead\"); return;\n    case\
+      \ 63: snprintf(text, capacity, \"Distance out of range\"); return;\n    case 5: case 6: case 8: case 10: case\
+      \ 12: case 14: case 17:\n    case 20: case 24: case 27: case 31: case 34: case 37: case 40:\n      snprintf(text,\
+      \ capacity, \"Storm-front estimate: %u km\", unsigned(code)); return;\n    default: snprintf(text, capacity,\
+      \ \"No valid distance (code %u)\", unsigned(code));\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n \
+      \ digitalWrite(LED_PIN, LOW);\n  pinMode(LED_PIN, OUTPUT);\n  pinMode(AS3935_IRQ, INPUT);\n  startOptionalDisplay();\n\
+      \  sensorReady = startSensor();\n  Serial.println(sensorReady ? \"AS3935 setup checks passed; listening indoors.\"\
+      \ :\n    \"AS3935 setup/read-back failed; events disabled. Power off and check wiring.\");\n  Serial.println(\"\
+      No independent chip, antenna or lightning-detection verification.\");\n  displayStatus(sensorReady ? \"Listening\
+      \ for IRQ\" : \"Sensor setup failed\");\n}\n\nvoid loop() {\n  const uint32_t now = millis();\n  if (ledOn\
+      \ && uint32_t(now - ledAt) >= 100) {\n    digitalWrite(LED_PIN, LOW);\n    ledOn = false;\n  }\n  if (uint32_t(now\
+      \ - lastIdle) >= 5000) {\n    lastIdle = now;\n    Serial.println(sensorReady ? \"Waiting for IRQ; silence\
+      \ does not mean no storm.\" :\n      \"Events disabled; correct wiring and reset after power-off inspection.\"\
+      );\n  }\n  if (!sensorReady || digitalRead(AS3935_IRQ) != HIGH) {\n    delay(5);\n    return;\n  }\n  delay(2);\
+      \ // Datasheet: wait at least 2 ms after IRQ before reading its register.\n  const uint8_t type = lightning.readInterruptReg();\
+      \ // Also clears the IRQ latch.\n  if (type == NOISE_TO_HIGH) {\n    Serial.println(\"Noise floor exceeded;\
+      \ no lightning or distance confirmation.\");\n    displayStatus(\"Noise floor exceeded\");\n  } else if (type\
+      \ == DISTURBER_DETECT) {\n    Serial.println(\"Disturber rejected; not confirmed lightning.\");\n    displayStatus(\"\
+      Disturber rejected\");\n  } else if (type == LIGHTNING) {\n    char text[48];\n    describeDistance(lightning.distanceToStorm(),\
+      \ text, sizeof(text));\n    Serial.print(\"Lightning-like event. \");\n    Serial.println(text);\n    Serial.println(\"\
+      Sensor report only; not a verified strike or safety radius.\");\n    digitalWrite(LED_PIN, HIGH);\n    ledOn\
+      \ = true;\n    ledAt = millis();\n    displayStatus(text);\n  } else {\n    Serial.printf(\"Other IRQ code\
+      \ 0x%02X; no new distance result.\\n\", unsigned(type));\n  }\n}\n"
     code_filename: esp32-lightning-detector-beginner.ino
 related_slugs:
 - esp32-uv-index-monitor
@@ -127,7 +174,8 @@ project:
   estimated_time: 75-90 min
   budget: Under 40 USD
   adult_supervision: Adult supervision required; do not test outdoors during storms.
-  classroom_use: Use the project indoors as a sensor-classification, tuning, and false-positive discussion, not as a storm alert.
+  classroom_use: Use the project indoors as a sensor-classification, tuning, and false-positive discussion, not
+    as a storm alert.
   parent_prompt: Ask why official weather alerts matter more than a hobby sensor.
   screen_free_activity: Draw noise, disturber, and lightning-like event categories.
   skills_practiced:
@@ -135,7 +183,7 @@ project:
   - Interrupt handling
   - Noise classification
   - Safety limitations
-  learning_outcomes: &id001
+  learning_outcomes:
   - Wire AS3935 SPI on GPIO5/GPIO18/GPIO23/GPIO19.
   - Use GPIO4 as the interrupt input.
   - Distinguish noise, disturber, and lightning-like events.
@@ -145,120 +193,204 @@ project:
   - Move the module away from power supplies.
   - Log event types without storm claims.
   next_challenge: Add timestamped local logging after the sensor is stable indoors.
-  what_you_build: An ESP32 AS3935 educational lightning sensor demo that classifies noise, disturber, and lightning-like events, flashes an LED for lightning-like events, and displays distance codes on an OLED.
-  story: This is a technically honest lightning-sensor lesson. It is not weather forecasting, protection equipment, or a certified alert device.
-  eli12: Lightning makes radio noise. The AS3935 listens for patterns like that, but other electronics can also make noise,
-    so the ESP32 labels what the chip reports.
-  parent_safety: Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not go outside
-    to test during lightning. Use the project as an indoor bench lesson, and unplug USB and external power before rewiring.
+  what_you_build: An indoor classic ESP32-WROOM / SparkFun SEN-15441 v2.0 SPI lesson. The default sketch logs noise,
+    disturber and lightning-like events in Serial Monitor and flashes a low-current LED for a lightning-like report.
+    Set USE_OLED to 1 only after adding the documented optional SSD1306 circuit and libraries. This is not storm
+    protection or a verified strike detector.
+  story: Start with a known SPI breakout and inspect what its registers report. This lesson distinguishes successful
+    interface setup, sensor-generated event codes and independent evidence of lightning. None of those can be inferred
+    from a website build or a simulated output.
+  eli12: Lightning makes radio noise. The AS3935 listens for patterns like that, but other electronics can also
+    make noise, so the ESP32 labels what the chip reports.
+  parent_safety: Do not rely on this for storm safety. Follow official weather alerts and local guidance. Do not
+    go outside to test during lightning. Use the project as an indoor bench lesson, and unplug USB and external
+    power before rewiring.
   safety_standards:
   - Follow official weather alerts and local guidance for storm decisions; this hobby circuit is educational only.
   - Do not go outdoors, handle antennas, or move wiring during thunder or lightning.
-  - Keep the AS3935, ESP32, OLED, and LED on low-voltage bench power. Unplug USB before changing SPI, IRQ, OLED, or LED wiring.
-  learning_objectives: *id001
+  - Keep the AS3935, ESP32, OLED, and LED on low-voltage bench power. Unplug USB before changing SPI, IRQ, OLED,
+    or LED wiring.
+  learning_objectives:
+  - Wire the selected SEN-15441 v2.0 board to the named classic ESP32 GPIOs.
+  - Use the pinned library event identifiers and poll its active-HIGH IRQ line.
+  - Check configuration read-back without calling that chip identification or detection validation.
+  - Distinguish valid storm-front distance bins, overhead, out-of-range and undefined codes.
+  - Keep the optional OLED separate from Serial-only operation and handle display startup failure.
   components:
-  - item: ESP32 DevKit board
-    note: USB-programmable ESP32 board for the low-voltage logic side.
+  - item: Classic ESP32-WROOM-32/32E DevKit
+    note: Arduino-ESP32 3.3.2 review baseline; free GPIO5/18/23/19/4/26. This is not an S3/C3/C5 pin map.
     link: /components/esp32-devkit.html
-  - item: AS3935 lightning sensor module
-    note: SPI-capable module powered at 3.3 V unless the breakout states otherwise.
-  - item: SSD1306 OLED display
-    note: Optional I2C status display on GPIO21/GPIO22.
+  - item: SparkFun Lightning Detector SEN-15441, hardware v2.0
+    note: Use its documented SPI configuration and 3V3/GND header. Qwiic/I2C variants and unknown AS3935 boards
+      are not drop-in substitutes.
+  - item: Red LED, one 220–330 Ω series resistor and jumper wires
+    note: GPIO26 to resistor to LED anode; LED cathode to GND. GPIO supplies this small indicator only.
+  - item: USB data cable
+    note: USB powers the ESP32; its 3V3 rail powers this low-current sensor lesson. No external 5 V supply.
+  - item: Optional 3.3 V-compatible 128×64 I2C SSD1306 module
+    note: Only with USE_OLED=1; four labelled pins, SDA21/SCL22, pull-ups to 3.3 V, address checked from its documentation/scanner.
     link: /components/ssd1306-oled.html
-  - item: Red LED and 220 ohm resistor
-    note: Event indicator on GPIO26.
-  - item: Breadboard and jumper wires
-    note: Keep sensor away from noisy power wiring.
   bom:
-  - part: ESP32 DevKit board
+  - part: Classic ESP32-WROOM-32/32E DevKit
     qty: '1'
-    estimated_cost: Varies
-    notes: USB-programmable ESP32 board for the low-voltage logic side.
-  - part: AS3935 lightning sensor module
+    estimated_cost: Check supplier
+    notes: Arduino-ESP32 3.3.2 review baseline; free GPIO5/18/23/19/4/26. This is not an S3/C3/C5 pin map.
+  - part: SparkFun Lightning Detector SEN-15441, hardware v2.0
     qty: '1'
-    estimated_cost: Varies
-    notes: SPI-capable module powered at 3.3 V unless the breakout states otherwise.
-  - part: SSD1306 OLED display
+    estimated_cost: Check supplier
+    notes: Use its documented SPI configuration and 3V3/GND header. Qwiic/I2C variants and unknown AS3935 boards
+      are not drop-in substitutes.
+  - part: Red LED, one 220–330 Ω series resistor and jumper wires
     qty: '1'
-    estimated_cost: Varies
-    notes: Optional I2C status display on GPIO21/GPIO22.
-  - part: Red LED and 220 ohm resistor
+    estimated_cost: Check supplier
+    notes: GPIO26 to resistor to LED anode; LED cathode to GND. GPIO supplies this small indicator only.
+  - part: USB data cable
     qty: '1'
-    estimated_cost: Varies
-    notes: Event indicator on GPIO26.
-  - part: Breadboard and jumper wires
+    estimated_cost: Check supplier
+    notes: USB powers the ESP32; its 3V3 rail powers this low-current sensor lesson. No external 5 V supply.
+  - part: Optional 3.3 V-compatible 128×64 I2C SSD1306 module
     qty: '1'
-    estimated_cost: Varies
-    notes: Keep sensor away from noisy power wiring.
+    estimated_cost: Check supplier
+    notes: Only with USE_OLED=1; four labelled pins, SDA21/SCL22, pull-ups to 3.3 V, address checked from its documentation/scanner.
   wiring:
-    illustration_alt: Build an Educational Lightning Sensor Demo wiring diagram
-    summary: AS3935 uses SPI CS GPIO5, SCK GPIO18, MOSI GPIO23, MISO GPIO19, and IRQ GPIO4. OLED uses I2C GPIO21/GPIO22.
+    image: /assets/visuals/projects/wiring/esp32-lightning-detector-wiring.svg
+    full_size_link: true
+    illustration_alt: Logical classic ESP32 to SparkFun SEN-15441 v2.0 SPI map, LED circuit and optional 3.3 V SSD1306;
+      not physical header order
+    summary: This map is for SparkFun SEN-15441 hardware v2.0 in SPI mode, powered through its 3V3 header from the
+      USB-powered classic ESP32 board. Read the real board labels; the drawing does not show physical connector
+      positions. Keep the antenna clear of wiring and noisy electronics.
     steps:
-    - Unplug USB before wiring.
-    - Connect AS3935 VCC to 3.3 V and GND to GND.
-    - Connect AS3935 CS to GPIO5, SCK to GPIO18, MOSI to GPIO23, and MISO to GPIO19.
-    - Connect AS3935 IRQ to GPIO4.
-    - Connect OLED SDA to GPIO21 and SCL to GPIO22.
-    - Connect the red LED through 220 ohm resistor to GPIO26.
+    - Disconnect USB before wiring. Confirm the exact SEN-15441 v2.0 board is in its documented SPI configuration;
+      do not adapt an unknown module or change jumpers while powered.
+    - Board 3V3 → sensor 3V3; board GND → sensor GND. No 5 V signal or power connection is used in this supported
+      exercise.
+    - 'GPIO5 → CS, GPIO18 → SCK, GPIO23 → MOSI, GPIO19 ← MISO, GPIO4 ← IRQ. IRQ is active HIGH; old silkscreen versions
+      may imply otherwise. GPIO5 is a classic strapping pin: do not add a reset-time pull-down or substitute a module
+      that holds it LOW.'
+    - GPIO26 → 220–330 Ω resistor → red LED anode; LED cathode → GND. Do not omit the resistor.
+    - 'Default USE_OLED=0: leave the display disconnected and install only the SparkFun library. For USE_OLED=1,
+      also connect the selected OLED VCC→3V3, GND→GND, SDA→21, SCL→22, with bus pull-ups only to 3.3 V. Set OLED_ADDRESS
+      to its documented/scanned 0x3C or 0x3D; an ACK does not identify the controller.'
+    - Select the matching classic ESP32 board, install the pinned libraries, upload the complete sketch and open
+      Serial Monitor at 115200. Keep the demonstration indoors; never go outdoors during a storm to create a test
+      event.
   gpio_map:
-  - signal: AS3935 CS
+  - signal: Sensor 3V3 / GND
+    esp32_pin: 3V3 / GND
+    direction: Power / ground
+    notes: Selected SEN-15441 v2.0 header; never 5 V in this exercise.
+  - signal: Sensor CS
     esp32_pin: GPIO5
-    direction: SPI chip select
-    notes: Keep stable during boot.
-  - signal: AS3935 SCK
-    esp32_pin: GPIO18
-    direction: SPI clock
-    notes: VSPI clock.
-  - signal: AS3935 MOSI
-    esp32_pin: GPIO23
-    direction: SPI MOSI
-    notes: ESP32 to sensor.
-  - signal: AS3935 MISO
-    esp32_pin: GPIO19
-    direction: SPI MISO
-    notes: Sensor to ESP32.
-  - signal: AS3935 IRQ
-    esp32_pin: GPIO4
+    direction: Output
+    notes: Idle HIGH; classic boot strap, no external conflicting pull.
+  - signal: Sensor SCK / MOSI
+    esp32_pin: GPIO18 / GPIO23
+    direction: Output
+    notes: SPI bus at 2 MHz; library configures SPI mode 1.
+  - signal: Sensor MISO / IRQ
+    esp32_pin: GPIO19 / GPIO4
     direction: Input
-    notes: Interrupt event line.
-  - signal: Event LED
+    notes: IRQ active HIGH; code polls it, then waits 2 ms.
+  - signal: Red LED
     esp32_pin: GPIO26
     direction: Output
-    notes: Series resistor required.
-  - signal: OLED SDA/SCL
-    esp32_pin: GPIO21/GPIO22
-    direction: I2C
-    notes: Optional display.
-  circuit_explanation: The AS3935 raises its IRQ pin when it has an event to report. The ESP32 then reads the interrupt register over SPI and classifies the event as noise, disturber, or lightning-like. Noise means the sensor floor is too noisy for a clean decision. Disturber means an electrical pulse looked storm-like but did not pass the chip's lightning checks. Lightning-like means the AS3935 algorithm accepted the pattern and can return a distance code.
-  engineering_explanation: Indoor and outdoor modes change the AS3935 analog front-end gain, so the same wiring can behave differently on a desk, near electronics, or outside under cover. Start indoors with disturbers unmasked so you can see interference instead of hiding it. Tune noise level and spike rejection one step at a time, record the false-positive rate, then decide whether the setting is too sensitive or too quiet. The distance value is a sensor code in kilometers from the AS3935 algorithm, not a verified strike location or a safety radius.
+    notes: 220–330 Ω in series with anode; cathode to GND.
+  - signal: Optional OLED
+    esp32_pin: 3V3 / GND / GPIO21 / GPIO22
+    direction: Power / I2C
+    notes: USE_OLED=1 only; SDA21, SCL22, 3.3 V bus, no inferred pin order.
+  circuit_explanation: The USB-powered ESP32 provides 3.3 V power and signal levels for the selected breakout. SPI
+    carries register operations; IRQ is a separate active-HIGH event notification. A LOW IRQ simply means no unread
+    interrupt, not evidence that no lightning exists. The optional display is another device on an independent I2C
+    bus. The logical map is not a physical pinout photograph.
+  engineering_explanation: 'In SparkFun library 1.4.9, beginSPI() returns true after configuring the interface;
+    it does not probe a chip. This sketch writes documented settings and compares their read-back values, then checks
+    the library internal RC-oscillator routine. A pass is only a setup sanity check: it neither proves chip identity,
+    antenna resonance, continued connection nor detection accuracy. Antenna tuning requires the manufacturer procedure
+    and suitable measurement equipment; this sketch does not choose a made-up tuning capacitance.
+
+
+    The AS3935 distance register describes estimated distance to the storm front, not an individually located strike.
+    Code 1 means the chip reports overhead; 63 means out of range. Only the datasheet-listed numeric bins are printed
+    in km; any other value is labelled no valid distance. Never convert these categories into an all-clear or a
+    safety radius.
+
+
+    The short loop polls IRQ instead of using an interrupt service routine. After HIGH, it waits 2 ms before reading
+    the interrupt register, which clears the latch. A zero/other code can occur without a new distance result. The
+    LED timer avoids a 100 ms blocking flash, but this is not a guaranteed lossless event recorder. Start with disturbers
+    unmasked. Change one setting at a time and record conditions; quieter output is not proof of improved accuracy.'
   libraries:
-  - name: SparkFun AS3935
-    note: Install SparkFun AS3935 Lightning Detector library.
-  - name: Adafruit SSD1306
-    note: For OLED output.
+  - name: Arduino-ESP32 3.3.2
+    note: Classic ESP32-WROOM review baseline, not a latest-release claim. Built-in SPI, GPIO and (optional) Wire.
+  - name: SparkFun AS3935 Lightning Detector Arduino Library 1.4.9
+    note: Install this version. SPI default constructor and NOISE_TO_HIGH / DISTURBER_DETECT / LIGHTNING identifiers
+      are from tag v1.4.9.
+  - name: 'Optional: Adafruit SSD1306 2.5.13, GFX 1.12.1, BusIO 1.17.0'
+    note: Needed only when USE_OLED=1; use a documented 3.3 V-compatible 128×64 I2C SSD1306. Documentation reviewed;
+      compilation and hardware testing unperformed.
   code:
     filename: esp32-lightning-detector.ino
-    content: "// ESP32 AS3935 educational lightning sensor demo\n// Not a life-safety warning system. Follow official weather\
-      \ alerts.\n#include <SPI.h>\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n#include <SparkFun_AS3935.h>\n\nconst\
-      \ int AS3935_CS = 5;\nconst int AS3935_IRQ = 4;\nconst int LED_PIN = 26;\n\nSparkFun_AS3935 lightning(AS3935_CS);\n\
-      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\n\nvolatile bool eventFlag = false;\n\nvoid IRAM_ATTR onAs3935Event() {\n\
-      \  eventFlag = true;\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  Wire.begin(21, 22);\n  SPI.begin(18, 19, 23, AS3935_CS);\n\
-      \  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  oled.setTextColor(WHITE);\n  pinMode(LED_PIN, OUTPUT);\n  pinMode(AS3935_IRQ,\
-      \ INPUT);\n\n  if (!lightning.beginSPI(AS3935_CS, 2000000)) {\n    Serial.println(\"AS3935 not found. Check SPI wiring\
-      \ and 3.3 V power.\");\n    while (true) delay(10);\n  }\n\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.maskDisturber(false);\n\
-      \  lightning.setNoiseLevel(2);\n  lightning.spikeRejection(2);\n  attachInterrupt(digitalPinToInterrupt(AS3935_IRQ),\
-      \ onAs3935Event, RISING);\n\n  Serial.println(\"AS3935 demo ready. Do not test outdoors during storms.\");\n}\n\nvoid\
-      \ loop() {\n  if (!eventFlag) return;\n  eventFlag = false;\n  delay(5);\n\n  int type = lightning.readInterruptReg();\n\
-      \  if (type == NOISE_INT) {\n    Serial.println(\"Noise event. Move the sensor away from electronics or raise noise\
-      \ level.\");\n  } else if (type == DISTURBER_INT) {\n    Serial.println(\"Disturber event. Electrical interference,\
-      \ not confirmed lightning.\");\n  } else if (type == LIGHTNING_INT) {\n    int distanceKm = lightning.distanceToStorm();\n\
-      \    Serial.print(\"Lightning-like event. AS3935 distance code: \");\n    Serial.print(distanceKm);\n    Serial.println(\"\
-      \ km. Not a verified strike distance.\");\n\n    digitalWrite(LED_PIN, HIGH);\n    delay(100);\n    digitalWrite(LED_PIN,\
-      \ LOW);\n\n    oled.clearDisplay();\n    oled.setTextSize(1);\n    oled.setCursor(0, 0);\n    oled.println(\"Lightning-like\
-      \ event\");\n    oled.print(\"Distance code: \");\n    oled.print(distanceKm);\n    oled.println(\" km\");\n    oled.println(\"\
-      Use official alerts\");\n    oled.display();\n  }\n}\n"
-  code_explanation: GPIO4 sets an event flag when the AS3935 raises IRQ. The loop waits for that flag, reads the AS3935 interrupt register over SPI, and handles three event types. NOISE_INT means the noise floor is too high. DISTURBER_INT means an electrical pulse resembled lightning but was rejected as interference. LIGHTNING_INT means the chip accepted the pattern and returns a distance code for display and logging.
-  expected_output: Serial Monitor reports noise, disturber, and lightning-like event categories. The LED flashes only on lightning-like events, and the OLED labels the distance as an AS3935 distance code rather than an exact strike location.
+    content: "#include <Arduino.h>\n#include <SPI.h>\n#include <SparkFun_AS3935.h>\n// Classic ESP32-WROOM DevKit;\
+      \ Arduino-ESP32 3.3.2 review baseline.\n// SparkFun SEN-15441 v2.0 in SPI mode; SparkFun AS3935 library 1.4.9.\n\
+      // Indoor educational demo only. Not a storm warning or verified distance.\n#define USE_OLED 0 // Set to 1\
+      \ only with the optional SSD1306 circuit/libraries.\n#if USE_OLED\n#include <Wire.h>\n#include <Adafruit_SSD1306.h>\n\
+      Adafruit_SSD1306 oled(128, 64, &Wire, -1);\nconstexpr uint8_t OLED_ADDRESS = 0x3C; // Check the documented\
+      \ module/address.\nbool oledReady = false;\n#endif\nconstexpr uint8_t AS3935_CS = 5, AS3935_IRQ = 4, LED_PIN\
+      \ = 26;\nSparkFun_AS3935 lightning; // Default constructor is for SPI, not an I2C address.\nbool sensorReady\
+      \ = false, ledOn = false;\nuint32_t ledAt = 0, lastIdle = 0;\n\nvoid displayStatus(const char* text) {\n#if\
+      \ USE_OLED\n  if (!oledReady) return;\n  oled.clearDisplay();\n  oled.setTextSize(1);\n  oled.setTextColor(SSD1306_WHITE);\n\
+      \  oled.setCursor(0, 0);\n  oled.println(text);\n  oled.println(\"Educational only\");\n  oled.println(\"\
+      Use official alerts\");\n  oled.display();\n#endif\n}\n\nvoid startOptionalDisplay() {\n#if USE_OLED\n  if\
+      \ (!Wire.begin(21, 22)) {\n    Serial.println(\"OLED I2C setup failed; continuing Serial-only.\");\n    return;\n\
+      \  }\n  Wire.beginTransmission(OLED_ADDRESS);\n  if (Wire.endTransmission() != 0) {\n    Serial.println(\"\
+      No OLED address ACK; continuing Serial-only.\");\n    return;\n  }\n  // An ACK is not controller identification;\
+      \ begin() is not visible-pixel proof.\n  oledReady = oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, true,\
+      \ false);\n  if (!oledReady) Serial.println(\"OLED buffer/init failed; continuing Serial-only.\");\n#endif\n\
+      }\n\nbool startSensor() {\n  if (!SPI.begin(18, 19, 23, AS3935_CS)) return false;\n  // In library 1.4.9 beginSPI()\
+      \ configures the bus; it does NOT detect a chip.\n  if (!lightning.beginSPI(AS3935_CS, 2000000, SPI)) return\
+      \ false;\n  lightning.setIndoorOutdoor(INDOOR);\n  lightning.setNoiseLevel(2);\n  lightning.watchdogThreshold(2);\n\
+      \  lightning.spikeRejection(2);\n  lightning.maskDisturber(false);\n  lightning.lightningThreshold(1);\n \
+      \ if (lightning.readIndoorOutdoor() != INDOOR ||\n      lightning.readNoiseLevel() != 2 || lightning.readWatchdogThreshold()\
+      \ != 2 ||\n      lightning.readSpikeRejection() != 2 || lightning.readMaskDisturber() != 0 ||\n      lightning.readLightningThreshold()\
+      \ != 1) return false;\n  // Internal RC-oscillator status only; no antenna tuning or distance validation.\n\
+      \  return lightning.calibrateOsc();\n}\n\nvoid describeDistance(uint8_t code, char* text, size_t capacity)\
+      \ {\n  switch (code) {\n    case 1: snprintf(text, capacity, \"Chip reports overhead\"); return;\n    case\
+      \ 63: snprintf(text, capacity, \"Distance out of range\"); return;\n    case 5: case 6: case 8: case 10: case\
+      \ 12: case 14: case 17:\n    case 20: case 24: case 27: case 31: case 34: case 37: case 40:\n      snprintf(text,\
+      \ capacity, \"Storm-front estimate: %u km\", unsigned(code)); return;\n    default: snprintf(text, capacity,\
+      \ \"No valid distance (code %u)\", unsigned(code));\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n \
+      \ digitalWrite(LED_PIN, LOW);\n  pinMode(LED_PIN, OUTPUT);\n  pinMode(AS3935_IRQ, INPUT);\n  startOptionalDisplay();\n\
+      \  sensorReady = startSensor();\n  Serial.println(sensorReady ? \"AS3935 setup checks passed; listening indoors.\"\
+      \ :\n    \"AS3935 setup/read-back failed; events disabled. Power off and check wiring.\");\n  Serial.println(\"\
+      No independent chip, antenna or lightning-detection verification.\");\n  displayStatus(sensorReady ? \"Listening\
+      \ for IRQ\" : \"Sensor setup failed\");\n}\n\nvoid loop() {\n  const uint32_t now = millis();\n  if (ledOn\
+      \ && uint32_t(now - ledAt) >= 100) {\n    digitalWrite(LED_PIN, LOW);\n    ledOn = false;\n  }\n  if (uint32_t(now\
+      \ - lastIdle) >= 5000) {\n    lastIdle = now;\n    Serial.println(sensorReady ? \"Waiting for IRQ; silence\
+      \ does not mean no storm.\" :\n      \"Events disabled; correct wiring and reset after power-off inspection.\"\
+      );\n  }\n  if (!sensorReady || digitalRead(AS3935_IRQ) != HIGH) {\n    delay(5);\n    return;\n  }\n  delay(2);\
+      \ // Datasheet: wait at least 2 ms after IRQ before reading its register.\n  const uint8_t type = lightning.readInterruptReg();\
+      \ // Also clears the IRQ latch.\n  if (type == NOISE_TO_HIGH) {\n    Serial.println(\"Noise floor exceeded;\
+      \ no lightning or distance confirmation.\");\n    displayStatus(\"Noise floor exceeded\");\n  } else if (type\
+      \ == DISTURBER_DETECT) {\n    Serial.println(\"Disturber rejected; not confirmed lightning.\");\n    displayStatus(\"\
+      Disturber rejected\");\n  } else if (type == LIGHTNING) {\n    char text[48];\n    describeDistance(lightning.distanceToStorm(),\
+      \ text, sizeof(text));\n    Serial.print(\"Lightning-like event. \");\n    Serial.println(text);\n    Serial.println(\"\
+      Sensor report only; not a verified strike or safety radius.\");\n    digitalWrite(LED_PIN, HIGH);\n    ledOn\
+      \ = true;\n    ledAt = millis();\n    displayStatus(text);\n  } else {\n    Serial.printf(\"Other IRQ code\
+      \ 0x%02X; no new distance result.\\n\", unsigned(type));\n  }\n}\n"
+  code_explanation: USE_OLED=0 excludes display dependencies and starts a Serial/LED-only lesson. With USE_OLED=1,
+    the code separately checks I2C startup, address ACK and framebuffer initialization. Any display failure leaves
+    Serial operation available; no drawing occurs unless initialization succeeded. A setup/read-back or oscillator-status
+    failure disables event processing until the reader corrects the wiring and resets. A successful setup does not
+    continuously detect every disconnection. Event names come from the pinned header; describeDistance maps special/undefined
+    codes without inventing kilometres.
+  expected_output: 'Illustrative expected behavior, not recorded observations: Serial at 115200 reports either setup
+    checks passed or setup/read-back failed. Every five seconds it prints a waiting or disabled diagnostic. Noise
+    and disturber reports do not print a distance. A lightning-like report may say Chip reports overhead, Distance
+    out of range, a listed storm-front estimate, or No valid distance. The LED flashes only for that report category,
+    not proof of a real strike. With USE_OLED=1 and successful display initialization, the OLED repeats the status
+    and Use official alerts. Silence is not an all-clear.'
   common_mistakes:
   - text: Treating the project as a life-safety warning system.
   - text: Testing outdoors during storms.
@@ -266,34 +398,45 @@ project:
   - text: Changing indoor/outdoor mode, noise level, and spike rejection all at once.
   - text: Claiming exact strike distance from the distance code.
   troubleshooting:
-  - problem: AS3935 not found
-    fix: Check SPI wiring, chip select GPIO5, and 3.3 V power.
-  - problem: Frequent disturbers
-    fix: Move the module away from USB chargers, switching supplies, laptop power bricks, LED lamps, appliance wiring, and long jumper wires. Keep disturbers unmasked while tuning so you can see the interference source.
-  - problem: Frequent noise events
-    fix: Shorten wiring, improve ground connections, move the antenna/module away from the ESP32 Wi-Fi antenna and power wiring, then raise the AS3935 noise level one step if needed.
-  - problem: Lightning-like events happen indoors with no storm nearby
-    fix: Treat them as false positives until compared with official weather information. Increase spike rejection one step, move away from noisy electronics, and log whether the event repeats.
-  - problem: No events
-    fix: Confirm IRQ wiring and module library configuration with a register read example.
-  - problem: Distance value seems wrong
-    fix: Treat distance as the AS3935 algorithm's distance code in kilometers, not a GPS location, exact range, or proof that a strike occurred.
+  - problem: Compile error for event names
+    fix: Install SparkFun AS3935 1.4.9 and copy the whole revised sketch; it uses NOISE_TO_HIGH, DISTURBER_DETECT
+      and LIGHTNING from that header, not undefined example macros.
+  - problem: Setup/read-back failed
+    fix: Unplug USB, check exact board identity, SPI configuration, 3V3/GND and CS/SCK/MOSI/MISO labels. Reset after
+      corrections. beginSPI() alone is not a presence check.
+  - problem: Waiting for IRQ, no events
+    fix: Check GPIO4/IRQ and use the manufacturer register examples indoors. No event is expected on demand. Do
+      not create hazardous sparks, approach lightning or treat silence as sensor validation.
+  - problem: Frequent noise or disturbers
+    fix: Move the antenna away from the ESP32, USB supplies, LED lamps and switching electronics; shorten wiring.
+      Keep disturbers visible and change one documented threshold at a time. Do not assume every accepted event
+      is lightning.
+  - problem: Distance says out of range or no valid distance
+    fix: Keep the status label. Code 63 is not 63 km and code 1 is an overhead status, not a precise 1 km measurement.
+      Do not substitute a plausible value.
+  - problem: Optional OLED remains blank
+    fix: First get Serial-only operation with USE_OLED=0. With USE_OLED=1, confirm controller/dimensions, 3.3 V
+      power and bus pull-ups, SDA21/SCL22, address and pinned libraries. An ACK or begin success does not prove
+      visible pixels.
+  - problem: Board does not boot with sensor attached
+    fix: Disconnect power and inspect the GPIO5 CS connection and reset pulls. Do not substitute an unknown breakout
+      or move connections on a powered board.
   testing_checklist:
-  - Verify SPI communication indoors.
-  - Confirm GPIO4 IRQ changes when the AS3935 reports an event.
-  - Log noise, disturber, and lightning-like categories separately.
-  - Change only one tuning setting at a time, then record whether false positives improve.
-  - Compare any lightning-like messages with official weather alerts without relying on the sensor.
+  - Check exact board identity, power and every named connection with USB disconnected.
+  - Keep USE_OLED=0 for the first Serial-only attempt; record board/core/library versions and setup diagnostics.
+  - If setup passes, record the configuration and actual observations separately; this is not a completed antenna
+    or detection calibration.
+  - Log any event categories indoors without treating test data as a weather alert. No storms, sparks or deliberate
+    high-voltage interference are part of this exercise.
+  - If adding OLED, check its address and initialization diagnostics independently of the sensor.
   engineer_tips:
-  - Keep antenna/module away from noisy electronics.
-  - Use INDOOR mode for bench testing and OUTDOOR mode only for protected, supervised experiments when conditions are safe.
-  - Start with disturbers visible, then mask them only if the lesson needs quieter output after tuning.
-  - Tune noise level and spike rejection separately so you know which change helped.
-  - Label distance as a sensor code in any display, log, or screenshot.
-  - Use official alerts for safety decisions.
-  - Document false positives instead of hiding them.
-  upgrade_ideas: *id002
-  real_world_applications: *id003
+  - Keep the antenna area clear; avoid nearby switching supplies and wiring.
+  - Use INDOOR for this bench example. Outdoor operation and weatherproofing are not implemented here.
+  - Keep noise and disturber reports visible while learning; suppressed messages do not prove a quieter electromagnetic
+    environment.
+  - Follow official weather warnings; do not use the hobby device for safety decisions.
+  upgrade_ideas: *id001
+  real_world_applications: *id002
   related_guides:
   - title: Digital Inputs and Floating Pins
     href: /guides/digital-inputs-floating-pins.html
@@ -320,15 +463,33 @@ project:
   - question: Can I test it in a storm?
     answer: No. Do not go outdoors during lightning.
   - question: What do AS3935 event types mean?
-    answer: Noise means the local electrical environment is too noisy, disturber means interference resembled lightning but was rejected, and lightning-like means the chip accepted the pattern.
+    answer: Noise means the local electrical environment is too noisy, disturber means interference resembled lightning
+      but was rejected, and lightning-like means the chip accepted the pattern.
   - question: Are distance readings exact?
-    answer: No. Treat them as AS3935 distance codes with false-positive limits, not verified strike distances.
+    answer: No. The chip estimates storm-front distance in discrete bins. Code 1 is overhead and 63 is out of range;
+      neither is printed as an ordinary kilometre reading. No independent location or accuracy validation was performed.
   complete:
-    summary: "Before treating this example as working on your hardware, compare the observed behavior with Expected Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial does not establish successful compilation or hardware operation."
+    summary: Before treating this example as working on your hardware, compare the observed behavior with Expected
+      Output and complete the checks on this page. If results differ, use Troubleshooting. Reading this tutorial
+      does not establish successful compilation or hardware operation.
     skills:
     - SPI wiring
     - Interrupt handling
     - Noise classification
+  safety_badge: Indoor low-voltage lesson — unverified hardware
+  references:
+  - title: 'SparkFun SEN-15441 v2.0 hookup guide: SPI, 3V3 header and active-HIGH IRQ'
+    href: https://learn.sparkfun.com/tutorials/sparkfun-as3935-lightning-detector-hookup-guide-v20/all
+  - title: 'SparkFun AS3935 v1.4.9 header: constructors, APIs and event identifiers'
+    href: https://github.com/sparkfun/SparkFun_AS3935_Lightning_Detector_Arduino_Library/blob/v1.4.9/src/SparkFun_AS3935.h
+  - title: 'SparkFun AS3935 v1.4.9 implementation: beginSPI, read-back and RC calibration'
+    href: https://github.com/sparkfun/SparkFun_AS3935_Lightning_Detector_Arduino_Library/blob/v1.4.9/src/SparkFun_AS3935.cpp
+  - title: 'ams AS3935 datasheet v1-04: distance bins and interrupt timing'
+    href: https://cdn.sparkfun.com/assets/learn_tutorials/9/2/1/AS3935_Datasheet_EN_v2.pdf
+  - title: Arduino-ESP32 3.3.2 SPI API
+    href: https://github.com/espressif/arduino-esp32/blob/3.3.2/libraries/SPI/src/SPI.h
+  - title: Adafruit SSD1306 2.5.13 initialization behavior
+    href: https://github.com/adafruit/Adafruit_SSD1306/blob/2.5.13/Adafruit_SSD1306.cpp
 keywords:
 - ESP32
 - Build an Educational Lightning Sensor Demo

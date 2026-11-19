@@ -639,13 +639,13 @@ def category_context_html(cat: str, projects: list[dict]) -> str:
     if reality or troubleshooting or privacy:
         reality_items = "".join(f"<li>{esc(item)}</li>" for item in reality)
         trouble_items = "".join(f"<li>{esc(item)}</li>" for item in troubleshooting)
-        privacy_html = f"<p>{esc(privacy)}</p>" if privacy else ""
+        privacy_html = f"<div><h3>Privacy boundary</h3><p>{esc(privacy)}</p></div>" if privacy else ""
         reality_html = f"""<section class="category-context category-context--deep">
       <h2>Technical reality and troubleshooting</h2>
       <div class="category-context-grid">
         <div><h3>Limits to understand</h3><ul>{reality_items}</ul></div>
         <div><h3>Common failure checks</h3><ul>{trouble_items}</ul></div>
-        <div><h3>Privacy boundary</h3>{privacy_html}</div>
+{privacy_html}
       </div>
     </section>"""
     first_project = projects[0] if projects else None

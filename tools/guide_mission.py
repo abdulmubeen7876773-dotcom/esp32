@@ -968,7 +968,7 @@ def render_mission_guide(guide: dict) -> str:
     experiment_html = mission_prose_section("experiment", "Experiment", "Experiment: Leave the Input Floating", m.get("experiment", ""))
 
     problems = m.get("common_problems", [])
-    common_mistakes_html = common_mistakes_section(m.get("common_mistakes", []) or problems)
+    common_mistakes_html = common_mistakes_section(m.get("common_mistakes", []) or problems) if m.get("show_common_mistakes", True) else ""
     troubleshooting_html = troubleshooting_section(m.get("troubleshooting", []) or problems)
     challenge_html = challenge_section(
         m.get("challenge", "").strip(),
